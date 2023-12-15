@@ -4826,6 +4826,9 @@ int main(int argc, const char **argv)
 	pKernel->RegisterInterface(CreateFavorites().release());
 	pKernel->RegisterInterface(CreateGameClient());
 
+	const char aInfclassConfigFile[] = "settings_infclass.cfg";
+	SetInfclassConfigDomainId(pConfigManager->RegisterConfigDomain(aInfclassConfigFile));
+
 	pEngine->Init();
 	pConsole->Init();
 	pConfigManager->Init();
