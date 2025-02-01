@@ -1033,6 +1033,22 @@ void CGameConsole::Prompt(char (&aPrompt)[32])
 
 void CGameConsole::OnRender()
 {
+	ColorRGBA bg;
+	if(g_Config.m_ClOverlayEntitiesTransition)
+	{
+		ColorHSLA normal = ColorHSLA(g_Config.m_ClBackgroundColor);
+		ColorHSLA entities = ColorHSLA(g_Config.m_ClBackgroundEntitiesColor);
+		bg = color_cast<ColorRGBA>(color_lerp(normal, entities, GameClient()->m_OverlayEntities));
+	}
+	else
+	{
+		if(GameClient()->m_OverlayEntities > 0.0f)
+			bg = color_cast<ColorRGBA>(ColorHSLA(g_Config.m_ClBackgroundEntitiesColor));
+		else
+			bg = color_cast<ColorRGBA>(ColorHSLA(g_Config.m_ClBackgroundColor));
+	}
+	Graphics()->Clear(bg.r, bg.g, bg.b);
+
 	CUIRect Screen = *Ui()->Screen();
 	CInstance *pConsole = CurrentConsole();
 

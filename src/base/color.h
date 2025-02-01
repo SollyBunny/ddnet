@@ -311,6 +311,21 @@ T color_invert(const T &col)
 }
 
 template<typename T>
+T color_lerp(const T &a, const T &b, float t)
+{
+	if(t <= 0.0f)
+		return a;
+	if(t >= 1.0f)
+		return b;
+	return T(
+		a.x + (b.x - a.x) * t,
+		a.y + (b.y - a.y) * t,
+		a.z + (b.z - a.z) * t,
+		a.a + (b.a - a.a) * t
+	);
+}
+
+template<typename T>
 std::optional<T> color_parse(const char *pStr);
 
 #endif

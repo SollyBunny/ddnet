@@ -112,49 +112,49 @@ void CGameClient::OnConsoleInit()
 
 	// make a list of all the systems, make sure to add them in the correct render order
 	m_vpAll.insert(m_vpAll.end(), {&m_Skins,
-					      &m_Skins7,
-					      &m_CountryFlags,
-					      &m_MapImages,
-					      &m_Effects, // doesn't render anything, just updates effects
-					      &m_Binds,
-					      &m_Binds.m_SpecialBinds,
-					      &m_Controls,
-					      &m_Camera,
-					      &m_Sounds,
-					      &m_Voting,
-					      &m_Particles, // doesn't render anything, just updates all the particles
-					      &m_RaceDemo,
-					      &m_MapSounds,
-					      &m_Background, // render instead of m_MapLayersBackground when g_Config.m_ClOverlayEntities == 100
-					      &m_MapLayersBackground, // first to render
-					      &m_Particles.m_RenderTrail,
-					      &m_Particles.m_RenderTrailExtra,
-					      &m_Items,
-					      &m_Ghost,
-					      &m_Players,
-					      &m_MapLayersForeground,
-					      &m_Particles.m_RenderExplosions,
-					      &m_NamePlates,
-					      &m_Particles.m_RenderExtra,
-					      &m_Particles.m_RenderGeneral,
-					      &m_FreezeBars,
-					      &m_DamageInd,
-					      &m_Hud,
-					      &m_Spectator,
-					      &m_Emoticon,
-					      &m_InfoMessages,
-					      &m_Chat,
-					      &m_Broadcast,
-					      &m_DebugHud,
-					      &m_TouchControls,
-					      &m_Scoreboard,
-					      &m_Statboard,
-					      &m_Motd,
-					      &m_Menus,
-					      &m_Tooltips,
-					      &CMenus::m_Binder,
-					      &m_GameConsole,
-					      &m_MenuBackground});
+						  &m_Skins7,
+						  &m_CountryFlags,
+						  &m_MapImages,
+						  &m_Effects, // doesn't render anything, just updates effects
+						  &m_Binds,
+						  &m_Binds.m_SpecialBinds,
+						  &m_Controls,
+						  &m_Camera,
+						  &m_Sounds,
+						  &m_Voting,
+						  &m_Particles, // doesn't render anything, just updates all the particles
+						  &m_RaceDemo,
+						  &m_MapSounds,
+						  &m_Background, // render instead of m_MapLayersBackground when m_OverlayEntities == 1.0f
+						  &m_MapLayersBackground, // first to render
+						  &m_Particles.m_RenderTrail,
+						  &m_Particles.m_RenderTrailExtra,
+						  &m_Items,
+						  &m_Ghost,
+						  &m_Players,
+						  &m_MapLayersForeground,
+						  &m_Particles.m_RenderExplosions,
+						  &m_NamePlates,
+						  &m_Particles.m_RenderExtra,
+						  &m_Particles.m_RenderGeneral,
+						  &m_FreezeBars,
+						  &m_DamageInd,
+						  &m_Hud,
+						  &m_Spectator,
+						  &m_Emoticon,
+						  &m_InfoMessages,
+						  &m_Chat,
+						  &m_Broadcast,
+						  &m_DebugHud,
+						  &m_TouchControls,
+						  &m_Scoreboard,
+						  &m_Statboard,
+						  &m_Motd,
+						  &m_Menus,
+						  &m_Tooltips,
+						  &CMenus::m_Binder,
+						  &m_GameConsole,
+						  &m_MenuBackground});
 
 	// build the input stack
 	m_vpInput.insert(m_vpInput.end(), {&CMenus::m_Binder, // this will take over all input when we want to bind a key
@@ -750,6 +750,19 @@ void CGameClient::UpdatePositions()
 
 void CGameClient::OnRender()
 {
+	// animate overlay entities
+	const float OverlayEntitesTarget = (float)g_Config.m_ClOverlayEntities / 100.0f;
+	if(g_Config.m_ClOverlayEntitiesTransition)
+	{
+		m_OverlayEntities = (OverlayEntitesTarget + m_OverlayEntities * 4.0f) / 5.0f;
+		if(m_OverlayEntities < 0.005f)
+			m_OverlayEntities = 0.0f;
+		else if(m_OverlayEntities > 0.995f)
+			m_OverlayEntities = 1.0f;
+	}
+	else
+		m_OverlayEntities = OverlayEntitesTarget;
+
 	// check if multi view got activated
 	if(!m_MultiView.m_IsInit && m_MultiViewActivated)
 	{

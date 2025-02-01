@@ -1189,7 +1189,7 @@ void CMapLayers::RenderQuadLayer(int LayerIndex, CMapItemLayerQuads *pQuadLayer,
 	if(Visuals.m_BufferContainerIndex == -1)
 		return; //no visuals were created
 
-	if(!Force && (!g_Config.m_ClShowQuads || g_Config.m_ClOverlayEntities == 100))
+	if(!Force && (!g_Config.m_ClShowQuads || GameClient()->m_OverlayEntities >= 1.0f))
 		return;
 
 	CQuad *pQuads = (CQuad *)m_pLayers->Map()->GetDataSwapped(pQuadLayer->m_Data);
@@ -1523,15 +1523,20 @@ void CMapLayers::OnRender()
 				++QuadLayerCounter;
 			}
 
-			// skip rendering if detail layers if not wanted, or is entity layer and we are a background map
-			if((pLayer->m_Flags & LAYERFLAG_DETAIL && (!g_Config.m_GfxHighDetail && !(m_Type == TYPE_FULL_DESIGN)) && !IsGameLayer) || (m_Type == TYPE_BACKGROUND_FORCE && IsEntityLayer) || (m_Type == TYPE_FULL_DESIGN && IsEntityLayer))
+			// skip rendering if detail layers if not wanted
+			if((pLayer->m_Flags & LAYERFLAG_DETAIL && (!g_Config.m_GfxHighDetail && !(m_Type == TYPE_FULL_DESIGN)) && !IsGameLayer))
 				continue;
 
-			int EntityOverlayVal = g_Config.m_ClOverlayEntities;
-			if(m_Type == TYPE_FULL_DESIGN)
-				EntityOverlayVal = 0;
+			// or is entity layer and we are a background map
+			// if((m_Type == TYPE_BACKGROUND_FORCE && IsEntityLayer) || (m_Type == TYPE_FULL_DESIGN && IsEntityLayer))
+			// if(IsEntityLayer && (!g_Config.m_ClOverlayEntitiesTransition || GameClient()->m_OverlayEntities >= 1.0f) && (m_Type == TYPE_BACKGROUND_FORCE || m_Type == TYPE_FULL_DESIGN))
+			// 	continue;
 
-			if((Render && EntityOverlayVal < 100 && !IsEntityLayer) || (EntityOverlayVal && IsGameLayer) || (m_Type == TYPE_BACKGROUND_FORCE))
+			float OverlayEntities = GameClient()->m_OverlayEntities;
+			// if(m_Type == TYPE_FULL_DESIGN && !g_Config.m_ClOverlayEntitiesTransition)
+			// 	OverlayEntities = 0.0f;
+
+			if((Render && OverlayEntities < 1.0f && !IsEntityLayer) || (OverlayEntities > 0.0f && IsGameLayer) || (m_Type == TYPE_BACKGROUND_FORCE))
 			{
 				if(pLayer->m_Type == LAYERTYPE_TILES)
 				{
@@ -1555,10 +1560,10 @@ void CMapLayers::OnRender()
 					if(Size >= (size_t)pTMap->m_Width * pTMap->m_Height * sizeof(CTile))
 					{
 						ColorRGBA Color = IsGameLayer ? ColorRGBA(1.0f, 1.0f, 1.0f, 1.0f) : ColorRGBA(pTMap->m_Color.r / 255.0f, pTMap->m_Color.g / 255.0f, pTMap->m_Color.b / 255.0f, pTMap->m_Color.a / 255.0f);
-						if(IsGameLayer && EntityOverlayVal)
-							Color.a *= EntityOverlayVal / 100.0f;
-						else if(!IsGameLayer && EntityOverlayVal && m_Type != TYPE_BACKGROUND_FORCE)
-							Color.a *= (100 - EntityOverlayVal) / 100.0f;
+						if(IsGameLayer && OverlayEntities > 0.0f)
+							Color.a *= OverlayEntities;
+						else if(!IsGameLayer && OverlayEntities > 0.0f && (g_Config.m_ClOverlayEntitiesTransition || m_Type != TYPE_BACKGROUND_FORCE))
+							Color.a *= 1.0f - OverlayEntities;
 
 						if(!IsGameLayer)
 						{
@@ -1621,11 +1626,17 @@ void CMapLayers::OnRender()
 							if(!Graphics()->IsQuadBufferingEnabled())
 							{
 								Graphics()->BlendNormal();
-								RenderTools()->ForceRenderQuads(pQuads, pQLayer->m_NumQuads, LAYERRENDERFLAG_TRANSPARENT, EnvelopeEval, this, 1.f);
+								if(g_Config.m_ClOverlayEntitiesTransition)
+									RenderTools()->RenderQuads(pQuads, pQLayer->m_NumQuads, LAYERRENDERFLAG_TRANSPARENT, EnvelopeEval, this, GameClient()->m_OverlayEntities);
+								else
+									RenderTools()->RenderQuads(pQuads, pQLayer->m_NumQuads, LAYERRENDERFLAG_TRANSPARENT, EnvelopeEval, this, 1.0f);
 							}
 							else
 							{
-								RenderQuadLayer(QuadLayerCounter - 1, pQLayer, true);
+								if(g_Config.m_ClOverlayEntitiesTransition)
+									RenderQuadLayer(QuadLayerCounter - 1, pQLayer, false);
+								else
+									RenderQuadLayer(QuadLayerCounter - 1, pQLayer, true);
 							}
 						}
 					}
@@ -1634,7 +1645,8 @@ void CMapLayers::OnRender()
 						if(!Graphics()->IsQuadBufferingEnabled())
 						{
 							Graphics()->BlendNormal();
-							RenderTools()->RenderQuads(pQuads, pQLayer->m_NumQuads, LAYERRENDERFLAG_TRANSPARENT, EnvelopeEval, this);
+							// if(g_Config.m_ClShowQuads && GameClient()->m_OverlayEntities < 1.0f)
+								RenderTools()->RenderQuads(pQuads, pQLayer->m_NumQuads, LAYERRENDERFLAG_TRANSPARENT, EnvelopeEval, this, 1.0f - GameClient()->m_OverlayEntities);
 						}
 						else
 						{
@@ -1643,7 +1655,7 @@ void CMapLayers::OnRender()
 					}
 				}
 			}
-			else if(Render && EntityOverlayVal && IsFrontLayer)
+			else if(Render && OverlayEntities > 0.0f && IsFrontLayer)
 			{
 				CMapItemLayerTilemap *pTMap = (CMapItemLayerTilemap *)pLayer;
 				Graphics()->TextureSet(m_pImages->GetEntities(MAP_IMAGE_ENTITY_LAYER_TYPE_ALL_EXCEPT_SWITCH));
@@ -1653,7 +1665,7 @@ void CMapLayers::OnRender()
 
 				if(Size >= (size_t)pTMap->m_Width * pTMap->m_Height * sizeof(CTile))
 				{
-					const ColorRGBA Color = ColorRGBA(1.0f, 1.0f, 1.0f, EntityOverlayVal / 100.0f);
+					const ColorRGBA Color = ColorRGBA(1.0f, 1.0f, 1.0f, OverlayEntities);
 					if(!Graphics()->IsTileBufferingEnabled())
 					{
 						Graphics()->BlendNone();
@@ -1668,7 +1680,7 @@ void CMapLayers::OnRender()
 					}
 				}
 			}
-			else if(Render && EntityOverlayVal && IsSwitchLayer)
+			else if(Render && OverlayEntities > 0.0f && IsSwitchLayer)
 			{
 				CMapItemLayerTilemap *pTMap = (CMapItemLayerTilemap *)pLayer;
 				Graphics()->TextureSet(m_pImages->GetEntities(MAP_IMAGE_ENTITY_LAYER_TYPE_SWITCH));
@@ -1678,14 +1690,14 @@ void CMapLayers::OnRender()
 
 				if(Size >= (size_t)pTMap->m_Width * pTMap->m_Height * sizeof(CSwitchTile))
 				{
-					const ColorRGBA Color = ColorRGBA(1.0f, 1.0f, 1.0f, EntityOverlayVal / 100.0f);
+					const ColorRGBA Color = ColorRGBA(1.0f, 1.0f, 1.0f, OverlayEntities);
 					if(!Graphics()->IsTileBufferingEnabled())
 					{
 						Graphics()->BlendNone();
 						RenderTools()->RenderSwitchmap(pSwitchTiles, pTMap->m_Width, pTMap->m_Height, 32.0f, Color, TILERENDERFLAG_EXTEND | LAYERRENDERFLAG_OPAQUE);
 						Graphics()->BlendNormal();
 						RenderTools()->RenderSwitchmap(pSwitchTiles, pTMap->m_Width, pTMap->m_Height, 32.0f, Color, TILERENDERFLAG_EXTEND | LAYERRENDERFLAG_TRANSPARENT);
-						RenderTools()->RenderSwitchOverlay(pSwitchTiles, pTMap->m_Width, pTMap->m_Height, 32.0f, EntityOverlayVal / 100.0f);
+						RenderTools()->RenderSwitchOverlay(pSwitchTiles, pTMap->m_Width, pTMap->m_Height, 32.0f, OverlayEntities);
 					}
 					else
 					{
@@ -1701,7 +1713,7 @@ void CMapLayers::OnRender()
 					}
 				}
 			}
-			else if(Render && EntityOverlayVal && IsTeleLayer)
+			else if(Render && OverlayEntities > 0.0f && IsTeleLayer)
 			{
 				CMapItemLayerTilemap *pTMap = (CMapItemLayerTilemap *)pLayer;
 				Graphics()->TextureSet(m_pImages->GetEntities(MAP_IMAGE_ENTITY_LAYER_TYPE_ALL_EXCEPT_SWITCH));
@@ -1711,14 +1723,14 @@ void CMapLayers::OnRender()
 
 				if(Size >= (size_t)pTMap->m_Width * pTMap->m_Height * sizeof(CTeleTile))
 				{
-					const ColorRGBA Color = ColorRGBA(1.0f, 1.0f, 1.0f, EntityOverlayVal / 100.0f);
+					const ColorRGBA Color = ColorRGBA(1.0f, 1.0f, 1.0f, OverlayEntities);
 					if(!Graphics()->IsTileBufferingEnabled())
 					{
 						Graphics()->BlendNone();
 						RenderTools()->RenderTelemap(pTeleTiles, pTMap->m_Width, pTMap->m_Height, 32.0f, Color, TILERENDERFLAG_EXTEND | LAYERRENDERFLAG_OPAQUE);
 						Graphics()->BlendNormal();
 						RenderTools()->RenderTelemap(pTeleTiles, pTMap->m_Width, pTMap->m_Height, 32.0f, Color, TILERENDERFLAG_EXTEND | LAYERRENDERFLAG_TRANSPARENT);
-						RenderTools()->RenderTeleOverlay(pTeleTiles, pTMap->m_Width, pTMap->m_Height, 32.0f, EntityOverlayVal / 100.0f);
+						RenderTools()->RenderTeleOverlay(pTeleTiles, pTMap->m_Width, pTMap->m_Height, 32.0f, OverlayEntities);
 					}
 					else
 					{
@@ -1732,7 +1744,7 @@ void CMapLayers::OnRender()
 					}
 				}
 			}
-			else if(Render && EntityOverlayVal && IsSpeedupLayer)
+			else if(Render && OverlayEntities > 0.0f && IsSpeedupLayer)
 			{
 				CMapItemLayerTilemap *pTMap = (CMapItemLayerTilemap *)pLayer;
 				Graphics()->TextureSet(m_pImages->GetEntities(MAP_IMAGE_ENTITY_LAYER_TYPE_ALL_EXCEPT_SWITCH));
@@ -1742,14 +1754,14 @@ void CMapLayers::OnRender()
 
 				if(Size >= (size_t)pTMap->m_Width * pTMap->m_Height * sizeof(CSpeedupTile))
 				{
-					const ColorRGBA Color = ColorRGBA(1.0f, 1.0f, 1.0f, EntityOverlayVal / 100.0f);
+					const ColorRGBA Color = ColorRGBA(1.0f, 1.0f, 1.0f, OverlayEntities);
 					if(!Graphics()->IsTileBufferingEnabled())
 					{
 						Graphics()->BlendNone();
 						RenderTools()->RenderSpeedupmap(pSpeedupTiles, pTMap->m_Width, pTMap->m_Height, 32.0f, Color, TILERENDERFLAG_EXTEND | LAYERRENDERFLAG_OPAQUE);
 						Graphics()->BlendNormal();
 						RenderTools()->RenderSpeedupmap(pSpeedupTiles, pTMap->m_Width, pTMap->m_Height, 32.0f, Color, TILERENDERFLAG_EXTEND | LAYERRENDERFLAG_TRANSPARENT);
-						RenderTools()->RenderSpeedupOverlay(pSpeedupTiles, pTMap->m_Width, pTMap->m_Height, 32.0f, EntityOverlayVal / 100.0f);
+						RenderTools()->RenderSpeedupOverlay(pSpeedupTiles, pTMap->m_Width, pTMap->m_Height, 32.0f, OverlayEntities);
 					}
 					else
 					{
@@ -1771,7 +1783,7 @@ void CMapLayers::OnRender()
 					}
 				}
 			}
-			else if(Render && EntityOverlayVal && IsTuneLayer)
+			else if(Render && OverlayEntities > 0.0f && IsTuneLayer)
 			{
 				CMapItemLayerTilemap *pTMap = (CMapItemLayerTilemap *)pLayer;
 				Graphics()->TextureSet(m_pImages->GetEntities(MAP_IMAGE_ENTITY_LAYER_TYPE_ALL_EXCEPT_SWITCH));
@@ -1781,7 +1793,7 @@ void CMapLayers::OnRender()
 
 				if(Size >= (size_t)pTMap->m_Width * pTMap->m_Height * sizeof(CTuneTile))
 				{
-					const ColorRGBA Color = ColorRGBA(1.0f, 1.0f, 1.0f, EntityOverlayVal / 100.0f);
+					const ColorRGBA Color = ColorRGBA(1.0f, 1.0f, 1.0f, OverlayEntities);
 					if(!Graphics()->IsTileBufferingEnabled())
 					{
 						Graphics()->BlendNone();
