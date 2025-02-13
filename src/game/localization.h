@@ -54,7 +54,7 @@ public:
 	const std::vector<CLanguage> &Languages() const { return m_vLanguages; }
 	void SelectDefaultLanguage(class IConsole *pConsole, char *pFilename, size_t Length) const;
 
-	bool Load(const char *pFilename, class IStorage *pStorage, class IConsole *pConsole);
+	bool Load(const char *pFilename, class IStorage *pStorage, class IConsole *pConsole, bool Clear = true);
 
 	void AddString(const char *pOrgStr, const char *pNewStr, const char *pContext);
 	const char *FindString(unsigned Hash, unsigned ContextHash) const;
@@ -63,5 +63,9 @@ public:
 extern CLocalizationDatabase g_Localization;
 
 extern const char *Localize(const char *pStr, const char *pContext = "")
+	GNUC_ATTRIBUTE((format_arg(1)));
+
+// TClient
+extern const char *TCLocalize(const char *pStr, const char *pContext = "")
 	GNUC_ATTRIBUTE((format_arg(1)));
 #endif
