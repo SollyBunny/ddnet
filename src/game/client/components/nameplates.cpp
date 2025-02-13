@@ -375,6 +375,51 @@ public:
 	}
 };
 
+// Part Types TClient
+
+class CNamePlatePartPing : public CNamePlatePart {
+protected:
+	float m_Radius = 7.0f;
+	ColorRGBA m_Color;
+
+public:
+	friend class CGameClient;
+	void Update(CGameClient &This, const CNamePlateRenderData &Data) override
+	{
+		/*
+			If in a real game,
+				Don't show ping in demos
+				Show other people's pings if in scoreboard
+				Or if ping circle and name enabled
+			If in preview
+				Show ping if ping circle and name enabled
+		*/
+		m_Visible = Data.m_InGame ? (
+			This.Client()->State() != IClient::STATE_DEMOPLAYBACK && (
+				(Data.m_ShowName && g_Config.m_ClPingNameCircle > 0) ||
+				(This.m_Scoreboard.IsActive() && !This.m_Snap.m_apPlayerInfos[Data.m_ClientId]->m_Local)
+			)
+		) : (
+			(Data.m_ShowName && g_Config.m_ClPingNameCircle > 0)
+		);
+		if(!m_Visible)
+			return;
+		int ping = Data.m_InGame ? This.m_Snap.m_apPlayerInfos[Data.m_ClientId]->m_Latency : (1 + Data.m_ClientId) * 25;
+		m_Color = color_cast<ColorRGBA>(ColorHSLA((float)(300 - clamp(ping, 0, 300)) / 1000.0f, 1.0f, 0.5f, Data.m_Alpha));
+	}
+	void Render(CGameClient &This, float X, float Y) override
+	{
+		This.Graphics()->TextureClear();
+		This.Graphics()->QuadsBegin();
+		This.Graphics()->SetColor(m_Color);
+		This.Graphics()->DrawCircle(X, Y, m_Radius, 24);
+		This.Graphics()->QuadsEnd();
+	}
+	void Create(CGameClient &This) {
+		m_Width = m_Height = m_Radius * 2.0f;
+	}
+};
+
 // Name plate
 
 void CNamePlate::RenderLine(CGameClient &This, const CNamePlateRenderData &Data,
@@ -419,6 +464,7 @@ void CNamePlate::Init(CGameClient &This)
 	AddPart<CNamePlatePartDirection>(This, 1);
 	AddPart<CNamePlatePartDirection>(This, 2);
 	AddPart<CNamePlatePartNewLine>(This);
+	AddPart<CNamePlatePartPing>(This); // TClient
 	AddPart<CNamePlatePartFriendMark>(This);
 	AddPart<CNamePlatePartClientId>(This, false);
 	AddPart<CNamePlatePartName>(This);

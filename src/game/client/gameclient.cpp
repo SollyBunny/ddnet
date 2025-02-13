@@ -2329,6 +2329,8 @@ void CGameClient::OnPredict()
 		}
 	}
 
+	bool RealPredTick = false;
+
 	CCharacter *pLocalChar = m_PredictedWorld.GetCharacterById(m_Snap.m_LocalClientId);
 	if(!pLocalChar)
 		return;
