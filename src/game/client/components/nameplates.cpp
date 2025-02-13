@@ -213,7 +213,7 @@ protected:
 		m_Visible = Data.m_ShowFriendMark;
 		if(!m_Visible)
 			return false;
-		m_Color = ColorRGBA(1.0f, 0.0f, 0.0f);
+		m_Color = ColorRGBA(1.0f, 0.0f, 0.0f, Data.m_Alpha);
 		return m_FontSize != Data.m_FontSize;
 	}
 	void UpdateText(CGameClient &This, const CNamePlateRenderData &Data) override
