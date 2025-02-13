@@ -172,6 +172,17 @@ void CMenus::RenderSettingsGeneral(CUIRect MainView)
 		}
 		GameClient()->m_Tooltips.DoToolTip(&s_SettingsButtonId, &SettingsButton, Localize("Open the settings file"));
 
+		CUIRect SavesButton;
+		Left.HSplitBottom(20.0f, &Left, &SavesButton);
+		Left.HSplitBottom(5.0f, &Left, nullptr);
+		static CButtonContainer s_SavesButtonId;
+		if(DoButton_Menu(&s_SavesButtonId, Localize("Saves file"), 0, &SavesButton))
+		{
+			Storage()->GetCompletePath(IStorage::TYPE_SAVE, SAVES_FILE, aBuf, sizeof(aBuf));
+			Client()->ViewFile(aBuf);
+		}
+		GameClient()->m_Tooltips.DoToolTip(&s_SavesButtonId, &SavesButton, Localize("Open the saves file"));
+
 		CUIRect ConfigButton;
 		Left.HSplitBottom(20.0f, &Left, &ConfigButton);
 		Left.HSplitBottom(5.0f, &Left, nullptr);
@@ -972,7 +983,7 @@ void CMenus::DoSettingsControlsButtons(int Start, int Stop, CUIRect View)
 				m_pClient->m_Binds.Bind(NewId, Key.m_pCommand, false, NewModifierCombination);
 		}
 
-		View.HSplitTop(2.0f, 0, &View);
+		View.HSplitTop(2.0f, nullptr, &View);
 	}
 }
 
@@ -1365,7 +1376,7 @@ void CMenus::RenderSettingsControls(CUIRect MainView)
 	// misc settings
 	{
 		MiscSettings.HSplitTop(Margin, nullptr, &MiscSettings);
-		MiscSettings.HSplitTop(300.0f, &MiscSettings, 0);
+		MiscSettings.HSplitTop(300.0f, &MiscSettings, nullptr);
 		if(s_ScrollRegion.AddRect(MiscSettings))
 		{
 			MiscSettings.Draw(ColorRGBA(1, 1, 1, 0.25f), IGraphics::CORNER_ALL, 10.0f);
@@ -1435,7 +1446,7 @@ void CMenus::RenderSettingsGraphics(CUIRect MainView)
 	CUIRect ModeList, ModeLabel;
 	MainView.VSplitLeft(350.0f, &MainView, &ModeList);
 	ModeList.HSplitTop(24.0f, &ModeLabel, &ModeList);
-	MainView.VSplitLeft(340.0f, &MainView, 0);
+	MainView.VSplitLeft(340.0f, &MainView, nullptr);
 
 	// display mode list
 	static CListBox s_ListBox;
@@ -1590,6 +1601,11 @@ void CMenus::RenderSettingsGraphics(CUIRect MainView)
 	if(DoButton_CheckBox(&g_Config.m_GfxHighDetail, Localize("High Detail"), g_Config.m_GfxHighDetail, &Button))
 		g_Config.m_GfxHighDetail ^= 1;
 	GameClient()->m_Tooltips.DoToolTip(&g_Config.m_GfxHighDetail, &Button, Localize("Allows maps to render with more detail"));
+
+	MainView.HSplitTop(20.0f, &Button, &MainView);
+	if(DoButton_CheckBox(&g_Config.m_ClShowfps, Localize("Show FPS"), g_Config.m_ClShowfps, &Button))
+		g_Config.m_ClShowfps ^= 1;
+	GameClient()->m_Tooltips.DoToolTip(&g_Config.m_ClShowfps, &Button, Localize("Renders your frame rate in the top right"));
 
 	MainView.HSplitTop(20.0f, &Button, &MainView);
 	if(DoButton_CheckBox(&g_Config.m_GfxHighdpi, Localize("Use high DPI"), g_Config.m_GfxHighdpi, &Button))
@@ -1884,6 +1900,48 @@ void CMenus::RenderSettingsSound(CUIRect MainView)
 	}
 }
 
+void CMenus::RenderLanguageSettings(CUIRect MainView)
+{
+	const float CreditsFontSize = 14.0f;
+	const float CreditsMargin = 10.0f;
+
+	CUIRect List, CreditsScroll;
+	MainView.HSplitBottom(4.0f * CreditsFontSize + 2.0f * CreditsMargin + CScrollRegion::HEIGHT_MAGIC_FIX, &List, &CreditsScroll);
+	List.HSplitBottom(5.0f, &List, nullptr);
+
+	RenderLanguageSelection(List);
+
+	CreditsScroll.Draw(ColorRGBA(0.0f, 0.0f, 0.0f, 0.25f), IGraphics::CORNER_ALL, 5.0f);
+
+	static CScrollRegion s_CreditsScrollRegion;
+	vec2 ScrollOffset(0.0f, 0.0f);
+	CScrollRegionParams ScrollParams;
+	ScrollParams.m_ScrollUnit = CreditsFontSize;
+	s_CreditsScrollRegion.Begin(&CreditsScroll, &ScrollOffset, &ScrollParams);
+	CreditsScroll.y += ScrollOffset.y;
+
+	CTextCursor Cursor;
+	TextRender()->SetCursor(&Cursor, 0.0f, 0.0f, CreditsFontSize, TEXTFLAG_RENDER);
+	Cursor.m_LineWidth = CreditsScroll.w - 2.0f * CreditsMargin;
+
+	const unsigned OldRenderFlags = TextRender()->GetRenderFlags();
+	TextRender()->SetRenderFlags(OldRenderFlags | TEXT_RENDER_FLAG_ONE_TIME_USE);
+	STextContainerIndex CreditsTextContainer;
+	TextRender()->CreateTextContainer(CreditsTextContainer, &Cursor, Localize("English translation by the DDNet Team", "Translation credits: Add your own name here when you update translations"));
+	TextRender()->SetRenderFlags(OldRenderFlags);
+	if(CreditsTextContainer.Valid())
+	{
+		CUIRect CreditsLabel;
+		CreditsScroll.HSplitTop(TextRender()->GetBoundingBoxTextContainer(CreditsTextContainer).m_H + 2.0f * CreditsMargin, &CreditsLabel, &CreditsScroll);
+		s_CreditsScrollRegion.AddRect(CreditsLabel);
+		CreditsLabel.Margin(CreditsMargin, &CreditsLabel);
+		TextRender()->RenderTextContainer(CreditsTextContainer, TextRender()->DefaultTextColor(), TextRender()->DefaultTextOutlineColor(), CreditsLabel.x, CreditsLabel.y);
+		TextRender()->DeleteTextContainer(CreditsTextContainer);
+	}
+
+	s_CreditsScrollRegion.End();
+}
+
 bool CMenus::RenderLanguageSelection(CUIRect MainView)
 {
 	static int s_SelectedLanguage = -2; // -2 = unloaded, -1 = unset
@@ -1978,7 +2036,7 @@ void CMenus::RenderSettings(CUIRect MainView)
 	if(g_Config.m_UiSettingsPage == SETTINGS_LANGUAGE)
 	{
 		GameClient()->m_MenuBackground.ChangePosition(CMenuBackground::POS_SETTINGS_LANGUAGE);
-		RenderLanguageSelection(MainView);
+		RenderLanguageSettings(MainView);
 	}
 	else if(g_Config.m_UiSettingsPage == SETTINGS_GENERAL)
 	{
@@ -2380,6 +2438,7 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClShowhudHealthAmmo, Localize("Show health, shields and ammo"), &g_Config.m_ClShowhudHealthAmmo, &LeftView, LineSize);
 		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClShowhudScore, Localize("Show score"), &g_Config.m_ClShowhudScore, &LeftView, LineSize);
 		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClShowLocalTimeAlways, Localize("Show local time always"), &g_Config.m_ClShowLocalTimeAlways, &LeftView, LineSize);
+		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClSpecCursor, Localize("Show spectator cursor"), &g_Config.m_ClSpecCursor, &LeftView, LineSize);
 
 		// Settings of the HUD element for votes
 		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClShowVotesAfterVoting, Localize("Show votes window after voting"), &g_Config.m_ClShowVotesAfterVoting, &LeftView, LineSize);
@@ -2792,6 +2851,7 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 
 		// General name plate settings
 		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClNamePlates, Localize("Show name plates"), &g_Config.m_ClNamePlates, &LeftView, LineSize);
+		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClNamePlatesOwn, Localize("Show own name plate"), &g_Config.m_ClNamePlatesOwn, &LeftView, LineSize);
 		LeftView.HSplitTop(2 * LineSize, &Button, &LeftView);
 		Ui()->DoScrollbarOption(&g_Config.m_ClNamePlatesSize, &g_Config.m_ClNamePlatesSize, &Button, Localize("Name plates size"), -50, 100, &CUi::ms_LinearScrollbarScale, CUi::SCROLLBAR_OPTION_MULTILINE);
 
@@ -2805,12 +2865,18 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClNamePlatesTeamcolors, Localize("Use team colors for name plates"), &g_Config.m_ClNamePlatesTeamcolors, &LeftView, LineSize);
 		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClNamePlatesFriendMark, Localize("Show friend mark (♥) in name plates"), &g_Config.m_ClNamePlatesFriendMark, &LeftView, LineSize);
 		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClNamePlatesIds, Localize("Show client IDs in name plates"), &g_Config.m_ClNamePlatesIds, &LeftView, LineSize);
+		if(g_Config.m_ClNamePlatesIds)
+		{
+			DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClNamePlatesIdsNewLine, Localize("Show client IDs on a new line"), &g_Config.m_ClNamePlatesIdsNewLine, &LeftView, LineSize);
+			LeftView.HSplitTop(2 * LineSize, &Button, &LeftView);
+			if(g_Config.m_ClNamePlatesIdsNewLine)
+				Ui()->DoScrollbarOption(&g_Config.m_ClNamePlatesIdsSize, &g_Config.m_ClNamePlatesIdsSize, &Button, Localize("Client IDs size"), -50, 100, &CUi::ms_LinearScrollbarScale, CUi::SCROLLBAR_OPTION_MULTILINE);
+		}
+		else
+			LeftView.HSplitTop(LineSize * 3, nullptr, &LeftView);
 
 		// ***** Hook Strength ***** //
 		LeftView.HSplitTop(MarginBetweenViews, nullptr, &LeftView);
-		LeftView.HSplitTop(HeadlineHeight, &Label, &LeftView);
-		Ui()->DoLabel(&Label, Localize("Hook Strength"), HeadlineFontSize, TEXTALIGN_ML);
-		LeftView.HSplitTop(MarginSmall, nullptr, &LeftView);
 
 		LeftView.HSplitTop(LineSize, &Button, &LeftView);
 		if(DoButton_CheckBox(&g_Config.m_ClNamePlatesStrong, Localize("Show hook strength icon indicator"), g_Config.m_ClNamePlatesStrong, &Button))
@@ -2833,9 +2899,6 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 
 		// ***** Key Presses ***** //
 		LeftView.HSplitTop(MarginBetweenViews, nullptr, &LeftView);
-		LeftView.HSplitTop(HeadlineHeight, &Label, &LeftView);
-		Ui()->DoLabel(&Label, Localize("Key Presses"), HeadlineFontSize, TEXTALIGN_ML);
-		LeftView.HSplitTop(MarginSmall, nullptr, &LeftView);
 
 		LeftView.HSplitTop(LineSize, &Button, &LeftView);
 		if(DoButton_CheckBox(&g_Config.m_ClShowDirection, Localize("Show other players' key presses"), g_Config.m_ClShowDirection >= 1 && g_Config.m_ClShowDirection != 3, &Button))
@@ -2861,15 +2924,26 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 		Ui()->DoLabel(&Label, Localize("Preview"), HeadlineFontSize, TEXTALIGN_ML);
 		RightView.HSplitTop(2.0f * MarginSmall, nullptr, &RightView);
 
+		// ***** Name Plate Dummy Preview ***** //
+		static bool s_Dummy = false;
+		RightView.HSplitBottom(LineSize, &RightView, &Button);
+		if(DoButton_CheckBox(&s_Dummy, Localize("Preview Dummy's nameplate"), s_Dummy, &Button))
+			s_Dummy = !s_Dummy;
+
+		int Dummy = g_Config.m_ClDummy != (int)s_Dummy ? 1 : 0;
+
 		CTeeRenderInfo TeeRenderInfo;
-		TeeRenderInfo.Apply(m_pClient->m_Skins.Find(g_Config.m_ClPlayerSkin));
-		TeeRenderInfo.ApplyColors(g_Config.m_ClPlayerUseCustomColor, g_Config.m_ClPlayerColorBody, g_Config.m_ClPlayerColorFeet);
+		TeeRenderInfo.Apply(m_pClient->m_Skins.Find(Dummy ? g_Config.m_ClDummySkin : g_Config.m_ClPlayerSkin));
+		TeeRenderInfo.ApplyColors(
+			Dummy ? g_Config.m_ClDummyUseCustomColor : g_Config.m_ClPlayerUseCustomColor,
+			Dummy ? g_Config.m_ClDummyColorBody : g_Config.m_ClPlayerColorBody,
+			Dummy ? g_Config.m_ClDummyColorFeet : g_Config.m_ClPlayerColorFeet);
 		TeeRenderInfo.m_Size = 64.0f;
 
 		const vec2 Position = RightView.Center();
 		RenderTools()->RenderTee(CAnimState::GetIdle(), &TeeRenderInfo, 0, vec2(1.0f, 0.0f), Position);
 
-		GameClient()->m_NamePlates.RenderNamePlatePreview(Position);
+		GameClient()->m_NamePlates.RenderNamePlatePreview(Position, Dummy);
 	}
 	else if(s_CurTab == APPEARANCE_TAB_HOOK_COLLISION)
 	{

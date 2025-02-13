@@ -186,8 +186,9 @@ void CGameClient::OnConsoleInit()
 	Console()->Register("kill", "", CFGFLAG_CLIENT, ConKill, this, "Kill yourself to restart");
 	Console()->Register("ready_change", "", CFGFLAG_CLIENT, ConReadyChange7, this, "Change ready state (0.7 only)");
 
-	// register tune zone command to allow the client prediction to load tunezones from the map
+	// register game commands to allow the client prediction to load settings from the map
 	Console()->Register("tune_zone", "i[zone] s[tuning] f[value]", CFGFLAG_GAME, ConTuneZone, this, "Tune in zone a variable to value");
+	Console()->Register("mapbug", "s[mapbug]", CFGFLAG_GAME, ConMapbug, this, "Enable map compatibility mode using the specified bug (example: grenade-doubleexplosion@ddnet.tw)");
 
 	for(auto &pComponent : m_vpAll)
 		pComponent->m_pClient = this;
@@ -412,6 +413,7 @@ void CGameClient::OnInit()
 
 	m_GameWorld.m_pCollision = Collision();
 	m_GameWorld.m_pTuningList = m_aTuningList;
+	m_GameWorld.m_pMapBugs = &m_MapBugs;
 	OnReset();
 
 	// Set free binds to DDRace binds if it's active
@@ -514,6 +516,10 @@ int CGameClient::OnSnapInput(int *pData, bool Dummy, bool Force)
 	{
 		return m_Controls.SnapInput(pData);
 	}
+	if(m_aLocalIds[!g_Config.m_ClDummy] < 0)
+	{
+		return 0;
+	}
 
 	if(!g_Config.m_ClDummyHammer)
 	{
@@ -547,11 +553,9 @@ int CGameClient::OnSnapInput(int *pData, bool Dummy, bool Force)
 			m_DummyInput.m_WantedWeapon = WEAPON_HAMMER + 1;
 		}
 
-		vec2 MainPos = m_LocalCharacterPos;
-		vec2 DummyPos = m_aClients[m_aLocalIds[!g_Config.m_ClDummy]].m_Predicted.m_Pos;
-		vec2 Dir = MainPos - DummyPos;
-		m_HammerInput.m_TargetX = (int)(Dir.x);
-		m_HammerInput.m_TargetY = (int)(Dir.y);
+		const vec2 Dir = m_LocalCharacterPos - m_aClients[m_aLocalIds[!g_Config.m_ClDummy]].m_Predicted.m_Pos;
+		m_HammerInput.m_TargetX = (int)Dir.x;
+		m_HammerInput.m_TargetY = (int)Dir.y;
 
 		mem_copy(pData, &m_HammerInput, sizeof(m_HammerInput));
 		return sizeof(m_HammerInput);
@@ -673,7 +677,7 @@ void CGameClient::OnReset()
 	m_CharOrder.Reset();
 	std::fill(std::begin(m_aSwitchStateTeam), std::end(m_aSwitchStateTeam), -1);
 
-	// m_aTuningList is reset in LoadMapSettings
+	// m_MapBugs and m_aTuningList are reset in LoadMapSettings
 
 	m_LastShowDistanceZoom = 0.0f;
 	m_LastZoom = 0.0f;
@@ -824,7 +828,7 @@ void CGameClient::OnRender()
 		g_Config.m_ClDummy = 0;
 
 	// resend player and dummy info if it was filtered by server
-	if(Client()->State() == IClient::STATE_ONLINE && !m_Menus.IsActive() && WasNewTick)
+	if(m_aLocalIds[0] >= 0 && Client()->State() == IClient::STATE_ONLINE && !m_Menus.IsActive() && WasNewTick)
 	{
 		if(m_aCheckInfo[0] == 0)
 		{
@@ -856,7 +860,7 @@ void CGameClient::OnRender()
 			m_aCheckInfo[0] -= minimum(Client()->GameTick(0) - Client()->PrevGameTick(0), m_aCheckInfo[0]);
 		}
 
-		if(Client()->DummyConnected())
+		if(m_aLocalIds[1] >= 0)
 		{
 			if(m_aCheckInfo[1] == 0)
 			{
@@ -893,6 +897,7 @@ void CGameClient::OnRender()
 
 void CGameClient::OnDummyDisconnect()
 {
+	m_aLocalIds[1] = -1;
 	m_aDDRaceMsgSent[1] = false;
 	m_aShowOthers[1] = SHOW_OTHERS_NOT_SET;
 	m_aLastNewPredictedTick[1] = -1;
@@ -1460,6 +1465,7 @@ static CGameInfo GetGameInfo(const CNetObj_GameInfoEx *pInfoEx, int InfoExSize, 
 	Info.m_HudDDRace = false;
 	Info.m_NoWeakHookAndBounce = false;
 	Info.m_NoSkinChangeForFrozen = false;
+	Info.m_DDRaceTeam = false;
 
 	if(Version >= 0)
 	{
@@ -1518,6 +1524,10 @@ static CGameInfo GetGameInfo(const CNetObj_GameInfoEx *pInfoEx, int InfoExSize, 
 	if(Version >= 9)
 	{
 		Info.m_NoSkinChangeForFrozen = Flags2 & GAMEINFOFLAG2_NO_SKIN_CHANGE_FOR_FROZEN;
+	}
+	if(Version >= 10)
+	{
+		Info.m_DDRaceTeam = Flags2 & GAMEINFOFLAG2_DDRACE_TEAM;
 	}
 
 	Info.m_AllowEyeWheel = true;
@@ -1908,7 +1918,7 @@ void CGameClient::OnNewSnapshot()
 
 	if(!FoundGameInfoEx)
 	{
-		m_GameInfo = GetGameInfo(0, 0, &ServerInfo);
+		m_GameInfo = GetGameInfo(nullptr, 0, &ServerInfo);
 	}
 
 	// setup local pointers
@@ -2309,7 +2319,7 @@ void CGameClient::OnPredict()
 			if((!m_Snap.m_aCharacters[i].m_Active && pChar->m_SnapTicks > 10) || IsOtherTeam(i))
 				pChar->Destroy();
 
-	CProjectile *pProjNext = 0;
+	CProjectile *pProjNext = nullptr;
 	for(CProjectile *pProj = (CProjectile *)m_PredictedWorld.FindFirst(CGameWorld::ENTTYPE_PROJECTILE); pProj; pProj = pProjNext)
 	{
 		pProjNext = (CProjectile *)pProj->TypeNext();
@@ -2322,11 +2332,11 @@ void CGameClient::OnPredict()
 	CCharacter *pLocalChar = m_PredictedWorld.GetCharacterById(m_Snap.m_LocalClientId);
 	if(!pLocalChar)
 		return;
-	CCharacter *pDummyChar = 0;
+	CCharacter *pDummyChar = nullptr;
 	if(PredictDummy())
 		pDummyChar = m_PredictedWorld.GetCharacterById(m_PredictedDummyId);
 
-	bool RealPredTick = false;
+	int PredictionTick = Client()->GetPredictionTick();
 	// predict
 	// prediction actually happens here
 
@@ -2339,17 +2349,20 @@ void CGameClient::OnPredict()
 	for(int Tick = Client()->GameTick(g_Config.m_ClDummy) + 1; Tick <= FinalTickSelf; Tick++)
 	{
 		// fetch the previous characters
-		if(Tick == FinalTickSelf)
-		{
-			m_PrevPredictedWorld.CopyWorld(&m_PredictedWorld);
-			m_PredictedPrevChar = pLocalChar->GetCore();
-			m_aClients[m_Snap.m_LocalClientId].m_PrevPredicted = pLocalChar->GetCore();
-		}
-		if(Tick == FinalTickOthers)
+		if(Tick == PredictionTick)
 		{
 			for(int i = 0; i < MAX_CLIENTS; i++)
 				if(CCharacter *pChar = m_PredictedWorld.GetCharacterById(i))
 					m_aClients[i].m_PrevPredicted = pChar->GetCore();
+		}
+
+		if(Tick == Client()->PredGameTick(g_Config.m_ClDummy))
+		{
+			m_PredictedPrevChar = pLocalChar->GetCore();
+			m_aClients[m_Snap.m_LocalClientId].m_PrevPredicted = pLocalChar->GetCore();
+
+			if(pDummyChar)
+				m_aClients[m_PredictedDummyId].m_PrevPredicted = pDummyChar->GetCore();
 		}
 
 		// optionally allow some movement in freeze by not predicting freeze the last one to two ticks
@@ -2358,7 +2371,7 @@ void CGameClient::OnPredict()
 
 		// apply inputs and tick
 		CNetObj_PlayerInput *pInputData = (CNetObj_PlayerInput *)Client()->GetInput(Tick, m_IsDummySwapping);
-		CNetObj_PlayerInput *pDummyInputData = !pDummyChar ? 0 : (CNetObj_PlayerInput *)Client()->GetInput(Tick, m_IsDummySwapping ^ 1);
+		CNetObj_PlayerInput *pDummyInputData = !pDummyChar ? nullptr : (CNetObj_PlayerInput *)Client()->GetInput(Tick, m_IsDummySwapping ^ 1);
 		bool DummyFirst = pInputData && pDummyInputData && pDummyChar->GetCid() < pLocalChar->GetCid();
 
 		if(g_Config.m_ClFastInput && Tick == FinalTickSelf)
@@ -2378,16 +2391,22 @@ void CGameClient::OnPredict()
 		m_PredictedWorld.Tick();
 
 		// fetch the current characters
-		if(Tick == FinalTickSelf)
+		if(Tick == PredictionTick)
 		{
-			m_PredictedChar = pLocalChar->GetCore();
-			m_aClients[m_Snap.m_LocalClientId].m_Predicted = pLocalChar->GetCore();
-		}
-		if(Tick == FinalTickOthers)
-		{
+			m_PrevPredictedWorld.CopyWorld(&m_PredictedWorld);
+
 			for(int i = 0; i < MAX_CLIENTS; i++)
 				if(CCharacter *pChar = m_PredictedWorld.GetCharacterById(i))
 					m_aClients[i].m_Predicted = pChar->GetCore();
+		}
+
+		if(Tick == Client()->PredGameTick(g_Config.m_ClDummy))
+		{
+			m_PredictedChar = pLocalChar->GetCore();
+			m_aClients[m_Snap.m_LocalClientId].m_Predicted = pLocalChar->GetCore();
+
+			if(pDummyChar)
+				m_aClients[m_PredictedDummyId].m_Predicted = pDummyChar->GetCore();
 		}
 
 		for(int i = 0; i < MAX_CLIENTS; i++)
@@ -3260,7 +3279,11 @@ void CGameClient::UpdatePrediction()
 
 	if(m_GameWorld.m_WorldConfig.m_UseTuneZones)
 	{
-		int TuneZone = Collision()->IsTune(Collision()->GetMapIndex(LocalCharPos));
+		int TuneZone =
+			m_Snap.m_aCharacters[m_Snap.m_LocalClientId].m_HasExtendedData &&
+					m_Snap.m_aCharacters[m_Snap.m_LocalClientId].m_ExtendedData.m_TuneZoneOverride != -1 ?
+				m_Snap.m_aCharacters[m_Snap.m_LocalClientId].m_ExtendedData.m_TuneZoneOverride :
+				Collision()->IsTune(Collision()->GetMapIndex(LocalCharPos));
 
 		if(TuneZone != m_aLocalTuneZone[g_Config.m_ClDummy])
 		{
@@ -3315,7 +3338,7 @@ void CGameClient::UpdatePrediction()
 	}
 
 	CCharacter *pLocalChar = m_GameWorld.GetCharacterById(m_Snap.m_LocalClientId);
-	CCharacter *pDummyChar = 0;
+	CCharacter *pDummyChar = nullptr;
 	if(PredictDummy())
 		pDummyChar = m_GameWorld.GetCharacterById(m_PredictedDummyId);
 
@@ -3355,7 +3378,7 @@ void CGameClient::UpdatePrediction()
 		for(int Tick = m_GameWorld.GameTick() + 1; Tick <= Client()->GameTick(g_Config.m_ClDummy); Tick++)
 		{
 			CNetObj_PlayerInput *pInput = (CNetObj_PlayerInput *)Client()->GetInput(Tick);
-			CNetObj_PlayerInput *pDummyInput = 0;
+			CNetObj_PlayerInput *pDummyInput = nullptr;
 			if(pDummyChar)
 				pDummyInput = (CNetObj_PlayerInput *)Client()->GetInput(Tick, 1);
 			if(pInput)
@@ -3405,7 +3428,7 @@ void CGameClient::UpdatePrediction()
 			bool IsLocal = (i == m_Snap.m_LocalClientId || (PredictDummy() && i == m_PredictedDummyId));
 			int GameTeam = IsTeamPlay() ? m_aClients[i].m_Team : i;
 			m_GameWorld.NetCharAdd(i, &m_Snap.m_aCharacters[i].m_Cur,
-				m_Snap.m_aCharacters[i].m_HasExtendedData ? &m_Snap.m_aCharacters[i].m_ExtendedData : 0,
+				m_Snap.m_aCharacters[i].m_HasExtendedData ? &m_Snap.m_aCharacters[i].m_ExtendedData : nullptr,
 				GameTeam, IsLocal);
 		}
 
@@ -4398,6 +4421,10 @@ static bool UnknownMapSettingCallback(const char *pCommand, void *pUser)
 
 void CGameClient::LoadMapSettings()
 {
+	IEngineMap *pMap = Kernel()->RequestInterface<IEngineMap>();
+
+	m_MapBugs = CMapBugs::Create(Client()->GetCurrentMap(), pMap->MapSize(), pMap->Sha256());
+
 	// Reset Tunezones
 	CTuningParams TuningParams;
 	for(int i = 0; i < NUM_TUNEZONES; i++)
@@ -4418,7 +4445,6 @@ void CGameClient::LoadMapSettings()
 	}
 
 	// Load map tunings
-	IMap *pMap = Kernel()->RequestInterface<IMap>();
 	int Start, Num;
 	pMap->GetType(MAPITEMTYPE_INFO, &Start, &Num);
 	for(int i = Start; i < Start + Num; i++)
@@ -4459,6 +4485,26 @@ void CGameClient::ConTuneZone(IConsole::IResult *pResult, void *pUserData)
 
 	if(List >= 0 && List < NUM_TUNEZONES)
 		pSelf->TuningList()[List].Set(pParamName, NewValue);
+}
+
+void CGameClient::ConMapbug(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameClient *pSelf = (CGameClient *)pUserData;
+	const char *pMapBugName = pResult->GetString(0);
+
+	switch(pSelf->m_MapBugs.Update(pMapBugName))
+	{
+	case EMapBugUpdate::OK:
+		break;
+	case EMapBugUpdate::OVERRIDDEN:
+		log_debug("mapbugs", "map-internal setting overridden by database");
+		break;
+	case EMapBugUpdate::NOTFOUND:
+		log_debug("mapbugs", "unknown map bug '%s', ignoring", pMapBugName);
+		break;
+	default:
+		dbg_assert(false, "unreachable");
+	}
 }
 
 void CGameClient::ConchainMenuMap(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
