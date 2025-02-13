@@ -221,7 +221,7 @@ protected:
 		m_FontSize = Data.m_FontSize;
 		CTextCursor Cursor;
 		This.TextRender()->SetCursor(&Cursor, 0.0f, 0.0f, m_FontSize, TEXTFLAG_RENDER);
-		This.TextRender()->CreateOrAppendTextContainer(m_TextContainerIndex, &Cursor, "❤️");
+		This.TextRender()->CreateOrAppendTextContainer(m_TextContainerIndex, &Cursor, "♥");
 	}
 
 public:
