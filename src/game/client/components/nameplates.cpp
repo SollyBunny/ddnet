@@ -244,6 +244,14 @@ protected:
 		if(!m_Visible)
 			return false;
 		m_Color = Data.m_Color;
+		// TClient
+		if(g_Config.m_ClWarList)
+		{ 
+			if(This.m_WarList.GetWarData(Data.m_ClientId).IsWarName)
+				m_Color = This.m_WarList.GetNameplateColor(Data.m_ClientId).WithAlpha(Data.m_Color.a);
+			else if(This.m_WarList.GetWarData(Data.m_ClientId).IsWarClan)
+				m_Color = This.m_WarList.GetClanColor(Data.m_ClientId).WithAlpha(Data.m_Color.a);
+		}
 		return m_FontSize != Data.m_FontSize || str_comp(m_aText, Data.m_pName) != 0;
 	}
 	void UpdateText(CGameClient &This, const CNamePlateRenderData &Data) override
@@ -275,6 +283,9 @@ protected:
 		if(!m_Visible)
 			return false;
 		m_Color = Data.m_Color;
+		// TClient
+		if(This.m_WarList.GetWarData(Data.m_ClientId).IsWarClan)
+			m_Color = This.m_WarList.GetClanColor(Data.m_ClientId).WithAlpha(Data.m_Color.a);
 		return m_FontSize != Data.m_FontSizeClan || str_comp(m_aText, Data.m_pClan) != 0;
 	}
 	void UpdateText(CGameClient &This, const CNamePlateRenderData &Data) override
@@ -420,6 +431,116 @@ public:
 	}
 };
 
+class CNamePlatePartSkin : public CNamePlatePartText {
+	private:
+	char m_aText[MAX_CLAN_LENGTH] = "";
+	float m_FontSize = -INFINITY;
+
+protected:
+	bool UpdateNeeded(CGameClient &This, const CNamePlateRenderData &Data) override
+	{
+		m_Visible = Data.m_InGame
+			? g_Config.m_ClShowSkinName > (This.m_Snap.m_apPlayerInfos[Data.m_ClientId]->m_Local ? 1 : 0)
+			: g_Config.m_ClShowSkinName > 0;
+		if(!m_Visible)
+			return false;
+		m_Color = Data.m_Color;
+		const char *pSkin = Data.m_InGame
+			? This.m_aClients[Data.m_ClientId].m_aSkinName
+			: (Data.m_ClientId == 0 ? g_Config.m_ClPlayerSkin : g_Config.m_ClDummySkin);
+		return m_FontSize != Data.m_FontSizeClan || str_comp(m_aText, pSkin) != 0;
+	}
+	void UpdateText(CGameClient &This, const CNamePlateRenderData &Data) override
+	{
+		m_FontSize = Data.m_FontSizeClan;
+		const char *pSkin = Data.m_InGame
+			? This.m_aClients[Data.m_ClientId].m_aSkinName
+			: (Data.m_ClientId == 0 ? g_Config.m_ClPlayerSkin : g_Config.m_ClDummySkin);
+		str_copy(m_aText, pSkin, sizeof(m_aText));
+		CTextCursor Cursor;
+		This.TextRender()->SetCursor(&Cursor, 0.0f, 0.0f, m_FontSize, TEXTFLAG_RENDER);
+		This.TextRender()->CreateOrAppendTextContainer(m_TextContainerIndex, &Cursor, m_aText);
+	}
+
+public:
+	void Create(CGameClient &This)
+	{
+		CNamePlatePartText::Create(This);
+	}
+};
+
+class CNamePlatePartReason : public CNamePlatePartText {
+	private:
+	char m_aText[MAX_CLAN_LENGTH] = "";
+	float m_FontSize = -INFINITY;
+
+protected:
+	bool UpdateNeeded(CGameClient &This, const CNamePlateRenderData &Data) override
+	{
+		m_Visible = Data.m_InGame;
+		if(!m_Visible)
+			return false;
+		const char *pReason = This.m_WarList.GetWarData(Data.m_ClientId).m_aReason;
+		m_Visible = pReason[0] != '\0'
+			&& !This.m_Snap.m_apPlayerInfos[Data.m_ClientId]->m_Local;
+		if(!m_Visible)
+			return false;
+		m_Color = Data.m_Color;
+		return m_FontSize != Data.m_FontSizeClan || str_comp(m_aText, pReason) != 0;
+	}
+	void UpdateText(CGameClient &This, const CNamePlateRenderData &Data) override
+	{
+		m_FontSize = Data.m_FontSizeClan;
+		const char *pReason = This.m_WarList.GetWarData(Data.m_ClientId).m_aReason;
+		str_copy(m_aText, pReason, sizeof(m_aText));
+		CTextCursor Cursor;
+		This.TextRender()->SetCursor(&Cursor, 0.0f, 0.0f, m_FontSize, TEXTFLAG_RENDER);
+		This.TextRender()->CreateOrAppendTextContainer(m_TextContainerIndex, &Cursor, m_aText);
+	}
+
+public:
+	void Create(CGameClient &This)
+	{
+		CNamePlatePartText::Create(This);
+	}
+};
+
+class CNamePlatePartIgnoreMark : public CNamePlatePartText
+{
+private:
+	float m_FontSize = -INFINITY;
+
+protected:
+	bool UpdateNeeded(CGameClient &This, const CNamePlateRenderData &Data) override
+	{
+		m_Visible = (
+			Data.m_InGame
+			&& Data.m_ShowName
+			&& This.Client()->State() != IClient::STATE_DEMOPLAYBACK
+			&& (This.m_aClients[Data.m_ClientId].m_Foe || This.m_aClients[Data.m_ClientId].m_ChatIgnore)
+		);
+		if(!m_Visible)
+			return false;
+		m_Color = ColorRGBA(1.0f, 1.0f, 1.0f, Data.m_Alpha);
+		return m_FontSize != Data.m_FontSize;
+	}
+	void UpdateText(CGameClient &This, const CNamePlateRenderData &Data) override
+	{
+		m_FontSize = Data.m_FontSize;
+		CTextCursor Cursor;
+		This.TextRender()->SetFontPreset(EFontPreset::ICON_FONT);
+		This.TextRender()->SetCursor(&Cursor, 0.0f, 0.0f, m_FontSize, TEXTFLAG_RENDER);
+		This.TextRender()->CreateOrAppendTextContainer(m_TextContainerIndex, &Cursor, FontIcons::FONT_ICON_COMMENT_SLASH);
+		This.TextRender()->SetFontPreset(EFontPreset::DEFAULT_FONT);
+	}
+
+public:
+	void Create(CGameClient &This)
+	{
+		CNamePlatePartText::Create(This);
+	}
+};
+
 // Name plate
 
 void CNamePlate::RenderLine(CGameClient &This, const CNamePlateRenderData &Data,
@@ -465,11 +586,16 @@ void CNamePlate::Init(CGameClient &This)
 	AddPart<CNamePlatePartDirection>(This, 2);
 	AddPart<CNamePlatePartNewLine>(This);
 	AddPart<CNamePlatePartPing>(This); // TClient
+	AddPart<CNamePlatePartIgnoreMark>(This); // TClient
 	AddPart<CNamePlatePartFriendMark>(This);
 	AddPart<CNamePlatePartClientId>(This, false);
 	AddPart<CNamePlatePartName>(This);
 	AddPart<CNamePlatePartNewLine>(This);
 	AddPart<CNamePlatePartClan>(This);
+	AddPart<CNamePlatePartNewLine>(This); // TClient
+	AddPart<CNamePlatePartReason>(This); // TClient
+	AddPart<CNamePlatePartNewLine>(This); // TClient
+	AddPart<CNamePlatePartSkin>(This); // TClient
 	AddPart<CNamePlatePartNewLine>(This);
 	AddPart<CNamePlatePartClientId>(This, true);
 	AddPart<CNamePlatePartNewLine>(This);
@@ -661,6 +787,10 @@ void CNamePlates::RenderNamePlateGame(vec2 Position, const CNetObj_PlayerInfo *p
 			}
 		}
 	}
+
+	// TClient
+	if(g_Config.m_ClWarList && g_Config.m_ClWarListShowClan && GameClient()->m_WarList.GetWarData(pPlayerInfo->m_ClientId).IsWarClan)
+		Data.m_ShowClan = true;
 
 	GameClient()->m_NamePlates.RenderNamePlate(m_aNamePlates[pPlayerInfo->m_ClientId], Data);
 }

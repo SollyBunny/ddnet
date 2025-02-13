@@ -193,7 +193,7 @@ public:
 	bool GetClanWar(int ClientId);
 
 	void GetReason(char *pReason, int ClientId);
-	CWarDataCache GetWarData(int ClientId);
+	CWarDataCache &GetWarData(int ClientId);
 
 	void SortWarEntries();
 
