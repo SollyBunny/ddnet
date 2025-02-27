@@ -5,7 +5,7 @@ class STrailPart
 {
 public:
 	vec2 Pos = vec2(0, 0);
-	vec2 UnmovedPos = vec2(0, 0);
+	vec2 Speed = vec2(0, 0);
 	ColorRGBA Col = {};
 	float Width = 0.0f;
 	vec2 Normal = vec2(0, 0);

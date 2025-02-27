@@ -95,8 +95,9 @@ void CTrails::OnRender()
 			IntraTick = Client()->IntraGameTick(g_Config.m_ClDummy);
 		}
 
-		vec2 CurServerPos = vec2(GameClient()->m_Snap.m_aCharacters[ClientId].m_Cur.m_X, GameClient()->m_Snap.m_aCharacters[ClientId].m_Cur.m_Y);
+		vec2 CurServerPos = temp;
 		vec2 PrevServerPos = vec2(GameClient()->m_Snap.m_aCharacters[ClientId].m_Prev.m_X, GameClient()->m_Snap.m_aCharacters[ClientId].m_Prev.m_Y);
+		vec2 CurServerSpeed = 
 		m_History[ClientId][GameTick % 200] = {
 			mix(PrevServerPos, CurServerPos, IntraTick),
 			GameTick,
@@ -136,6 +137,7 @@ void CTrails::OnRender()
 				if(GameClient()->m_aClients[ClientId].m_aPredTick[PosTick % 200] != PosTick)
 					continue;
 				Part.Pos = GameClient()->m_aClients[ClientId].m_aPredPos[PosTick % 200];
+				Part.Speed = GameClient()->m_aClients[ClientId].[PosTick % 200];
 				if(i == TrailLength - 1)
 					TrailFull = true;
 			}
@@ -147,7 +149,6 @@ void CTrails::OnRender()
 				if(i == TrailLength - 2 || i == TrailLength - 3)
 					TrailFull = true;
 			}
-			Part.UnmovedPos = Part.Pos;
 			Part.Tick = PosTick;
 			s_Trail.push_back(Part);
 		}
@@ -208,9 +209,9 @@ void CTrails::OnRender()
 					if(s_Trail.size() > 3)
 					{
 						if(i < 2)
-							Speed = distance(s_Trail.at(i + 2).UnmovedPos, Part.UnmovedPos) / std::abs(s_Trail.at(i + 2).Tick - Part.Tick);
+							Speed = distance(s_Trail.at(i + 1).UnmovedPos, Part.UnmovedPos) / std::abs(s_Trail.at(i + 1).Tick - Part.Tick);
 						else
-							Speed = distance(Part.UnmovedPos, s_Trail.at(i - 2).UnmovedPos) / std::abs(Part.Tick - s_Trail.at(i - 2).Tick);
+							Speed = distance(Part.UnmovedPos, s_Trail.at(i - 1).UnmovedPos) / std::abs(Part.Tick - s_Trail.at(i - 1).Tick);
 					}
 					Part.Col = color_cast<ColorRGBA>(ColorHSLA(65280 * ((int)(Speed * Speed / 12.5f) + 1)).UnclampLighting(ColorHSLA::DARKEST_LGT));
 					break;
@@ -314,12 +315,26 @@ void CTrails::OnRender()
 			Graphics()->TrianglesBegin();
 
 		// Draw the trail
+		float SpeedLast;
 		for(int i = 0; i < (int)s_Trail.size() - 1; i++)
 		{
 			const STrailPart &Part = s_Trail.at(i);
 			const STrailPart &NextPart = s_Trail.at(i + 1);
-			if(distance(Part.Pos, NextPart.Pos) > 120.0f)
+
+			float Speed = 0.0f;
+			if(s_Trail.size() > 3)
+			{
+				if(i < 2)
+					Speed = distance(s_Trail.at(i + 1).UnmovedPos, Part.UnmovedPos) / std::abs(s_Trail.at(i + 1).Tick - Part.Tick);
+				else
+					Speed = distance(Part.UnmovedPos, s_Trail.at(i - 1).UnmovedPos) / std::abs(Part.Tick - s_Trail.at(i - 1).Tick);
+			}
+			if(i > 0 && fabs(Speed - SpeedLast) > 30.0f)
+			{
+				SpeedLast = Speed;
 				continue;
+			}
+			SpeedLast = Speed;
 
 			if(LineMode)
 			{
