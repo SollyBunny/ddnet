@@ -395,7 +395,7 @@ int CMenus::DoLine_RadioMenu(CUIRect &View, const char *pLabel, const std::vecto
 			Corner = IGraphics::CORNER_L;
 		if(i == N - 1)
 			Corner = IGraphics::CORNER_R;
-		int PressedTemp = DoButton_Menu((CButtonContainer*)((unsigned char*)pLabel + i) , vLabels[i], vValues[i] == Value, &Button, nullptr, Corner);
+		int PressedTemp = DoButton_Menu((CButtonContainer*)((unsigned char*)pLabel + i) , vLabels[i], vValues[i] == Value, &Button, 0, nullptr, Corner);
 		if(PressedTemp)
 		{
 			Value = vValues[i];
