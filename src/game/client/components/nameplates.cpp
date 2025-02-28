@@ -4,9 +4,9 @@
 
 #include <game/generated/client_data.h>
 
+#include <game/client/animstate.h>
 #include <game/client/gameclient.h>
 #include <game/client/prediction/entities/character.h>
-#include <game/client/animstate.h>
 
 #include <memory>
 #include <vector>
@@ -452,7 +452,7 @@ private:
 		}
 	}
 	template<typename PartType, typename... ArgsType>
-	void AddPart(CGameClient &This, ArgsType &&... Args)
+	void AddPart(CGameClient &This, ArgsType &&...Args)
 	{
 		std::unique_ptr<PartType> Part = std::make_unique<PartType>();
 		Part->Create(This, std::forward<ArgsType>(Args)...);
@@ -776,7 +776,8 @@ void CNamePlates::RenderNamePlatePreview(vec2 Position, int Dummy)
 	vec2 Dir = (Ui()->MousePos() - Data.m_Position);
 	Dir /= TeeRenderInfo.m_Size;
 	const float Length = length(Dir);
-	if(Length > 1.0f) Dir /= Length;
+	if(Length > 1.0f)
+		Dir /= Length;
 	RenderTools()->RenderTee(CAnimState::GetIdle(), &TeeRenderInfo, 0, Dir, Data.m_Position);
 	Data.m_Position.y -= (float)g_Config.m_ClNamePlatesOffset;
 	NamePlate.Render(*GameClient(), &Data);

@@ -1034,8 +1034,8 @@ float CMenus::RenderSettingsControlsJoystick(CUIRect View)
 			}
 
 			DoLine_RadioMenu(View, Localize("Ingame controller mode"),
-				{ Localize("Relative", "Ingame controller mode"), Localize("Absolute", "Ingame controller mode") },
-				{ 0, 1 },
+				{Localize("Relative", "Ingame controller mode"), Localize("Absolute", "Ingame controller mode")},
+				{0, 1},
 				g_Config.m_InpControllerAbsolute);
 
 			if(!g_Config.m_InpControllerAbsolute)
@@ -2800,10 +2800,10 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 		// General name plate settings
 		{
 			int Pressed = (g_Config.m_ClNamePlates ? 2 : 0) + (g_Config.m_ClNamePlatesOwn ? 1 : 0);
-			if (DoLine_RadioMenu(LeftView, Localize("Show name plates"),
-				{ Localize("None", "Show name plates"), Localize("Own", "Show name plates"), Localize("Others", "Show name plates"), Localize("All", "Show name plates") },
-				{ 0, 1, 2, 3 },
-				Pressed))
+			if(DoLine_RadioMenu(LeftView, Localize("Show name plates"),
+				   {Localize("None", "Show name plates"), Localize("Own", "Show name plates"), Localize("Others", "Show name plates"), Localize("All", "Show name plates")},
+				   {0, 1, 2, 3},
+				   Pressed))
 			{
 				g_Config.m_ClNamePlates = Pressed & 2 ? 1 : 0;
 				g_Config.m_ClNamePlatesOwn = Pressed & 1 ? 1 : 0;
@@ -2823,10 +2823,10 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClNamePlatesFriendMark, Localize("Show friend mark (♥) in name plates"), &g_Config.m_ClNamePlatesFriendMark, &LeftView, LineSize);
 		{
 			int Pressed = g_Config.m_ClNamePlatesIds ? (g_Config.m_ClNamePlatesIdsSeperateLine ? 2 : 1) : 0;
-			if (DoLine_RadioMenu(LeftView, Localize("Show IDs in name plates"),
-				{ Localize("No", "Show IDs in name plates"), Localize("Yes", "Show IDs in name plates"), Localize("Seperate line", "Show name plates") },
-				{ 0, 1, 2 },
-				Pressed))
+			if(DoLine_RadioMenu(LeftView, Localize("Show IDs in name plates"),
+				   {Localize("No", "Show IDs in name plates"), Localize("Yes", "Show IDs in name plates"), Localize("Seperate line", "Show name plates")},
+				   {0, 1, 2},
+				   Pressed))
 			{
 				g_Config.m_ClNamePlatesIds = Pressed > 0 ? 1 : 0;
 				g_Config.m_ClNamePlatesIdsSeperateLine = Pressed == 2;
@@ -2843,8 +2843,8 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 		LeftView.HSplitTop(MarginSmall, nullptr, &LeftView);
 
 		DoLine_RadioMenu(LeftView, Localize("Show hook strength"),
-			{ Localize("No", "Show hook strength"), Localize("Icon", "Show hook strength"), Localize("Icon and number", "Show hook strength") },
-			{ 0, 1, 2 },
+			{Localize("No", "Show hook strength"), Localize("Icon", "Show hook strength"), Localize("Icon and number", "Show hook strength")},
+			{0, 1, 2},
 			g_Config.m_ClNamePlatesStrong);
 		LeftView.HSplitTop(LineSize, &Button, &LeftView);
 		if(g_Config.m_ClNamePlatesStrong > 0)
@@ -2857,8 +2857,8 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 		LeftView.HSplitTop(MarginSmall, nullptr, &LeftView);
 
 		DoLine_RadioMenu(LeftView, Localize("Show players' key presses"),
-			{ Localize("None", "Show players' key presses"), Localize("Own", "Show players' key presses"), Localize("Others", "Show players' key presses"), Localize("All", "Show players' key presses") },
-			{ 0, 3, 1, 2 },
+			{Localize("None", "Show players' key presses"), Localize("Own", "Show players' key presses"), Localize("Others", "Show players' key presses"), Localize("All", "Show players' key presses")},
+			{0, 3, 1, 2},
 			g_Config.m_ClShowDirection);
 
 		LeftView.HSplitTop(LineSize, &Button, &LeftView);
