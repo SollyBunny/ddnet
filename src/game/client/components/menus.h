@@ -83,7 +83,7 @@ class CMenus : public CComponent
 	int DoButton_CheckBoxAutoVMarginAndSet(const void *pId, const char *pText, int *pValue, CUIRect *pRect, float VMargin);
 	int DoButton_CheckBox_Number(const void *pId, const char *pText, int Checked, const CUIRect *pRect);
 
-	int DoLine_RadioMenu(CUIRect &View, const char *pLabel, const std::vector<const char *> vLabels, const std::vector<int> vValues, int &Value);
+	int DoLine_RadioMenu(CUIRect &View, const char *pLabel, const std::vector<const char *> &vLabels, const std::vector<int> &vValues, int &Value);
 
 	ColorHSLA DoLine_ColorPicker(CButtonContainer *pResetId, float LineSize, float LabelSize, float BottomMargin, CUIRect *pMainRect, const char *pText, unsigned int *pColorValue, ColorRGBA DefaultColor, bool CheckBoxSpacing = true, int *pCheckBoxValue = nullptr, bool Alpha = false);
 	ColorHSLA DoButton_ColorPicker(const CUIRect *pRect, unsigned int *pHslaColor, bool Alpha);

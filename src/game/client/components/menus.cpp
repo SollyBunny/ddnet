@@ -372,7 +372,7 @@ void CMenus::DoLaserPreview(const CUIRect *pRect, const ColorHSLA LaserOutlineCo
 	}
 }
 
-int CMenus::DoLine_RadioMenu(CUIRect &View, const char *pLabel, const std::vector<const char *> vLabels, const std::vector<int> vValues, int &Value)
+int CMenus::DoLine_RadioMenu(CUIRect &View, const char *pLabel, const std::vector<const char *> &vLabels, const std::vector<int> &vValues, int &Value)
 {
 	dbg_assert(vLabels.size() == vValues.size(), "vLabels and vValues must have the same size");
 	const int N = vLabels.size();
