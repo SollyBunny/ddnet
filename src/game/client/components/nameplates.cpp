@@ -475,13 +475,14 @@ private:
 		AddPart<CNamePlatePartClientId>(This, true);
 		AddPart<CNamePlatePartNewLine>(This);
 
+		AddPart<CNamePlatePartHookStrongWeak>(This);
+		AddPart<CNamePlatePartHookStrongWeakId>(This);
+
 		AddPart<CNamePlatePartDirection>(This, DIRECTION_LEFT);
 		AddPart<CNamePlatePartDirection>(This, DIRECTION_UP);
 		AddPart<CNamePlatePartDirection>(This, DIRECTION_RIGHT);
 		AddPart<CNamePlatePartNewLine>(This);
 
-		AddPart<CNamePlatePartHookStrongWeak>(This);
-		AddPart<CNamePlatePartHookStrongWeakId>(This);
 	}
 	void Update(CGameClient &This, const CNamePlateRenderData *pData)
 	{
