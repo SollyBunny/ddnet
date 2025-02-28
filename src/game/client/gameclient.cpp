@@ -3709,7 +3709,7 @@ void CGameClient::UpdateRenderedCharacters()
 
 			if(g_Config.m_ClRemoveAnti)
 				Pos = GetFreezePos(i);
-			
+
 			if(i == m_Snap.m_LocalClientId)
 			{
 				m_aClients[i].m_IsPredictedLocal = true;

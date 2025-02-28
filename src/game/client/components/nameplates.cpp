@@ -246,7 +246,7 @@ protected:
 		m_Color = Data.m_Color;
 		// TClient
 		if(g_Config.m_ClWarList)
-		{ 
+		{
 			if(This.m_WarList.GetWarData(Data.m_ClientId).IsWarName)
 				m_Color = This.m_WarList.GetNameplateColor(Data.m_ClientId).WithAlpha(Data.m_Color.a);
 			else if(This.m_WarList.GetWarData(Data.m_ClientId).IsWarClan)
@@ -388,7 +388,8 @@ public:
 
 // Part Types TClient
 
-class CNamePlatePartPing : public CNamePlatePart {
+class CNamePlatePartPing : public CNamePlatePart
+{
 protected:
 	float m_Radius = 7.0f;
 	ColorRGBA m_Color;
@@ -406,13 +407,10 @@ public:
 				Show ping if ping circle and name enabled
 		*/
 		m_Visible = Data.m_InGame ? (
-			This.Client()->State() != IClient::STATE_DEMOPLAYBACK && (
-				(Data.m_ShowName && g_Config.m_ClPingNameCircle > 0) ||
-				(This.m_Scoreboard.IsActive() && !This.m_Snap.m_apPlayerInfos[Data.m_ClientId]->m_Local)
-			)
-		) : (
-			(Data.m_ShowName && g_Config.m_ClPingNameCircle > 0)
-		);
+						    This.Client()->State() != IClient::STATE_DEMOPLAYBACK && ((Data.m_ShowName && g_Config.m_ClPingNameCircle > 0) ||
+														     (This.m_Scoreboard.IsActive() && !This.m_Snap.m_apPlayerInfos[Data.m_ClientId]->m_Local))) :
+					    (
+						    (Data.m_ShowName && g_Config.m_ClPingNameCircle > 0));
 		if(!m_Visible)
 			return;
 		int ping = Data.m_InGame ? This.m_Snap.m_apPlayerInfos[Data.m_ClientId]->m_Latency : (1 + Data.m_ClientId) * 25;
@@ -426,36 +424,32 @@ public:
 		This.Graphics()->DrawCircle(X, Y, m_Radius, 24);
 		This.Graphics()->QuadsEnd();
 	}
-	void Create(CGameClient &This) {
+	void Create(CGameClient &This)
+	{
 		m_Width = m_Height = m_Radius * 2.0f;
 	}
 };
 
-class CNamePlatePartSkin : public CNamePlatePartText {
-	private:
+class CNamePlatePartSkin : public CNamePlatePartText
+{
+private:
 	char m_aText[MAX_CLAN_LENGTH] = "";
 	float m_FontSize = -INFINITY;
 
 protected:
 	bool UpdateNeeded(CGameClient &This, const CNamePlateRenderData &Data) override
 	{
-		m_Visible = Data.m_InGame
-			? g_Config.m_ClShowSkinName > (This.m_Snap.m_apPlayerInfos[Data.m_ClientId]->m_Local ? 1 : 0)
-			: g_Config.m_ClShowSkinName > 0;
+		m_Visible = Data.m_InGame ? g_Config.m_ClShowSkinName > (This.m_Snap.m_apPlayerInfos[Data.m_ClientId]->m_Local ? 1 : 0) : g_Config.m_ClShowSkinName > 0;
 		if(!m_Visible)
 			return false;
 		m_Color = Data.m_Color;
-		const char *pSkin = Data.m_InGame
-			? This.m_aClients[Data.m_ClientId].m_aSkinName
-			: (Data.m_ClientId == 0 ? g_Config.m_ClPlayerSkin : g_Config.m_ClDummySkin);
+		const char *pSkin = Data.m_InGame ? This.m_aClients[Data.m_ClientId].m_aSkinName : (Data.m_ClientId == 0 ? g_Config.m_ClPlayerSkin : g_Config.m_ClDummySkin);
 		return m_FontSize != Data.m_FontSizeClan || str_comp(m_aText, pSkin) != 0;
 	}
 	void UpdateText(CGameClient &This, const CNamePlateRenderData &Data) override
 	{
 		m_FontSize = Data.m_FontSizeClan;
-		const char *pSkin = Data.m_InGame
-			? This.m_aClients[Data.m_ClientId].m_aSkinName
-			: (Data.m_ClientId == 0 ? g_Config.m_ClPlayerSkin : g_Config.m_ClDummySkin);
+		const char *pSkin = Data.m_InGame ? This.m_aClients[Data.m_ClientId].m_aSkinName : (Data.m_ClientId == 0 ? g_Config.m_ClPlayerSkin : g_Config.m_ClDummySkin);
 		str_copy(m_aText, pSkin, sizeof(m_aText));
 		CTextCursor Cursor;
 		This.TextRender()->SetCursor(&Cursor, 0.0f, 0.0f, m_FontSize, TEXTFLAG_RENDER);
@@ -469,8 +463,9 @@ public:
 	}
 };
 
-class CNamePlatePartReason : public CNamePlatePartText {
-	private:
+class CNamePlatePartReason : public CNamePlatePartText
+{
+private:
 	char m_aText[MAX_CLAN_LENGTH] = "";
 	float m_FontSize = -INFINITY;
 
@@ -481,8 +476,7 @@ protected:
 		if(!m_Visible)
 			return false;
 		const char *pReason = This.m_WarList.GetWarData(Data.m_ClientId).m_aReason;
-		m_Visible = pReason[0] != '\0'
-			&& !This.m_Snap.m_apPlayerInfos[Data.m_ClientId]->m_Local;
+		m_Visible = pReason[0] != '\0' && !This.m_Snap.m_apPlayerInfos[Data.m_ClientId]->m_Local;
 		if(!m_Visible)
 			return false;
 		m_Color = Data.m_Color;
@@ -513,12 +507,7 @@ private:
 protected:
 	bool UpdateNeeded(CGameClient &This, const CNamePlateRenderData &Data) override
 	{
-		m_Visible = (
-			Data.m_InGame
-			&& Data.m_ShowName
-			&& This.Client()->State() != IClient::STATE_DEMOPLAYBACK
-			&& (This.m_aClients[Data.m_ClientId].m_Foe || This.m_aClients[Data.m_ClientId].m_ChatIgnore)
-		);
+		m_Visible = (Data.m_InGame && Data.m_ShowName && This.Client()->State() != IClient::STATE_DEMOPLAYBACK && (This.m_aClients[Data.m_ClientId].m_Foe || This.m_aClients[Data.m_ClientId].m_ChatIgnore));
 		if(!m_Visible)
 			return false;
 		m_Color = ColorRGBA(1.0f, 1.0f, 1.0f, Data.m_Alpha);
