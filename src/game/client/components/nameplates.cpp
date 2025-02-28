@@ -452,7 +452,7 @@ private:
 		}
 	}
 	template<typename PartType, typename... ArgsType>
-	void AddPart(CGameClient &This, ArgsType &&...Args)
+	void AddPart(CGameClient &This, ArgsType &&... Args)
 	{
 		std::unique_ptr<PartType> Part = std::make_unique<PartType>();
 		Part->Create(This, std::forward<ArgsType>(Args)...);
