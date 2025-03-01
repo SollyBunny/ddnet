@@ -246,7 +246,11 @@ bool CInput::CJoystick::Relative(float *pX, float *pY)
 	if(!Input()->m_MouseFocus || !Input()->m_InputGrabbed || !g_Config.m_InpControllerEnable)
 		return false;
 
-	const vec2 RawJoystickPos = vec2(GetAxisValue(g_Config.m_InpControllerX), GetAxisValue(g_Config.m_InpControllerY));
+	vec2 RawJoystickPos = vec2(GetAxisValue(g_Config.m_InpControllerX), GetAxisValue(g_Config.m_InpControllerY));
+	if(g_Config.m_InpControllerXInverted)
+		RawJoystickPos.x  *= -1.0f;
+	if(g_Config.m_InpControllerYInverted)
+		RawJoystickPos.y *= -1.0f;
 	const float Len = length(RawJoystickPos);
 	const float DeadZone = Input()->GetJoystickDeadzone();
 	if(Len > DeadZone)
@@ -264,7 +268,11 @@ bool CInput::CJoystick::Absolute(float *pX, float *pY)
 	if(!Input()->m_MouseFocus || !Input()->m_InputGrabbed || !g_Config.m_InpControllerEnable)
 		return false;
 
-	const vec2 RawJoystickPos = vec2(GetAxisValue(g_Config.m_InpControllerX), GetAxisValue(g_Config.m_InpControllerY));
+	vec2 RawJoystickPos = vec2(GetAxisValue(g_Config.m_InpControllerX), GetAxisValue(g_Config.m_InpControllerY));
+	if(g_Config.m_InpControllerXInverted)
+		RawJoystickPos.x  *= -1.0f;
+	if(g_Config.m_InpControllerYInverted)
+		RawJoystickPos.y *= -1.0f;
 	const float DeadZone = Input()->GetJoystickDeadzone();
 	if(dot(RawJoystickPos, RawJoystickPos) > DeadZone * DeadZone)
 	{

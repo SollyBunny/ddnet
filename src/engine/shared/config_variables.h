@@ -428,6 +428,8 @@ MACRO_CONFIG_INT(InpControllerAbsolute, inp_controller_absolute, 0, 0, 1, CFGFLA
 MACRO_CONFIG_INT(InpControllerSens, inp_controller_sens, 100, 1, 100000, CFGFLAG_SAVE | CFGFLAG_CLIENT, "Ingame controller sensitivity")
 MACRO_CONFIG_INT(InpControllerX, inp_controller_x, 0, 0, 12, CFGFLAG_SAVE | CFGFLAG_CLIENT, "Controller axis that controls X axis of cursor")
 MACRO_CONFIG_INT(InpControllerY, inp_controller_y, 1, 0, 12, CFGFLAG_SAVE | CFGFLAG_CLIENT, "Controller axis that controls Y axis of cursor")
+MACRO_CONFIG_INT(InpControllerXInverted, inp_controller_x_inverted, 0, 0, 1, CFGFLAG_SAVE | CFGFLAG_CLIENT, "If 1, inverts the controller axis that controls X axis of cursor")
+MACRO_CONFIG_INT(InpControllerYInverted, inp_controller_y_inverted, 0, 0, 1, CFGFLAG_SAVE | CFGFLAG_CLIENT, "If 1, inverts the controller axis that controls Y axis of cursor")
 MACRO_CONFIG_INT(InpControllerTolerance, inp_controller_tolerance, 5, 0, 50, CFGFLAG_SAVE | CFGFLAG_CLIENT, "Controller axis tolerance to account for jitter")
 
 MACRO_CONFIG_INT(ClPort, cl_port, 0, 0, 65535, CFGFLAG_SAVE | CFGFLAG_CLIENT, "Port to use for client connections to server (0 to choose a random port, 1024 or higher to set a manual port, requires a restart)")

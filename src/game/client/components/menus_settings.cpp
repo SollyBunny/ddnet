@@ -971,6 +971,7 @@ float CMenus::RenderSettingsControlsJoystick(CUIRect View)
 		if(NumJoysticks > 0)
 		{
 			NumOptions += 3; // mode, ui sens, tolerance
+			NumOptions += 2; // aim inverted
 			if(!g_Config.m_InpControllerAbsolute)
 				NumOptions++; // ingame sens
 			NumOptions += Input()->GetActiveJoystick()->GetNumAxes() + 1; // axis selection + header
@@ -1067,6 +1068,13 @@ float CMenus::RenderSettingsControlsJoystick(CUIRect View)
 			View.HSplitTop(Spacing, nullptr, &View);
 			View.HSplitTop(ButtonHeight, &Button, &View);
 			Ui()->DoScrollbarOption(&g_Config.m_InpControllerTolerance, &g_Config.m_InpControllerTolerance, &Button, Localize("Controller jitter tolerance"), 0, 50);
+
+			View.HSplitTop(ButtonHeight, &Button, &View);
+			if(DoButton_CheckBox(&g_Config.m_InpControllerXInverted, "X Axis Inverted", g_Config.m_InpControllerXInverted == 1, &Button))
+				g_Config.m_InpControllerXInverted = 1 - g_Config.m_InpControllerXInverted;
+			View.HSplitTop(ButtonHeight, &Button, &View);
+			if(DoButton_CheckBox(&g_Config.m_InpControllerYInverted, "Y Axis Inverted", g_Config.m_InpControllerYInverted == 1, &Button))
+				g_Config.m_InpControllerYInverted = 1 - g_Config.m_InpControllerYInverted;
 
 			View.HSplitTop(Spacing, nullptr, &View);
 			View.Draw(ColorRGBA(0.0f, 0.0f, 0.0f, 0.125f), IGraphics::CORNER_ALL, 5.0f);
