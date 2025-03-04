@@ -154,10 +154,6 @@ public:
 	{
 	};
 
-	struct SCustomConsole : public SCustomItem
-	{
-	};
-
 protected:
 	std::vector<SCustomEntities> m_vEntitiesList;
 	std::vector<SCustomGame> m_vGameList;
@@ -165,8 +161,6 @@ protected:
 	std::vector<SCustomParticle> m_vParticlesList;
 	std::vector<SCustomHud> m_vHudList;
 	std::vector<SCustomExtras> m_vExtrasList;
-
-	std::vector<SCustomConsole> m_vConsoleList;
 
 	bool m_IsInit = false;
 
