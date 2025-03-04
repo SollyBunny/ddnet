@@ -1679,7 +1679,6 @@ set(EXPECTED_DATA
         themes/winter_night.map
         touch_controls.json
         wordlist.txt
-        custom_console.png
 
 )
 
@@ -1893,6 +1892,7 @@ set_src(ENGINE_SHARED GLOB_RECURSE src/engine/shared
         config.cpp
         config.h
         config_variables.h
+        config_pulse.h
         console.cpp
         console.h
         csv.cpp
