@@ -26,7 +26,9 @@ class CCharacter : public CEntity
 {
 	MACRO_ALLOC_POOL_ID()
 
-	friend class CSaveTee; // need to use core
+	// need to use core
+	friend class CSaveTee;
+	friend class CSaveHotReloadTee;
 
 public:
 	CCharacter(CGameWorld *pWorld, CNetObj_PlayerInput LastInput);
@@ -195,7 +197,7 @@ public:
 	void ResetJumps();
 	int m_DDRaceState;
 	int Team();
-	bool CanCollide(int ClientId);
+	bool CanCollide(int ClientId) override;
 	bool SameTeam(int ClientId);
 	void StopRecording();
 	bool m_NinjaJetpack;

@@ -2130,6 +2130,7 @@ if(CLIENT)
           input.cpp
           input.h
           keynames.h
+          keynames.cpp
           notifications.cpp
           notifications.h
           serverbrowser.cpp
@@ -2380,7 +2381,7 @@ if(CLIENT)
 
           ${VULKAN_LIBRARIES}
 
-    ${TARGET_STEAMAPI}
+          ${TARGET_STEAMAPI}
 
           ${PLATFORM_CLIENT_LIBS}
           ${LIBS}
@@ -2411,23 +2412,23 @@ if(CLIENT)
   # Target
   if(TARGET_OS STREQUAL "android")
     add_library(game-client SHARED
-      ${CLIENT_SRC}
-      ${CLIENT_ICON}
-      ${CLIENT_MANIFEST}
-      ${DEPS_CLIENT}
-      $<TARGET_OBJECTS:engine-gfx>
-      $<TARGET_OBJECTS:engine-shared>
-      $<TARGET_OBJECTS:game-shared>
+            ${CLIENT_SRC}
+            ${CLIENT_ICON}
+            ${CLIENT_MANIFEST}
+            ${DEPS_CLIENT}
+            $<TARGET_OBJECTS:engine-gfx>
+            $<TARGET_OBJECTS:engine-shared>
+            $<TARGET_OBJECTS:game-shared>
     )
   else()
     add_executable(game-client WIN32
-      ${CLIENT_SRC}
-      ${CLIENT_ICON}
-      ${CLIENT_MANIFEST}
-      ${DEPS_CLIENT}
-      $<TARGET_OBJECTS:engine-gfx>
-      $<TARGET_OBJECTS:engine-shared>
-      $<TARGET_OBJECTS:game-shared>
+            ${CLIENT_SRC}
+            ${CLIENT_ICON}
+            ${CLIENT_MANIFEST}
+            ${DEPS_CLIENT}
+            $<TARGET_OBJECTS:engine-gfx>
+            $<TARGET_OBJECTS:engine-shared>
+            $<TARGET_OBJECTS:game-shared>
     )
   endif()
   set_property(TARGET game-client
@@ -2606,9 +2607,9 @@ if(SERVER)
 
   # Libraries
   set(LIBS_SERVER
-    ${MINIUPNPC_LIBRARIES}
-    ${MYSQL_LIBRARIES}
-    ${TARGET_ANTIBOT}
+          ${MINIUPNPC_LIBRARIES}
+          ${MYSQL_LIBRARIES}
+          ${TARGET_ANTIBOT}
 
           ${LIBS}
   )
@@ -2616,19 +2617,19 @@ if(SERVER)
   # Target
   if(TARGET_OS STREQUAL "android")
     add_library(game-server SHARED
-      ${DEPS}
-      ${SERVER_SRC}
-      ${SERVER_ICON}
-      $<TARGET_OBJECTS:engine-shared>
-      $<TARGET_OBJECTS:game-shared>
+            ${DEPS}
+            ${SERVER_SRC}
+            ${SERVER_ICON}
+            $<TARGET_OBJECTS:engine-shared>
+            $<TARGET_OBJECTS:game-shared>
     )
   else()
     add_executable(game-server
-      ${DEPS}
-      ${SERVER_SRC}
-      ${SERVER_ICON}
-      $<TARGET_OBJECTS:engine-shared>
-      $<TARGET_OBJECTS:game-shared>
+            ${DEPS}
+            ${SERVER_SRC}
+            ${SERVER_ICON}
+            $<TARGET_OBJECTS:engine-shared>
+            $<TARGET_OBJECTS:game-shared>
     )
   endif()
   set_property(TARGET game-server
