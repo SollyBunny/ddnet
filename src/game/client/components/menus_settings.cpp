@@ -2876,10 +2876,6 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 		// ***** Hook Strength ***** //
 		LeftView.HSplitTop(MarginBetweenViews, nullptr, &LeftView);
 
-		DoLine_RadioMenu(LeftView, Localize("Show hook strength"),
-			{Localize("No", "Show hook strength"), Localize("Icon", "Show hook strength"), Localize("Icon and number", "Show hook strength")},
-			{0, 1, 2},
-			g_Config.m_ClNamePlatesStrong);
 		LeftView.HSplitTop(LineSize, &Button, &LeftView);
 		if(DoButton_CheckBox(&g_Config.m_ClNamePlatesStrong, Localize("Show hook strength icon indicator"), g_Config.m_ClNamePlatesStrong, &Button))
 			g_Config.m_ClNamePlatesStrong = g_Config.m_ClNamePlatesStrong ? 0 : 1;
@@ -2899,11 +2895,6 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 
 		// ***** Key Presses ***** //
 		LeftView.HSplitTop(MarginBetweenViews, nullptr, &LeftView);
-
-		DoLine_RadioMenu(LeftView, Localize("Show players' key presses"),
-			{Localize("None", "Show players' key presses"), Localize("Own", "Show players' key presses"), Localize("Others", "Show players' key presses"), Localize("All", "Show players' key presses")},
-			{0, 3, 1, 2},
-			g_Config.m_ClShowDirection);
 
 		DoLine_RadioMenu(LeftView, Localize("Show players' key presses"),
 			vButtonsContainersNamePlateKeyPresses,

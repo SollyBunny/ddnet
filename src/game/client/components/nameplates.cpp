@@ -873,7 +873,7 @@ void CNamePlates::RenderNamePlateGame(vec2 Position, const CNetObj_PlayerInfo *p
 	if(g_Config.m_ClWarList && g_Config.m_ClWarListShowClan && GameClient()->m_WarList.GetWarData(pPlayerInfo->m_ClientId).IsWarClan)
 		Data.m_ShowClan = true;
 
-	m_aNamePlates[pPlayerInfo->m_ClientId].Render(*GameClient(), &Data);
+	m_pNamePlates[pPlayerInfo->m_ClientId].Render(*GameClient(), &Data);
 }
 
 void CNamePlates::RenderNamePlatePreview(vec2 Position, int Dummy)
