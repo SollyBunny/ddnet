@@ -777,6 +777,9 @@ void CGameClient::UpdatePositions()
 
 void CGameClient::OnRender()
 {
+	const ColorRGBA ClearColor = color_cast<ColorRGBA>(ColorHSLA(g_Config.m_ClOverlayEntities ? g_Config.m_ClBackgroundEntitiesColor : g_Config.m_ClBackgroundColor));
+	Graphics()->Clear(ClearColor.r, ClearColor.g, ClearColor.b);
+
 	// check if multi view got activated
 	if(!m_MultiView.m_IsInit && m_MultiViewActivated)
 	{
@@ -997,6 +1000,11 @@ void CGameClient::OnMessage(int MsgId, CUnpacker *pUnpacker, int Conn, bool Dumm
 		// unpack the new tuning
 		CTuningParams NewTuning;
 		int *pParams = (int *)&NewTuning;
+
+		// No jetpack on DDNet incompatible servers,
+		// jetpack strength will be received by tune params
+		NewTuning.m_JetpackStrength = 0;
+
 		for(unsigned i = 0; i < sizeof(CTuningParams) / sizeof(int); i++)
 		{
 			// 31 is the magic number index of laser_damage
@@ -1411,6 +1419,9 @@ static CGameInfo GetGameInfo(const CNetObj_GameInfoEx *pInfoEx, int InfoExSize, 
 	bool FDDrace;
 	if(Version < 1)
 	{
+		// The game type is intentionally only available inside this
+		// `if`. Game type sniffing should be avoided and ideally not
+		// extended. Mods should set the relevant game flags instead.
 		const char *pGameType = pFallbackServerInfo->m_aGameType;
 		Race = str_find_nocase(pGameType, "race") || str_find_nocase(pGameType, "fastcap");
 		FastCap = str_find_nocase(pGameType, "fastcap");

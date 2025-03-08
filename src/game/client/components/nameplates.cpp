@@ -623,6 +623,11 @@ private:
 			return;
 		m_Inited = true;
 
+		AddPart<CNamePlatePartDirection>(This, DIRECTION_LEFT);
+		AddPart<CNamePlatePartDirection>(This, DIRECTION_UP);
+		AddPart<CNamePlatePartDirection>(This, DIRECTION_RIGHT);
+		AddPart<CNamePlatePartNewLine>(This);
+
 		AddPart<CNamePlatePartPing>(This); // TClient
 		AddPart<CNamePlatePartIgnoreMark>(This); // TClient
 		AddPart<CNamePlatePartClientId>(This, false);
@@ -644,10 +649,6 @@ private:
 		AddPart<CNamePlatePartHookStrongWeak>(This);
 		AddPart<CNamePlatePartHookStrongWeakId>(This);
 		AddPart<CNamePlatePartNewLine>(This);
-
-		AddPart<CNamePlatePartDirection>(This, DIRECTION_LEFT);
-		AddPart<CNamePlatePartDirection>(This, DIRECTION_UP);
-		AddPart<CNamePlatePartDirection>(This, DIRECTION_RIGHT);
 	}
 	void Update(CGameClient &This, const CNamePlateRenderData *pData)
 	{
@@ -743,7 +744,7 @@ public:
 	}
 };
 
-void CNamePlates::RenderNamePlateGame(vec2 Position, const CNetObj_PlayerInfo *pPlayerInfo, float Alpha, bool ForceAlpha)
+void CNamePlates::RenderNamePlateGame(vec2 Position, const CNetObj_PlayerInfo *pPlayerInfo, float Alpha)
 {
 	CNamePlateRenderData Data;
 
@@ -769,13 +770,11 @@ void CNamePlates::RenderNamePlateGame(vec2 Position, const CNetObj_PlayerInfo *p
 	Data.m_FontSizeHookStrongWeak = 18.0f + 20.0f * g_Config.m_ClNamePlatesStrongSize / 100.0f;
 	Data.m_FontSizeDirection = 18.0f + 20.0f * g_Config.m_ClDirectionSize / 100.0f;
 
-	if(!ForceAlpha)
-	{
-		if(g_Config.m_ClNamePlatesAlways == 0)
-			Alpha *= clamp(1.0f - std::pow(distance(GameClient()->m_Controls.m_aTargetPos[g_Config.m_ClDummy], Position) / 200.0f, 16.0f), 0.0f, 1.0f);
-		if(OtherTeam)
-			Alpha *= (float)g_Config.m_ClShowOthersAlpha / 100.0f;
-	}
+	if(g_Config.m_ClNamePlatesAlways == 0)
+		Alpha *= clamp(1.0f - std::pow(distance(GameClient()->m_Controls.m_aTargetPos[g_Config.m_ClDummy], Position) / 200.0f, 16.0f), 0.0f, 1.0f);
+	if(OtherTeam)
+		Alpha *= (float)g_Config.m_ClShowOthersAlpha / 100.0f;
+
 	Data.m_Color = ColorRGBA(1.0f, 1.0f, 1.0f);
 	if(g_Config.m_ClNamePlatesTeamcolors)
 	{
@@ -957,7 +956,7 @@ void CNamePlates::RenderNamePlatePreview(vec2 Position, int Dummy)
 void CNamePlates::ResetNamePlates()
 {
 	for(int i = 0; i < MAX_CLIENTS; ++i)
-		m_aNamePlates[i].Reset(*GameClient());
+		m_pNamePlates[i].Reset(*GameClient());
 }
 
 void CNamePlates::OnRender()
@@ -996,7 +995,7 @@ void CNamePlates::OnRender()
 			const vec2 RenderPos = GameClient()->m_aClients[i].m_SpecChar;
 			// don't render offscreen
 			if(in_range(RenderPos.x, ScreenX0, ScreenX1) && in_range(RenderPos.y, ScreenY0, ScreenY1))
-				RenderNamePlateGame(RenderPos, pInfo, 0.4f, true);
+				RenderNamePlateGame(RenderPos, pInfo, 0.4f);
 		}
 		if(GameClient()->m_Snap.m_aCharacters[i].m_Active)
 		{
@@ -1004,7 +1003,7 @@ void CNamePlates::OnRender()
 			const vec2 RenderPos = GameClient()->m_aClients[i].m_RenderPos;
 			// don't render offscreen
 			if(in_range(RenderPos.x, ScreenX0, ScreenX1) && in_range(RenderPos.y, ScreenY0, ScreenY1))
-				RenderNamePlateGame(RenderPos, pInfo, 1.0f, false);
+				RenderNamePlateGame(RenderPos, pInfo, 1.0f);
 		}
 	}
 }
@@ -1014,12 +1013,12 @@ void CNamePlates::OnWindowResize()
 	ResetNamePlates();
 }
 
-void CNamePlates::OnInit()
+CNamePlates::CNamePlates()
 {
-	m_aNamePlates = new CNamePlate[MAX_CLIENTS];
+	m_pNamePlates = new CNamePlate[MAX_CLIENTS];
 }
 
 CNamePlates::~CNamePlates()
 {
-	delete[] m_aNamePlates;
+	delete[] m_pNamePlates;
 }

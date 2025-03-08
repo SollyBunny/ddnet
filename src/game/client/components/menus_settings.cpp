@@ -1061,6 +1061,7 @@ float CMenus::RenderSettingsControlsJoystick(CUIRect View)
 			}
 
 			DoLine_RadioMenu(View, Localize("Ingame controller mode"),
+				vButtonsContainersJoystickAbsolute,
 				{Localize("Relative", "Ingame controller mode"), Localize("Absolute", "Ingame controller mode")},
 				{0, 1},
 				g_Config.m_InpControllerAbsolute);
@@ -2841,6 +2842,7 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 		{
 			int Pressed = (g_Config.m_ClNamePlates ? 2 : 0) + (g_Config.m_ClNamePlatesOwn ? 1 : 0);
 			if(DoLine_RadioMenu(LeftView, Localize("Show name plates"),
+				   vButtonsContainersNamePlateShow,
 				   {Localize("None", "Show name plates"), Localize("Own", "Show name plates"), Localize("Others", "Show name plates"), Localize("All", "Show name plates")},
 				   {0, 1, 2, 3},
 				   Pressed))
@@ -2860,18 +2862,13 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 			Ui()->DoScrollbarOption(&g_Config.m_ClNamePlatesClanSize, &g_Config.m_ClNamePlatesClanSize, &Button, Localize("Clan plates size"), -50, 100);
 
 		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClNamePlatesTeamcolors, Localize("Use team colors for name plates"), &g_Config.m_ClNamePlatesTeamcolors, &LeftView, LineSize);
-		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClNamePlatesFriendMark, Localize("Show friend mark (♥) in name plates"), &g_Config.m_ClNamePlatesFriendMark, &LeftView, LineSize);
-		{
-			int Pressed = g_Config.m_ClNamePlatesIds ? (g_Config.m_ClNamePlatesIdsSeperateLine ? 2 : 1) : 0;
-			if(DoLine_RadioMenu(LeftView, Localize("Show IDs in name plates"),
-				   {Localize("No", "Show IDs in name plates"), Localize("Yes", "Show IDs in name plates"), Localize("Seperate line", "Show name plates")},
-				   {0, 1, 2},
-				   Pressed))
-			{
-				g_Config.m_ClNamePlatesIds = Pressed > 0 ? 1 : 0;
-				g_Config.m_ClNamePlatesIdsSeperateLine = Pressed == 2;
-			}
-		}
+		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClNamePlatesFriendMark, Localize("Show friend icon in name plates"), &g_Config.m_ClNamePlatesFriendMark, &LeftView, LineSize);
+
+		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClNamePlatesIds, Localize("Show client IDs in name plates"), &g_Config.m_ClNamePlatesIds, &LeftView, LineSize);
+		if(g_Config.m_ClNamePlatesIds > 0)
+			DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClNamePlatesIdsSeperateLine, Localize("Show client IDs on a seperate line"), &g_Config.m_ClNamePlatesIdsSeperateLine, &LeftView, LineSize);
+		else
+			LeftView.HSplitTop(LineSize, nullptr, &LeftView);
 		LeftView.HSplitTop(LineSize, &Button, &LeftView);
 		if(g_Config.m_ClNamePlatesIds > 0 && g_Config.m_ClNamePlatesIdsSeperateLine > 0)
 			Ui()->DoScrollbarOption(&g_Config.m_ClNamePlatesIdsSize, &g_Config.m_ClNamePlatesIdsSize, &Button, Localize("Client IDs size"), -50, 100);
@@ -2884,13 +2881,32 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 			{0, 1, 2},
 			g_Config.m_ClNamePlatesStrong);
 		LeftView.HSplitTop(LineSize, &Button, &LeftView);
-		if(g_Config.m_ClNamePlatesStrong > 0)
-			Ui()->DoScrollbarOption(&g_Config.m_ClNamePlatesStrongSize, &g_Config.m_ClNamePlatesStrongSize, &Button, Localize("Size of hook strength info"), -50, 100);
+		if(DoButton_CheckBox(&g_Config.m_ClNamePlatesStrong, Localize("Show hook strength icon indicator"), g_Config.m_ClNamePlatesStrong, &Button))
+			g_Config.m_ClNamePlatesStrong = g_Config.m_ClNamePlatesStrong ? 0 : 1;
+		LeftView.HSplitTop(LineSize, &Button, &LeftView);
+		if(g_Config.m_ClNamePlatesStrong)
+		{
+			static int s_NamePlatesStrong = 0;
+			if(DoButton_CheckBox(&s_NamePlatesStrong, Localize("Show hook strength number indicator"), g_Config.m_ClNamePlatesStrong == 2, &Button))
+				g_Config.m_ClNamePlatesStrong = g_Config.m_ClNamePlatesStrong != 2 ? 2 : 1;
+		}
+
+		LeftView.HSplitTop(LineSize * 2.0f, &Button, &LeftView);
+		if(g_Config.m_ClNamePlatesStrong)
+		{
+			Ui()->DoScrollbarOption(&g_Config.m_ClNamePlatesStrongSize, &g_Config.m_ClNamePlatesStrongSize, &Button, Localize("Size of hook strength icon and number indicator"), -50, 100, &CUi::ms_LinearScrollbarScale, CUi::SCROLLBAR_OPTION_MULTILINE);
+		}
 
 		// ***** Key Presses ***** //
 		LeftView.HSplitTop(MarginBetweenViews, nullptr, &LeftView);
 
 		DoLine_RadioMenu(LeftView, Localize("Show players' key presses"),
+			{Localize("None", "Show players' key presses"), Localize("Own", "Show players' key presses"), Localize("Others", "Show players' key presses"), Localize("All", "Show players' key presses")},
+			{0, 3, 1, 2},
+			g_Config.m_ClShowDirection);
+
+		DoLine_RadioMenu(LeftView, Localize("Show players' key presses"),
+			vButtonsContainersNamePlateKeyPresses,
 			{Localize("None", "Show players' key presses"), Localize("Own", "Show players' key presses"), Localize("Others", "Show players' key presses"), Localize("All", "Show players' key presses")},
 			{0, 3, 1, 2},
 			g_Config.m_ClShowDirection);
@@ -3345,6 +3361,8 @@ void CMenus::RenderSettingsDDNet(CUIRect MainView)
 		{
 			g_Config.m_ClAntiPingGrenade ^= 1;
 		}
+		Right.HSplitTop(20.0f, &Button, &Right);
+		Ui()->DoScrollbarOption(&g_Config.m_ClPredictionMargin, &g_Config.m_ClPredictionMargin, &Button, Localize("AntiPing: prediction margin"), 1, 300);
 	}
 
 	CUIRect Background, Miscellaneous;
