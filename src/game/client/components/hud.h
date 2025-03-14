@@ -72,7 +72,11 @@ class CHud : public CComponent
 	void RenderVoting();
 
 	void PrepareAmmoHealthAndArmorQuads();
+	void PrepareInfclassHudQuads();
 	void RenderAmmoHealthAndArmor(const CNetObj_Character *pCharacter);
+	void RenderStatusIcons(int ClientId);
+	void RenderObjectOwnerIcons(int ClientId);
+	void RenderClassExtraHud(int ClientId);
 
 	void PreparePlayerStateQuads();
 	void RenderPlayerState(const int ClientId);
@@ -96,6 +100,9 @@ class CHud : public CComponent
 	void RenderSpectatorHud();
 	void RenderWarmupTimer();
 	void RenderLocalTime(float x);
+
+	float FormatTimerText(char *pDest, int DestSize, int Ticks, bool ForceLongFormat = true, float ShowFractionIfLessThan = 0);
+	void RenderLaser(vec2 From, vec2 To, const ColorRGBA LaserOutlineColor, const ColorRGBA LaserInnerColor);
 
 	static constexpr float MOVEMENT_INFORMATION_LINE_HEIGHT = 8.0f;
 
@@ -141,6 +148,7 @@ private:
 	int m_AirjumpOffset;
 	int m_AirjumpEmptyOffset;
 	int m_aWeaponOffset[NUM_WEAPONS];
+	int m_HookProtectionOffset;
 	int m_EndlessJumpOffset;
 	int m_EndlessHookOffset;
 	int m_JetpackOffset;
@@ -162,6 +170,9 @@ private:
 	int m_PracticeModeOffset;
 	int m_Team0ModeOffset;
 	int m_LockModeOffset;
+
+	int m_IcStatusIconOffset;
+	int m_IcParticleIconOffset;
 };
 
 #endif

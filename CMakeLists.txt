@@ -182,7 +182,7 @@ if(NOT "${CMAKE_CURRENT_BINARY_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
 endif()
 
 set(SERVER_EXECUTABLE DDNet-Server CACHE STRING "Name of the built server executable")
-set(CLIENT_EXECUTABLE Infclass CACHE STRING "Name of the build client executable")
+set(CLIENT_EXECUTABLE DDNet CACHE STRING "Name of the build client executable")
 
 ########################################################################
 # Compiler flags
@@ -2438,10 +2438,6 @@ if(CLIENT)
     components/ghost.h
     components/hud.cpp
     components/hud.h
-    components/infc_binds.cpp
-    components/infc_binds.h
-    components/infc_commands.cpp
-    components/infc_commands.h
     components/infomessages.cpp
     components/infomessages.h
     components/items.cpp

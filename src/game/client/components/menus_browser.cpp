@@ -1799,12 +1799,12 @@ void CMenus::RenderServerbrowser(CUIRect MainView)
 	}
 
 	/*
-		+---------------------------+ +---communities---+
+		+---------------------------+ +------tabs-------+
 		|                           | |                 |
-		|                           | +------tabs-------+
-		|       server list         | |                 |
-		|                           | |      tool       |
-		|                           | |      box        |
+		|                           | |                 |
+		|       server list         | |     tool box    |
+		|                           | |                 |
+		|                           | |                 |
 		+---------------------------+ |                 |
 		        status box            +-----------------+
 	*/

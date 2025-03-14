@@ -26,13 +26,18 @@ class CTeamsCore
 	int m_aTeam[MAX_CLIENTS];
 	bool m_aIsSolo[MAX_CLIENTS];
 
+	bool m_aIsInfected[MAX_CLIENTS];
+	bool m_aIsProtected[MAX_CLIENTS];
+
 public:
 	bool m_IsDDRace16;
+	bool m_IsInfclass;
 
 	CTeamsCore();
 
 	bool SameTeam(int ClientId1, int ClientId2) const;
 
+	bool CanHook(int HookerId, int TargetId) const;
 	bool CanKeepHook(int ClientId1, int ClientId2) const;
 	bool CanCollide(int ClientId1, int ClientId2) const;
 
@@ -42,6 +47,9 @@ public:
 	void Reset();
 	void SetSolo(int ClientId, bool Value);
 	bool GetSolo(int ClientId) const;
+
+	void SetInfected(int ClientId, bool Value);
+	void SetProtected(int ClientId, bool Value);
 };
 
 #endif

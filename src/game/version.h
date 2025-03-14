@@ -2,6 +2,7 @@
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #ifndef GAME_VERSION_H
 #define GAME_VERSION_H
+
 #ifndef GAME_RELEASE_VERSION
 #define GAME_RELEASE_VERSION "19.1"
 #endif
@@ -16,9 +17,11 @@
 #define DDNET_VERSION_NUMBER 19010
 extern const char *GIT_SHORTREV_HASH;
 #define GAME_NAME "DDNet"
-#define CLIENT_NAME "TClient"
+#define CLIENT_NAME "SollyBunny"
+
+// tclient
 #ifndef TCLIENT_VERSION
 #define TCLIENT_VERSION "10.1.2"
 #endif
 
-#endif
+#endif // GAME_VERSION_H

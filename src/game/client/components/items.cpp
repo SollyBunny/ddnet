@@ -360,10 +360,214 @@ void CItems::RenderLaser(const CLaserData *pCurrent, bool IsPredicted)
 	}
 }
 
+void CItems::RenderInfclassObject(const CNetObj_InfClassObject *pCurrent, bool IsPredicted)
+{
+	if(pCurrent->m_Flags & INFCLASS_OBJECT_FLAG_RELY_ON_CLIENTSIDE_RENDERING)
+	{
+		switch(pCurrent->m_Type)
+		{
+		case INFCLASS_OBJECT_TYPE_SCIENTIST_MINE:
+			RenderSciMine(pCurrent, IsPredicted);
+			break;
+		case INFCLASS_OBJECT_TYPE_SOLDIER_BOMB:
+			RenderSoldierBomb(pCurrent, IsPredicted);
+			break;
+		default:
+			break;
+		}
+	}
+
+	int LocalCID = m_pClient->m_aLocalIds[g_Config.m_ClDummy];
+	int SpecCID = m_pClient->m_Snap.m_SpecInfo.m_SpectatorId;
+	int CameraCID = m_pClient->m_Snap.m_SpecInfo.m_Active ? SpecCID : LocalCID;
+
+	vec2 Pos(pCurrent->m_X, pCurrent->m_Y);
+
+#if 1
+	if((CameraCID >= 0) && (pCurrent->m_Owner == CameraCID))
+	{
+		// Do not render the icon here, render it in HUD instead.
+		bool TakeSecondPos = (pCurrent->m_Flags & INFCLASS_OBJECT_FLAG_HAS_SECOND_POSITION) && (pCurrent->m_Y2 > pCurrent->m_Y);
+		vec2 IndicatorPos = TakeSecondPos ? vec2(pCurrent->m_X2, pCurrent->m_Y2) : Pos;
+
+		if(pCurrent->m_Flags & INFCLASS_OBJECT_FLAG_HAS_SECOND_POSITION)
+		{
+			float Offset = 24;
+			if(TakeSecondPos)
+			{
+				IndicatorPos += normalize(IndicatorPos - vec2(pCurrent->m_X, pCurrent->m_Y)) * Offset;
+			}
+			else
+			{
+				IndicatorPos += normalize(IndicatorPos - vec2(pCurrent->m_X2, pCurrent->m_Y2)) * Offset;
+			}
+		}
+		CGameClient::CClientData &ClientData = m_pClient->m_aClients[CameraCID];
+		std::size_t &Icons = ClientData.m_OwnerIcons;
+		if(Icons == std::size(ClientData.m_aOwnerIconPositions))
+			return;
+
+		ClientData.m_aOwnerIconPositions[Icons] = IndicatorPos;
+		++Icons;
+	}
+#else
+	if(pCurrent->m_Owner == LocalCID)
+	{
+		CTeeRenderInfo RenderInfo = m_pClient->m_aClients[LocalCID].m_RenderInfo;
+		RenderInfo.m_Size = 32;
+
+		bool TakeSecondPos = (pCurrent->m_Flags & INFCLASS_OBJECT_FLAG_HAS_SECOND_POSITION) && (pCurrent->m_Y2 > pCurrent->m_Y);
+		vec2 IndicatorPos = TakeSecondPos ? vec2(pCurrent->m_X2, pCurrent->m_Y2) : Pos;
+		const vec2 Offset(0, pCurrent->m_Flags & INFCLASS_OBJECT_FLAG_HAS_SECOND_POSITION ? 16 : 0);
+		RenderTools()->RenderTee(CAnimState::GetIdle(), &RenderInfo, EMOTE_HAPPY, vec2(1, 0), IndicatorPos + Offset);
+	}
+#endif
+}
+
+void CItems::RenderSciMine(const CNetObj_InfClassObject *pCurrent, bool IsPredicted)
+{
+	float Radius = fx2f(pCurrent->m_ProximityRadius);
+	vec2 ObjPos(pCurrent->m_X, pCurrent->m_Y);
+
+	float Alpha = 1.f;
+	ColorRGBA RGB;
+
+	int ColorOut = g_Config.m_ClLaserRifleOutlineColor;
+	int ColorIn = g_Config.m_ClLaserRifleInnerColor;
+
+	RGB = color_cast<ColorRGBA>(ColorHSLA(ColorOut));
+	ColorRGBA OuterColor(RGB.r, RGB.g, RGB.b, 1.0f);
+	RGB = color_cast<ColorRGBA>(ColorHSLA(ColorIn));
+	ColorRGBA InnerColor(RGB.r, RGB.g, RGB.b, 1.0f);
+
+	constexpr int NumSide = 12;
+	constexpr float AngleStep = 2.0f * pi / NumSide;
+	vec2 aMinePoints[NumSide];
+	for(int i = 0; i < NumSide; i++)
+	{
+		aMinePoints[i] = ObjPos + direction(AngleStep * i) * Radius;
+	}
+
+	const float Len = distance(aMinePoints[0], aMinePoints[1]);
+
+	Graphics()->TextureClear();
+	Graphics()->QuadsBegin();
+	// do outline
+	Graphics()->SetColor(OuterColor.r, OuterColor.g, OuterColor.b, Alpha);
+	for(int i = 0; i < NumSide; i++)
+	{
+		bool Last = i == NumSide - 1;
+		const vec2 From = aMinePoints[i];
+		const vec2 Pos = Last ? aMinePoints[0] : aMinePoints[i + 1];
+
+		vec2 Dir = normalize_pre_length(Pos - From, Len);
+		vec2 Out = vec2(Dir.y, -Dir.x) * 6.0f;
+
+		IGraphics::CFreeformItem Freeform(
+			From.x - Out.x, From.y - Out.y,
+			From.x + Out.x, From.y + Out.y,
+			Pos.x - Out.x, Pos.y - Out.y,
+			Pos.x + Out.x, Pos.y + Out.y);
+		Graphics()->QuadsDrawFreeform(&Freeform, 1);
+	}
+
+	// do inner
+	Graphics()->SetColor(InnerColor.r, InnerColor.g, InnerColor.b, Alpha); // center
+	for(int i = 0; i < NumSide; i++)
+	{
+		bool Last = i == NumSide - 1;
+		const vec2 From = aMinePoints[i];
+		const vec2 Pos = Last ? aMinePoints[0] : aMinePoints[i + 1];
+
+		vec2 Dir = normalize_pre_length(Pos - From, Len);
+		vec2 Out;
+
+		Out = vec2(Dir.y, -Dir.x) * 4.0f;
+
+		IGraphics::CFreeformItem Freeform(
+			From.x - Out.x, From.y - Out.y,
+			From.x + Out.x, From.y + Out.y,
+			Pos.x - Out.x, Pos.y - Out.y,
+			Pos.x + Out.x, Pos.y + Out.y);
+		Graphics()->QuadsDrawFreeform(&Freeform, 1);
+	}
+	Graphics()->QuadsEnd();
+
+	float ObjectRenderTick = 0;
+	if(IsPredicted)
+		ObjectRenderTick = Client()->PredGameTick(g_Config.m_ClDummy) - pCurrent->m_StartTick + Client()->PredIntraGameTick(g_Config.m_ClDummy);
+	else
+		ObjectRenderTick = Client()->GameTick(g_Config.m_ClDummy) - pCurrent->m_StartTick + Client()->IntraGameTick(g_Config.m_ClDummy);
+
+	// render heads
+	// Use only the second particle (among 0, 1, 2)
+	const int CurParticle = 1;
+	Graphics()->TextureSet(GameClient()->m_ParticlesSkin.m_aSpriteParticleSplat[CurParticle]);
+	for(int i = 0; i < NumSide; i++)
+	{
+		const vec2 Pos = aMinePoints[i];
+		Graphics()->QuadsSetRotation((ObjectRenderTick + i * 1.5f) / pi);
+
+		Graphics()->SetColor(OuterColor.r, OuterColor.g, OuterColor.b, Alpha);
+		Graphics()->RenderQuadContainerAsSprite(m_ItemsQuadContainerIndex, m_aParticleSplatOffset[CurParticle], Pos.x, Pos.y);
+		Graphics()->SetColor(InnerColor.r, InnerColor.g, InnerColor.b, Alpha);
+		Graphics()->RenderQuadContainerAsSprite(m_ItemsQuadContainerIndex, m_aParticleSplatOffset[CurParticle], Pos.x, Pos.y, 20.f / 24.f, 20.f / 24.f);
+	}
+	Graphics()->QuadsSetRotation(0);
+
+	// Render hammer dots
+	for(int i = 0; i < 8; ++i)
+	{
+		float RandomRadius = random_float() * (Radius - 4.0f);
+		vec2 Pos = ObjPos + random_direction() * RandomRadius;
+		m_pClient->m_Effects.BulletTrail(Pos, Alpha);
+	}
+}
+
+void CItems::RenderSoldierBomb(const CNetObj_InfClassObject *pCurrent, bool IsPredicted)
+{
+	float Radius = fx2f(pCurrent->m_ProximityRadius);
+	vec2 ObjPos(pCurrent->m_X, pCurrent->m_Y);
+
+	float ObjectRenderTick = 0;
+	if(IsPredicted)
+		ObjectRenderTick = Client()->PredGameTick(g_Config.m_ClDummy) - pCurrent->m_StartTick + Client()->PredIntraGameTick(g_Config.m_ClDummy);
+	else
+		ObjectRenderTick = Client()->GameTick(g_Config.m_ClDummy) - pCurrent->m_StartTick + Client()->IntraGameTick(g_Config.m_ClDummy);
+
+	float Time = ObjectRenderTick / (Client()->GameTickSpeed() * 0.75f);
+	float BaseAngle = fmodf(Time * pi / 2, 2.0f * pi);
+
+	float Alpha = 1.0f;
+	int CurWeapon = WEAPON_GRENADE;
+	if(GameClient()->m_GameSkin.m_aSpriteWeaponProjectiles[CurWeapon].IsValid())
+	{
+		Graphics()->TextureSet(GameClient()->m_GameSkin.m_aSpriteWeaponProjectiles[CurWeapon]);
+		Graphics()->SetColor(1.f, 1.f, 1.f, Alpha);
+
+		int NumBombs = m_pClient->m_InfClassSoldierBombs;
+		float AngleStep = 2.0f * pi / NumBombs;
+		int ActiveBombs = clamp(pCurrent->m_Data1, 0, NumBombs);
+		for(int i = 0; i < ActiveBombs; ++i)
+		{
+			const float Angle = BaseAngle + AngleStep * i;
+			const vec2 Pos = ObjPos + direction(Angle) * Radius;
+			m_pClient->m_Effects.SmokeTrail(Pos, vec2(0, 0), Alpha);
+			Graphics()->QuadsSetRotation(Angle + pi / 2);
+			Graphics()->RenderQuadContainerAsSprite(m_ItemsQuadContainerIndex, m_aProjectileOffset[CurWeapon], Pos.x, Pos.y);
+		}
+	}
+}
+
 void CItems::OnRender()
 {
 	if(Client()->State() != IClient::STATE_ONLINE && Client()->State() != IClient::STATE_DEMOPLAYBACK)
 		return;
+
+	for(int i = 0; i < MAX_CLIENTS; ++i)
+	{
+		m_pClient->m_aClients[i].m_OwnerIcons = 0;
+	}
 
 	bool IsSuper = m_pClient->IsLocalCharSuper();
 	int Ticks = Client()->GameTick(g_Config.m_ClDummy) % Client()->GameTickSpeed();
@@ -519,6 +723,11 @@ void CItems::OnRender()
 			}
 
 			RenderLaser(&Data);
+		}
+		else if(Item.m_Type == NETOBJTYPE_INFCLASSOBJECT)
+		{
+			const CNetObj_InfClassObject *pObject = static_cast<const CNetObj_InfClassObject *>(pData);
+			RenderInfclassObject(pObject);
 		}
 	}
 

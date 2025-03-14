@@ -22,6 +22,8 @@
 #include <game/client/components/skins.h>
 #include <game/client/components/sounds.h>
 
+#include <game/classes.h>
+
 #include "players.h"
 
 #include <base/color.h>
@@ -409,7 +411,15 @@ void CPlayers::RenderHook(
 		float d = distance(Pos, HookPos);
 		vec2 Dir = normalize(Pos - HookPos);
 
-		Graphics()->TextureSet(GameClient()->m_GameSkin.m_SpriteHookHead);
+		bool InfectedHook = pRenderInfo->m_InfectedHook;
+		if(InfectedHook)
+		{
+			Graphics()->TextureSet(GameClient()->m_InfclassSkin.m_SpriteHookHead);
+		}
+		else
+		{
+			Graphics()->TextureSet(GameClient()->m_GameSkin.m_SpriteHookHead);
+		}
 		Graphics()->QuadsSetRotation(angle(Dir) + pi);
 		// render head
 		int QuadOffset = NUM_WEAPONS * 2 + 2;
@@ -434,7 +444,14 @@ void CPlayers::RenderHook(
 			s_aHookChainRenderInfo[HookChainCount].m_Scale = 1;
 			s_aHookChainRenderInfo[HookChainCount].m_Rotation = angle(Dir) + pi;
 		}
-		Graphics()->TextureSet(GameClient()->m_GameSkin.m_SpriteHookChain);
+		if(InfectedHook)
+		{
+			Graphics()->TextureSet(GameClient()->m_InfclassSkin.m_SpriteHookChain);
+		}
+		else
+		{
+			Graphics()->TextureSet(GameClient()->m_GameSkin.m_SpriteHookChain);
+		}
 		Graphics()->RenderQuadContainerAsSpriteMultiple(m_WeaponEmoteQuadContainerIndex, QuadOffset, HookChainCount, s_aHookChainRenderInfo);
 
 		Graphics()->QuadsSetRotation(0);
@@ -461,6 +478,9 @@ void CPlayers::RenderPlayer(
 
 	CTeeRenderInfo RenderInfo = *pRenderInfo;
 
+	const CGameClient::CClientData *pClientData = (m_pClient->m_GameInfo.m_InfClass && ClientId >= 0) ? &m_pClient->m_aClients[ClientId] : nullptr;
+	const int PlayerClass = pClientData ? pClientData->m_InfClassPlayerClass : -1;
+
 	bool Local = m_pClient->m_Snap.m_LocalClientId == ClientId;
 	bool OtherTeam = m_pClient->IsOtherTeam(ClientId);
 	// float Alpha = (OtherTeam || ClientId < 0) ? g_Config.m_ClShowOthersAlpha / 100.0f : 1.0f;
@@ -480,8 +500,40 @@ void CPlayers::RenderPlayer(
 	if(ClientId == -2) // ghost
 		Alpha = g_Config.m_ClRaceGhostAlpha / 100.0f;
 
+	if(pClientData)
+	{
+		bool Invisible = false;
+		if(m_pClient->m_InfclassGameInfoVersion >= 2)
+		{
+			if(pClientData->m_InfClassClassFlags & INFCLASS_CLASSINFO_FLAG_IS_INVISIBLE)
+			{
+				Invisible = true;
+			}
+		}
+		else
+		{
+			if((PlayerClass == PLAYERCLASS_GHOST) && (Player.m_Emote == EMOTE_BLINK))
+			{
+				Invisible = true;
+			}
+		}
+
+		if(Invisible)
+		{
+			Alpha = 0.625f;
+		}
+	}
+
 	// set size
 	RenderInfo.m_Size = 64.0f;
+	if(PlayerClass == PLAYERCLASS_BOOMER)
+	{
+		RenderInfo.m_Size = 68.0f;
+	}
+	if(PlayerClass == PLAYERCLASS_TANK)
+	{
+		RenderInfo.m_Size = 70.0f;
+	}
 
 	float IntraTick = Intra;
 	if(ClientId >= 0)
@@ -563,8 +615,15 @@ void CPlayers::RenderPlayer(
 	// Don't do a moon walk outside the left border
 	if(WalkTime < 0)
 		WalkTime += 1;
+
 	if(RunTime < 0)
 		RunTime += 1;
+
+	if(PlayerClass == PLAYERCLASS_GHOST)
+	{
+		RunTime = 0;
+		WalkTime = 0;
+	}
 
 	CAnimState State;
 	State.Set(&g_pData->m_aAnimations[ANIM_BASE], 0);
@@ -663,7 +722,13 @@ void CPlayers::RenderPlayer(
 				}
 				Graphics()->QuadsSetRotation(QuadsRotation);
 
-				Graphics()->RenderQuadContainerAsSprite(m_WeaponEmoteQuadContainerIndex, QuadOffset, WeaponPosition.x, WeaponPosition.y);
+				float Scale = 1.0f;
+				if(PlayerClass == PLAYERCLASS_TANK)
+				{
+					Scale = 1.45f;
+					WeaponPosition += Dir * 8;
+				}
+				Graphics()->RenderQuadContainerAsSprite(m_WeaponEmoteQuadContainerIndex, QuadOffset, WeaponPosition.x, WeaponPosition.y, Scale, Scale);
 			}
 			else if(Player.m_Weapon == WEAPON_NINJA)
 			{
@@ -804,6 +869,11 @@ void CPlayers::RenderPlayer(
 			case WEAPON_GRENADE: RenderHand(&RenderInfo, WeaponPosition, Direction, -pi / 2, vec2(-4, 7), Alpha); break;
 			}
 			GhostWeaponPos = WeaponPosition;
+
+			if(PlayerClass == PLAYERCLASS_TANK)
+			{
+				RenderHand(&RenderInfo, WeaponPosition, Direction, -3 * pi / 4, vec2(-5, 4), Alpha);
+			}
 		}
 	}
 
@@ -830,6 +900,11 @@ void CPlayers::RenderPlayer(
 	if(RenderInfo.m_TeeRenderFlags & TEE_EFFECT_SPARKLE)
 	{
 		GameClient()->m_Effects.SparkleTrail(BodyPos, Alpha);
+	}
+	
+	if(m_pClient->m_GameInfo.m_InfClass)
+	{
+		RenderInfCPlayer(Position, ClientId);
 	}
 
 	if(ClientId < 0)
@@ -1328,6 +1403,33 @@ void CPlayers::RenderPlayerGhost(
 		}
 	}
 }
+
+void CPlayers::RenderInfCPlayer(const vec2 &Position, int ClientId)
+{
+	const CGameClient::CClientData *pClientData = &m_pClient->m_aClients[ClientId];
+	int InfclassPlayerFlags = pClientData->m_InfClassPlayerFlags;
+
+	int LocalID = m_pClient->m_aLocalIds[g_Config.m_ClDummy];
+	const CGameClient::CClientData *pLocalClientData = &m_pClient->m_aClients[LocalID];
+	int LocalInfclassPlayerFlags = pLocalClientData->m_InfClassPlayerFlags;
+	bool LocalSpec = pLocalClientData->m_Team == TEAM_SPECTATORS;
+	const bool LocalInfected = LocalInfclassPlayerFlags & INFCLASS_PLAYER_FLAG_INFECTED;
+	const bool Infected = InfclassPlayerFlags & INFCLASS_PLAYER_FLAG_INFECTED;
+
+	if(LocalSpec || (LocalInfected == Infected))
+	{
+		// Render same-team hints
+		if(g_Config.m_InfcShowHookProtection && (InfclassPlayerFlags & INFCLASS_PLAYER_FLAG_HOOK_PROTECTION_OFF))
+		{
+			Graphics()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+			Graphics()->QuadsSetRotation(pi / 4);
+
+			Graphics()->TextureSet(Infected ? GameClient()->m_InfclassSkin.m_SpriteHookHead : GameClient()->m_GameSkin.m_SpriteHookHead);
+			Graphics()->RenderQuadContainerAsSprite(m_IcContainerIndex, m_IcStatusIconOffset, Position.x - 22.0f, Position.y - 36.f);
+		}
+	}
+}
+
 inline bool CPlayers::IsPlayerInfoAvailable(int ClientId) const
 {
 	const void *pPrevInfo = Client()->SnapFindItem(IClient::SNAP_PREV, NETOBJTYPE_PLAYERINFO, ClientId);
@@ -1353,6 +1455,15 @@ void CPlayers::OnRender()
 			aRenderInfo[i].m_TeeRenderFlags |= TEE_EFFECT_FROZEN;
 		if(m_pClient->m_aClients[i].m_Invincible)
 			aRenderInfo[i].m_TeeRenderFlags |= TEE_EFFECT_SPARKLE;
+		const CGameClient::CClientData *pClientData = &m_pClient->m_aClients[i];
+		const int PlayerClass = pClientData ? pClientData->m_InfClassPlayerClass : -1;
+		if(PlayerClass == PLAYERCLASS_BOOMER)
+		{
+			if(!Config()->m_InfcShowBoomerWeapon)
+				aRenderInfo[i].m_TeeRenderFlags |= TEE_NO_WEAPON;
+		}
+
+		aRenderInfo[i].m_InfectedHook = pClientData->m_InfClassPlayerFlags & INFCLASS_PLAYER_FLAG_INFECTED;
 
 		const CGameClient::CSnapState::CCharacterInfo &CharacterInfo = m_pClient->m_Snap.m_aCharacters[i];
 		const bool Frozen = CharacterInfo.m_HasExtendedData && CharacterInfo.m_ExtendedData.m_FreezeEnd != 0;
@@ -1554,4 +1665,10 @@ void CPlayers::OnInit()
 
 	Graphics()->QuadsSetSubset(0.f, 0.f, 1.f, 1.f);
 	Graphics()->QuadsSetRotation(0.f);
+
+	{
+		m_IcContainerIndex = Graphics()->CreateQuadContainer(false);
+		m_IcStatusIconOffset = RenderTools()->QuadContainerAddSprite(m_IcContainerIndex, 22.f);
+		Graphics()->QuadContainerUpload(m_IcContainerIndex);
+	}
 }

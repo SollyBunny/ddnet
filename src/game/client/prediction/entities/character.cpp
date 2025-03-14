@@ -9,6 +9,8 @@
 #include "laser.h"
 #include "projectile.h"
 
+#include <game/classes.h>
+
 // Character, "physical" player's part
 
 void CCharacter::SetWeapon(int W)
@@ -61,6 +63,14 @@ void CCharacter::HandleJetpack()
 	if(m_Core.m_Jetpack && m_Core.m_ActiveWeapon == WEAPON_GUN)
 		FullAuto = true;
 
+	if(GameWorld()->m_WorldConfig.m_IsInfClass)
+	{
+		if(m_Core.m_ActiveWeapon == WEAPON_GUN)
+		{
+			FullAuto = true;
+		}
+	}
+
 	// check if we gonna fire
 	bool WillFire = false;
 	if(CountInput(m_LatestPrevInput.m_Fire, m_LatestInput.m_Fire).m_Presses)
@@ -82,6 +92,11 @@ void CCharacter::HandleJetpack()
 	{
 	case WEAPON_GUN:
 	{
+		if(GameWorld()->m_WorldConfig.m_IsInfClass)
+		{
+			return;
+		}
+		
 		if(m_Core.m_Jetpack)
 		{
 			int TuneZone = GetOverriddenTuneZone();
@@ -255,6 +270,9 @@ void CCharacter::FireWeapon()
 	if(!GameWorld()->m_WorldConfig.m_PredictWeapons)
 		return;
 
+	if(GameWorld()->m_WorldConfig.m_IsInfClass && (GetPlayerClass() == PLAYERCLASS_NONE))
+		return;
+
 	if(m_ReloadTimer != 0)
 		return;
 
@@ -359,6 +377,18 @@ void CCharacter::FireWeapon()
 			float FireDelay = GetTuning(GetOverriddenTuneZone())->m_HammerHitFireDelay;
 			m_ReloadTimer = FireDelay * GameWorld()->GameTickSpeed() / 1000;
 		}
+
+		if(GameWorld()->m_WorldConfig.m_IsInfClass)
+		{
+			switch(m_InfClassClass)
+			{
+			case PLAYERCLASS_SCIENTIST:
+				m_ReloadTimer = 500 * GameWorld()->GameTickSpeed() / 1000;
+				break;
+			default:
+				break;
+			}
+		}
 	}
 	break;
 
@@ -381,12 +411,55 @@ void CCharacter::FireWeapon()
 				-1 //SoundImpact
 			);
 		}
+		if(GameWorld()->m_WorldConfig.m_IsInfClass)
+		{
+			if(m_InfClassClass == PLAYERCLASS_MERCENARY)
+			{
+				float MaxSpeed = GetTuning(m_TuneZone)->m_GroundControlSpeed * 1.7f;
+				vec2 Recoil = Direction * (-MaxSpeed / 5.0f);
+				SaturateVelocity(Recoil, MaxSpeed);
+			}
+
+			float FireDelay = m_Core.m_Jetpack ? 50 : 125;
+			m_ReloadTimer = FireDelay * GameWorld()->GameTickSpeed() / 1000;
+		}
 	}
 	break;
 
 	case WEAPON_SHOTGUN:
 	{
-		if(GameWorld()->m_WorldConfig.m_IsVanilla)
+		if(GameWorld()->m_WorldConfig.m_IsInfClass)
+		{
+			int ShotSpread = 3;
+			if(GetPlayerClass() == PLAYERCLASS_BIOLOGIST)
+				ShotSpread = 1;
+
+			int AmmoAvailable = m_Core.m_aWeapons[WEAPON_SHOTGUN].m_Ammo;
+			for(int i = -ShotSpread; i <= ShotSpread; ++i)
+			{
+				float Spreading[] = {-0.21f, -0.14f, -0.070f, 0, 0.070f, 0.14f, 0.21f};
+				float a = angle(Direction);
+				a += Spreading[i + 3] * 2.0f * (0.25f + 0.75f * static_cast<float>(10 - AmmoAvailable) / 10.0f);
+				float v = 1 - (absolute(i) / (float)ShotSpread);
+				float Speed = mix((float)Tuning()->m_ShotgunSpeeddiff, 1.0f, v);
+
+				float LifeTime = Tuning()->m_ShotgunLifetime + 0.1f * AmmoAvailable / 10.0f;
+
+				new CProjectile(
+					GameWorld(),
+					WEAPON_SHOTGUN, // Type
+					GetCid(), // Owner
+					ProjStartPos, // Pos
+					direction(a) * Speed, // Dir
+					(int)(GameWorld()->GameTickSpeed() * LifeTime), // Span
+					false, // Freeze
+					false, // Explosive
+					-1 // SoundImpact
+				);
+			}
+			m_ReloadTimer = 250 * GameWorld()->GameTickSpeed() / 1000;
+		}
+		else if(GameWorld()->m_WorldConfig.m_IsVanilla)
 		{
 			int ShotSpread = 2;
 			for(int i = -ShotSpread; i <= ShotSpread; ++i)
@@ -408,6 +481,7 @@ void CCharacter::FireWeapon()
 					-1 //SoundImpact
 				);
 			}
+			m_ReloadTimer = 250 * GameWorld()->GameTickSpeed() / 1000;
 		}
 		else if(GameWorld()->m_WorldConfig.m_IsDDRace)
 		{
@@ -422,6 +496,26 @@ void CCharacter::FireWeapon()
 	{
 		int Lifetime = (int)(GameWorld()->GameTickSpeed() * GetTuning(GetOverriddenTuneZone())->m_GrenadeLifetime);
 
+		bool Explosive = true;
+		if(GameWorld()->m_WorldConfig.m_IsInfClass)
+		{
+			switch(GetPlayerClass())
+			{
+			case PLAYERCLASS_MERCENARY:
+				Explosive = false;
+				m_ReloadTimer = 250 * GameWorld()->GameTickSpeed() / 1000;
+				break;
+			case PLAYERCLASS_MEDIC:
+			case PLAYERCLASS_NINJA:
+			case PLAYERCLASS_SCIENTIST:
+				Explosive = false;
+				m_ReloadTimer = 500 * GameWorld()->GameTickSpeed() / 1000;
+				break;
+			default:
+				break;
+			}
+		}
+
 		new CProjectile(
 			GameWorld(),
 			WEAPON_GRENADE, //Type
@@ -430,7 +524,7 @@ void CCharacter::FireWeapon()
 			Direction, //Dir
 			Lifetime, //Span
 			false, //Freeze
-			true, //Explosive
+			Explosive, // Explosive
 			SOUND_GRENADE_EXPLODE //SoundImpact
 		); //SoundImpact
 	}
@@ -440,7 +534,51 @@ void CCharacter::FireWeapon()
 	{
 		float LaserReach = GetTuning(GetOverriddenTuneZone())->m_LaserReach;
 
-		new CLaser(GameWorld(), m_Pos, Direction, LaserReach, GetCid(), WEAPON_LASER);
+		if(GameWorld()->m_WorldConfig.m_IsInfClass)
+		{
+			float FireDelay = 800;
+			switch(GetPlayerClass())
+			{
+			case PLAYERCLASS_MERCENARY:
+				FireDelay = 200;
+				break;
+			case PLAYERCLASS_SCIENTIST:
+				LaserReach = LaserReach * 0.6f;
+				break;
+			case PLAYERCLASS_BIOLOGIST:
+			{
+				if(m_Core.m_aWeapons[WEAPON_LASER].m_Ammo < 10)
+					return;
+
+				LaserReach = 400.0f;
+				vec2 To = m_Pos + Direction * LaserReach;
+				if(!Collision()->IntersectLine(m_Pos, To, 0x0, &To))
+				{
+					return;
+				}
+			}
+				break;
+			case PLAYERCLASS_LOOPER:
+				LaserReach = LaserReach * 0.7f;
+				FireDelay = 250;
+				break;
+			default:
+				break;
+			}
+			m_ReloadTimer = FireDelay * GameWorld()->GameTickSpeed() / 1000;
+
+			CLaser *pLaser = new CLaser(GameWorld(), m_Pos, Direction, LaserReach, GetCid(), WEAPON_LASER, CLaser::NoBounce);
+			if(GetPlayerClass() == PLAYERCLASS_SCIENTIST)
+			{
+				pLaser->SetBouncing(0);
+				pLaser->SetExplosive(true);
+			}
+			pLaser->EnableBounce();
+		}
+		else
+		{
+			new CLaser(GameWorld(), m_Pos, Direction, LaserReach, GetCid(), WEAPON_LASER);
+		}
 	}
 	break;
 
@@ -1226,6 +1364,8 @@ CCharacter::CCharacter(CGameWorld *pGameWorld, int Id, CNetObj_Character *pChar,
 
 	m_LatestPrevInput = m_LatestInput = m_PrevInput = m_SavedInput = m_Input;
 
+	m_InfClassClass = PLAYERCLASS_INVALID;
+
 	ResetPrediction();
 	Read(pChar, pExtended, false);
 }
@@ -1384,6 +1524,90 @@ void CCharacter::Read(CNetObj_Character *pChar, CNetObj_DDNetCharacter *pExtende
 		m_TuneZoneOverride = -1;
 	}
 
+	if(GameWorld()->m_WorldConfig.m_IsInfClass && !pExtended)
+	{
+		switch(GetPlayerClass())
+		{
+		case PLAYERCLASS_MERCENARY:
+			m_Core.m_aWeapons[WEAPON_HAMMER].m_Got = true;
+			m_Core.m_aWeapons[WEAPON_GUN].m_Got = true;
+			m_Core.m_aWeapons[WEAPON_SHOTGUN].m_Got = false;
+			m_Core.m_aWeapons[WEAPON_GRENADE].m_Got = true;
+			m_Core.m_aWeapons[WEAPON_LASER].m_Got = false; // Pessimistic for MercBombsEnabled
+			break;
+		case PLAYERCLASS_MEDIC:
+			m_Core.m_aWeapons[WEAPON_HAMMER].m_Got = true;
+			m_Core.m_aWeapons[WEAPON_GUN].m_Got = true;
+			m_Core.m_aWeapons[WEAPON_SHOTGUN].m_Got = true;
+			m_Core.m_aWeapons[WEAPON_GRENADE].m_Got = true;
+			m_Core.m_aWeapons[WEAPON_LASER].m_Got = true;
+			break;
+		case PLAYERCLASS_HERO:
+			m_Core.m_aWeapons[WEAPON_HAMMER].m_Got = false; // Pessimistic for MercBombsEnabled
+			m_Core.m_aWeapons[WEAPON_GUN].m_Got = true;
+			m_Core.m_aWeapons[WEAPON_SHOTGUN].m_Got = true;
+			m_Core.m_aWeapons[WEAPON_GRENADE].m_Got = true;
+			m_Core.m_aWeapons[WEAPON_LASER].m_Got = true;
+			break;
+		case PLAYERCLASS_ENGINEER:
+			m_Core.m_aWeapons[WEAPON_HAMMER].m_Got = true;
+			m_Core.m_aWeapons[WEAPON_GUN].m_Got = true;
+			m_Core.m_aWeapons[WEAPON_SHOTGUN].m_Got = false;
+			m_Core.m_aWeapons[WEAPON_GRENADE].m_Got = false;
+			m_Core.m_aWeapons[WEAPON_LASER].m_Got = true;
+			break;
+		case PLAYERCLASS_SOLDIER:
+			m_Core.m_aWeapons[WEAPON_HAMMER].m_Got = true;
+			m_Core.m_aWeapons[WEAPON_GUN].m_Got = true;
+			m_Core.m_aWeapons[WEAPON_SHOTGUN].m_Got = false;
+			m_Core.m_aWeapons[WEAPON_GRENADE].m_Got = true;
+			m_Core.m_aWeapons[WEAPON_LASER].m_Got = false;
+			break;
+		case PLAYERCLASS_NINJA:
+			m_Core.m_aWeapons[WEAPON_HAMMER].m_Got = true;
+			m_Core.m_aWeapons[WEAPON_GUN].m_Got = true;
+			m_Core.m_aWeapons[WEAPON_SHOTGUN].m_Got = false;
+			m_Core.m_aWeapons[WEAPON_GRENADE].m_Got = true;
+			m_Core.m_aWeapons[WEAPON_LASER].m_Got = true;
+			break;
+		case PLAYERCLASS_SNIPER:
+			m_Core.m_aWeapons[WEAPON_HAMMER].m_Got = true;
+			m_Core.m_aWeapons[WEAPON_GUN].m_Got = true;
+			m_Core.m_aWeapons[WEAPON_SHOTGUN].m_Got = false;
+			m_Core.m_aWeapons[WEAPON_GRENADE].m_Got = false;
+			m_Core.m_aWeapons[WEAPON_LASER].m_Got = true;
+			break;
+		case PLAYERCLASS_SCIENTIST:
+			m_Core.m_aWeapons[WEAPON_HAMMER].m_Got = true;
+			m_Core.m_aWeapons[WEAPON_GUN].m_Got = true;
+			m_Core.m_aWeapons[WEAPON_SHOTGUN].m_Got = false;
+			m_Core.m_aWeapons[WEAPON_GRENADE].m_Got = true;
+			m_Core.m_aWeapons[WEAPON_LASER].m_Got = true;
+			break;
+		case PLAYERCLASS_BIOLOGIST:
+			m_Core.m_aWeapons[WEAPON_HAMMER].m_Got = true;
+			m_Core.m_aWeapons[WEAPON_GUN].m_Got = true;
+			m_Core.m_aWeapons[WEAPON_SHOTGUN].m_Got = true;
+			m_Core.m_aWeapons[WEAPON_GRENADE].m_Got = false;
+			m_Core.m_aWeapons[WEAPON_LASER].m_Got = true;
+			break;
+		case PLAYERCLASS_LOOPER:
+			m_Core.m_aWeapons[WEAPON_HAMMER].m_Got = true;
+			m_Core.m_aWeapons[WEAPON_GUN].m_Got = false;
+			m_Core.m_aWeapons[WEAPON_SHOTGUN].m_Got = false;
+			m_Core.m_aWeapons[WEAPON_GRENADE].m_Got = true;
+			m_Core.m_aWeapons[WEAPON_LASER].m_Got = true;
+			break;
+		default:
+			m_Core.m_aWeapons[WEAPON_HAMMER].m_Got = true;
+			m_Core.m_aWeapons[WEAPON_GUN].m_Got = false;
+			m_Core.m_aWeapons[WEAPON_SHOTGUN].m_Got = false;
+			m_Core.m_aWeapons[WEAPON_GRENADE].m_Got = false;
+			m_Core.m_aWeapons[WEAPON_LASER].m_Got = false;
+			break;
+		}
+	}
+
 	vec2 PosBefore = m_Pos;
 	m_Pos = m_Core.m_Pos;
 
@@ -1480,4 +1704,38 @@ CCharacter::~CCharacter()
 {
 	if(GameWorld())
 		GameWorld()->RemoveCharacter(this);
+}
+
+void CCharacter::SaturateVelocity(vec2 Force, float MaxSpeed)
+{
+	if(length(Force) < 0.00001)
+		return;
+
+	float Speed = length(m_Core.m_Vel);
+	vec2 VelDir = normalize(m_Core.m_Vel);
+	if(Speed < 0.00001)
+	{
+		VelDir = normalize(Force);
+	}
+	vec2 OrthoVelDir = vec2(-VelDir.y, VelDir.x);
+	float VelDirFactor = dot(Force, VelDir);
+	float OrthoVelDirFactor = dot(Force, OrthoVelDir);
+
+	vec2 NewVel = m_Core.m_Vel;
+	if(Speed < MaxSpeed || VelDirFactor < 0.0f)
+	{
+		NewVel += VelDir*VelDirFactor;
+		float NewSpeed = length(NewVel);
+		if(NewSpeed > MaxSpeed)
+		{
+			if(VelDirFactor > 0.f)
+				NewVel = VelDir*MaxSpeed;
+			else
+				NewVel = -VelDir*MaxSpeed;
+		}
+	}
+
+	NewVel += OrthoVelDir * OrthoVelDirFactor;
+
+	m_Core.m_Vel = NewVel;
 }

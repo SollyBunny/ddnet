@@ -13,6 +13,7 @@
 #include <game/client/gameclient.h>
 #include <game/client/prediction/entities/character.h>
 #include <game/client/prediction/gameworld.h>
+#include <game/damage_type.h>
 
 static constexpr float ROW_HEIGHT = 46.0f;
 static constexpr float FONT_SIZE = 36.0f;
@@ -39,6 +40,8 @@ void CInfoMessages::DeleteTextContainers(CInfoMsg &InfoMsg)
 {
 	TextRender()->DeleteTextContainer(InfoMsg.m_VictimTextContainerIndex);
 	TextRender()->DeleteTextContainer(InfoMsg.m_KillerTextContainerIndex);
+	TextRender()->DeleteTextContainer(InfoMsg.m_AssistantTextContainerIndex);
+	TextRender()->DeleteTextContainer(InfoMsg.m_AssistantPlusContainerIndex);
 	TextRender()->DeleteTextContainer(InfoMsg.m_DiffTextContainerIndex);
 	TextRender()->DeleteTextContainer(InfoMsg.m_TimeTextContainerIndex);
 }
@@ -65,6 +68,7 @@ void CInfoMessages::OnInit()
 	RenderTools()->QuadContainerAddSprite(m_SpriteQuadContainerIndex, 0.f, 0.f, 28.f, 56.f);
 	Graphics()->QuadsSetSubset(1, 0, 0, 1);
 	RenderTools()->QuadContainerAddSprite(m_SpriteQuadContainerIndex, 0.f, 0.f, 28.f, 56.f);
+	m_InfWeaponOffset = 4;
 
 	for(int i = 0; i < NUM_WEAPONS; ++i)
 	{
@@ -76,6 +80,23 @@ void CInfoMessages::OnInit()
 
 	Graphics()->QuadsSetSubset(0, 0, 1, 1);
 	m_QuadOffsetRaceFlag = RenderTools()->QuadContainerAddSprite(m_SpriteQuadContainerIndex, 0.0f, 0.0f, RACE_FLAG_SIZE, RACE_FLAG_SIZE);
+	m_InfWeaponOffset += NUM_WEAPONS;
+
+	for(int i = 0; i < static_cast<int>(EDamageType::COUNT); ++i)
+	{
+		EDamageType DamageType = static_cast<EDamageType>(i);
+		float ScaleX = 0;
+		float ScaleY = 0;
+		Graphics()->QuadsSetSubset(0, 0, 1, 1);
+
+		int SpriteIndex = GameClient()->GetInfclassSpriteForDamageType(DamageType);
+		if(SpriteIndex >= 0)
+		{
+			RenderTools()->GetSpriteScale(&g_pData->m_aSprites[SpriteIndex], ScaleX, ScaleY);
+		}
+
+		RenderTools()->QuadContainerAddSprite(m_SpriteQuadContainerIndex, 96.f * ScaleX, 96.f * ScaleY);
+	}
 
 	Graphics()->QuadContainerUpload(m_SpriteQuadContainerIndex);
 }
@@ -168,6 +189,26 @@ void CInfoMessages::CreateTextContainersIfNotCreated(CInfoMsg &InfoMsg)
 		TextRender()->TextColor(NameColor(InfoMsg.m_KillerId));
 		TextRender()->CreateTextContainer(InfoMsg.m_KillerTextContainerIndex, &Cursor, InfoMsg.m_aKillerName);
 	}
+	if(!InfoMsg.m_AssistantTextContainerIndex.Valid() && InfoMsg.m_aAssistantName[0] != 0)
+	{
+		{
+			CTextCursor Cursor;
+			TextRender()->SetCursor(&Cursor, 0, 0, FONT_SIZE, TEXTFLAG_RENDER);
+			TextRender()->TextColor(NameColor(InfoMsg.m_AssistantID));
+			TextRender()->CreateTextContainer(InfoMsg.m_AssistantTextContainerIndex, &Cursor, InfoMsg.m_aAssistantName);
+		}
+
+		{
+			// plus
+			const char aPlus[] = "+";
+			const ColorRGBA PlusColor = color_cast<ColorRGBA>(ColorHSLA(g_Config.m_ClKillMessageHighlightColor));
+
+			CTextCursor Cursor;
+			TextRender()->SetCursor(&Cursor, 0, 0, FONT_SIZE, TEXTFLAG_RENDER);
+			TextRender()->TextColor(PlusColor);
+			TextRender()->CreateTextContainer(InfoMsg.m_AssistantPlusContainerIndex, &Cursor, aPlus);
+		}
+	}
 
 	if(!InfoMsg.m_DiffTextContainerIndex.Valid() && InfoMsg.m_aDiffText[0] != '\0')
 	{
@@ -208,6 +249,9 @@ void CInfoMessages::OnMessage(int MsgType, void *pRawMsg)
 	case NETMSGTYPE_SV_KILLMSG:
 		OnKillMessage(static_cast<CNetMsg_Sv_KillMsg *>(pRawMsg));
 		break;
+	case NETMSGTYPE_INF_KILLMSG:
+		OnInfcKillMessage(static_cast<CNetMsg_Inf_KillMsg *>(pRawMsg));
+		break;
 	case NETMSGTYPE_SV_RACEFINISH:
 		OnRaceFinishMessage(static_cast<CNetMsg_Sv_RaceFinish *>(pRawMsg));
 		break;
@@ -245,6 +289,11 @@ void CInfoMessages::OnTeamKillMessage(const CNetMsg_Sv_KillMsgTeam *pMsg)
 
 void CInfoMessages::OnKillMessage(const CNetMsg_Sv_KillMsg *pMsg)
 {
+	const int InfClassModeSpecialSkip = 0x100;
+	if(pMsg->m_ModeSpecial == InfClassModeSpecialSkip)
+	{
+		return;
+	}
 	CInfoMsg Kill = CreateInfoMsg(TYPE_KILL);
 
 	if(m_pClient->m_aClients[pMsg->m_Victim].m_Active)
@@ -271,6 +320,40 @@ void CInfoMessages::OnKillMessage(const CNetMsg_Sv_KillMsg *pMsg)
 	{
 		return; // message would be empty
 	}
+
+	AddInfoMsg(Kill);
+}
+
+void CInfoMessages::OnInfcKillMessage(const CNetMsg_Inf_KillMsg *pMsg)
+{
+	CInfoMsg Kill = CreateInfoMsg(TYPE_KILL);
+
+	Kill.m_TeamSize = 1;
+	Kill.m_aVictimIds[0] = pMsg->m_Victim;
+	Kill.m_VictimDDTeam = m_pClient->m_Teams.Team(Kill.m_aVictimIds[0]);
+	str_copy(Kill.m_aVictimName, m_pClient->m_aClients[Kill.m_aVictimIds[0]].m_aName);
+	Kill.m_apVictimManagedTeeRenderInfos[0] = std::make_shared<CManagedTeeRenderInfo>(
+		m_pClient->m_aClients[Kill.m_aVictimIds[0]].m_RenderInfo, m_pClient->m_aClients[Kill.m_aVictimIds[0]].ToSkinDescriptor());
+
+	Kill.m_KillerId = pMsg->m_Killer;
+	str_copy(Kill.m_aKillerName, m_pClient->m_aClients[Kill.m_KillerId].m_aName);
+	Kill.m_pKillerManagedTeeRenderInfo = std::make_shared<CManagedTeeRenderInfo>(
+		m_pClient->m_aClients[Kill.m_KillerId].m_RenderInfo, m_pClient->m_aClients[Kill.m_KillerId].ToSkinDescriptor());
+	Kill.m_AssistantID = pMsg->m_Assistant;
+	if(Kill.m_AssistantID >= 0 && Kill.m_AssistantID < MAX_CLIENTS && m_pClient->m_aClients[Kill.m_AssistantID].m_Active)
+	{
+		str_copy(Kill.m_aAssistantName, m_pClient->m_aClients[Kill.m_AssistantID].m_aName);
+		Kill.m_AssistantRenderInfo = m_pClient->m_aClients[Kill.m_AssistantID].m_RenderInfo;
+	}
+	else
+	{
+		Kill.m_aAssistantName[0] = '\0';
+		Kill.m_AssistantRenderInfo.Reset();
+	}
+
+	Kill.m_InfDamageType = pMsg->m_InfDamageType;
+	Kill.m_Weapon = pMsg->m_Weapon;
+	Kill.m_FlagCarrierBlue = m_pClient->m_Snap.m_pGameDataObj ? m_pClient->m_Snap.m_pGameDataObj->m_FlagCarrierBlue : -1;
 
 	AddInfoMsg(Kill);
 }
@@ -347,9 +430,35 @@ void CInfoMessages::RenderKillMsg(const CInfoMsg &InfoMsg, float x, float y)
 	}
 
 	// render weapon
-	x -= 32.0f;
-	if(InfoMsg.m_Weapon >= 0)
+	int VanillaWeapon = InfoMsg.m_Weapon;
+	if(InfoMsg.m_InfDamageType >= 0)
 	{
+		int Index = InfoMsg.m_InfDamageType;
+		EDamageType DamageType = static_cast<EDamageType>(InfoMsg.m_InfDamageType);
+		float AspectRatio = GameClient()->GetAspectTextureRatio(DamageType);
+		IGraphics::CTextureHandle DamageTypeTexture = GameClient()->GetInfclassTextureForDamageType(DamageType);
+		if(DamageTypeTexture.IsValid())
+		{
+			float ExtraOffset = 0;
+			static const float DefaultMetric = 32.0;
+			if(AspectRatio >= 1)
+			{
+				AspectRatio = 1;
+			}
+			else
+			{
+				ExtraOffset = (1 - AspectRatio) / 2;
+			}
+			Graphics()->TextureSet(DamageTypeTexture);
+			x -= DefaultMetric * AspectRatio;
+			Graphics()->RenderQuadContainerAsSprite(m_SpriteQuadContainerIndex, m_InfWeaponOffset + Index, x - ExtraOffset * DefaultMetric, y + 20);
+			VanillaWeapon = -1;
+		}
+	}
+
+	if(VanillaWeapon >= 0)
+	{
+		x -= 32.0f;
 		Graphics()->TextureSet(GameClient()->m_GameSkin.m_aSpriteWeapons[InfoMsg.m_Weapon]);
 		Graphics()->RenderQuadContainerAsSprite(m_SpriteQuadContainerIndex, 4 + InfoMsg.m_Weapon, x, y + 28);
 	}
@@ -375,6 +484,17 @@ void CInfoMessages::RenderKillMsg(const CInfoMsg &InfoMsg, float x, float y)
 			Graphics()->RenderQuadContainerAsSprite(m_SpriteQuadContainerIndex, QuadOffset, x - 56, y - 16);
 		}
 
+		if(InfoMsg.m_AssistantID >= 0)
+		{
+			// render assistant tee
+			x -= 24.0f;
+
+			vec2 OffsetToMid;
+			RenderTools()->GetRenderTeeOffsetToRenderedTee(CAnimState::GetIdle(), &InfoMsg.m_AssistantRenderInfo, OffsetToMid);
+			const vec2 TeeRenderPos = vec2(x, y + ROW_HEIGHT / 2.0f + OffsetToMid.y);
+			RenderTools()->RenderTee(CAnimState::GetIdle(), &InfoMsg.m_AssistantRenderInfo, EMOTE_ANGRY, vec2(1, 0), TeeRenderPos);
+		}
+
 		// render killer tee
 		x -= 24.0f;
 		if(InfoMsg.m_pKillerManagedTeeRenderInfo != nullptr)
@@ -385,6 +505,21 @@ void CInfoMessages::RenderKillMsg(const CInfoMsg &InfoMsg, float x, float y)
 			RenderTools()->RenderTee(CAnimState::GetIdle(), &InfoMsg.m_pKillerManagedTeeRenderInfo->TeeRenderInfo(), EMOTE_ANGRY, vec2(1, 0), TeeRenderPos);
 		}
 		x -= 32.0f;
+		if(InfoMsg.m_AssistantID >= 0)
+		{
+			// render assistant name
+			x -= TextRender()->GetBoundingBoxTextContainer(InfoMsg.m_AssistantTextContainerIndex).m_W;
+
+			if(InfoMsg.m_AssistantTextContainerIndex.Valid())
+			{
+				TextRender()->RenderTextContainer(InfoMsg.m_AssistantTextContainerIndex, TextColor, TextRender()->DefaultTextOutlineColor(), x, y + (46.f - 36.f) / 2.f);
+
+				ColorRGBA Color = color_cast<ColorRGBA>(ColorHSLA(g_Config.m_ClKillMessageHighlightColor));
+				
+				x -= TextRender()->GetBoundingBoxTextContainer(InfoMsg.m_AssistantPlusContainerIndex).m_W;
+				TextRender()->RenderTextContainer(InfoMsg.m_AssistantPlusContainerIndex, Color, TextRender()->DefaultTextOutlineColor(), x, y + (46.f - 36.f) / 2.f);
+			}
+		}
 
 		// render killer name
 		if(InfoMsg.m_KillerTextContainerIndex.Valid())

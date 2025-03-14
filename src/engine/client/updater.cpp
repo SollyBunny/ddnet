@@ -2,8 +2,10 @@
 
 #include "updater.h"
 #include <engine/client.h>
+#include <engine/client/infclass.h>
 #include <engine/engine.h>
 #include <engine/external/json-parser/json.h>
+#include <engine/shared/config.h>
 #include <engine/shared/http.h>
 #include <engine/shared/json.h>
 #include <engine/storage.h>
@@ -31,7 +33,7 @@ public:
 
 static const char *GetUpdaterUrl(char *pBuf, int BufSize, const char *pFile)
 {
-	str_format(pBuf, BufSize, "https://update.tclient.app/%s", pFile);
+	str_format(pBuf, BufSize, "https://update.tclient.app/%s", pFile); // TODO: own updater
 	return pBuf;
 }
 
