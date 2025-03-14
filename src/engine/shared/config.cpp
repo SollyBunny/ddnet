@@ -276,7 +276,7 @@ CConfigManager::CConfigManager()
 {
 	m_pConsole = nullptr;
 	m_pStorage = nullptr;
-	m_ConfigFile = nullptr;
+	m_ConfigFile = 0;
 	m_Failed = false;
 }
 
@@ -361,7 +361,9 @@ void CConfigManager::SetReadOnly(const char *pScriptName, bool ReadOnly)
 			return;
 		}
 	}
-	dbg_assert(false, "Invalid command for SetReadOnly: '%s'", pScriptName);
+	char aBuf[IConsole::CMDLINE_LENGTH + 32];
+	str_format(aBuf, sizeof(aBuf), "Invalid command for SetReadOnly: '%s'", pScriptName);
+	dbg_assert(false, aBuf);
 }
 
 bool CConfigManager::Save()
@@ -417,7 +419,7 @@ bool CConfigManager::Save()
 		log_error("config", "ERROR: closing %s failed", aConfigFileTmp);
 	}
 
-	m_ConfigFile = nullptr;
+	m_ConfigFile = 0;
 
 	if(m_Failed)
 	{
