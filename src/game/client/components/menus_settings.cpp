@@ -2878,19 +2878,15 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 
 		LeftView.HSplitTop(LineSize, &Button, &LeftView);
 		if(DoButton_CheckBox(&g_Config.m_ClNamePlatesStrong, Localize("Show hook strength icon indicator"), g_Config.m_ClNamePlatesStrong, &Button))
+		{
 			g_Config.m_ClNamePlatesStrong = g_Config.m_ClNamePlatesStrong ? 0 : 1;
+		}
 		LeftView.HSplitTop(LineSize, &Button, &LeftView);
 		if(g_Config.m_ClNamePlatesStrong)
 		{
 			static int s_NamePlatesStrong = 0;
 			if(DoButton_CheckBox(&s_NamePlatesStrong, Localize("Show hook strength number indicator"), g_Config.m_ClNamePlatesStrong == 2, &Button))
 				g_Config.m_ClNamePlatesStrong = g_Config.m_ClNamePlatesStrong != 2 ? 2 : 1;
-		}
-
-		LeftView.HSplitTop(LineSize * 2.0f, &Button, &LeftView);
-		if(g_Config.m_ClNamePlatesStrong)
-		{
-			Ui()->DoScrollbarOption(&g_Config.m_ClNamePlatesStrongSize, &g_Config.m_ClNamePlatesStrongSize, &Button, Localize("Size of hook strength icon and number indicator"), -50, 100, &CUi::ms_LinearScrollbarScale, CUi::SCROLLBAR_OPTION_MULTILINE);
 		}
 
 		// ***** Key Presses ***** //

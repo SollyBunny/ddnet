@@ -623,11 +623,6 @@ private:
 			return;
 		m_Inited = true;
 
-		AddPart<CNamePlatePartDirection>(This, DIRECTION_LEFT);
-		AddPart<CNamePlatePartDirection>(This, DIRECTION_UP);
-		AddPart<CNamePlatePartDirection>(This, DIRECTION_RIGHT);
-		AddPart<CNamePlatePartNewLine>(This);
-
 		AddPart<CNamePlatePartPing>(This); // TClient
 		AddPart<CNamePlatePartIgnoreMark>(This); // TClient
 		AddPart<CNamePlatePartClientId>(This, false);
@@ -649,6 +644,10 @@ private:
 		AddPart<CNamePlatePartHookStrongWeak>(This);
 		AddPart<CNamePlatePartHookStrongWeakId>(This);
 		AddPart<CNamePlatePartNewLine>(This);
+
+		AddPart<CNamePlatePartDirection>(This, DIRECTION_LEFT);
+		AddPart<CNamePlatePartDirection>(This, DIRECTION_UP);
+		AddPart<CNamePlatePartDirection>(This, DIRECTION_RIGHT);
 	}
 	void Update(CGameClient &This, const CNamePlateRenderData *pData)
 	{

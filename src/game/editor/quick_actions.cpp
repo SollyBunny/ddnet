@@ -218,15 +218,14 @@ void CEditor::DeleteSelectedLayer()
 
 void CEditor::TestMapLocally()
 {
-	const char *pFileNameNoMaps = str_startswith(m_aFileName, "maps/");
-	if(!pFileNameNoMaps)
+	if(!str_startswith(m_aFileName, "maps/"))
 	{
 		ShowFileDialogError("The map isn't saved in the maps/ folder. It must be saved there to load on the server.");
 		return;
 	}
 
 	char aFileNameNoExt[IO_MAX_PATH_LENGTH];
-	fs_split_file_extension(pFileNameNoMaps, aFileNameNoExt, sizeof(aFileNameNoExt));
+	IStorage::StripPathAndExtension(m_aFileName, aFileNameNoExt, sizeof(aFileNameNoExt));
 	char aBuf[IO_MAX_PATH_LENGTH + 64];
 
 	if(Client()->RconAuthed())
