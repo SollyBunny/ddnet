@@ -40,6 +40,8 @@ public:
 
 using PartsVector = std::vector<std::unique_ptr<CNamePlatePart>>;
 
+static const ColorRGBA s_OutlineColor = ColorRGBA(0.0f, 0.0f, 0.0f, 0.5f);
+
 class CNamePlatePartText : public CNamePlatePart
 {
 protected:
@@ -118,7 +120,7 @@ public:
 		else
 		{
 			Color = m_Color;
-			OutlineColor = This.TextRender()->DefaultTextOutlineColor().WithMultipliedAlpha(m_Color.a);
+			OutlineColor = OutlineColor.WithMultipliedAlpha(m_Color.a);
 			This.TextRender()->RenderTextContainer(m_TextContainerIndex,
 				Color, OutlineColor,
 				X - Size().x / 2.0f, Y - Size().y / 2.0f);
