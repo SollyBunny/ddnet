@@ -3170,6 +3170,8 @@ void CClient::Run()
 
 	GameClient()->OnInit();
 
+	m_Fifo.Init(m_pConsole, g_Config.m_ClInputFifo, CFGFLAG_CLIENT);
+
 	m_pConsole->Print(IConsole::OUTPUT_LEVEL_STANDARD, "client", "version " GAME_RELEASE_VERSION " on " CONF_PLATFORM_STRING " " CONF_ARCH_STRING, ColorRGBA(0.7f, 0.7f, 1.0f, 1.0f));
 	if(GIT_SHORTREV_HASH)
 	{
@@ -3186,8 +3188,6 @@ void CClient::Run()
 
 	// process pending commands
 	m_pConsole->StoreCommands(false);
-
-	m_Fifo.Init(m_pConsole, g_Config.m_ClInputFifo, CFGFLAG_CLIENT);
 
 	InitChecksum();
 	m_pConsole->InitChecksum(ChecksumData());
@@ -4460,6 +4460,17 @@ void CClient::ConchainReplays(IConsole::IResult *pResult, void *pUserData, ICons
 	}
 }
 
+void CClient::ConchainInputFifo(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
+{
+	CClient *pSelf = (CClient *)pUserData;
+	pfnCallback(pResult, pCallbackUserData);
+	if(pSelf->m_Fifo.IsInit())
+	{
+		pSelf->m_Fifo.Shutdown();
+		pSelf->m_Fifo.Init(pSelf->m_pConsole, pSelf->Config()->m_ClInputFifo, CFGFLAG_CLIENT);
+	}
+}
+
 void CClient::ConchainLoglevel(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
 {
 	CClient *pSelf = (CClient *)pUserData;
@@ -4525,6 +4536,7 @@ void CClient::RegisterCommands()
 
 	m_pConsole->Chain("cl_timeout_seed", ConchainTimeoutSeed, this);
 	m_pConsole->Chain("cl_replays", ConchainReplays, this);
+	m_pConsole->Chain("cl_input_fifo", ConchainInputFifo, this);
 
 	m_pConsole->Chain("password", ConchainPassword, this);
 

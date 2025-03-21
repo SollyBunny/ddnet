@@ -1407,7 +1407,6 @@ void CMenus::RenderSettingsGraphics(CUIRect MainView)
 	static int s_GfxFsaaSamples = g_Config.m_GfxFsaaSamples;
 	static bool s_GfxBackendChanged = false;
 	static bool s_GfxGpuChanged = false;
-	static int s_GfxHighdpi = g_Config.m_GfxHighdpi;
 
 	static int s_InitDisplayAllVideoModes = g_Config.m_GfxDisplayAllVideoModes;
 
@@ -1592,13 +1591,6 @@ void CMenus::RenderSettingsGraphics(CUIRect MainView)
 	if(DoButton_CheckBox(&g_Config.m_ClShowfps, Localize("Show FPS"), g_Config.m_ClShowfps, &Button))
 		g_Config.m_ClShowfps ^= 1;
 	GameClient()->m_Tooltips.DoToolTip(&g_Config.m_ClShowfps, &Button, Localize("Renders your frame rate in the top right"));
-
-	MainView.HSplitTop(20.0f, &Button, &MainView);
-	if(DoButton_CheckBox(&g_Config.m_GfxHighdpi, Localize("Use high DPI"), g_Config.m_GfxHighdpi, &Button))
-	{
-		CheckSettings = true;
-		g_Config.m_GfxHighdpi ^= 1;
-	}
 
 	MainView.HSplitTop(20.0f, &Button, &MainView);
 	str_copy(aBuf, " ");
@@ -1790,8 +1782,7 @@ void CMenus::RenderSettingsGraphics(CUIRect MainView)
 	{
 		m_NeedRestartGraphics = !(s_GfxFsaaSamples == g_Config.m_GfxFsaaSamples &&
 					  !s_GfxBackendChanged &&
-					  !s_GfxGpuChanged &&
-					  s_GfxHighdpi == g_Config.m_GfxHighdpi);
+					  !s_GfxGpuChanged);
 	}
 }
 
@@ -2442,7 +2433,7 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 
 		// ***** DDRace HUD ***** //
 		Ui()->DoLabel_AutoLineSize(Localize("DDRace HUD"), HeadlineFontSize,
-			TEXTALIGN_ML, &LeftView, HeadlineHeight);
+			TEXTALIGN_ML, &RightView, HeadlineHeight);
 		RightView.HSplitTop(MarginSmall, nullptr, &RightView);
 
 		// Switches of various DDRace HUD elements
