@@ -1006,11 +1006,6 @@ void CChat::OnPrepareLines(float y)
 		if(pText != Line.m_aText && pTextTranslated)
 			pTextTranslated = "Translated text hidden due to streamer mode";
 
-		if(g_Config.m_ClChatOld)
-		{
-			Line.m_HasRenderTee = false;
-		}
-
 		// get the y offset (calculate it if we haven't done that yet)
 		if(Line.m_aYOffset[OffsetType] < 0.0f)
 		{
