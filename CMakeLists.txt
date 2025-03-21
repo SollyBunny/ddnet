@@ -2405,6 +2405,8 @@ if(CLIENT)
     laser_data.h
     lineinput.cpp
     lineinput.h
+    nametags.cpp
+    nametags.h
     pickup_data.cpp
     pickup_data.h
     prediction/entities/character.cpp

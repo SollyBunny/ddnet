@@ -8,7 +8,7 @@
 #include <game/client/component.h>
 #include <game/generated/protocol.h>
 
-class CNamePlateRenderData
+class CNamePlateData
 {
 public:
 	bool m_InGame;
