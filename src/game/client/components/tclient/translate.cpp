@@ -66,29 +66,40 @@ class CTranslateBackendLibretranslate : public ITranslateBackend
 		}
 
 		const json_value *pDetectedLanguage = json_object_get(Obj, "detectedLanguage");
-		if(pDetectedLanguage != &json_value_none)
+		if(pDetectedLanguage == &json_value_none)
 		{
-			const json_value *pConfidence = json_object_get(pDetectedLanguage, "confidence");
-			if(pConfidence != &json_value_none && (
-				(pConfidence->type == json_double && pConfidence->u.dbl == 0.0) ||
-				(pConfidence->type == json_integer && pConfidence->u.integer == 0)))
-			{
-				str_copy(pOut, "Language unknown, not detected or not installed", Length);
-				return false;
-			}
+			str_copy(pOut, "No pDetectedLanguage", Length);
+			return false;
+		}
+		if(pDetectedLanguage->type != json_object)
+		{
+			str_copy(pOut, "pDetectedLanguage is not object", Length);
+			return false;
 		}
 
-		str_copy(pOut, pTranslatedText->u.string.ptr, Length);
-		if(pDetectedLanguage != &json_value_none)
+		const json_value *pConfidence = json_object_get(pDetectedLanguage, "confidence");
+		if(pConfidence == &json_value_none || (
+			(pConfidence->type == json_double && pConfidence->u.dbl == 0.0f) ||
+			(pConfidence->type == json_integer && pConfidence->u.integer == 0)))
 		{
-			const json_value *pLanguage = json_object_get(pDetectedLanguage, "language");
-			if(pLanguage != &json_value_none && pLanguage->type == json_string)
-			{
-				str_append(pOut, " [", Length);
-				str_append(pOut, pLanguage->u.string.ptr, Length);
-				str_append(pOut, "]", Length);
-			}
+			str_copy(pOut, "Language unknown, not detected or not installed", Length);
+			return false;
 		}
+
+		const json_value *pLanguage = json_object_get(pDetectedLanguage, "language");
+		if(pLanguage == &json_value_none)
+		{
+			str_copy(pOut, "No language", Length);
+			return false;
+		}
+		if(pLanguage->type != json_string)
+		{
+			str_copy(pOut, "language is not string", Length);
+			return false;
+		}
+
+		str_copy(pOut, pTranslatedText->u.string.ptr, Length - 1);
+		str_copy(pOut + strlen(pOut) + 1, pLanguage->u.string.ptr, Length - strlen(pOut) - 1);
 
 		return true;
 	}
@@ -197,10 +208,8 @@ class CTranslateBackendFtapi : public ITranslateBackend
 			return false;
 		}
 
-		str_copy(pOut, pTranslatedText->u.string.ptr, Length);
-		str_append(pOut, " [", Length);
-		str_append(pOut, pDetectedLanguage->u.string.ptr, Length);
-		str_append(pOut, "]", Length);
+		str_copy(pOut, pTranslatedText->u.string.ptr, Length - 1);
+		str_copy(pOut + strlen(pOut) + 1, pDetectedLanguage->u.string.ptr, Length - strlen(pOut) - 1);
 
 		return true;
 	}
@@ -285,54 +294,37 @@ CChat::CLine *CTranslate::FindMessage(const char *pName)
 	// No messages at all
 	if(GameClient()->m_Chat.m_CurrentLine < 0)
 		return nullptr;
-	CChat::CLine *pLine;
-	if(!pName)
+	CChat::CLine *pLineBest = nullptr;
+	int ScoreBest = -1;
+	for(int i = 0; i < CChat::MAX_LINES; i++)
 	{
-		for(int i = 0; i < CChat::MAX_LINES; i++)
+		CChat::CLine *pLine = &GameClient()->m_Chat.m_aLines[((GameClient()->m_Chat.m_CurrentLine - i) + CChat::MAX_LINES) % CChat::MAX_LINES];
+		if(pLine->m_TranslateId.has_value())
+			continue;
+		if(pLine->m_ClientId == CChat::CLIENT_MSG)
+			continue;
+		if(pLine->m_ClientId == CChat::SERVER_MSG)
+			continue;
+		for(int Id : GameClient()->m_aLocalIds)
+			if(pLine->m_ClientId == Id)
+				continue;
+		int Score = 0;
+		if(pName)
 		{
-			pLine = &GameClient()->m_Chat.m_aLines[((GameClient()->m_Chat.m_CurrentLine - i) + CChat::MAX_LINES) % CChat::MAX_LINES];
-			if(pLine->m_TranslateId.has_value())
-				continue;
-			if(pLine->m_ClientId == CChat::CLIENT_MSG)
-				continue;
-			for(int Id : GameClient()->m_aLocalIds)
-				if(pLine->m_ClientId == Id)
-					continue;
-			return pLine;
+			if(str_comp(pLine->m_aName, pName) == 0)
+				Score = 2;
+			else if(str_comp_nocase(pLine->m_aName, pName) == 0)
+				Score = 1;
+			else
+				Score = -1;
 		}
-		return nullptr;
+		if(Score > ScoreBest)
+		{
+			ScoreBest = Score;
+			pLineBest = pLine;
+		}
 	}
-	for(int i = 0; i < CChat::MAX_LINES; i++)
-	{
-		pLine = &GameClient()->m_Chat.m_aLines[((GameClient()->m_Chat.m_CurrentLine - i) + CChat::MAX_LINES) % CChat::MAX_LINES];
-		if(!pLine->m_TextContainerIndex.Valid())
-			continue;
-		if(pLine->m_TranslateId.has_value())
-			continue;
-		if(pLine->m_ClientId == CChat::CLIENT_MSG)
-			continue;
-		for(int Id : GameClient()->m_aLocalIds)
-			if(pLine->m_ClientId == Id)
-				continue;
-		if(str_comp(pLine->m_aName, pName) != 0)
-			continue;
-		return pLine;
-	}
-	for(int i = 0; i < CChat::MAX_LINES; i++)
-	{
-		pLine = &GameClient()->m_Chat.m_aLines[((GameClient()->m_Chat.m_CurrentLine - i) + CChat::MAX_LINES) % CChat::MAX_LINES];
-		if(pLine->m_TranslateId.has_value())
-			continue;
-		if(pLine->m_ClientId == CChat::CLIENT_MSG)
-			continue;
-		for(int Id : GameClient()->m_aLocalIds)
-			if(pLine->m_ClientId == Id)
-				continue;
-		if(str_comp_nocase(pLine->m_aName, pName) != 0)
-			continue;
-		return pLine;
-	}
-	return nullptr;
+	return pLineBest;
 }
 
 static std::atomic<unsigned int> s_NextTranslateId = 0;
@@ -389,7 +381,13 @@ void CTranslate::OnRender()
 		if(!Done.has_value())
 			return false; // Keep ongoing tasks
 		if(*Done)
-			str_copy(Job.m_pLine->m_aTextTranslated, aBuf);
+		{
+			// Check for no translation difference
+			if(str_comp_nocase(Job.m_pLine->m_aText, aBuf) == 0)
+				Job.m_pLine->m_aTextTranslated[0] = '\0';
+			else
+				str_format(Job.m_pLine->m_aTextTranslated, sizeof(Job.m_pLine->m_aTextTranslated), "%s [%s]", aBuf, aBuf + strlen(aBuf) + 1);
+		}
 		else
 			str_format(Job.m_pLine->m_aTextTranslated, sizeof(Job.m_pLine->m_aTextTranslated), "[%s to %s failed: %s]", Job.m_pBackend->Name(), g_Config.m_ClTranslateTarget, aBuf);
 		Job.m_pLine->m_Time = Time;

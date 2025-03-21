@@ -1001,7 +1001,7 @@ void CChat::OnPrepareLines(float y)
 			}
 		}
 
-		const char *pTextTranslated = Line.m_TranslateId.has_value() ? Line.m_aTextTranslated : nullptr;
+		const char *pTextTranslated = Line.m_TranslateId.has_value() && Line.m_aTextTranslated[0] != '\0' ? Line.m_aTextTranslated : nullptr;
 		// If hidden and there is translated text
 		if(pText != Line.m_aText && pTextTranslated)
 			pTextTranslated = "Translated text hidden due to streamer mode";
@@ -1044,7 +1044,9 @@ void CChat::OnPrepareLines(float y)
 			{
 				TextRender()->TextEx(&AppendCursor, pTextTranslated);
 				TextRender()->TextEx(&AppendCursor, "\n");
+				AppendCursor.m_FontSize *= 0.8f;
 				TextRender()->TextEx(&AppendCursor, pText);
+				AppendCursor.m_FontSize /= 0.8f;
 			}
 			else
 			{
@@ -1099,9 +1101,9 @@ void CChat::OnPrepareLines(float y)
 		else if(Line.m_NameColor == TEAM_BLUE)
 			NameColor = ColorRGBA(0.7f, 0.7f, 1.0f, 1.f);
 		else if(Line.m_NameColor == TEAM_SPECTATORS)
-			NameColor = ColorRGBA(0.75f, 0.5f, 0.75f, 1.f);
+			NameColor = ColorRGBA(0.8f, 0.5f, 0.8f, 1.f);
 		else if(Line.m_ClientId >= 0 && g_Config.m_ClChatTeamColors && m_pClient->m_Teams.Team(Line.m_ClientId))
-			NameColor = m_pClient->GetDDTeamColor(m_pClient->m_Teams.Team(Line.m_ClientId), 0.75f);
+			NameColor = m_pClient->GetDDTeamColor(m_pClient->m_Teams.Team(Line.m_ClientId), 0.8f);
 		else
 			NameColor = ColorRGBA(0.8f, 0.8f, 0.8f, 1.f);
 
@@ -1154,7 +1156,9 @@ void CChat::OnPrepareLines(float y)
 			ColorDarker.b *= 0.8f;
 			TextRender()->TextColor(ColorDarker);
 			TextRender()->CreateOrAppendTextContainer(Line.m_TextContainerIndex, &AppendCursor, "\n");
+			AppendCursor.m_FontSize *= 0.8f;
 			TextRender()->CreateOrAppendTextContainer(Line.m_TextContainerIndex, &AppendCursor, pText);
+			AppendCursor.m_FontSize /= 0.8f;
 			TextRender()->TextColor(Color);
 		}
 		else
