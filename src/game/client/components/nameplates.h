@@ -42,12 +42,11 @@ public:
 	float m_FontSizeHookStrongWeak;
 };
 
-class CNamePlate;
-
 class CNamePlates : public CComponent
 {
 private:
-	CNamePlate *m_pNamePlates;
+	class CNamePlatesData;
+	CNamePlatesData *m_pData;
 
 public:
 	void RenderNamePlateGame(vec2 Position, const CNetObj_PlayerInfo *pPlayerInfo, float Alpha);
