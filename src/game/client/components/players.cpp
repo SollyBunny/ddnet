@@ -1459,7 +1459,9 @@ void CPlayers::OnRender()
 		const int PlayerClass = pClientData ? pClientData->m_InfClassPlayerClass : -1;
 		if(PlayerClass == PLAYERCLASS_BOOMER)
 		{
-			if(Config()->m_InfcShowBoomerWeapon)
+			if(g_Config.m_InfcShowBoomerWeapon)
+				aRenderInfo[i].m_TeeRenderFlags &= ~TEE_NO_WEAPON;
+			else
 				aRenderInfo[i].m_TeeRenderFlags |= TEE_NO_WEAPON;
 		}
 
