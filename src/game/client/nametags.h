@@ -29,4 +29,3 @@ public:
 	void Render(CGameClient &This, vec2 Pos) const;
 	vec2 Size() const { return m_Size; };
 };
-

@@ -628,8 +628,8 @@ private:
 			if(Part.Visible())
 			{
 				Part.Render(This, vec2(
-					Pos.x + (Part.Padding().x + Part.Size().x) / 2.0f + Part.Offset().x,
-					Pos.y - std::max(Size.y, Part.Padding().y + Part.Size().y) / 2.0f + Part.Offset().y));
+							  Pos.x + (Part.Padding().x + Part.Size().x) / 2.0f + Part.Offset().x,
+							  Pos.y - std::max(Size.y, Part.Padding().y + Part.Size().y) / 2.0f + Part.Offset().y));
 			}
 			if(Part.Visible() || Part.ShiftOnInvis())
 				Pos.x += Part.Size().x + Part.Padding().x;

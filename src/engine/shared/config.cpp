@@ -381,7 +381,8 @@ bool CConfigManager::Save()
 	for(CONFIGDOMAIN ConfigDomain = CONFIGDOMAIN::START; ConfigDomain < CONFIGDOMAIN::NUM; ++ConfigDomain)
 	{
 		m_aConfigFile[ConfigDomain] = m_pStorage->OpenFile(IStorage::FormatTmpPath(
-			aaConfigFileTmp[ConfigDomain], sizeof(aaConfigFileTmp[ConfigDomain]), s_aConfigDomains[ConfigDomain].m_aConfigPath), IOFLAG_WRITE, IStorage::TYPE_SAVE);
+									   aaConfigFileTmp[ConfigDomain], sizeof(aaConfigFileTmp[ConfigDomain]), s_aConfigDomains[ConfigDomain].m_aConfigPath),
+			IOFLAG_WRITE, IStorage::TYPE_SAVE);
 
 		if(!m_aConfigFile[ConfigDomain])
 		{
@@ -414,7 +415,6 @@ bool CConfigManager::Save()
 		for(const auto &Callback : m_avCallbacks[ConfigDomain])
 			Callback.m_pfnFunc(this, Callback.m_pUserData);
 	}
-
 
 	if(!m_aFailed[CONFIGDOMAIN::DDNET])
 		for(const char *pCommand : m_vpUnknownCommands)

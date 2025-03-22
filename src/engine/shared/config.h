@@ -238,7 +238,7 @@ public:
 
 	void RegisterCallback(CONFIGDOMAIN ConfigDomain, SAVECALLBACKFUNC pfnFunc, void *pUserData) override;
 
-	void WriteLine(CONFIGDOMAIN ConfigDomain,const char *pLine) override;
+	void WriteLine(CONFIGDOMAIN ConfigDomain, const char *pLine) override;
 
 	void StoreUnknownCommand(const char *pCommand) override;
 

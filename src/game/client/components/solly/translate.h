@@ -1,15 +1,15 @@
 #ifndef GAME_CLIENT_COMPONENTS_TRANSLATE_H
 #define GAME_CLIENT_COMPONENTS_TRANSLATE_H
 #include <game/client/component.h>
-#include <vector>
 #include <optional>
+#include <vector>
 
 class CTranslate;
 
 class ITranslateBackend
 {
 public:
-	virtual ~ITranslateBackend() {};
+	virtual ~ITranslateBackend(){};
 	virtual const char *Name() const = 0;
 	// "[translated message]\0[guessed language code]"
 	virtual std::optional<bool> Update(char *pOut, size_t Length) = 0;

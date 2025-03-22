@@ -1,9 +1,9 @@
-#include <game/client/gameclient.h>
-#include <game/client/lineinput.h>
+#include <algorithm>
+#include <atomic>
 #include <engine/shared/json.h>
 #include <engine/shared/jsonwriter.h>
-#include <atomic>
-#include <algorithm>
+#include <game/client/gameclient.h>
+#include <game/client/lineinput.h>
 
 #include "translate.h"
 
@@ -78,9 +78,8 @@ class CTranslateBackendLibretranslate : public ITranslateBackend
 		}
 
 		const json_value *pConfidence = json_object_get(pDetectedLanguage, "confidence");
-		if(pConfidence == &json_value_none || (
-			(pConfidence->type == json_double && pConfidence->u.dbl == 0.0f) ||
-			(pConfidence->type == json_integer && pConfidence->u.integer == 0)))
+		if(pConfidence == &json_value_none || ((pConfidence->type == json_double && pConfidence->u.dbl == 0.0f) ||
+							      (pConfidence->type == json_integer && pConfidence->u.integer == 0)))
 		{
 			str_copy(pOut, "Language unknown, not detected or not installed", Length);
 			return false;
@@ -277,7 +276,7 @@ public:
 void CTranslate::ConTranslate(IConsole::IResult *pResult, void *pUserData)
 {
 	const char *pName;
-	if (pResult->NumArguments() == 0)
+	if(pResult->NumArguments() == 0)
 		pName = nullptr;
 	else
 		pName = pResult->GetString(0);
@@ -382,8 +381,7 @@ void CTranslate::Translate(CChat::CLine &Line, bool ShowProgress)
 void CTranslate::OnRender()
 {
 	auto Time = time();
-	auto ForEach = [GameClient = GameClient(), Time](CTranslateJob &Job)
-	{
+	auto ForEach = [GameClient = GameClient(), Time](CTranslateJob &Job) {
 		if(Job.m_pLine->m_TranslateId != Job.m_pTranslateId)
 			return true; // Not the same line anymore
 		char aBuf[sizeof(CChat::CLine::m_aText)];

@@ -15,7 +15,7 @@ enum CONFIGDOMAIN
 	START = 0
 };
 #undef CONFIG_DOMAIN
-static inline CONFIGDOMAIN& operator++(CONFIGDOMAIN& domain)
+static inline CONFIGDOMAIN &operator++(CONFIGDOMAIN &domain)
 {
 	return domain = static_cast<CONFIGDOMAIN>(static_cast<int>(domain) + 1);
 }
