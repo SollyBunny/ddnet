@@ -2,9 +2,11 @@
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #ifndef GAME_VERSION_H
 #define GAME_VERSION_H
-#ifndef GAME_RELEASE_VERSION
+
+extern const char *GIT_SHORTREV_HASH;
+#define BUILD_DATE __DATE__ ", " __TIME__
+
 #define GAME_RELEASE_VERSION "19.2"
-#endif
 
 // teeworlds
 #define CLIENT_VERSION7 0x0705
@@ -14,11 +16,12 @@
 
 // ddnet
 #define DDNET_VERSION_NUMBER 19020
-extern const char *GIT_SHORTREV_HASH;
 #define GAME_NAME "DDNet"
-#define CLIENT_NAME "TClient"
-#ifndef TCLIENT_VERSION
+
+// mods
+#define SOLLY_VERSION "0.0.0"
 #define TCLIENT_VERSION "10.1.2"
-#endif
+#define CLIENT_NAME "Solly"
+#define CLIENT_NAME_FULL "Solly: " SOLLY_VERSION " TClient: " TCLIENT_VERSION " DDNet: " GAME_RELEASE_VERSION " Built: " BUILD_DATE " Commit: %s"
 
 #endif

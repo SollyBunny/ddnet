@@ -182,26 +182,25 @@ void CMenus::RenderStartMenu(CUIRect MainView)
 	}
 
 	// render version
-	CUIRect CurVersion, ConsoleButton;
-	MainView.HSplitBottom(45.0f, nullptr, &CurVersion);
-	CurVersion.VSplitRight(40.0f, &CurVersion, nullptr);
-	CurVersion.HSplitTop(20.0f, &ConsoleButton, &CurVersion);
-	CurVersion.HSplitTop(5.0f, nullptr, &CurVersion);
-	ConsoleButton.VSplitRight(40.0f, nullptr, &ConsoleButton);
-	Ui()->DoLabel(&CurVersion, GAME_RELEASE_VERSION, 14.0f, TEXTALIGN_MR);
+	{
+		CUIRect Version;
+		MainView.HSplitTop(40.0f, &Version, nullptr);
+		char aBuf[128];
+		str_format(aBuf, sizeof(aBuf), CLIENT_NAME_FULL, GIT_SHORTREV_HASH ? GIT_SHORTREV_HASH : "Unknown");
+		Ui()->DoLabel(&Version, aBuf, 14.0f, TEXTALIGN_CENTER);
+	}
 
-	CUIRect TClientVersion;
-	MainView.HSplitTop(75.0f, &TClientVersion, nullptr);
-	MainView.HSplitTop(15.0f, &TClientVersion, nullptr);
-	TClientVersion.VSplitRight(40.0f, &TClientVersion, nullptr);
-	char aTBuf[64];
-	str_format(aTBuf, sizeof(aTBuf), "TClient %s", TCLIENT_VERSION);
-	Ui()->DoLabel(&TClientVersion, aTBuf, 14.0f, TEXTALIGN_MR);
+	CUIRect ConsoleButton, Dummy;
+	MainView.HSplitBottom(45.0f, nullptr, &ConsoleButton);
+	ConsoleButton.VSplitRight(40.0f, &ConsoleButton, nullptr);
+	ConsoleButton.HSplitTop(20.0f, &Dummy, &ConsoleButton);
+	ConsoleButton.HSplitTop(5.0f, nullptr, &ConsoleButton);
+	Dummy.VSplitRight(40.0f, nullptr, &Dummy);
 
 	static CButtonContainer s_ConsoleButton;
 	TextRender()->SetFontPreset(EFontPreset::ICON_FONT);
 	TextRender()->SetRenderFlags(ETextRenderFlags::TEXT_RENDER_FLAG_ONLY_ADVANCE_WIDTH | ETextRenderFlags::TEXT_RENDER_FLAG_NO_X_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_Y_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_PIXEL_ALIGNMENT | ETextRenderFlags::TEXT_RENDER_FLAG_NO_OVERSIZE);
-	if(DoButton_Menu(&s_ConsoleButton, FONT_ICON_TERMINAL, 0, &ConsoleButton, BUTTONFLAG_LEFT, nullptr, IGraphics::CORNER_ALL, 5.0f, 0.0f, ColorRGBA(0.0f, 0.0f, 0.0f, 0.1f)))
+	if(DoButton_Menu(&s_ConsoleButton, FONT_ICON_TERMINAL, 0, &Dummy, BUTTONFLAG_LEFT, nullptr, IGraphics::CORNER_ALL, 5.0f, 0.0f, ColorRGBA(0.0f, 0.0f, 0.0f, 0.1f)))
 	{
 		GameClient()->m_GameConsole.Toggle(CGameConsole::CONSOLETYPE_LOCAL);
 	}
