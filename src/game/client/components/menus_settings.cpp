@@ -1997,8 +1997,9 @@ void CMenus::RenderSettings(CUIRect MainView)
 		Localize("Sound"),
 		Localize("DDNet"),
 		Localize("Assets"),
+		Localize("Profiles"),
 		TCLocalize("TClient"),
-		Localize("Profiles")};
+		Localize("InfClass")};
 
 	static CButtonContainer s_aTabButtons[SETTINGS_LENGTH];
 
@@ -2063,15 +2064,20 @@ void CMenus::RenderSettings(CUIRect MainView)
 		GameClient()->m_MenuBackground.ChangePosition(CMenuBackground::POS_SETTINGS_ASSETS);
 		RenderSettingsCustom(MainView);
 	}
-	else if(g_Config.m_UiSettingsPage == SETTINGS_TCLIENT)
-	{
-		GameClient()->m_MenuBackground.ChangePosition(13);
-		RenderSettingsTClient(MainView);
-	}
 	else if(g_Config.m_UiSettingsPage == SETTINGS_PROFILES)
 	{
-		GameClient()->m_MenuBackground.ChangePosition(14);
+		GameClient()->m_MenuBackground.ChangePosition(13);
 		RenderSettingsProfiles(MainView);
+	}
+	else if(g_Config.m_UiSettingsPage == SETTINGS_TCLIENT)
+	{
+		GameClient()->m_MenuBackground.ChangePosition(14);
+		RenderSettingsTClient(MainView);
+	}
+	else if(g_Config.m_UiSettingsPage == SETTINGS_INFCLASS)
+	{
+		GameClient()->m_MenuBackground.ChangePosition(15);
+		RenderSettingsInfClass(MainView);
 	}
 	else
 	{
@@ -2470,16 +2476,6 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 		{
 			Ui()->DoScrollbarOption(&g_Config.m_ClFreezeBarsAlphaInsideFreeze, &g_Config.m_ClFreezeBarsAlphaInsideFreeze, &Button, Localize("Opacity of freeze bars inside freeze"), 0, 100, &CUi::ms_LinearScrollbarScale, CUi::SCROLLBAR_OPTION_MULTILINE, "%");
 		}
-
-		// ***** Infclass HUD ***** //
-		RightView.HSplitTop(MarginBetweenViews, nullptr, &RightView);
-		Ui()->DoLabel_AutoLineSize(Localize("Infclass HUD"), HeadlineFontSize,
-			TEXTALIGN_ML, &LeftView, HeadlineHeight);
-		RightView.HSplitTop(MarginSmall, nullptr, &LeftView);
-
-		// Switches of various DDRace HUD elements
-		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_InfcUseDDRaceHUD, Localize("Use DDRace HUD for Infclass"), &g_Config.m_InfcUseDDRaceHUD, &RightView, LineSize);
-		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_InfcShowHookProtection, Localize("Show player hook protection"), &g_Config.m_InfcShowHookProtection, &RightView, LineSize);
 	}
 	else if(s_CurTab == APPEARANCE_TAB_CHAT)
 	{
@@ -3498,6 +3494,26 @@ void CMenus::RenderSettingsDDNet(CUIRect MainView)
 		TextRender()->TextColor(1.0f, 1.0f, 1.0f, 1.0f);
 	}
 #endif
+}
+
+void CMenus::RenderSettingsInfClass(CUIRect MainView)
+{
+	const float LineSize = 20.0f;
+	const float HeadlineFontSize = 20.0f;
+	const float HeadlineHeight = 30.0f;
+	const float MarginSmall = 5.0f;
+	const float MarginBetweenViews = 20.0f;
+
+	CUIRect LeftView, RightView;
+	MainView.VSplitMid(&LeftView, &RightView, MarginBetweenViews);
+
+	// ***** Infclass HUD ***** //
+	Ui()->DoLabel_AutoLineSize(Localize("Infclass HUD"), HeadlineFontSize, TEXTALIGN_ML, &LeftView, HeadlineHeight);
+	LeftView.HSplitTop(MarginSmall, nullptr, &LeftView);
+
+	// Switches of various DDRace HUD elements
+	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_InfcUseDDRaceHUD, Localize("Use DDRace HUD for Infclass"), &g_Config.m_InfcUseDDRaceHUD, &LeftView, LineSize);
+	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_InfcShowHookProtection, Localize("Show player hook protection"), &g_Config.m_InfcShowHookProtection, &LeftView, LineSize);
 }
 
 CUi::EPopupMenuFunctionResult CMenus::PopupMapPicker(void *pContext, CUIRect View, bool Active)
