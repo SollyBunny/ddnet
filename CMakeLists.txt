@@ -2455,14 +2455,14 @@ if(CLIENT)
     components/skins.h
     components/skins7.cpp
     components/skins7.h
+    components/solly/translate.cpp
+    components/solly/translate.h
     components/sounds.cpp
     components/sounds.h
     components/spectator.cpp
     components/spectator.h
     components/statboard.cpp
     components/statboard.h
-    components/solly/translate.cpp
-    components/solly/translate.h
     components/tclient/bindchat.cpp
     components/tclient/bindchat.h
     components/tclient/bindwheel.cpp
