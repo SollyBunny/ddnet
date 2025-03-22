@@ -49,7 +49,8 @@ void CMenus::RenderStartMenu(CUIRect MainView)
 	static CButtonContainer s_DiscordButton;
 	if(DoButton_Menu(&s_DiscordButton, Localize("Discord"), 0, &Button, BUTTONFLAG_LEFT, nullptr, IGraphics::CORNER_ALL, 5.0f, 0.0f, ColorRGBA(0.0f, 0.0f, 0.0f, 0.25f)))
 	{
-		Client()->ViewLink(Localize("https://ddnet.org/discord"));
+		const char *pLink = Localize("https://infclass.github.io/discord");
+		Client()->ViewLink(pLink);
 	}
 
 	ExtMenu.HSplitBottom(5.0f, &ExtMenu, nullptr); // little space
@@ -94,7 +95,8 @@ void CMenus::RenderStartMenu(CUIRect MainView)
 	static CButtonContainer s_WebsiteButton;
 	if(DoButton_Menu(&s_WebsiteButton, Localize("Website"), 0, &Button, BUTTONFLAG_LEFT, nullptr, IGraphics::CORNER_ALL, 5.0f, 0.0f, ColorRGBA(0.0f, 0.0f, 0.0f, 0.25f)))
 	{
-		Client()->ViewLink("https://ddnet.org/");
+		const char *pLink = "https://infclass.github.io";
+		Client()->ViewLink(pLink);
 	}
 
 	ExtMenu.HSplitBottom(5.0f, &ExtMenu, nullptr); // little space
@@ -242,7 +244,8 @@ void CMenus::RenderStartMenu(CUIRect MainView)
 
 	if(State == IUpdater::CLEAN && NeedUpdate)
 	{
-		str_format(aBuf, sizeof(aBuf), Localize("TClient %s is out!"), GameClient()->m_Tater.m_aVersionStr);
+		str_format(aBuf, sizeof(aBuf), Localize("DDNet %s is out!"), Client()->LatestVersion());
+		CUi::ReplaceHardcodedGameName(aBuf, aBuf, sizeof(aBuf));
 		TextRender()->TextColor(1.0f, 0.4f, 0.4f, 1.0f);
 	}
 	else if(State == IUpdater::CLEAN)
@@ -271,7 +274,10 @@ void CMenus::RenderStartMenu(CUIRect MainView)
 	if(str_comp(Client()->LatestVersion(), "0") != 0 && false)
 	{
 		char aBuf[64];
-		str_format(aBuf, sizeof(aBuf), Localize("DDNet %s is out!"), Client()->LatestVersion());
+		const char *pText = Localize("DDNet %s is out!");
+		pText = CUi::ReplaceHardcodedGameName(pText);
+		str_format(aBuf, sizeof(aBuf), pText, Client()->LatestVersion());
+
 		TextRender()->TextColor(TextRender()->DefaultTextColor());
 		Ui()->DoLabel(&VersionUpdate, aBuf, 14.0f, TEXTALIGN_MC);
 	}

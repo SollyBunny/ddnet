@@ -140,6 +140,12 @@ public:
 	// TClient
 	CNetObj_PlayerInput *LatestInput() { return &m_LatestInput; };
 
+	int GetPlayerClass() const { return m_InfClassClass; }
+	int m_InfClassClass;
+
+private:
+	void SaturateVelocity(vec2 Force, float MaxSpeed);
+
 private:
 	// weapon info
 	int m_aHitObjects[10];

@@ -44,6 +44,11 @@ LaserTypes = ["RIFLE", "SHOTGUN", "DOOR", "FREEZE", "DRAGGER", "GUN", "PLASMA"]
 DraggerTypes = ["WEAK", "WEAK_NW", "NORMAL", "NORMAL_NW", "STRONG", "STRONG_NW"]
 GunTypes = ["UNFREEZE", "EXPLOSIVE", "FREEZE", "EXPFREEZE"]
 
+InfClassPlayerFlags = ["INFECTED", "HOOK_PROTECTION_OFF"]
+InfClassObjectFlags = ["HAS_SECOND_POSITION", "RELY_ON_CLIENTSIDE_RENDERING"]
+InfClassClassInfoFlags = ["IS_INVISIBLE"]
+InfClassObjectTypes = ["CUSTOM", "LASER_WALL", "LOOPER_WALL", "SOLDIER_BOMB", "SCIENTIST_MINE", "BIOLOGIST_MINE", "MERCENARY_BOMB", "TURRET"]
+
 Emoticons = ["OOP", "EXCLAMATION", "HEARTS", "DROP", "DOTDOT", "MUSIC", "SORRY", "GHOST", "SUSHI", "SPLATTEE", "DEVILTEE", "ZOMG", "ZZZ", "WTF", "EYES", "QUESTION"]
 
 Powerups = ["HEALTH", "ARMOR", "WEAPON", "NINJA", "ARMOR_SHOTGUN", "ARMOR_GRENADE", "ARMOR_NINJA", "ARMOR_LASER"]
@@ -85,6 +90,7 @@ Enums = [
 	Enum("LASERDRAGGERTYPE", DraggerTypes),
 	Enum("LASERGUNTYPE", GunTypes),
 	Enum("TEAM", Teams, -2),
+	Enum("INFCLASS_OBJECT_TYPE", InfClassObjectTypes),
 ]
 
 Flags = [
@@ -98,6 +104,9 @@ Flags = [
 	Flags("LEGACYPROJECTILEFLAG", LegacyProjectileFlags),
 	Flags("PROJECTILEFLAG", ProjectileFlags),
 	Flags("LASERFLAG", LaserFlags),
+	Flags("INFCLASS_PLAYER_FLAG", InfClassPlayerFlags),
+	Flags("INFCLASS_OBJECT_FLAG", InfClassObjectFlags),
+	Flags("INFCLASS_CLASSINFO_FLAG", InfClassClassInfoFlags),
 ]
 
 Objects = [
@@ -242,6 +251,38 @@ Objects = [
 
 	NetObjectEx("MyOwnObject", "my-own-object@heinrich5991.de", [
 		NetIntAny("m_Test"),
+	]),
+
+	NetObjectEx("InfClassObject", "object@infclass", [
+		NetIntAny("m_Flags", 0),
+		NetIntRange("m_Owner", -1, 'MAX_CLIENTS-1', -1),
+		NetIntAny("m_X", 0),
+		NetIntAny("m_Y", 0),
+		NetIntAny("m_X2", 0),
+		NetIntAny("m_Y2", 0),
+		NetIntAny("m_Type", 0),
+		NetIntAny("m_StartTick", 0),
+		NetIntAny("m_EndTick", 0),
+		NetIntAny("m_ProximityRadius", 0),
+		NetIntAny("m_Data1", 0),
+	], validate_size=False),
+
+	NetObjectEx("InfClassPlayer", "player@infclass", [
+		NetIntAny("m_Flags"),
+		NetIntRange("m_Class", -1, 255),
+	]),
+
+	NetObjectEx("InfClassGameInfo", "gameinfo@infclass", [
+		NetIntAny("m_Version", 0),
+		NetIntAny("m_Flags", 0),
+		NetIntRange("m_TimeLimitInSeconds", 0, 'max_int', 0),
+		NetIntAny("m_HeroGiftTick", -1),
+	], validate_size=False),
+
+	NetObjectEx("InfClassClassInfo", "classinfo@infclass", [
+		NetIntAny("m_Flags"),
+		NetIntRange("m_Class", -1, 255),
+		NetIntAny("m_Data1"),
 	]),
 
 	NetObjectEx("DDNetCharacter", "character@netobj.ddnet.tw", [
@@ -462,6 +503,20 @@ Messages = [
 		NetIntRange("m_No", 0, 'MAX_CLIENTS'),
 		NetIntRange("m_Pass", 0, 'MAX_CLIENTS'),
 		NetIntRange("m_Total", 0, 'MAX_CLIENTS'),
+	]),
+
+	NetMessageEx("Inf_KillMsg", "kill-ex1@infclass", [
+		NetIntRange("m_Victim", 0, 'MAX_CLIENTS-1'),
+		NetIntRange("m_Killer", -1, 'MAX_CLIENTS-1'),
+		NetIntRange("m_Assistant", -1, 'MAX_CLIENTS-1'),
+		NetIntAny("m_InfDamageType"),
+		NetIntRange("m_Weapon", -3, 'NUM_WEAPONS-1'),
+	]),
+
+	NetMessageEx("InfClass_ServerParams", "server-params1@infclass", [
+		NetIntAny("m_Version", 0),
+		NetIntRange("m_WhiteHoleMinKills", 0, 255, 0),
+		NetIntRange("m_SoldierBombs", 0, 255, 0),
 	]),
 
 	### Client messages

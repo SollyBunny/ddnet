@@ -26,6 +26,8 @@
 #include <engine/storage.h>
 #include <engine/textrender.h>
 
+#include <engine/client/infclass.h>
+#include <engine/client/notifications.h>
 #include <engine/shared/assertion_logger.h>
 #include <engine/shared/compression.h>
 #include <engine/shared/config.h>
@@ -235,6 +237,10 @@ void CClient::SendInfo(int Conn)
 		SendMsg(Conn, &Msg, MSGFLAG_VITAL | MSGFLAG_FLUSH);
 		return;
 	}
+
+	CMsgPacker MsgVerInfclass(NETMSG_CLIENTVER_INFCLASS, true);
+	MsgVerInfclass.AddInt(INFCLASS_CLIENT_VERSION);
+	SendMsg(Conn, &MsgVerInfclass, MSGFLAG_VITAL);
 
 	CMsgPacker Msg(NETMSG_INFO, true);
 	Msg.AddString(GameClient()->NetVersion());
@@ -2461,6 +2467,60 @@ void CClient::ResetDDNetInfoTask()
 	}
 }
 
+void CClient::ResetInfclassInfoTask()
+{
+	if(m_pInfClassInfoTask)
+	{
+		m_pInfClassInfoTask->Abort();
+		m_pInfClassInfoTask = NULL;
+	}
+}
+
+void CClient::FinishInfclassInfo()
+{
+	if(m_ServerBrowser.InfclassInfoSha256() == m_pInfClassInfoTask->ResultSha256())
+	{
+		log_debug("client/info", "DDNet info already up-to-date");
+		return;
+	}
+
+	char aTempFilename[IO_MAX_PATH_LENGTH];
+	IStorage::FormatTmpPath(aTempFilename, sizeof(aTempFilename), INFCLASS_INFO_FILE);
+	IOHANDLE File = Storage()->OpenFile(aTempFilename, IOFLAG_WRITE, IStorage::TYPE_SAVE);
+	if(!File)
+	{
+		log_error("client/info", "Failed to open temporary Infclass info '%s' for writing", aTempFilename);
+		return;
+	}
+
+	unsigned char *pResult;
+	size_t ResultLength;
+	m_pInfClassInfoTask->Result(&pResult, &ResultLength);
+	bool Error = io_write(File, pResult, ResultLength) != ResultLength;
+	Error |= io_close(File) != 0;
+	if(Error)
+	{
+		log_error("client/info", "Error writing temporary Infclass info to file '%s'", aTempFilename);
+		return;
+	}
+
+	if(Storage()->FileExists(INFCLASS_INFO_FILE, IStorage::TYPE_SAVE) && !Storage()->RemoveFile(INFCLASS_INFO_FILE, IStorage::TYPE_SAVE))
+	{
+		log_error("client/info", "Failed to remove old DDNet info '%s'", INFCLASS_INFO_FILE);
+		Storage()->RemoveFile(aTempFilename, IStorage::TYPE_SAVE);
+		return;
+	}
+	if(!Storage()->RenameFile(aTempFilename, INFCLASS_INFO_FILE, IStorage::TYPE_SAVE))
+	{
+		log_error("client/info", "Failed to rename temporary DDNet info '%s' to '%s'", aTempFilename, INFCLASS_INFO_FILE);
+		Storage()->RemoveFile(aTempFilename, IStorage::TYPE_SAVE);
+		return;
+	}
+
+	log_debug("client/info", "Loading new Infclass info");
+	LoadInfclassInfo();
+}
+
 typedef std::tuple<int, int, int> TVersion;
 static const TVersion gs_InvalidVersion = std::make_tuple(-1, -1, -1);
 
@@ -2492,6 +2552,7 @@ void CClient::LoadDDNetInfo()
 		return;
 
 	const json_value &DDNetInfo = *pDDNetInfo;
+#if 0
 	const json_value &CurrentVersion = DDNetInfo["version"];
 	if(CurrentVersion.type == json_string)
 	{
@@ -2520,6 +2581,7 @@ void CClient::LoadDDNetInfo()
 		str_copy(m_aNews, News);
 	}
 
+#endif
 	const json_value &MapDownloadUrl = DDNetInfo["map-download-url"];
 	if(MapDownloadUrl.type == json_string)
 	{
@@ -2563,6 +2625,43 @@ void CClient::LoadDDNetInfo()
 	}
 	const json_value &WarnPngliteIncompatibleImages = DDNetInfo["warn-pnglite-incompatible-images"];
 	Graphics()->WarnPngliteIncompatibleImages(WarnPngliteIncompatibleImages.type == json_boolean && (bool)WarnPngliteIncompatibleImages);
+}
+
+void CClient::LoadInfclassInfo()
+{
+	const json_value *pInfclassInfo = m_ServerBrowser.LoadInfclassInfo();
+
+	if(!pInfclassInfo)
+		return;
+	
+	const json_value &InfclassInfo = *pInfclassInfo;
+	const json_value &CurrentVersion = InfclassInfo["version"];
+	if(CurrentVersion.type == json_string)
+	{
+		char aNewVersionStr[64];
+		str_copy(aNewVersionStr, CurrentVersion, sizeof(aNewVersionStr));
+		char aCurVersionStr[64];
+		str_copy(aCurVersionStr, GAME_RELEASE_VERSION, sizeof(aCurVersionStr));
+		if(ToVersion(aNewVersionStr) > ToVersion(aCurVersionStr))
+		{
+			str_copy(m_aVersionStr, CurrentVersion, sizeof(m_aVersionStr));
+		}
+		else
+		{
+			m_aVersionStr[0] = '0';
+			m_aVersionStr[1] = '\0';
+		}
+	}
+
+	const json_value &News = InfclassInfo["news"];
+	if(News.type == json_string)
+	{
+		// Only mark news button if something new was added to the news
+		if(m_aNews[0] && str_find(m_aNews, News) == nullptr)
+			g_Config.m_UiUnreadNews = true;
+
+		str_copy(m_aNews, News, sizeof(m_aNews));
+	}
 }
 
 int CClient::ConnectNetTypes() const
@@ -2973,6 +3072,19 @@ void CClient::Update()
 		}
 	}
 
+	if(m_pInfClassInfoTask)
+	{
+		if(m_pInfClassInfoTask->State() == EHttpState::DONE)
+		{
+			FinishInfclassInfo();
+			ResetInfclassInfoTask();
+		}
+		else if(m_pInfClassInfoTask->State() == EHttpState::ERROR || m_pInfClassInfoTask->State() == EHttpState::ABORTED)
+		{
+			ResetInfclassInfoTask();
+		}
+	}
+
 	if(State() == IClient::STATE_ONLINE)
 	{
 		if(!m_EditJobs.empty())
@@ -3158,6 +3270,7 @@ void CClient::Run()
 	m_ServerBrowser.OnInit();
 	// loads the existing ddnet info file if it exists
 	LoadDDNetInfo();
+	LoadInfclassInfo();
 
 	LoadDebugFont();
 
@@ -3987,6 +4100,8 @@ const char *CClient::DemoPlayer_Play(const char *pFilename, int StorageType)
 	str_copy(m_CurrentServerInfo.m_aMap, pMapInfo->m_aName);
 	m_CurrentServerInfo.m_MapCrc = pMapInfo->m_Crc;
 	m_CurrentServerInfo.m_MapSize = pMapInfo->m_Size;
+	if(str_startswith(m_CurrentServerInfo.m_aMap, "infc_"))
+		str_copy(m_CurrentServerInfo.m_aGameType, "InfclassR");
 
 	GameClient()->OnConnected();
 
@@ -5149,6 +5264,23 @@ void CClient::RequestDDNetInfo()
 	// Use ipv4 so we can know the ingame ip addresses of players before they join game servers
 	m_pDDNetInfoTask->IpResolve(IPRESOLVE::V4);
 	Http()->Run(m_pDDNetInfoTask);
+
+	RequestInfclassInfo();
+}
+
+void CClient::RequestInfclassInfo()
+{
+	if(m_pInfClassInfoTask && !m_pInfClassInfoTask->Done())
+		return;
+
+	char aUrl[256];
+	str_format(aUrl, sizeof(aUrl), "%s/info.json", g_Config.m_InfcUpdatesUrl);
+
+	// Use ipv4 so we can know the ingame ip addresses of players before they join game servers
+	m_pInfClassInfoTask = HttpGet(aUrl);
+	m_pInfClassInfoTask->Timeout(CTimeout{10000, 0, 500, 10});
+	m_pInfClassInfoTask->IpResolve(IPRESOLVE::V4);
+	Http()->Run(m_pInfClassInfoTask);
 }
 
 int CClient::GetPredictionTime()

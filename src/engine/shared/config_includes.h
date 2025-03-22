@@ -11,6 +11,9 @@ SET_CONFIG_DOMAIN(CONFIGDOMAIN::DDNET)
 SET_CONFIG_DOMAIN(CONFIGDOMAIN::SOLLY)
 #include "config_variables_solly.h"
 
+SET_CONFIG_DOMAIN(CONFIGDOMAIN::INF)
+#include "config_variables_inf.h"
+
 SET_CONFIG_DOMAIN(CONFIGDOMAIN::TATER)
 #include "config_variables_tater.h"
 

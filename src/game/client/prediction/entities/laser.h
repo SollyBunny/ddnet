@@ -12,7 +12,11 @@ class CLaser : public CEntity
 	friend class CGameWorld;
 
 public:
-	CLaser(CGameWorld *pGameWorld, vec2 Pos, vec2 Direction, float StartEnergy, int Owner, int Type);
+	enum EBounce {
+		Bounce,
+		NoBounce
+	};
+	CLaser(CGameWorld *pGameWorld, vec2 Pos, vec2 Direction, float StartEnergy, int Owner, int Type, EBounce B = Bounce);
 
 	void Tick() override;
 
@@ -22,6 +26,10 @@ public:
 	CLaser(CGameWorld *pGameWorld, int Id, CLaserData *pLaser);
 	bool Match(CLaser *pLaser);
 	CLaserData GetData() const;
+
+	void SetExplosive(bool Explosive);
+	void SetBouncing(int Value);
+	void EnableBounce() { DoBounce(); }
 
 protected:
 	bool HitCharacter(vec2 From, vec2 To);
@@ -41,6 +49,8 @@ private:
 	vec2 m_PrevPos;
 	int m_Type;
 	int m_TuneZone;
+	int m_Bouncing = -1;
+	bool m_Explosive = false;
 };
 
 #endif

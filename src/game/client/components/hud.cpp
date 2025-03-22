@@ -5,6 +5,7 @@
 #include <engine/shared/config.h>
 #include <engine/textrender.h>
 
+#include <game/classes.h>
 #include <game/client/animstate.h>
 #include <game/client/components/scoreboard.h>
 #include <game/client/gameclient.h>
@@ -107,6 +108,7 @@ void CHud::OnInit()
 	m_FlagOffset = RenderTools()->QuadContainerAddSprite(m_HudQuadContainerIndex, 0.f, 0.f, 8.f, 16.f);
 
 	PreparePlayerStateQuads();
+	PrepareInfclassHudQuads();
 
 	Graphics()->QuadContainerUpload(m_HudQuadContainerIndex);
 }
@@ -527,6 +529,111 @@ void CHud::RenderWarmupTimer()
 	}
 }
 
+float CHud::FormatTimerText(char *pDest, int DestSize, int Ticks, bool ForceLongFormat, float ShowFractionIfLessThan)
+{
+	if(Ticks < 0)
+	{
+		str_copy(pDest, "N/A", DestSize);
+		return -1;
+	}
+
+	int RemainingTicks = Ticks - Client()->GameTick(g_Config.m_ClDummy);
+	if(RemainingTicks < 0)
+		RemainingTicks = 0;
+
+	int CentiSeconds = RemainingTicks * 10 / Client()->GameTickSpeed();
+
+	const float ResultTime = CentiSeconds / 10.0f;
+	int Seconds = ResultTime;
+
+	bool ShowFraction = ResultTime <= ShowFractionIfLessThan;
+
+	if(!ShowFraction)
+	{
+		if(CentiSeconds % 10)
+		{
+			Seconds += 1;
+		}
+	}
+
+	const int Minutes = Seconds / 60;
+	Seconds = Seconds % 60;
+
+	if(Minutes || ForceLongFormat)
+	{
+		str_format(pDest, DestSize, "%02d:%02d", Minutes, Seconds);
+	}
+	else
+	{
+		if(ShowFraction)
+		{
+			str_format(pDest, DestSize, "%d.%d", Seconds, CentiSeconds % 10);
+		}
+		else
+		{
+			str_format(pDest, DestSize, "%d", Seconds);
+		}
+	}
+
+	return ResultTime;
+}
+
+void CHud::RenderLaser(vec2 From, vec2 To, const ColorRGBA OuterColor, const ColorRGBA InnerColor)
+{
+	float Len = distance(To, From);
+
+	vec2 Dir;
+	if(Len > 0)
+	{
+		Dir = normalize_pre_length(To - From, Len);
+	}
+
+	Graphics()->TextureClear();
+	Graphics()->QuadsBegin();
+
+	Graphics()->SetColor(OuterColor);
+
+	constexpr double LaserHeadScale = 0.25;
+
+	vec2 Out;
+
+	// do outline
+	Out = vec2(Dir.y, -Dir.x) * 5.0f * LaserHeadScale;
+	IGraphics::CFreeformItem Freeform(From.x - Out.x, From.y - Out.y, From.x + Out.x, From.y + Out.y, To.x - Out.x, To.y - Out.y, To.x + Out.x, To.y + Out.y);
+	Graphics()->QuadsDrawFreeform(&Freeform, 1);
+
+	// do inner
+	Graphics()->SetColor(InnerColor);
+	Out = vec2(Dir.y, -Dir.x) * 4.0f * LaserHeadScale;
+
+	Freeform = IGraphics::CFreeformItem(From.x - Out.x, From.y - Out.y, From.x + Out.x, From.y + Out.y, To.x - Out.x, To.y - Out.y, To.x + Out.x, To.y + Out.y);
+	Graphics()->QuadsDrawFreeform(&Freeform, 1);
+	Graphics()->QuadsEnd();
+
+	int SpriteIndex = time_get() % 3;
+	Graphics()->TextureSet(GameClient()->m_ParticlesSkin.m_aSpriteParticleSplat[SpriteIndex]);
+	Graphics()->QuadsBegin();
+	Graphics()->QuadsSetRotation(time_get());
+	{
+		Graphics()->SetColor(OuterColor.r, OuterColor.g, OuterColor.b, 1.0f);
+		IGraphics::CQuadItem QuadItem[2] = {
+			{From.x, From.y, 24 * LaserHeadScale, 24 * LaserHeadScale},
+			{To.x, To.y, 24 * LaserHeadScale, 24 * LaserHeadScale},
+		};
+		Graphics()->QuadsDraw(&QuadItem[0], 2);
+	}
+	{
+		Graphics()->SetColor(InnerColor.r, InnerColor.g, InnerColor.b, 1.0f);
+		IGraphics::CQuadItem QuadItem[2] = {
+			{From.x, From.y, 20 * LaserHeadScale, 20 * LaserHeadScale},
+			{To.x, To.y, 20 * LaserHeadScale, 20 * LaserHeadScale},
+		};
+		Graphics()->QuadsDraw(&QuadItem[0], 2);
+	}
+	Graphics()->QuadsSetRotation(0);
+	Graphics()->QuadsEnd();
+}
+
 void CHud::RenderTextInfo()
 {
 	int Showfps = g_Config.m_ClShowfps;
@@ -921,6 +1028,25 @@ void CHud::PrepareAmmoHealthAndArmorQuads()
 	Graphics()->QuadContainerAddQuads(m_HudQuadContainerIndex, Array, 10);
 }
 
+void CHud::PrepareInfclassHudQuads()
+{
+	float x = 5;
+	float y = 5;
+
+	y += 24 + 12;
+
+	IGraphics::CQuadItem Array[10];
+
+	int MaxStatusIcons = 4;
+	for(int i = 0; i < MaxStatusIcons; ++i)
+	{
+		Array[i] = IGraphics::CQuadItem(x + i * 24, y, g_Config.m_InfcInfStatusSize, g_Config.m_InfcInfStatusSize);
+	}
+	m_IcStatusIconOffset = Graphics()->QuadContainerAddQuads(m_HudQuadContainerIndex, Array, MaxStatusIcons);
+	Graphics()->QuadsSetSubset(0, 0, 1, 1);
+	m_IcParticleIconOffset = RenderTools()->QuadContainerAddSprite(m_HudQuadContainerIndex, 1.f);
+}
+
 void CHud::RenderAmmoHealthAndArmor(const CNetObj_Character *pCharacter)
 {
 	if(!pCharacter)
@@ -1002,6 +1128,7 @@ void CHud::PreparePlayerStateQuads()
 	}
 
 	// Quads for displaying capabilities
+	m_HookProtectionOffset = RenderTools()->QuadContainerAddSprite(m_HudQuadContainerIndex, 0.f, 0.f, 12.f, 12.f);
 	m_EndlessJumpOffset = RenderTools()->QuadContainerAddSprite(m_HudQuadContainerIndex, 0.f, 0.f, 12.f, 12.f);
 	m_EndlessHookOffset = RenderTools()->QuadContainerAddSprite(m_HudQuadContainerIndex, 0.f, 0.f, 12.f, 12.f);
 	m_JetpackOffset = RenderTools()->QuadContainerAddSprite(m_HudQuadContainerIndex, 0.f, 0.f, 12.f, 12.f);
@@ -1035,6 +1162,17 @@ void CHud::PreparePlayerStateQuads()
 
 void CHud::RenderPlayerState(const int ClientId)
 {
+	if(m_pClient->m_GameInfo.m_InfClass)
+	{
+		if(!g_Config.m_InfcUseDDRaceHUD)
+			return;
+	}
+	else
+	{
+		if(!g_Config.m_ClShowhudDDRace)
+			return;
+	}
+
 	Graphics()->SetColor(1.f, 1.f, 1.f, 1.f);
 
 	// pCharacter contains the predicted character for local players or the last snap for players who are spectated
@@ -1158,6 +1296,17 @@ void CHud::RenderPlayerState(const int ClientId)
 		y += 12;
 	}
 	bool HasCapabilities = false;
+
+	const CGameClient::CClientData *pClientData = &m_pClient->m_aClients[ClientId];
+	int InfclassPlayerFlags = pClientData->m_InfClassPlayerFlags;
+
+	if(InfclassPlayerFlags & INFCLASS_PLAYER_FLAG_HOOK_PROTECTION_OFF)
+	{
+		HasCapabilities = true;
+		Graphics()->TextureSet(GameClient()->m_InfclassSkin.m_SpriteStatusHookable);
+		Graphics()->RenderQuadContainerAsSprite(m_HudQuadContainerIndex, m_HookProtectionOffset, x, y);
+		x += 12;
+	}
 	if(pCharacter->m_EndlessJump)
 	{
 		HasCapabilities = true;
@@ -1748,6 +1897,343 @@ void CHud::RenderMovementInformation()
 	}
 }
 
+void CHud::RenderStatusIcons(int ClientId)
+{
+	if(ClientId < 0)
+	{
+		return;
+	}
+
+	if(g_Config.m_InfcUseDDRaceHUD && GameClient()->m_GameInfo.m_HudDDRace)
+	{
+		// We render hook protection icon as a part of RenderPlayerState() if DDRace HUD is active
+		return;
+	}
+
+	const CGameClient::CClientData *pClientData = &m_pClient->m_aClients[ClientId];
+	int InfclassPlayerFlags = pClientData->m_InfClassPlayerFlags;
+
+	if(InfclassPlayerFlags & INFCLASS_PLAYER_FLAG_HOOK_PROTECTION_OFF)
+	{
+		Graphics()->TextureSet(GameClient()->m_InfclassSkin.m_SpriteStatusHookable);
+		Graphics()->RenderQuadContainer(m_HudQuadContainerIndex, m_IcStatusIconOffset, 1);
+	}
+}
+
+void CHud::RenderObjectOwnerIcons(int ClientId)
+{
+	if(ClientId < 0)
+		return;
+
+	int Icons = m_pClient->m_aClients[ClientId].m_OwnerIcons;
+	if(!Icons)
+		return;
+
+	float ScreenX0, ScreenY0, ScreenX1, ScreenY1;
+	Graphics()->GetScreen(&ScreenX0, &ScreenY0, &ScreenX1, &ScreenY1);
+	RenderTools()->MapScreenToGroup(m_pClient->m_Camera.m_Center.x, m_pClient->m_Camera.m_Center.y, Layers()->GameGroup(), m_pClient->m_Camera.m_Zoom);
+
+	CTeeRenderInfo RenderInfo = m_pClient->m_aClients[ClientId].m_RenderInfo;
+	RenderInfo.m_Size = 32;
+
+	for(int i = 0; i < Icons; ++i)
+	{
+		const vec2 &Pos = m_pClient->m_aClients[ClientId].m_aOwnerIconPositions[i];
+		RenderTools()->RenderTee(CAnimState::GetIdle(), &RenderInfo, EMOTE_HAPPY, vec2(1, 0), Pos);
+	}
+
+	Graphics()->MapScreen(ScreenX0, ScreenY0, ScreenX1, ScreenY1);
+}
+
+void CHud::RenderClassExtraHud(int ClientId)
+{
+	const CGameClient::CClientData *pClientData = &m_pClient->m_aClients[ClientId];
+	if(!pClientData || !m_pClient->m_GameInfo.m_InfClass)
+		return;
+
+	const int PlayerClass = pClientData->m_InfClassPlayerClass;
+	if(PlayerClass != PLAYERCLASS_HERO)
+	{
+		if(m_pClient->m_InfclassGameInfoVersion < 2)
+		{
+			// Old server
+			return;
+		}
+	}
+
+	if(PlayerClass == PLAYERCLASS_SCIENTIST)
+	{
+		if(m_pClient->m_InfClassWhiteHoleMinKills == 0)
+		{
+			// WH disabled or the server didn't tell us
+			return;
+		}
+	}
+
+	int Lines = 0;
+	int WallType = 0;
+	switch(PlayerClass)
+	{
+	case PLAYERCLASS_HERO:
+		Lines = 2;
+		break;
+	case PLAYERCLASS_ENGINEER:
+	case PLAYERCLASS_LOOPER:
+		Lines = 1;
+		WallType = PlayerClass;
+		break;
+	case PLAYERCLASS_SCIENTIST:
+		Lines = 1;
+		break;
+	default:
+		return;
+	}
+
+	if(WallType && (pClientData->m_InfClassClassData1 == 0))
+	{
+		// The wall is not placed
+		return;
+	}
+
+	bool DrawBox = false;
+	float HudW = 48;
+	float HudH = 40;
+	int X = 0;
+	int Y = 0;
+
+	if(Config()->m_ClShowhudScore)
+	{
+		// Next to HP
+		X = 5 + 10 * 12;
+		Y = 2;
+	}
+	else
+	{
+		// Bottom right
+		Y = 300 - HudH;
+		X = m_Width - HudW;
+		DrawBox = true;
+	}
+
+	if(DrawBox)
+	{
+		int Corners = IGraphics::CORNER_ALL;
+		if(X + HudW + 1 >= m_Width)
+			Corners &= IGraphics::CORNER_L;
+		if(Y == 0)
+			Corners &= IGraphics::CORNER_B;
+		if(Y + HudH >= m_Height)
+			Corners &= IGraphics::CORNER_T;
+
+		Graphics()->DrawRect(X, Y, HudW + 1, HudH, ColorRGBA(0.0f, 0.0f, 0.0f, 0.4f), Corners, 3.75f);
+	}
+
+	float FontSize = 9.0f;
+	X += 2;
+
+	int TextXOffset = 6;
+	const int TextYOffset = Lines == 1 ? 10 : 5;
+
+	if(PlayerClass == PLAYERCLASS_HERO)
+	{
+		TextXOffset += 12;
+	}
+	else if(WallType)
+	{
+		if(WallType == PLAYERCLASS_LOOPER)
+		{
+			TextXOffset += 12;
+		}
+		else // PLAYERCLASS_ENGINEER
+		{
+			TextXOffset += 7;
+		}
+
+		constexpr int LaserXOffset = 5;
+		constexpr int LaserYOffset = 4;
+		constexpr float LaserVerticalSize = 22;
+
+		ColorHSLA OutlineColor = g_Config.m_ClLaserRifleOutlineColor;
+		ColorHSLA InnerColor = g_Config.m_ClLaserRifleInnerColor;
+
+		ColorRGBA OutlineColorRGB = color_cast<ColorRGBA, ColorHSLA>(OutlineColor);
+		ColorRGBA InnerColorRGB = color_cast<ColorRGBA, ColorHSLA>(InnerColor);
+
+		OutlineColorRGB.a = 1.0f;
+		InnerColorRGB.a = 1.0f;
+
+		vec2 From = vec2(X + LaserXOffset, Y + LaserYOffset);
+		vec2 To = vec2(X + LaserXOffset, Y + LaserYOffset + LaserVerticalSize);
+
+		RenderLaser(From, To, OutlineColorRGB, InnerColorRGB);
+
+		if(WallType == PLAYERCLASS_LOOPER)
+		{
+			IGraphics::CTextureHandle *aParticles = GameClient()->m_ParticlesSkin.m_aSpriteParticles;
+			Graphics()->TextureSet(aParticles[SPRITE_PART_BALL]);
+			Graphics()->SetColor(1.f, 1.f, 1.f, 1.f);
+
+			static int64_t LastTime = 0;
+			int64_t t = time();
+
+			float TimePassed = 0;
+
+			if(Client()->State() == IClient::STATE_DEMOPLAYBACK)
+			{
+				const IDemoPlayer::CInfo *pInfo = DemoPlayer()->BaseInfo();
+				if(!pInfo->m_Paused)
+					TimePassed = (float)((t - LastTime) / (double)time_freq()) * pInfo->m_Speed;
+			}
+			else
+			{
+				if(m_pClient->m_Snap.m_pGameInfoObj && !(m_pClient->m_Snap.m_pGameInfoObj->m_GameStateFlags & GAMESTATEFLAG_PAUSED))
+					TimePassed = (float)((t - LastTime) / (double)time_freq());
+			}
+			LastTime = t;
+
+			constexpr float ScaleFrom = 3.f;
+			constexpr float Duration = 0.75f;
+
+			float HammerAreaWidth = 5;
+			float HammerAreHeight = LaserVerticalSize;
+
+			static IGraphics::SRenderSpriteInfo aHammerDots[] = {
+				{vec2(From.x + 0.52f * HammerAreaWidth, From.y + 0.1f * HammerAreHeight), ScaleFrom * 0.78f, 0.0f},
+				{vec2(From.x + 0.8f * HammerAreaWidth, From.y + 0.11f * HammerAreHeight), ScaleFrom * 0.10f, 0.0f},
+				{vec2(From.x + 0.24f * HammerAreaWidth, From.y + 0.15f * HammerAreHeight), ScaleFrom * 0.71f, 0.0f},
+				{vec2(From.x + 0.66f * HammerAreaWidth, From.y + 0.18f * HammerAreHeight), ScaleFrom * 0.25f, 0.0f},
+				{vec2(From.x + 0.0f * HammerAreaWidth, From.y + 0.4f * HammerAreHeight), ScaleFrom * 0.5f, 0.0f},
+				{vec2(From.x + 0.55f * HammerAreaWidth, From.y + 0.45f * HammerAreHeight), ScaleFrom * 0.1f, 0.0f},
+				{vec2(From.x + 0.12f * HammerAreaWidth, From.y + 0.51f * HammerAreHeight), ScaleFrom * 0.9f, 0.0f},
+				{vec2(From.x + 0.38f * HammerAreaWidth, From.y + 0.50f * HammerAreHeight), ScaleFrom * 0.48f, 0.0f},
+				{vec2(From.x + 0.93f * HammerAreaWidth, From.y + 0.62f * HammerAreHeight), ScaleFrom * 0.5f, 0.0f},
+				{vec2(From.x + 0.44f * HammerAreaWidth, From.y + 0.68f * HammerAreHeight), ScaleFrom * 0.1f, 0.0f},
+				{vec2(From.x + 0.31f * HammerAreaWidth, From.y + 0.83f * HammerAreHeight), ScaleFrom * 0.9f, 0.0f},
+				{vec2(From.x + 0.79f * HammerAreaWidth, From.y + 0.91f * HammerAreHeight), ScaleFrom * 0.48f, 0.0f},
+			};
+
+			constexpr bool UseRandom = true;
+
+			for(auto &SpriteInfo : aHammerDots)
+			{
+				float ProgressRemaining = SpriteInfo.m_Scale / ScaleFrom;
+				float PassedProgress = TimePassed / Duration;
+				float NewProgressRemaining = ProgressRemaining - PassedProgress;
+				if(NewProgressRemaining < 0)
+				{
+					NewProgressRemaining = 1 + (NewProgressRemaining - static_cast<int>(NewProgressRemaining));
+					if(UseRandom)
+					{
+						SpriteInfo.m_Pos.x = From.x + random_float() * HammerAreaWidth;
+						SpriteInfo.m_Pos.y = From.y + random_float() * HammerAreHeight;
+					}
+				}
+				SpriteInfo.m_Scale = ScaleFrom * NewProgressRemaining;
+			}
+
+			Graphics()->RenderQuadContainerAsSpriteMultiple(m_HudQuadContainerIndex, m_IcParticleIconOffset, std::size(aHammerDots), aHammerDots);
+
+			RenderLaser(From, To, OutlineColorRGB, InnerColorRGB);
+			From.x += HammerAreaWidth;
+			To.x += HammerAreaWidth;
+			RenderLaser(From, To, OutlineColorRGB, InnerColorRGB);
+		}
+		else // PLAYERCLASS_ENGINEER
+		{
+			RenderLaser(From, To, OutlineColorRGB, InnerColorRGB);
+		}
+	}
+
+	if(PlayerClass == PLAYERCLASS_SCIENTIST)
+	{
+		const int ProgressionFixed = pClientData->m_InfClassClassData1;
+		const float Prog = fx2f(ProgressionFixed);
+		const float Max = m_pClient->m_InfClassWhiteHoleMinKills;
+
+		char aBuffer[32];
+		if(Prog < 0)
+		{
+			str_copy(aBuffer, "N/A");
+		}
+		else
+		{
+			str_format(aBuffer, sizeof(aBuffer), "%.1f/%.1f", std::min(Prog, Max), Max);
+		}
+
+		TextRender()->TextColor(1, 1, 1, 1);
+		TextRender()->Text(X + TextXOffset, Y + TextYOffset, FontSize, aBuffer, -1.0f);
+	}
+	else
+	{
+		char aBuffer[32];
+		const int PlayerTimerEndTick = pClientData->m_InfClassClassData1;
+		const bool ForceMinutes = WallType == 0; // Prefer short format for walls and force minutes for everything else (Flags)
+		const float FractionPartIfLessThan = WallType ? 5.0f : 0;
+		const float RemainingSeconds = FormatTimerText(aBuffer, sizeof(aBuffer), PlayerTimerEndTick, ForceMinutes, FractionPartIfLessThan);
+		ColorRGBA TextColor(1, 1, 1, 1);
+
+		// Draw the text
+		switch(PlayerClass)
+		{
+		case PLAYERCLASS_ENGINEER:
+		case PLAYERCLASS_LOOPER:
+			if(RemainingSeconds < FractionPartIfLessThan)
+			{
+				TextColor = ColorRGBA(1.0f, 0.5f, 0.5f, 1.0f);
+			}
+			break;
+		case PLAYERCLASS_HERO:
+			break;
+		default:
+			break;
+		}
+
+		TextRender()->TextColor(TextColor);
+		TextRender()->Text(X + TextXOffset, Y + TextYOffset, FontSize, aBuffer, -1.0f);
+		TextRender()->TextColor(1, 1, 1, 1);
+	}
+
+	if(PlayerClass == PLAYERCLASS_HERO)
+	{
+		// Draw the flag
+		constexpr int FlagQuadOffset = NUM_WEAPONS * 10 * 2 + 40 * 2 + NUM_WEAPONS + 0;
+		constexpr int FlagXOffset = 5;
+		constexpr int FlagYOffset = 2;
+
+		Graphics()->TextureSet(GameClient()->m_GameSkin.m_SpriteFlagBlue);
+		Graphics()->SetColor(1.f, 1.f, 1.f, 1.f);
+		Graphics()->RenderQuadContainerAsSprite(m_HudQuadContainerIndex, FlagQuadOffset, X + FlagXOffset, Y + FlagYOffset);
+
+		Y += 20;
+
+		// Second line, hero gift cooldown
+		int FlagTick = m_pClient->m_InfClassHeroGiftTick;
+		char aBuffer[32];
+		FormatTimerText(aBuffer, sizeof(aBuffer), FlagTick);
+		TextRender()->Text(X + TextXOffset, Y + TextYOffset, FontSize, aBuffer, -1.0f);
+
+		// Health and armor icons
+		float PickupsScale = 0.6;
+		float Diff = 4.5;
+		float BaseX = X + 2.1;
+		float BaseY = Y + 3;
+
+		Graphics()->TextureSet(GameClient()->m_GameSkin.m_SpritePickupHealth);
+		Graphics()->QuadsSetRotation(0);
+		Graphics()->SetColor(1.f, 1.f, 1.f, 1.f);
+		Graphics()->RenderQuadContainerAsSprite(m_HudQuadContainerIndex, 0, BaseX - Diff, BaseY + Diff, PickupsScale, PickupsScale);
+		Graphics()->RenderQuadContainerAsSprite(m_HudQuadContainerIndex, 0, BaseX + Diff, BaseY - Diff, PickupsScale, PickupsScale);
+
+		Graphics()->TextureSet(GameClient()->m_GameSkin.m_SpritePickupArmor);
+		Graphics()->RenderQuadContainerAsSprite(m_HudQuadContainerIndex, 0, BaseX - Diff, BaseY - Diff, PickupsScale, PickupsScale);
+		Graphics()->RenderQuadContainerAsSprite(m_HudQuadContainerIndex, 0, BaseX + Diff, BaseY + Diff, PickupsScale, PickupsScale);
+
+		Graphics()->TextureSet(GameClient()->m_GameSkin.m_SpriteFlagBlue);
+		Graphics()->SetColor(1.f, 1.f, 1.f, 1.f);
+		Graphics()->RenderQuadContainerAsSprite(m_HudQuadContainerIndex, FlagQuadOffset, X + FlagXOffset, Y + FlagYOffset);
+	}
+}
+
 void CHud::RenderSpectatorHud()
 {
 	// TClient
@@ -1877,14 +2363,20 @@ void CHud::OnRender()
 			if(g_Config.m_ClShowhudHealthAmmo)
 			{
 				RenderAmmoHealthAndArmor(m_pClient->m_Snap.m_pLocalCharacter);
+				RenderStatusIcons(m_pClient->m_aLocalIds[g_Config.m_ClDummy]);
+				RenderObjectOwnerIcons(m_pClient->m_aLocalIds[g_Config.m_ClDummy]);
 			}
-			if(m_pClient->m_Snap.m_aCharacters[m_pClient->m_Snap.m_LocalClientId].m_HasExtendedData && g_Config.m_ClShowhudDDRace && GameClient()->m_GameInfo.m_HudDDRace)
+			if(m_pClient->m_Snap.m_aCharacters[m_pClient->m_Snap.m_LocalClientId].m_HasExtendedData && GameClient()->m_GameInfo.m_HudDDRace)
 			{
 				RenderPlayerState(m_pClient->m_Snap.m_LocalClientId);
 			}
 			RenderSpectatorCount();
 			RenderMovementInformation();
 			RenderDDRaceEffects();
+			if(GameClient()->m_GameInfo.m_InfClass)
+			{
+				RenderClassExtraHud(m_pClient->m_aLocalIds[g_Config.m_ClDummy]);
+			}
 		}
 		else if(m_pClient->m_Snap.m_SpecInfo.m_Active)
 		{
@@ -1892,10 +2384,11 @@ void CHud::OnRender()
 			if(SpectatorId != SPEC_FREEVIEW && g_Config.m_ClShowhudHealthAmmo)
 			{
 				RenderAmmoHealthAndArmor(&m_pClient->m_Snap.m_aCharacters[SpectatorId].m_Cur);
+				RenderStatusIcons(SpectatorId);
+				RenderObjectOwnerIcons(SpectatorId);
 			}
 			if(SpectatorId != SPEC_FREEVIEW &&
 				m_pClient->m_Snap.m_aCharacters[SpectatorId].m_HasExtendedData &&
-				g_Config.m_ClShowhudDDRace &&
 				(!GameClient()->m_MultiViewActivated || GameClient()->m_MultiViewShowHud) &&
 				GameClient()->m_GameInfo.m_HudDDRace)
 			{
@@ -1903,6 +2396,8 @@ void CHud::OnRender()
 			}
 			RenderMovementInformation();
 			RenderSpectatorHud();
+			if(SpectatorId != SPEC_FREEVIEW && GameClient()->m_GameInfo.m_InfClass)
+				RenderClassExtraHud(SpectatorId);
 		}
 
 		if(g_Config.m_ClShowhudTimer)

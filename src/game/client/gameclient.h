@@ -76,6 +76,8 @@
 
 #include <vector>
 
+enum class EDamageType;
+
 class CGameInfo
 {
 public:
@@ -104,12 +106,14 @@ public:
 	bool m_EntitiesDDRace;
 	bool m_EntitiesRace;
 	bool m_EntitiesFNG;
+	bool m_EntitiesInfclass;
 	bool m_EntitiesVanilla;
 	bool m_EntitiesBW;
 	bool m_EntitiesFDDrace;
 
 	bool m_Race;
 	bool m_Pvp;
+	bool m_InfClass;
 
 	bool m_DontMaskEntities;
 	bool m_AllowXSkins;
@@ -332,7 +336,15 @@ public:
 
 	char m_aSavedLocalRconPassword[sizeof(g_Config.m_SvRconPassword)] = "";
 
+	int m_TimeLimitInSeconds;
+	int m_InfClassHeroGiftTick;
+	int m_InfclassGameInfoVersion;
+
 	int m_DemoSpecId;
+
+	int m_InfclassGameParamsVersion = 0;
+	int m_InfClassWhiteHoleMinKills = 0;
+	int m_InfClassSoldierBombs = 0;
 
 	vec2 m_LocalCharacterPos;
 
@@ -449,6 +461,13 @@ public:
 		int m_ColorBody;
 		int m_ColorFeet;
 
+		int m_InfClassPlayerFlags;
+		int m_InfClassPlayerClass;
+		bool m_InfClassCustomSkin;
+
+		int m_InfClassClassFlags;
+		int m_InfClassClassData1;
+
 		char m_aName[MAX_NAME_LENGTH];
 		char m_aClan[MAX_CLAN_LENGTH];
 		int m_Country;
@@ -490,7 +509,10 @@ public:
 		float m_Uncertainty = 0.0f;
 
 		std::shared_ptr<CManagedTeeRenderInfo> m_pSkinInfo; // this is what the server reports
+		CTeeRenderInfo m_InfClassSkinInfo; // the local idea about the proper class skin TODO: use managed
 		CTeeRenderInfo m_RenderInfo; // this is what we use
+		vec2 m_aOwnerIconPositions[16];
+		std::size_t m_OwnerIcons;
 
 		float m_Angle;
 		bool m_Active;
@@ -715,6 +737,7 @@ public:
 	bool CheckNewInput() override;
 
 	void LoadGameSkin(const char *pPath, bool AsDir = false);
+	void LoadInfclassSkin(const char *pPath, bool AsDir = false);
 	void LoadEmoticonsSkin(const char *pPath, bool AsDir = false);
 	void LoadParticlesSkin(const char *pPath, bool AsDir = false);
 	void LoadHudSkin(const char *pPath, bool AsDir = false);
@@ -808,6 +831,48 @@ public:
 
 	SClientGameSkin m_GameSkin;
 	bool m_GameSkinLoaded = false;
+
+	struct SClientInfclassSkin
+	{
+		IGraphics::CTextureHandle m_SpriteSniperRifle;
+		IGraphics::CTextureHandle m_SpriteScientistLaser;
+		IGraphics::CTextureHandle m_SpriteMedicShotgun;
+		IGraphics::CTextureHandle m_SpriteLooperLaser;
+		IGraphics::CTextureHandle m_SpriteMercenaryGun;
+		IGraphics::CTextureHandle m_SpriteMercenaryGrenade;
+
+		IGraphics::CTextureHandle m_SpriteLaserWall;
+		IGraphics::CTextureHandle m_SpriteSoldierBomb;
+		IGraphics::CTextureHandle m_SpriteScientistMine;
+		IGraphics::CTextureHandle m_SpriteBiologistMine;
+		IGraphics::CTextureHandle m_SpriteMercenaryBomb;
+		IGraphics::CTextureHandle m_SpriteWhiteHole;
+		IGraphics::CTextureHandle m_SpriteTurretDestruction;
+		IGraphics::CTextureHandle m_SpriteTurretLaser;
+		IGraphics::CTextureHandle m_SpriteTurretPlasma;
+
+		IGraphics::CTextureHandle m_SpriteInfectionHammer;
+		IGraphics::CTextureHandle m_SpriteBite;
+		IGraphics::CTextureHandle m_SpriteBoomerExplosion;
+		IGraphics::CTextureHandle m_SpriteSlugSlime;
+		IGraphics::CTextureHandle m_SpriteDryingHook;
+		IGraphics::CTextureHandle m_SpriteInfectionTile;
+		IGraphics::CTextureHandle m_SpriteGameInfection;
+
+		// weapons and hook
+		IGraphics::CTextureHandle m_SpriteHookChain;
+		IGraphics::CTextureHandle m_SpriteHookHead;
+
+		IGraphics::CTextureHandle m_SpriteStatusHookable;
+	};
+
+	SClientInfclassSkin m_InfclassSkin;
+	bool m_InfclassSkinLoaded;
+
+	IGraphics::CTextureHandle *GetInfclassTexturePtrForDamageType(EDamageType DamageType);
+	IGraphics::CTextureHandle GetInfclassTextureForDamageType(EDamageType DamageType);
+	int GetInfclassSpriteForDamageType(EDamageType DamageType);
+	float GetAspectTextureRatio(EDamageType DamageType);
 
 	struct SClientParticlesSkin
 	{
@@ -911,6 +976,10 @@ private:
 
 	int m_aLastUpdateTick[MAX_CLIENTS] = {0};
 	void DetectStrongHook();
+
+	void ProcessInfClassPlayerInfo(int ClientId, const CNetObj_InfClassPlayer *pPlayerData);
+	void ProcessInfClassClassInfo(int ClientId, const CNetObj_InfClassClassInfo *pClassInfo);
+	void ProcessInfClassGameInfo(const CNetObj_InfClassGameInfo *pGameInfo);
 
 	int m_PredictedDummyId;
 	int m_IsDummySwapping;

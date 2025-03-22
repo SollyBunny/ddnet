@@ -20,6 +20,8 @@
 #include <engine/textrender.h>
 #include <engine/updater.h>
 
+#include <engine/client/infclass.h>
+
 #include <game/generated/client_data.h>
 #include <game/generated/client_data7.h>
 #include <game/generated/protocol.h>
@@ -34,6 +36,8 @@
 #include "race.h"
 #include "render.h"
 
+#include <game/classes.h>
+#include <game/damage_type.h>
 #include <game/localization.h>
 #include <game/mapitems.h>
 #include <game/version.h>
@@ -405,6 +409,8 @@ void CGameClient::OnInit()
 	{
 		if(i == IMAGE_GAME)
 			LoadGameSkin(g_Config.m_ClAssetGame);
+		else if(i == IMAGE_INFCLASS)
+			LoadInfclassSkin(g_Config.m_InfcAssetInfclass);
 		else if(i == IMAGE_EMOTICONS)
 			LoadEmoticonsSkin(g_Config.m_ClAssetEmoticons);
 		else if(i == IMAGE_PARTICLES)
@@ -674,6 +680,11 @@ void CGameClient::OnReset()
 	m_HammerInput = {};
 	m_DummyFire = 0;
 	m_ReceivedDDNetPlayer = false;
+
+	m_InfClassHeroGiftTick = -1;
+	m_InfclassGameInfoVersion = 0;
+	m_InfClassWhiteHoleMinKills = 0;
+	m_InfClassSoldierBombs = 0;
 
 	m_Teams.Reset();
 	m_GameWorld.Clear();
@@ -1048,6 +1059,17 @@ void CGameClient::OnMessage(int MsgId, CUnpacker *pUnpacker, int Conn, bool Dumm
 		}
 		return;
 	}
+	if(MsgId == NETMSGTYPE_INFCLASS_SERVERPARAMS)
+	{
+		CNetMsg_InfClass_ServerParams *pMsg = (CNetMsg_InfClass_ServerParams *)pRawMsg;
+		if(pMsg->m_Version <= 0)
+			return;
+
+		m_InfclassGameParamsVersion = pMsg->m_Version;
+		m_InfClassWhiteHoleMinKills = pMsg->m_WhiteHoleMinKills;
+		m_InfClassSoldierBombs = pMsg->m_SoldierBombs;
+		return;
+	}
 
 	if(Dummy)
 	{
@@ -1417,6 +1439,7 @@ static CGameInfo GetGameInfo(const CNetObj_GameInfoEx *pInfoEx, int InfoExSize, 
 	bool Race;
 	bool FastCap;
 	bool FNG;
+	bool Infclass;
 	bool DDRace;
 	bool DDNet;
 	bool BlockWorlds;
@@ -1433,6 +1456,7 @@ static CGameInfo GetGameInfo(const CNetObj_GameInfoEx *pInfoEx, int InfoExSize, 
 		Race = str_find_nocase(pGameType, "race") || str_find_nocase(pGameType, "fastcap");
 		FastCap = str_find_nocase(pGameType, "fastcap");
 		FNG = str_find_nocase(pGameType, "fng");
+		Infclass = str_find_nocase(pGameType, "InfClass") || str_find_nocase(pGameType, "InfClassR");
 		DDRace = str_find_nocase(pGameType, "ddrace") || str_find_nocase(pGameType, "mkrace");
 		DDNet = str_find_nocase(pGameType, "ddracenet") || str_find_nocase(pGameType, "ddnet");
 		BlockWorlds = str_startswith(pGameType, "bw  ") || str_comp_nocase(pGameType, "bw") == 0;
@@ -1443,9 +1467,11 @@ static CGameInfo GetGameInfo(const CNetObj_GameInfoEx *pInfoEx, int InfoExSize, 
 	}
 	else
 	{
+		const char *pGameType = pFallbackServerInfo->m_aGameType;
 		Race = Flags & GAMEINFOFLAG_GAMETYPE_RACE;
 		FastCap = Flags & GAMEINFOFLAG_GAMETYPE_FASTCAP;
 		FNG = Flags & GAMEINFOFLAG_GAMETYPE_FNG;
+		Infclass = str_find_nocase(pGameType, "InfClass") || str_find_nocase(pGameType, "InfClassR");
 		DDRace = Flags & GAMEINFOFLAG_GAMETYPE_DDRACE;
 		DDNet = Flags & GAMEINFOFLAG_GAMETYPE_DDNET;
 		BlockWorlds = Flags & GAMEINFOFLAG_GAMETYPE_BLOCK_WORLDS;
@@ -1481,10 +1507,12 @@ static CGameInfo GetGameInfo(const CNetObj_GameInfoEx *pInfoEx, int InfoExSize, 
 	Info.m_EntitiesDDRace = DDRace;
 	Info.m_EntitiesRace = Race;
 	Info.m_EntitiesFNG = FNG;
+	Info.m_EntitiesInfclass = Infclass;
 	Info.m_EntitiesVanilla = Vanilla;
 	Info.m_EntitiesBW = BlockWorlds;
 	Info.m_Race = Race;
 	Info.m_Pvp = !Race;
+	Info.m_InfClass = Infclass;
 	Info.m_DontMaskEntities = !DDNet;
 	Info.m_AllowXSkins = false;
 	Info.m_EntitiesFDDrace = FDDrace;
@@ -1492,7 +1520,7 @@ static CGameInfo GetGameInfo(const CNetObj_GameInfoEx *pInfoEx, int InfoExSize, 
 	Info.m_HudAmmo = true;
 	Info.m_HudDDRace = false;
 	Info.m_NoWeakHookAndBounce = false;
-	Info.m_NoSkinChangeForFrozen = false;
+	Info.m_NoSkinChangeForFrozen = Infclass;
 	Info.m_DDRaceTeam = false;
 
 	if(Version >= 0)
@@ -1753,6 +1781,29 @@ void CGameClient::OnNewSnapshot()
 						m_aClients[Item.m_Id].m_Evolved.m_Tick = -1;
 					}
 				}
+			}
+			else if(Item.m_Type == NETOBJTYPE_INFCLASSPLAYER)
+			{
+				const CNetObj_InfClassPlayer *pPlayerData = (const CNetObj_InfClassPlayer *)Item.m_pData;
+
+				if(Item.m_Id < MAX_CLIENTS)
+				{
+					ProcessInfClassPlayerInfo(Item.m_Id, pPlayerData);
+				}
+			}
+			else if(Item.m_Type == NETOBJTYPE_INFCLASSCLASSINFO)
+			{
+				const CNetObj_InfClassClassInfo *pClassInfo = (const CNetObj_InfClassClassInfo *)Item.m_pData;
+
+				if(Item.m_Id < MAX_CLIENTS)
+				{
+					ProcessInfClassClassInfo(Item.m_Id, pClassInfo);
+				}
+			}
+			else if(Item.m_Type == NETOBJTYPE_INFCLASSGAMEINFO)
+			{
+				const CNetObj_InfClassGameInfo *pGameInfo = (const CNetObj_InfClassGameInfo *)Item.m_pData;
+				ProcessInfClassGameInfo(pGameInfo);
 			}
 			else if(Item.m_Type == NETOBJTYPE_DDNETCHARACTER)
 			{
@@ -2106,6 +2157,10 @@ void CGameClient::OnNewSnapshot()
 		CMsgPacker Msg(NETMSGTYPE_CL_ISDDNETLEGACY, false);
 		Msg.AddInt(DDNetVersion());
 		Client()->SendMsg(i, &Msg, MSGFLAG_VITAL);
+
+		CMsgPacker MsgVerInfclass(NETMSG_CLIENTVER_INFCLASS, true);
+		MsgVerInfclass.AddInt(INFCLASS_CLIENT_VERSION);
+		Client()->SendMsg(i, &MsgVerInfclass, MSGFLAG_VITAL);
 		m_aDDRaceMsgSent[i] = true;
 	}
 
@@ -2904,7 +2959,8 @@ void CGameClient::CClientData::UpdateSkinInfo()
 
 void CGameClient::CClientData::UpdateRenderInfo()
 {
-	m_RenderInfo = m_pSkinInfo->TeeRenderInfo();
+	// infclass
+	m_RenderInfo = m_InfClassCustomSkin ? m_InfClassSkinInfo : m_pSkinInfo->TeeRenderInfo();
 
 	// force team colors
 	if(m_pGameClient->IsTeamPlay())
@@ -2972,6 +3028,13 @@ void CGameClient::CClientData::Reset()
 	m_Emoticon = 0;
 	m_EmoticonStartFraction = 0;
 	m_EmoticonStartTick = -1;
+
+	m_InfClassPlayerFlags = 0;
+	m_InfClassPlayerClass = -1;
+	m_InfClassCustomSkin = false;
+
+	m_InfClassClassFlags = 0;
+	m_InfClassClassData1 = 0;
 
 	m_Solo = false;
 	m_Jetpack = false;
@@ -3368,9 +3431,12 @@ ColorRGBA CalculateNameColor(ColorHSLA TextColorHSL)
 
 void CGameClient::UpdatePrediction()
 {
+	m_Teams.m_IsInfclass = m_GameInfo.m_InfClass;
+
 	m_GameWorld.m_WorldConfig.m_IsVanilla = m_GameInfo.m_PredictVanilla;
 	m_GameWorld.m_WorldConfig.m_IsDDRace = m_GameInfo.m_PredictDDRace;
 	m_GameWorld.m_WorldConfig.m_IsFNG = m_GameInfo.m_PredictFNG;
+	m_GameWorld.m_WorldConfig.m_IsInfClass = m_GameInfo.m_InfClass;
 	m_GameWorld.m_WorldConfig.m_PredictDDRace = m_GameInfo.m_PredictDDRace;
 	m_GameWorld.m_WorldConfig.m_PredictTiles = m_GameInfo.m_PredictDDRace && m_GameInfo.m_PredictDDRaceTiles;
 	m_GameWorld.m_WorldConfig.m_UseTuneZones = m_GameInfo.m_PredictDDRaceTiles;
@@ -3382,6 +3448,13 @@ void CGameClient::UpdatePrediction()
 	// always update default tune zone, even without character
 	if(!m_GameWorld.m_WorldConfig.m_UseTuneZones)
 		m_GameWorld.TuningList()[0] = m_aTuning[g_Config.m_ClDummy];
+
+	if(m_GameInfo.m_InfClass)
+	{
+		m_GameWorld.GetTuning(0)->m_PlayerCollision = 1;
+		m_GameWorld.GetTuning(0)->m_PlayerHooking = 1;
+		m_GameWorld.GetTuning(0)->m_JetpackStrength = 400;
+	}
 
 	if(!m_Snap.m_pLocalCharacter)
 	{
@@ -3462,6 +3535,18 @@ void CGameClient::UpdatePrediction()
 	CCharacter *pDummyChar = nullptr;
 	if(PredictDummy())
 		pDummyChar = m_GameWorld.GetCharacterById(m_PredictedDummyId);
+
+	if(m_GameInfo.m_InfClass)
+	{
+		for(int i = 0; i < MAX_CLIENTS; i++)
+		{
+			CCharacter *pChar = m_GameWorld.GetCharacterById(i);
+			if(!pChar)
+				continue;
+
+			pChar->m_InfClassClass = m_aClients[i].m_InfClassPlayerClass;
+		}
+	}
 
 	// update strong and weak hook
 	if(pLocalChar && !m_Snap.m_SpecInfo.m_Active && Client()->State() != IClient::STATE_DEMOPLAYBACK && (m_aTuning[g_Config.m_ClDummy].m_PlayerCollision || m_aTuning[g_Config.m_ClDummy].m_PlayerHooking))
@@ -3935,6 +4020,81 @@ vec2 CGameClient::GetFreezePos(int ClientId)
 	return Pos;
 }
 
+void CGameClient::ProcessInfClassPlayerInfo(int ClientId, const CNetObj_InfClassPlayer *pPlayerData)
+{
+	CClientData *pClient = &m_aClients[ClientId];
+
+	pClient->m_InfClassPlayerFlags = pPlayerData->m_Flags;
+
+	bool Infected = pClient->m_InfClassPlayerFlags & INFCLASS_PLAYER_FLAG_INFECTED;
+	bool Protected = !(pClient->m_InfClassPlayerFlags & INFCLASS_PLAYER_FLAG_HOOK_PROTECTION_OFF);
+	m_Teams.SetInfected(ClientId, Infected);
+	m_Teams.SetProtected(ClientId, Protected);
+
+	if(pClient->m_InfClassPlayerClass == pPlayerData->m_Class)
+		return;
+
+	pClient->m_InfClassPlayerClass = pPlayerData->m_Class;
+
+	const CSkin *pSkin = nullptr;
+	switch(pClient->m_InfClassPlayerClass)
+	{
+	case PLAYERCLASS_NINJA:
+		pSkin = m_Skins.Find("inf_ninja");
+		break;
+	case PLAYERCLASS_GHOST:
+		pSkin = m_Skins.Find("ghost");
+		break;
+	case PLAYERCLASS_TANK:
+		pSkin = m_Skins.Find("zombie");
+		break;
+	default:
+		break;
+	}
+
+	pClient->m_InfClassCustomSkin = pSkin;
+
+	if(pSkin)
+	{
+		pClient->m_InfClassSkinInfo.m_OriginalRenderSkin = pSkin->m_OriginalSkin;
+		pClient->m_InfClassSkinInfo.m_ColorableRenderSkin = pSkin->m_ColorableSkin;
+		pClient->m_InfClassSkinInfo.m_BloodColor = pSkin->m_BloodColor;
+		pClient->m_InfClassSkinInfo.m_SkinMetrics = pSkin->m_Metrics;
+		pClient->m_InfClassSkinInfo.m_Size = 64;
+
+		if(pClient->m_InfClassPlayerFlags & INFCLASS_PLAYER_FLAG_INFECTED)
+		{
+			pClient->m_InfClassSkinInfo.m_CustomColoredSkin = true;
+			pClient->m_InfClassSkinInfo.m_ColorBody = pClient->m_pSkinInfo->m_TeeRenderInfo.m_ColorBody;
+			pClient->m_InfClassSkinInfo.m_ColorFeet = pClient->m_pSkinInfo->m_TeeRenderInfo.m_ColorFeet;
+		}
+		else
+		{
+			pClient->m_InfClassSkinInfo.m_CustomColoredSkin = false;
+			pClient->m_InfClassSkinInfo.m_ColorBody = ColorRGBA(1, 1, 1);
+			pClient->m_InfClassSkinInfo.m_ColorFeet = ColorRGBA(1, 1, 1);
+		}
+		pClient->UpdateRenderInfo();
+	}
+
+}
+
+void CGameClient::ProcessInfClassClassInfo(int ClientId, const CNetObj_InfClassClassInfo *pClassInfo)
+{
+	CClientData *pClient = &m_aClients[ClientId];
+	pClient->m_InfClassClassFlags = pClassInfo->m_Flags;
+	pClient->m_InfClassClassData1 = pClassInfo->m_Data1;
+}
+
+void CGameClient::ProcessInfClassGameInfo(const CNetObj_InfClassGameInfo *pGameInfo)
+{
+	m_GameInfo.m_InfClass = true;
+
+	m_InfclassGameInfoVersion = pGameInfo->m_Version;
+	m_TimeLimitInSeconds = pGameInfo->m_TimeLimitInSeconds;
+	m_InfClassHeroGiftTick = pGameInfo->m_HeroGiftTick;
+}
+
 void CGameClient::Echo(const char *pString)
 {
 	m_Chat.Echo(pString);
@@ -4236,6 +4396,83 @@ void CGameClient::LoadGameSkin(const char *pPath, bool AsDir)
 		m_GameSkinLoaded = true;
 	}
 	ImgInfo.Free();
+}
+
+void CGameClient::LoadInfclassSkin(const char *pPath, bool AsDir)
+{
+	if(m_InfclassSkinLoaded)
+	{
+		for(int i = 0; i < static_cast<int>(EDamageType::COUNT); ++i)
+		{
+			EDamageType DamageType = static_cast<EDamageType>(i);
+			int SpriteIndex = GetInfclassSpriteForDamageType(DamageType);
+			if(SpriteIndex < 0)
+				continue;
+
+			IGraphics::CTextureHandle *pHandle = GetInfclassTexturePtrForDamageType(DamageType);
+			if(pHandle)
+			{
+				Graphics()->UnloadTexture(pHandle);
+			}
+		}
+
+		Graphics()->UnloadTexture(&m_InfclassSkin.m_SpriteHookChain);
+		Graphics()->UnloadTexture(&m_InfclassSkin.m_SpriteHookHead);
+
+		Graphics()->UnloadTexture(&m_InfclassSkin.m_SpriteStatusHookable);
+
+		m_InfclassSkinLoaded = false;
+	}
+
+	char aPath[IO_MAX_PATH_LENGTH];
+	bool IsDefault = false;
+	if(str_comp(pPath, "default") == 0)
+	{
+		str_format(aPath, sizeof(aPath), "%s", g_pData->m_aImages[IMAGE_INFCLASS].m_pFilename);
+		IsDefault = true;
+	}
+	else
+	{
+		if(AsDir)
+			str_format(aPath, sizeof(aPath), "assets/infclass/%s/%s", pPath, g_pData->m_aImages[IMAGE_INFCLASS].m_pFilename);
+		else
+			str_format(aPath, sizeof(aPath), "assets/infclass/%s.png", pPath);
+	}
+
+	CImageInfo ImgInfo;
+	bool PngLoaded = Graphics()->LoadPng(ImgInfo, aPath, IStorage::TYPE_ALL);
+	if(!PngLoaded && !IsDefault)
+	{
+		if(AsDir)
+			LoadGameSkin("default");
+		else
+			LoadGameSkin(pPath, true);
+	}
+	else if(PngLoaded && Graphics()->CheckImageDivisibility(aPath, ImgInfo, g_pData->m_aSprites[SPRITE_INF_SNIPER_RIFLE].m_pSet->m_Gridx, g_pData->m_aSprites[SPRITE_INF_SNIPER_RIFLE].m_pSet->m_Gridy, true))
+	{
+		for(int i = 0; i < static_cast<int>(EDamageType::COUNT); ++i)
+		{
+			EDamageType DamageType = static_cast<EDamageType>(i);
+			int SpriteIndex = GetInfclassSpriteForDamageType(DamageType);
+			if(SpriteIndex >= 0)
+			{
+				IGraphics::CTextureHandle *pHandle = GetInfclassTexturePtrForDamageType(DamageType);
+				if(pHandle)
+				{
+					*pHandle = Graphics()->LoadSpriteTexture(ImgInfo, &g_pData->m_aSprites[SpriteIndex]);
+				}
+			}
+		}
+
+		m_InfclassSkin.m_SpriteHookChain = Graphics()->LoadSpriteTexture(ImgInfo, &g_pData->m_aSprites[SPRITE_INF_HOOK_CHAIN]);
+		m_InfclassSkin.m_SpriteHookHead = Graphics()->LoadSpriteTexture(ImgInfo, &g_pData->m_aSprites[SPRITE_INF_HOOK_HEAD]);
+
+		m_InfclassSkin.m_SpriteStatusHookable = Graphics()->LoadSpriteTexture(ImgInfo, &g_pData->m_aSprites[SPRITE_INF_STATUS_HOOKABLE]);
+
+		m_InfclassSkinLoaded = true;
+
+		ImgInfo.Free();
+	}
 }
 
 void CGameClient::LoadEmoticonsSkin(const char *pPath, bool AsDir)
@@ -4636,6 +4873,111 @@ static bool UnknownMapSettingCallback(const char *pCommand, void *pUser)
 	return true;
 }
 
+int CGameClient::GetInfclassSpriteForDamageType(EDamageType DamageType)
+{
+	switch(DamageType)
+	{
+	case EDamageType::SNIPER_RIFLE:
+		return SPRITE_INF_SNIPER_RIFLE;
+	case EDamageType::SCIENTIST_LASER:
+		return SPRITE_INF_SCIENTIST_LASER;
+	case EDamageType::MEDIC_SHOTGUN:
+		return SPRITE_INF_MEDIC_SHOTGUN;
+
+	case EDamageType::LASER_WALL:
+		return SPRITE_INF_LASER_WALL;
+	case EDamageType::SOLDIER_BOMB:
+		return SPRITE_INF_SOLDIER_BOMB;
+	case EDamageType::SCIENTIST_MINE:
+		return SPRITE_INF_SCIENTIST_MINE;
+	case EDamageType::BIOLOGIST_MINE:
+		return SPRITE_INF_BIOLOGIST_MINE;
+	case EDamageType::MERCENARY_BOMB:
+		return SPRITE_INF_MERCENARY_BOMB;
+	case EDamageType::WHITE_HOLE:
+		return SPRITE_INF_WHITE_HOLE;
+	case EDamageType::TURRET_DESTRUCTION:
+		return SPRITE_INF_TURRET_DESTRUCTION;
+	case EDamageType::TURRET_LASER:
+		return SPRITE_INF_TURRET_LASER;
+
+	case EDamageType::BOOMER_EXPLOSION:
+		return SPRITE_INF_BOOMER_EXPLOSION;
+	case EDamageType::SLUG_SLIME:
+		return SPRITE_INF_SLUG_SLIME;
+	case EDamageType::DRYING_HOOK:
+		return SPRITE_INF_DRYING_HOOK;
+
+	default:
+		return -1;
+	}
+}
+
+float CGameClient::GetAspectTextureRatio(EDamageType DamageType)
+{
+	int SpriteIndex = GetInfclassSpriteForDamageType(DamageType);
+	if(SpriteIndex < 0)
+		return 1;
+
+	float H = g_pData->m_aSprites[SpriteIndex].m_H;
+	float W = g_pData->m_aSprites[SpriteIndex].m_W;
+	if (W <= 0) {
+		return 0;
+	}
+	return W / H;
+}
+
+IGraphics::CTextureHandle *CGameClient::GetInfclassTexturePtrForDamageType(EDamageType DamageType)
+{
+	switch(DamageType)
+	{
+//	case EDamageType::SNIPER_RIFLE:
+//		return &m_InfclassSkin.m_SpriteSniperRifle;
+//	case EDamageType::SCIENTIST_LASER:
+//		return &m_InfclassSkin.m_SpriteScientistLaser;
+//	case EDamageType::MEDIC_SHOTGUN:
+//		return &m_InfclassSkin.m_SpriteMedicShotgun;
+
+	case EDamageType::LASER_WALL:
+		return &m_InfclassSkin.m_SpriteLaserWall;
+	case EDamageType::SOLDIER_BOMB:
+		return &m_InfclassSkin.m_SpriteSoldierBomb;
+	case EDamageType::SCIENTIST_MINE:
+		return &m_InfclassSkin.m_SpriteScientistMine;
+	case EDamageType::BIOLOGIST_MINE:
+		return &m_InfclassSkin.m_SpriteBiologistMine;
+	case EDamageType::MERCENARY_BOMB:
+		return &m_InfclassSkin.m_SpriteMercenaryBomb;
+//	case EDamageType::WHITE_HOLE:
+//		return &m_InfclassSkin.m_SpriteWhiteHole;
+	case EDamageType::TURRET_DESTRUCTION:
+		return &m_InfclassSkin.m_SpriteTurretDestruction;
+	case EDamageType::TURRET_LASER:
+		return &m_InfclassSkin.m_SpriteTurretLaser;
+
+	case EDamageType::BOOMER_EXPLOSION:
+		return &m_InfclassSkin.m_SpriteBoomerExplosion;
+	case EDamageType::SLUG_SLIME:
+		return &m_InfclassSkin.m_SpriteSlugSlime;
+	case EDamageType::DRYING_HOOK:
+		return &m_InfclassSkin.m_SpriteDryingHook;
+
+	default:
+		return nullptr;
+	}
+}
+
+IGraphics::CTextureHandle CGameClient::GetInfclassTextureForDamageType(EDamageType DamageType)
+{
+	const IGraphics::CTextureHandle *pHandle = GetInfclassTexturePtrForDamageType(DamageType);
+	if(pHandle)
+	{
+		return *pHandle;
+	}
+
+	return IGraphics::CTextureHandle();
+}
+
 void CGameClient::LoadMapSettings()
 {
 	IEngineMap *pMap = Kernel()->RequestInterface<IEngineMap>();
@@ -4775,6 +5117,8 @@ void CGameClient::SnapCollectEntities()
 		if(Item.m_Type == NETOBJTYPE_ENTITYEX)
 			vItemEx.push_back({Item, nullptr});
 		else if(Item.m_Type == NETOBJTYPE_PICKUP || Item.m_Type == NETOBJTYPE_DDNETPICKUP || Item.m_Type == NETOBJTYPE_LASER || Item.m_Type == NETOBJTYPE_DDNETLASER || Item.m_Type == NETOBJTYPE_PROJECTILE || Item.m_Type == NETOBJTYPE_DDRACEPROJECTILE || Item.m_Type == NETOBJTYPE_DDNETPROJECTILE)
+			vItemData.push_back({Item, nullptr});
+		else if(Item.m_Type == NETOBJTYPE_INFCLASSOBJECT)
 			vItemData.push_back({Item, nullptr});
 	}
 

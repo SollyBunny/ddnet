@@ -5,28 +5,7 @@ if(CMAKE_OSX_DEPLOYMENT_TARGET VERSION_LESS 10.15)
   message(WARNING "Building for macOS < 10.15 is not supported")
 endif()
 
-file(STRINGS src/game/version.h VERSION_LINE
-  LIMIT_COUNT 1
-  REGEX "^#define TCLIENT_VERSION "
-)
-
-if(VERSION_LINE MATCHES "\"([0-9]+)\\.([0-9]+)\\.([0-9]+)\"")
-  set(VERSION_MAJOR ${CMAKE_MATCH_1})
-  set(VERSION_MINOR ${CMAKE_MATCH_2})
-  set(VERSION_PATCH ${CMAKE_MATCH_3})
-elseif(VERSION_LINE MATCHES "\"([0-9]+)\\.([0-9]+)\"")
-  set(VERSION_MAJOR ${CMAKE_MATCH_1})
-  set(VERSION_MINOR ${CMAKE_MATCH_2})
-  set(VERSION_PATCH "0")
-else()
-  message(FATAL_ERROR "Couldn't parse version from src/game/version.h")
-endif()
-
-if(VERSION_PATCH STREQUAL "0")
-  project(TClient VERSION ${VERSION_MAJOR}.${VERSION_MINOR})
-else()
-  project(TClient VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
-endif()
+project(DDNet)
 
 set(ORIGINAL_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
 set(ORIGINAL_CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES})
@@ -1427,11 +1406,15 @@ set(EXPECTED_DATA
   editor/entities/Race.png
   editor/entities/Vanilla.png
   editor/entities/blockworlds.png
+  editor/entities/ptum/icBonus.png
+  editor/entities/ptum/icDamage.png
+  editor/entities/ptum/icTele.png
   editor/entities_clear/blockworlds.png
   editor/entities_clear/ddnet.png
   editor/entities_clear/ddrace.png
   editor/entities_clear/f-ddrace.png
   editor/entities_clear/fng.png
+  editor/entities_clear/infclass.png
   editor/entities_clear/race.png
   editor/entities_clear/vanilla.png
   editor/front.png
@@ -1454,6 +1437,7 @@ set(EXPECTED_DATA
   gui_icons.png
   gui_logo.png
   hud.png
+  infclass.png
   languages/arabic.txt
   languages/azerbaijani.txt
   languages/belarusian.txt
@@ -1654,6 +1638,7 @@ set(EXPECTED_DATA
   skins/greyfox_2.png
   skins/hammie-chew.png
   skins/hammie-whis.png
+  skins/inf_ninja.png
   skins/jeet.png
   skins/kintaro_2.png
   skins/kitty_bluestripe.png
@@ -1715,6 +1700,7 @@ set(EXPECTED_DATA
   skins/whis.png
   skins/x_ninja.png
   skins/x_spec.png
+  skins/zombie.png
   skins7/beaver.json
   skins7/bluekitty.json
   skins7/bluestripe.json
@@ -2114,6 +2100,7 @@ set_src(ENGINE_SHARED GLOB_RECURSE src/engine/shared
   config_domains.h
   config_includes.h
   config_variables.h
+  config_variables_inf.h
   config_variables_insta.h
   config_variables_solly.h
   config_variables_tater.h
@@ -2208,8 +2195,10 @@ set_src(ENGINE_GFX GLOB src/engine/gfx
 )
 set_src(GAME_SHARED GLOB src/game
   alloc.h
+  classes.h
   collision.cpp
   collision.h
+  damage_type.h
   gamecore.cpp
   gamecore.h
   layers.cpp
@@ -2355,6 +2344,7 @@ if(CLIENT)
     graphics_defines.h
     graphics_threaded.cpp
     graphics_threaded.h
+    infclass.h
     input.cpp
     input.h
     keynames.cpp
@@ -3326,6 +3316,12 @@ function(regex_inverted VAR)
   set(${VAR} ${RESULT} PARENT_SCOPE)
 endfunction()
 
+string(TOLOWER "${PROJECT_NAME}" LOWERED_NAME)
+set(CLIENT_ICON_NAME ${LOWERED_NAME})
+if(TARGET_OS STREQUAL "linux")
+  configure_file("other/app.desktop.in" "${LOWERED_NAME}.desktop")
+endif()
+
 set(CPACK_PACKAGE_NAME ${PROJECT_NAME})
 set(CPACK_GENERATOR TGZ TXZ)
 set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
@@ -3467,33 +3463,33 @@ endif()
 
 if(NOT DEV)
   include(GNUInstallDirs)
-  install(DIRECTORY data DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/ddnet COMPONENT data)
+  install(DIRECTORY data DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${LOWERED_NAME} COMPONENT data)
   if(TARGET game-client)
     install(TARGETS game-client DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT client)
   endif()
   if(STEAMAPI_KIND STREQUAL SHARED)
-    install(TARGETS ${TARGET_STEAMAPI} DESTINATION ${CMAKE_INSTALL_LIBDIR}/ddnet COMPONENT client)
+    install(TARGETS ${TARGET_STEAMAPI} DESTINATION ${CMAKE_INSTALL_LIBDIR}/${LOWERED_NAME} COMPONENT client)
   endif()
   if(TARGET game-server)
     install(TARGETS game-server DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT server)
   endif()
   if(ANTIBOT)
-    install(TARGETS ${TARGET_ANTIBOT} DESTINATION ${CMAKE_INSTALL_LIBDIR}/ddnet COMPONENT server)
+    install(TARGETS ${TARGET_ANTIBOT} DESTINATION ${CMAKE_INSTALL_LIBDIR}/${LOWERED_NAME} COMPONENT server)
   endif()
-  install(TARGETS ${TARGETS_TOOLS} DESTINATION ${CMAKE_INSTALL_LIBDIR}/ddnet COMPONENT tools)
+  install(TARGETS ${TARGETS_TOOLS} DESTINATION ${CMAKE_INSTALL_LIBDIR}/${LOWERED_NAME} COMPONENT tools)
   if(TARGET game-client)
-    install(FILES other/ddnet.desktop DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications COMPONENT client)
+     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${LOWERED_NAME}.desktop" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/applications/" COMPONENT client)
   endif()
   foreach(SIZE 16 32 48 256)
     if(TARGET game-client)
-      install(FILES other/icons/DDNet_${SIZE}x${SIZE}x32.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/${SIZE}x${SIZE}/apps RENAME ddnet.png COMPONENT client)
+      install(FILES other/icons/DDNet_${SIZE}x${SIZE}x32.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/${SIZE}x${SIZE}/apps RENAME ${CLIENT_ICON_NAME}.png COMPONENT client)
     endif()
     if(TARGET game-server)
       install(FILES other/icons/DDNet-Server_${SIZE}x${SIZE}x32.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/${SIZE}x${SIZE}/apps RENAME ddnet-server.png COMPONENT server)
     endif()
   endforeach()
   foreach(file ${VULKAN_SHADER_FILE_LIST})
-    install(FILES ${PROJECT_BINARY_DIR}/${file} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/ddnet/data/shader/vulkan COMPONENT client)
+    install(FILES ${PROJECT_BINARY_DIR}/${file} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${LOWERED_NAME}/data/shader/vulkan COMPONENT client)
   endforeach()
 endif()
 
@@ -3511,7 +3507,9 @@ set(PACKAGE_TARGETS)
 if(CLIENT AND DMGBUILD)
   file(MAKE_DIRECTORY bundle/client/)
   file(MAKE_DIRECTORY bundle/server/)
+  set(BUNDLE_IDENTIFIER "org.${CMAKE_PROJECT_NAME}Client.app")
   configure_file(other/bundle/client/Info.plist.in bundle/client/Info.plist)
+  unset(BUNDLE_IDENTIFIER)
   configure_file(other/bundle/server/Info.plist.in bundle/server/Info.plist)
 
   set(DMG_TMPDIR pack_${CPACK_PACKAGE_FILE_NAME}_dmg)

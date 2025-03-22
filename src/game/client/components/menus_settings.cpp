@@ -2470,6 +2470,16 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 		{
 			Ui()->DoScrollbarOption(&g_Config.m_ClFreezeBarsAlphaInsideFreeze, &g_Config.m_ClFreezeBarsAlphaInsideFreeze, &Button, Localize("Opacity of freeze bars inside freeze"), 0, 100, &CUi::ms_LinearScrollbarScale, CUi::SCROLLBAR_OPTION_MULTILINE, "%");
 		}
+
+		// ***** Infclass HUD ***** //
+		RightView.HSplitTop(MarginBetweenViews, nullptr, &RightView);
+		Ui()->DoLabel_AutoLineSize(Localize("Infclass HUD"), HeadlineFontSize,
+			TEXTALIGN_ML, &LeftView, HeadlineHeight);
+		RightView.HSplitTop(MarginSmall, nullptr, &LeftView);
+
+		// Switches of various DDRace HUD elements
+		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_InfcUseDDRaceHUD, Localize("Use DDRace HUD for Infclass"), &g_Config.m_InfcUseDDRaceHUD, &RightView, LineSize);
+		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_InfcShowHookProtection, Localize("Show player hook protection"), &g_Config.m_InfcShowHookProtection, &RightView, LineSize);
 	}
 	else if(s_CurTab == APPEARANCE_TAB_CHAT)
 	{
@@ -3457,6 +3467,7 @@ void CMenus::RenderSettingsDDNet(CUIRect MainView)
 		if(NeedUpdate && State <= IUpdater::CLEAN)
 		{
 			str_format(aBuf, sizeof(aBuf), Localize("DDNet %s is available:"), Client()->LatestVersion());
+			CUi::ReplaceHardcodedGameName(aBuf, aBuf, sizeof(aBuf));
 			UpdaterRect.VSplitLeft(TextRender()->TextWidth(14.0f, aBuf, -1, -1.0f) + 10.0f, &UpdaterRect, &Button);
 			Button.VSplitLeft(100.0f, &Button, nullptr);
 			static CButtonContainer s_ButtonUpdate;

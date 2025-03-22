@@ -1,5 +1,4 @@
 // This file can be included several times.
-
 #ifndef CONFIG_DOMAIN
 #error "CONFIG_DOMAIN macro not defined"
 #define CONFIG_DOMAIN(Name, ConfigPath, HasVars) ;
