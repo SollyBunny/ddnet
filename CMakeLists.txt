@@ -2459,6 +2459,8 @@ if(CLIENT)
     components/spectator.h
     components/statboard.cpp
     components/statboard.h
+    components/solly/translate.cpp
+    components/solly/translate.h
     components/tclient/bindchat.cpp
     components/tclient/bindchat.h
     components/tclient/bindwheel.cpp
@@ -2478,8 +2480,6 @@ if(CLIENT)
     components/tclient/tater.h
     components/tclient/trails.cpp
     components/tclient/trails.h
-    components/tclient/translate.cpp
-    components/tclient/translate.h
     components/tclient/verify.cpp
     components/tclient/verify.h
     components/tclient/warlist.cpp
