@@ -2111,7 +2111,11 @@ set_src(ENGINE_SHARED GLOB_RECURSE src/engine/shared
   compression.h
   config.cpp
   config.h
+  config_domains.h
+  config_includes.h
   config_variables.h
+  config_variables_solly.h
+  config_variables_tater.h
   console.cpp
   console.h
   csv.cpp
@@ -2179,7 +2183,6 @@ set_src(ENGINE_SHARED GLOB_RECURSE src/engine/shared
   storage.cpp
   stun.cpp
   stun.h
-  tater_variables.h
   teehistorian_ex.cpp
   teehistorian_ex.h
   teehistorian_ex_chunks.h
