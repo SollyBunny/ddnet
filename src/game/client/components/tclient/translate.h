@@ -31,7 +31,6 @@ class CTranslate : public CComponent
 	static void ConTranslate(IConsole::IResult *pResult, void *pUserData);
 
 	CChat::CLine *FindMessage(const char *pName);
-	void Translate(const char *pName);
 
 public:
 	virtual int Sizeof() const override { return sizeof(*this); }
@@ -39,6 +38,8 @@ public:
 	virtual void OnConsoleInit() override;
 	virtual void OnRender() override;
 
+	void Translate(const char *pName);
+	void Translate(CChat::CLine &Line);
 };
 
 #endif

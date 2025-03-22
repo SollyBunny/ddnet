@@ -925,6 +925,12 @@ void CChat::AddLine(int ClientId, int Team, const char *pLine)
 			}
 		}
 	}
+
+	if(g_Config.m_ClTranslateAuto > 0)
+	{
+		if(pCurrentLine->m_ClientId != CLIENT_MSG)
+			GameClient()->m_Translate.Translate(*pCurrentLine);
+	}
 }
 
 void CChat::OnPrepareLines(float y)

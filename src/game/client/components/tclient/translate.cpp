@@ -337,15 +337,20 @@ void CTranslate::Translate(const char *pName)
 		return;
 	}
 
-	// Create new job
-	CTranslateJob Job;
-
-	Job.m_pLine = FindMessage(pName);
-	if(!Job.m_pLine || Job.m_pLine->m_aText[0] == '\0')
+	CChat::CLine *pLine = FindMessage(pName);
+	if(!pLine || pLine->m_aText[0] == '\0')
 	{
 		GameClient()->m_Chat.Echo("No message to translate");
 		return;
 	}
+
+	Translate(*pLine);
+}
+
+void CTranslate::Translate(CChat::CLine &Line)
+{
+	CTranslateJob Job;
+	Job.m_pLine = &Line;
 
 	// Check to make sure the line is the same line we started with
 	// Also thread safe for some reason
