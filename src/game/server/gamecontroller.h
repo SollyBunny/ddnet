@@ -8,6 +8,15 @@
 #include <engine/shared/protocol.h>
 #include <game/server/teams.h>
 
+#include <engine/shared/http.h> // ddnet-insta
+#include <game/server/gamecontext.h> // ddnet-insta
+#include <game/server/instagib/enums.h> // ddnet-insta
+#include <game/server/instagib/sql_stats.h> // ddnet-insta
+#include <game/server/instagib/structs.h> // ddnet-insta
+
+#include <game/generated/protocol.h>
+#include <game/generated/protocol7.h>
+
 struct CScoreLoadBestTimeResult;
 
 /*
@@ -17,6 +26,9 @@ struct CScoreLoadBestTimeResult;
 */
 class IGameController
 {
+#define IN_CLASS_IGAMECONTROLLER
+#include <game/server/instagib/gamecontroller.h>
+
 	friend class CSaveTeam; // need access to GameServer() and Server()
 
 	std::vector<vec2> m_avSpawnPoints[3];
@@ -118,7 +130,7 @@ public:
 	virtual void DoWarmup(int Seconds);
 
 	void StartRound();
-	void EndRound();
+	// void EndRound(); // ddnet-insta
 	void ChangeMap(const char *pToMap);
 
 	/*
@@ -138,7 +150,7 @@ public:
 	virtual const char *GetTeamName(int Team);
 	virtual int GetAutoTeam(int NotThisId);
 	virtual bool CanJoinTeam(int Team, int NotThisId, char *pErrorReason, int ErrorReasonSize);
-	int ClampTeam(int Team);
+	int ClampTeam(int Team) const;
 
 	CClientMask GetMaskForPlayerWorldEvent(int Asker, int ExceptID = -1);
 

@@ -31,9 +31,26 @@
 
 #include "entities/character.h"
 #include "gamemodes/DDRace.h"
+#include "gamemodes/ddrace/block/block.h"
+#include "gamemodes/instagib/bolofng/bolofng.h"
+#include "gamemodes/instagib/boomfng/boomfng.h"
+#include "gamemodes/instagib/fng/fng.h"
+#include "gamemodes/instagib/gctf/gctf.h"
+#include "gamemodes/instagib/gdm/gdm.h"
+#include "gamemodes/instagib/gtdm/gtdm.h"
+#include "gamemodes/instagib/ictf/ictf.h"
+#include "gamemodes/instagib/idm/idm.h"
+#include "gamemodes/instagib/itdm/itdm.h"
+#include "gamemodes/instagib/solofng/solofng.h"
+#include "gamemodes/instagib/zcatch/zcatch.h"
 #include "gamemodes/mod.h"
+#include "gamemodes/vanilla/ctf/ctf.h"
+#include "gamemodes/vanilla/dm/dm.h"
+#include "gamemodes/vanilla/fly/fly.h"
 #include "player.h"
 #include "score.h"
+
+#include <game/server/instagib/structs.h> // ddnet-insta
 
 // Not thread-safe!
 class CClientChatLogger : public ILogger
@@ -128,6 +145,9 @@ void CGameContext::Construct(int Resetting)
 
 	m_aDeleteTempfile[0] = 0;
 	m_TeeHistorianActive = false;
+
+	m_UnstackHackCharacterOffset = 0;
+	mem_zero(m_aaLastChatMessages, sizeof(m_aaLastChatMessages));
 }
 
 void CGameContext::Destruct(int Resetting)
@@ -291,8 +311,12 @@ void CGameContext::CreateHammerHit(vec2 Pos, CClientMask Mask)
 	}
 }
 
-void CGameContext::CreateExplosion(vec2 Pos, int Owner, int Weapon, bool NoDamage, int ActivatedTeam, CClientMask Mask)
+void CGameContext::CreateExplosion(vec2 Pos, int Owner, int Weapon, bool NoDamage, int ActivatedTeam, CClientMask Mask, CClientMask SprayMask)
 {
+	// ddnet-insta
+	CExplosionTarget aTargets[MAX_CLIENTS];
+	int NumTargets = 0;
+
 	// create the event
 	CNetEvent_Explosion *pEvent = m_Events.Create<CNetEvent_Explosion>(Mask);
 	if(pEvent)
@@ -344,9 +368,17 @@ void CGameContext::CreateExplosion(vec2 Pos, int Owner, int Weapon, bool NoDamag
 				TeamMask.reset(PlayerTeam);
 			}
 
+			// ddnet-insta start
+			if(g_Config.m_SvSprayprotection && !SprayMask.test(pChr->GetPlayer()->GetCid()))
+				continue;
+			aTargets[NumTargets++].Init(pChr, ForceDir * Dmg * 2, (int)Dmg, Weapon, NoDamage, ActivatedTeam, Mask, SprayMask, Pos);
+			// ddnet-insta end
+
 			pChr->TakeDamage(ForceDir * Dmg * 2, (int)Dmg, Owner, Weapon);
 		}
 	}
+
+	m_pController->OnExplosionHits(Owner, aTargets, NumTargets); // ddnet-insta
 }
 
 void CGameContext::CreatePlayerSpawn(vec2 Pos, CClientMask Mask)
@@ -668,7 +700,7 @@ void CGameContext::SendChat(int ChatterClientId, int Team, const char *pText, in
 	}
 	else
 	{
-		CTeamsCore *pTeams = &m_pController->Teams().m_Core;
+		// CTeamsCore *pTeams = &m_pController->Teams().m_Core; // ddnet-insta
 		CNetMsg_Sv_Chat Msg;
 		Msg.m_Team = 1;
 		Msg.m_ClientId = ChatterClientId;
@@ -692,7 +724,8 @@ void CGameContext::SendChat(int ChatterClientId, int Team, const char *pText, in
 				}
 				else
 				{
-					if(pTeams->Team(i) == Team && m_apPlayers[i]->GetTeam() != TEAM_SPECTATORS)
+					// if(pTeams->Team(i) == Team && m_apPlayers[i]->GetTeam() != TEAM_SPECTATORS)
+					if(m_apPlayers[i]->GetTeam() == Team && m_apPlayers[i]->GetTeam() != TEAM_SPECTATORS) // ddnet-insta
 					{
 						Server()->SendPackMsg(&Msg, MSGFLAG_VITAL | MSGFLAG_NORECORD, i);
 					}
@@ -1125,6 +1158,10 @@ void CGameContext::OnTick()
 					if((IsKickVote() || IsSpecVote()) && (m_apPlayers[i]->GetTeam() == TEAM_SPECTATORS ||
 										     (GetPlayerChar(m_VoteCreator) && GetPlayerChar(i) &&
 											     GetPlayerChar(m_VoteCreator)->Team() != GetPlayerChar(i)->Team())))
+						continue;
+
+					// ddnet-insta
+					if(m_apPlayers[i]->GetTeam() == TEAM_SPECTATORS && !g_Config.m_SvSpectatorVotes)
 						continue;
 
 					if(m_apPlayers[i]->IsAfk() && i != m_VoteCreator)
@@ -1595,7 +1632,7 @@ void CGameContext::OnClientEnter(int ClientId)
 	protocol7::CNetMsg_Sv_ClientInfo NewClientInfoMsg;
 	NewClientInfoMsg.m_ClientId = ClientId;
 	NewClientInfoMsg.m_Local = 0;
-	NewClientInfoMsg.m_Team = pNewPlayer->GetTeam();
+	NewClientInfoMsg.m_Team = m_pController->GetPlayerTeam(pNewPlayer, true); // ddnet-insta
 	NewClientInfoMsg.m_pName = Server()->ClientName(ClientId);
 	NewClientInfoMsg.m_pClan = Server()->ClientClan(ClientId);
 	NewClientInfoMsg.m_Country = Server()->ClientCountry(ClientId);
@@ -1625,7 +1662,7 @@ void CGameContext::OnClientEnter(int ClientId)
 			protocol7::CNetMsg_Sv_ClientInfo ClientInfoMsg;
 			ClientInfoMsg.m_ClientId = i;
 			ClientInfoMsg.m_Local = 0;
-			ClientInfoMsg.m_Team = pPlayer->GetTeam();
+			ClientInfoMsg.m_Team = m_pController->GetPlayerTeam(pPlayer, true); // ddnet-insta
 			ClientInfoMsg.m_pName = Server()->ClientName(i);
 			ClientInfoMsg.m_pClan = Server()->ClientClan(i);
 			ClientInfoMsg.m_Country = Server()->ClientCountry(i);
@@ -1671,6 +1708,9 @@ bool CGameContext::OnClientDataPersist(int ClientId, void *pData)
 	pPersistent->m_IsSpectator = m_apPlayers[ClientId]->GetTeam() == TEAM_SPECTATORS;
 	pPersistent->m_IsAfk = m_apPlayers[ClientId]->IsAfk();
 	pPersistent->m_LastWhisperTo = m_apPlayers[ClientId]->m_LastWhisperTo;
+
+	m_pController->OnClientDataPersist(m_apPlayers[ClientId], pPersistent); // ddnet-insta
+
 	return true;
 }
 
@@ -1727,6 +1767,10 @@ void CGameContext::OnClientConnected(int ClientId, void *pData)
 	SendSettings(ClientId);
 
 	Server()->ExpireServerInfo();
+
+	// ddnet-insta
+	if(pPersistentData)
+		m_pController->OnClientDataRestore(m_apPlayers[ClientId], pPersistentData);
 }
 
 void CGameContext::OnClientDrop(int ClientId, const char *pReason)
@@ -1942,6 +1986,12 @@ void *CGameContext::PreProcessMsg(int *pMsgId, CUnpacker *pUnpacker, int ClientI
 			pMsg->m_ColorBody = pPlayer->m_TeeInfos.m_ColorBody;
 			pMsg->m_ColorFeet = pPlayer->m_TeeInfos.m_ColorFeet;
 		}
+		// ddnet-insta ready start
+		else if(*pMsgId == protocol7::NETMSGTYPE_CL_READYCHANGE)
+		{
+			m_pController->OnPlayerReadyChange(pPlayer);
+		}
+		// ddnet-insta ready end
 		else if(*pMsgId == protocol7::NETMSGTYPE_CL_SKINCHANGE)
 		{
 			protocol7::CNetMsg_Cl_SkinChange *pMsg = (protocol7::CNetMsg_Cl_SkinChange *)pRawMsg;
@@ -1950,6 +2000,9 @@ void *CGameContext::PreProcessMsg(int *pMsgId, CUnpacker *pUnpacker, int ClientI
 				return nullptr;
 
 			pPlayer->m_LastChangeInfo = Server()->Tick();
+
+			if(m_pController->OnSkinChange7(pMsg, ClientId)) // ddnet-insta
+				return nullptr;
 
 			CTeeInfo Info(pMsg->m_apSkinPartNames, pMsg->m_aUseCustomColors, pMsg->m_aSkinPartColors);
 			Info.FromSixup();
@@ -2184,6 +2237,9 @@ void CGameContext::OnSayNetMessage(const CNetMsg_Cl_Say *pMsg, int ClientId, con
 	else
 		Team = TEAM_ALL;
 
+	if(m_pController->OnChatMessage(pMsg, Length, Team, pPlayer))
+		return;
+
 	if(pMsg->m_pMessage[0] == '/')
 	{
 		const char *pWhisper;
@@ -2239,14 +2295,25 @@ void CGameContext::OnSayNetMessage(const CNetMsg_Cl_Say *pMsg, int ClientId, con
 		pPlayer->UpdatePlaytime();
 		char aCensoredMessage[256];
 		CensorMessage(aCensoredMessage, pMsg->m_pMessage, sizeof(aCensoredMessage));
-		SendChat(ClientId, Team, aCensoredMessage, ClientId);
+		char aChatMessage[256];
+		str_copy(aChatMessage, aCensoredMessage);
+		if(g_Config.m_SvUnstackChat)
+			InstagibUnstackChatMessage(aChatMessage, aCensoredMessage, sizeof(aChatMessage));
+		SendChat(ClientId, Team, aChatMessage, ClientId);
 	}
 }
 
 void CGameContext::OnCallVoteNetMessage(const CNetMsg_Cl_CallVote *pMsg, int ClientId)
 {
+	if(m_pController->OnCallVoteNetMessage(pMsg, ClientId)) // ddnet-insta
+		return;
 	if(RateLimitPlayerVote(ClientId) || m_VoteCloseTime)
 		return;
+	if(m_apPlayers[ClientId]->GetTeam() == TEAM_SPECTATORS && !g_Config.m_SvSpectatorVotes)
+	{
+		SendChatTarget(ClientId, "Spectators aren't allowed to vote.");
+		return;
+	}
 
 	m_apPlayers[ClientId]->UpdatePlaytime();
 
@@ -2492,6 +2559,10 @@ void CGameContext::OnCallVoteNetMessage(const CNetMsg_Cl_CallVote *pMsg, int Cli
 
 void CGameContext::OnVoteNetMessage(const CNetMsg_Cl_Vote *pMsg, int ClientId)
 {
+	// ddnet-insta
+	if(m_pController->OnVoteNetMessage(pMsg, ClientId))
+		return;
+
 	if(!m_VoteCloseTime)
 		return;
 
@@ -2523,7 +2594,8 @@ void CGameContext::OnVoteNetMessage(const CNetMsg_Cl_Vote *pMsg, int ClientId)
 
 void CGameContext::OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMsg, int ClientId)
 {
-	if(m_World.m_Paused)
+	// ddnet-insta (also moved the world m_Paused check to the pvp controller)
+	if(m_pController->OnSetTeamNetMessage(pMsg, ClientId))
 		return;
 
 	CPlayer *pPlayer = m_apPlayers[ClientId];
@@ -2641,6 +2713,9 @@ void CGameContext::OnChangeInfoNetMessage(const CNetMsg_Cl_ChangeInfo *pMsg, int
 	CPlayer *pPlayer = m_apPlayers[ClientId];
 	if(g_Config.m_SvSpamprotection && pPlayer->m_LastChangeInfo && pPlayer->m_LastChangeInfo + Server()->TickSpeed() * g_Config.m_SvInfoChangeDelay > Server()->Tick())
 		return;
+	// ddnet-insta
+	if(m_pController->OnChangeInfoNetMessage(pMsg, ClientId))
+		return;
 
 	bool SixupNeedsUpdate = false;
 
@@ -2667,9 +2742,12 @@ void CGameContext::OnChangeInfoNetMessage(const CNetMsg_Cl_ChangeInfo *pMsg, int
 		SendChat(-1, TEAM_ALL, aChatText);
 
 		// reload scores
-		Score()->PlayerData(ClientId)->Reset();
-		m_apPlayers[ClientId]->m_Score.reset();
-		Score()->LoadPlayerData(ClientId);
+		if(!m_pController->LoadNewPlayerNameData(ClientId)) // ddnet-insta
+		{
+			Score()->PlayerData(ClientId)->Reset();
+			m_apPlayers[ClientId]->m_Score.reset();
+			Score()->LoadPlayerData(ClientId);
+		}
 
 		SixupNeedsUpdate = true;
 
@@ -2686,10 +2764,15 @@ void CGameContext::OnChangeInfoNetMessage(const CNetMsg_Cl_ChangeInfo *pMsg, int
 		SixupNeedsUpdate = true;
 	Server()->SetClientCountry(ClientId, pMsg->m_Country);
 
+	// ddnet-insta
+	if(m_pController->IsSkinColorChangeAllowed())
+	{
+		pPlayer->m_TeeInfos.m_UseCustomColor = pMsg->m_UseCustomColor;
+		pPlayer->m_TeeInfos.m_ColorBody = pMsg->m_ColorBody;
+		pPlayer->m_TeeInfos.m_ColorFeet = pMsg->m_ColorFeet;
+	}
+
 	str_copy(pPlayer->m_TeeInfos.m_aSkinName, pMsg->m_pSkin, sizeof(pPlayer->m_TeeInfos.m_aSkinName));
-	pPlayer->m_TeeInfos.m_UseCustomColor = pMsg->m_UseCustomColor;
-	pPlayer->m_TeeInfos.m_ColorBody = pMsg->m_ColorBody;
-	pPlayer->m_TeeInfos.m_ColorFeet = pMsg->m_ColorFeet;
 	if(!Server()->IsSixup(ClientId))
 		pPlayer->m_TeeInfos.ToSixup();
 
@@ -2707,7 +2790,7 @@ void CGameContext::OnChangeInfoNetMessage(const CNetMsg_Cl_ChangeInfo *pMsg, int
 		Info.m_pClan = pMsg->m_pClan;
 		Info.m_Local = 0;
 		Info.m_Silent = true;
-		Info.m_Team = pPlayer->GetTeam();
+		Info.m_Team = m_pController->GetPlayerTeam(pPlayer, true); // ddnet-insta
 
 		for(int p = 0; p < protocol7::NUM_SKINPARTS; p++)
 		{
@@ -2824,6 +2907,9 @@ void CGameContext::OnEmoticonNetMessage(const CNetMsg_Cl_Emoticon *pMsg, int Cli
 void CGameContext::OnKillNetMessage(const CNetMsg_Cl_Kill *pMsg, int ClientId)
 {
 	if(m_World.m_Paused)
+		return;
+
+	if(m_pController->OnSelfkill(ClientId)) // ddnet-insta
 		return;
 
 	if(m_VoteCloseTime && m_VoteCreator == ClientId && GetDDRaceTeam(ClientId) && (IsKickVote() || IsSpecVote()))
@@ -3137,7 +3223,7 @@ void CGameContext::ConPause(IConsole::IResult *pResult, void *pUserData)
 {
 	CGameContext *pSelf = (CGameContext *)pUserData;
 
-	pSelf->m_World.m_Paused ^= 1;
+	pSelf->m_pController->ToggleGamePause();
 }
 
 void CGameContext::ConChangeMap(IConsole::IResult *pResult, void *pUserData)
@@ -3167,10 +3253,11 @@ void CGameContext::ConRandomUnfinishedMap(IConsole::IResult *pResult, void *pUse
 void CGameContext::ConRestart(IConsole::IResult *pResult, void *pUserData)
 {
 	CGameContext *pSelf = (CGameContext *)pUserData;
-	if(pResult->NumArguments())
-		pSelf->m_pController->DoWarmup(pResult->GetInteger(0));
+	int Seconds = pResult->NumArguments() ? clamp(pResult->GetInteger(0), -1, 1000) : 0;
+	if(Seconds < 0)
+		pSelf->m_pController->AbortWarmup();
 	else
-		pSelf->m_pController->StartRound();
+		pSelf->m_pController->DoWarmup(Seconds);
 }
 
 void CGameContext::ConBroadcast(IConsole::IResult *pResult, void *pUserData)
@@ -3661,7 +3748,7 @@ void CGameContext::OnConsoleInit()
 	Console()->Register("change_map", "r[map]", CFGFLAG_SERVER | CFGFLAG_STORE, ConChangeMap, this, "Change map");
 	Console()->Register("random_map", "?i[stars]", CFGFLAG_SERVER | CFGFLAG_STORE, ConRandomMap, this, "Random map");
 	Console()->Register("random_unfinished_map", "?i[stars]", CFGFLAG_SERVER | CFGFLAG_STORE, ConRandomUnfinishedMap, this, "Random unfinished map");
-	Console()->Register("restart", "?i[seconds]", CFGFLAG_SERVER | CFGFLAG_STORE, ConRestart, this, "Restart in x seconds (0 = abort)");
+	Console()->Register("restart", "?i[seconds]", CFGFLAG_SERVER | CFGFLAG_STORE, ConRestart, this, "Restart in x seconds (-1 = abort)");
 	Console()->Register("broadcast", "r[message]", CFGFLAG_SERVER, ConBroadcast, this, "Broadcast message");
 	Console()->Register("say", "r[message]", CFGFLAG_SERVER, ConSay, this, "Say in chat");
 	Console()->Register("set_team", "i[id] i[team-id] ?i[delay in minutes]", CFGFLAG_SERVER, ConSetTeam, this, "Set team of player to team");
@@ -3688,6 +3775,7 @@ void CGameContext::OnConsoleInit()
 
 	RegisterDDRaceCommands();
 	RegisterChatCommands();
+	RegisterInstagibCommands();
 }
 
 void CGameContext::RegisterDDRaceCommands()
@@ -3761,7 +3849,7 @@ void CGameContext::RegisterDDRaceCommands()
 
 void CGameContext::RegisterChatCommands()
 {
-	Console()->Register("credits", "", CFGFLAG_CHAT | CFGFLAG_SERVER, ConCredits, this, "Shows the credits of the DDNet mod");
+	Console()->Register("credits", "", CFGFLAG_CHAT | CFGFLAG_SERVER, ConCreditsGctf, this, "Shows the credits of the ddnet-insta mod");
 	Console()->Register("rules", "", CFGFLAG_CHAT | CFGFLAG_SERVER, ConRules, this, "Shows the server rules");
 	Console()->Register("emote", "?s[emote name] i[duration in seconds]", CFGFLAG_CHAT | CFGFLAG_SERVER, ConEyeEmote, this, "Sets your tee's eye emote");
 	Console()->Register("eyeemote", "?s['on'|'off'|'toggle']", CFGFLAG_CHAT | CFGFLAG_SERVER, ConSetEyeEmote, this, "Toggles use of standard eye-emotes on/off, eyeemote s, where s = on for on, off for off, toggle for toggle and nothing to show current status");
@@ -3774,10 +3862,10 @@ void CGameContext::RegisterChatCommands()
 	Console()->Register("whisper", "s[player name] r[message]", CFGFLAG_CHAT | CFGFLAG_SERVER | CFGFLAG_NONTEEHISTORIC, ConWhisper, this, "Whisper something to someone (private message)");
 	Console()->Register("c", "r[message]", CFGFLAG_CHAT | CFGFLAG_SERVER | CFGFLAG_NONTEEHISTORIC, ConConverse, this, "Converse with the last person you whispered to (private message)");
 	Console()->Register("converse", "r[message]", CFGFLAG_CHAT | CFGFLAG_SERVER | CFGFLAG_NONTEEHISTORIC, ConConverse, this, "Converse with the last person you whispered to (private message)");
-	Console()->Register("pause", "?r[player name]", CFGFLAG_CHAT | CFGFLAG_SERVER, ConTogglePause, this, "Toggles pause");
-	Console()->Register("spec", "?r[player name]", CFGFLAG_CHAT | CFGFLAG_SERVER, ConToggleSpec, this, "Toggles spec (if not available behaves as /pause)");
-	Console()->Register("pausevoted", "", CFGFLAG_CHAT | CFGFLAG_SERVER, ConTogglePauseVoted, this, "Toggles pause on the currently voted player");
-	Console()->Register("specvoted", "", CFGFLAG_CHAT | CFGFLAG_SERVER, ConToggleSpecVoted, this, "Toggles spec on the currently voted player");
+	// Console()->Register("pause", "?r[player name]", CFGFLAG_CHAT | CFGFLAG_SERVER, ConTogglePause, this, "Toggles pause"); // ddnet-insta commented this out
+	// Console()->Register("spec", "?r[player name]", CFGFLAG_CHAT | CFGFLAG_SERVER, ConToggleSpec, this, "Toggles spec (if not available behaves as /pause)"); // ddnet-insta commented this out
+	// Console()->Register("pausevoted", "", CFGFLAG_CHAT | CFGFLAG_SERVER, ConTogglePauseVoted, this, "Toggles pause on the currently voted player"); // ddnet-insta commented this out
+	// Console()->Register("specvoted", "", CFGFLAG_CHAT | CFGFLAG_SERVER, ConToggleSpecVoted, this, "Toggles spec on the currently voted player"); // ddnet-insta commented this out
 	Console()->Register("dnd", "?i['0'|'1']", CFGFLAG_CHAT | CFGFLAG_SERVER | CFGFLAG_NONTEEHISTORIC, ConDND, this, "Toggle Do Not Disturb (no chat and server messages)");
 	Console()->Register("whispers", "?i['0'|'1']", CFGFLAG_CHAT | CFGFLAG_SERVER | CFGFLAG_NONTEEHISTORIC, ConWhispers, this, "Toggle receiving whispers");
 	Console()->Register("mapinfo", "?r[map]", CFGFLAG_CHAT | CFGFLAG_SERVER, ConMapInfo, this, "Show info about the map with name r gives (current map by default)");
@@ -3970,8 +4058,42 @@ void CGameContext::OnInit(const void *pPersistentData)
 
 	if(!str_comp(Config()->m_SvGametype, "mod"))
 		m_pController = new CGameControllerMod(this);
+	else if(!str_comp_nocase(Config()->m_SvGametype, "gctf"))
+		m_pController = new CGameControllerGCTF(this);
+	else if(!str_comp_nocase(Config()->m_SvGametype, "ictf"))
+		m_pController = new CGameControllerICTF(this);
+	else if(!str_comp_nocase(Config()->m_SvGametype, "fng"))
+		m_pController = new CGameControllerFng(this);
+	else if(!str_comp_nocase(Config()->m_SvGametype, "boomfng"))
+		m_pController = new CGameControllerBoomFng(this);
+	else if(!str_comp_nocase(Config()->m_SvGametype, "solofng"))
+		m_pController = new CGameControllerSoloFng(this);
+	else if(!str_comp_nocase(Config()->m_SvGametype, "bolofng"))
+		m_pController = new CGameControllerBoloFng(this);
+	else if(!str_comp_nocase(Config()->m_SvGametype, "zcatch"))
+		m_pController = new CGameControllerZcatch(this);
+	else if(!str_comp_nocase(Config()->m_SvGametype, "gdm"))
+		m_pController = new CGameControllerGDM(this);
+	else if(!str_comp_nocase(Config()->m_SvGametype, "idm"))
+		m_pController = new CGameControllerIDM(this);
+	else if(!str_comp_nocase(Config()->m_SvGametype, "gtdm"))
+		m_pController = new CGameControllerGTDM(this);
+	else if(!str_comp_nocase(Config()->m_SvGametype, "itdm"))
+		m_pController = new CGameControllerITDM(this);
+	else if(!str_comp_nocase(Config()->m_SvGametype, "dm"))
+		m_pController = new CGameControllerDM(this);
+	else if(!str_comp_nocase(Config()->m_SvGametype, "ctf"))
+		m_pController = new CGameControllerCTF(this);
+	else if(!str_comp_nocase(Config()->m_SvGametype, "fly"))
+		m_pController = new CGameControllerFly(this);
+	else if(!str_comp_nocase(Config()->m_SvGametype, "block"))
+		m_pController = new CGameControllerBlock(this);
 	else
+	{
+		if(str_comp_nocase(Config()->m_SvGametype, "ddnet"))
+			Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "gametype", "unknown gametype falling back to ddnet");
 		m_pController = new CGameControllerDDRace(this);
+	}
 
 	ReadCensorList();
 
@@ -4064,6 +4186,8 @@ void CGameContext::OnInit(const void *pPersistentData)
 	CreateAllEntities(true);
 
 	m_pAntibot->RoundStart(this);
+
+	OnInitInstagib(); // ddnet-insta
 }
 
 void CGameContext::CreateAllEntities(bool Initial)

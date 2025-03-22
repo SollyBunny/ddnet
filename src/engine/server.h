@@ -29,6 +29,14 @@ enum
 
 class IServer : public IInterface
 {
+	// ddnet-insta
+public:
+	virtual void AddMapToRandomPool(const char *pMap) = 0;
+	virtual void ClearRandomMapPool() = 0;
+	virtual const char *GetRandomMapFromPool() = 0;
+	// ddnet-insta method that force stops the server
+	virtual void ShutdownServer() = 0;
+
 	MACRO_INTERFACE("server")
 protected:
 	int m_CurrentGameTick;
@@ -296,6 +304,10 @@ public:
 class IGameServer : public IInterface
 {
 	MACRO_INTERFACE("gameserver")
+	// ddnet-insta
+public:
+	virtual const char *ServerInfoPlayerScoreKind() = 0;
+
 protected:
 public:
 	// `pPersistentData` may be null if this is the first time `IGameServer`

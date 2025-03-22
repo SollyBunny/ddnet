@@ -3,6 +3,11 @@
 #ifndef GAME_SERVER_GAMECONTEXT_H
 #define GAME_SERVER_GAMECONTEXT_H
 
+#include <engine/http.h> // ddnet-insta m_pHttp
+#include <game/server/instagib/enums.h> // ddnet-insta
+#include <string> // ddnet-insta map pool
+#include <vector> // ddnet-insta map pool
+
 #include <engine/console.h>
 #include <engine/server.h>
 
@@ -72,6 +77,10 @@ private:
 
 class CGameContext : public IGameServer
 {
+	// ddnet-insta
+#define IN_CLASS_IGAMECONTEXT
+#include <game/server/instagib/gamecontext.h>
+
 	IServer *m_pServer;
 	IConfigManager *m_pConfigManager;
 	CConfig *m_pConfig;
@@ -147,6 +156,8 @@ class CGameContext : public IGameServer
 
 	struct CPersistentClientData
 	{
+#define IN_CLASS_PERSISTENTCLIENTDATA // ddnet-insta
+#include <game/server/instagib/persistent_client_data.h> // ddnet-insta
 		bool m_IsSpectator;
 		bool m_IsAfk;
 		int m_LastWhisperTo;
@@ -235,7 +246,8 @@ public:
 
 	// helper functions
 	void CreateDamageInd(vec2 Pos, float AngleMod, int Amount, CClientMask Mask = CClientMask().set());
-	void CreateExplosion(vec2 Pos, int Owner, int Weapon, bool NoDamage, int ActivatedTeam, CClientMask Mask = CClientMask().set());
+	// ddnet-insta added SprayMask to CreateExplosion
+	void CreateExplosion(vec2 Pos, int Owner, int Weapon, bool NoDamage, int ActivatedTeam, CClientMask Mask = CClientMask().set(), CClientMask SprayMask = CClientMask().set());
 	void CreateHammerHit(vec2 Pos, CClientMask Mask = CClientMask().set());
 	void CreatePlayerSpawn(vec2 Pos, CClientMask Mask = CClientMask().set());
 	void CreateDeath(vec2 Pos, int ClientId, CClientMask Mask = CClientMask().set());

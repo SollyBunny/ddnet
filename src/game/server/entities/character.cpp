@@ -57,7 +57,7 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	m_EmoteStop = -1;
 	m_LastAction = -1;
 	m_LastNoAmmoSound = -1;
-	m_LastWeapon = WEAPON_HAMMER;
+	m_LastWeapon = GameServer()->m_pController->GetDefaultWeapon(pPlayer);
 	m_QueuedWeapon = -1;
 	m_LastRefillJumps = false;
 	m_LastPenalty = false;
@@ -78,7 +78,7 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 
 	m_Core.Reset();
 	m_Core.Init(&GameServer()->m_World.m_Core, Collision());
-	m_Core.m_ActiveWeapon = WEAPON_GUN;
+	m_Core.m_ActiveWeapon = GameServer()->m_pController->GetDefaultWeapon(pPlayer);
 	m_Core.m_Pos = m_Pos;
 	m_Core.m_Id = m_pPlayer->GetCid();
 	GameServer()->m_World.m_Core.m_apCharacters[m_pPlayer->GetCid()] = &m_Core;
@@ -476,6 +476,10 @@ void CCharacter::FireWeapon()
 
 	vec2 ProjStartPos = m_Pos + Direction * GetProximityRadius() * 0.75f;
 
+	// ddnet-insta
+	if(GameServer()->m_pController->OnFireWeapon(*this, m_Core.m_ActiveWeapon, Direction, MouseTarget, ProjStartPos))
+		return;
+
 	switch(m_Core.m_ActiveWeapon)
 	{
 	case WEAPON_HAMMER:
@@ -521,7 +525,9 @@ void CCharacter::FireWeapon()
 			Temp -= pTarget->m_Core.m_Vel;
 			pTarget->TakeDamage((vec2(0.f, -1.0f) + Temp) * Strength, g_pData->m_Weapons.m_Hammer.m_pBase->m_Damage,
 				m_pPlayer->GetCid(), m_Core.m_ActiveWeapon);
-			pTarget->UnFreeze();
+
+			if(!GameServer()->m_pController->IsFngGameType())
+				pTarget->UnFreeze();
 
 			if(m_FreezeHammer)
 				pTarget->Freeze();
@@ -645,6 +651,9 @@ void CCharacter::HandleWeapons()
 
 	// fire Weapon, if wanted
 	FireWeapon();
+
+	// ddnet-insta
+	GameServer()->m_pController->AmmoRegen(this);
 }
 
 void CCharacter::GiveNinja()
@@ -799,6 +808,12 @@ void CCharacter::Tick()
 		if(HookedPlayer != -1 && GameServer()->m_apPlayers[HookedPlayer]->GetTeam() != TEAM_SPECTATORS)
 		{
 			Antibot()->OnHookAttach(m_pPlayer->GetCid(), true);
+		}
+		if(g_Config.m_SvKillHook)
+		{
+			CCharacter *pChr = GameServer()->m_apPlayers[HookedPlayer]->GetCharacter();
+			if(pChr)
+				pChr->TakeDamage(vec2(0, 0), 10, m_pPlayer->GetCid(), WEAPON_GAME);
 		}
 	}
 
@@ -966,13 +981,22 @@ void CCharacter::StopRecording()
 void CCharacter::Die(int Killer, int Weapon, bool SendKillMsg)
 {
 	StopRecording();
-	int ModeSpecial = GameServer()->m_pController->OnCharacterDeath(this, GameServer()->m_apPlayers[Killer], Weapon);
+	int ModeSpecial = GameServer()->m_pController->OnCharacterDeath(this, (Killer < 0) ? nullptr : GameServer()->m_apPlayers[Killer], Weapon);
 
-	char aBuf[256];
-	str_format(aBuf, sizeof(aBuf), "kill killer='%d:%s' victim='%d:%s' weapon=%d special=%d",
-		Killer, Server()->ClientName(Killer),
-		m_pPlayer->GetCid(), Server()->ClientName(m_pPlayer->GetCid()), Weapon, ModeSpecial);
-	GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", aBuf);
+	char aBuf[512];
+	if(Killer < 0 || !GameServer()->m_apPlayers[Killer])
+	{
+		str_format(aBuf, sizeof(aBuf), "kill killer='%d:%d:' victim='%d:%d:%s' weapon=%d special=%d",
+			Killer, -1 - Killer,
+			m_pPlayer->GetCid(), m_pPlayer->GetTeam(), Server()->ClientName(m_pPlayer->GetCid()), Weapon, ModeSpecial);
+	}
+	else
+	{
+		str_format(aBuf, sizeof(aBuf), "kill killer='%d:%d:%s' victim='%d:%d:%s' weapon=%d special=%d",
+			Killer, GameServer()->m_apPlayers[Killer]->GetTeam(), Server()->ClientName(Killer),
+			m_pPlayer->GetCid(), m_pPlayer->GetTeam(), Server()->ClientName(m_pPlayer->GetCid()), Weapon, ModeSpecial);
+	}
+	GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "game", aBuf);
 
 	// send the kill message
 	if(SendKillMsg && (Team() == TEAM_FLOCK || Teams()->TeamFlock(Team()) || Teams()->Count(Team()) == 1 || Teams()->GetTeamState(Team()) == CGameTeams::TEAMSTATE_OPEN || !Teams()->TeamLocked(Team())))
@@ -1011,6 +1035,9 @@ void CCharacter::Die(int Killer, int Weapon, bool SendKillMsg)
 
 bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 {
+	if(GameServer()->m_pController->OnCharacterTakeDamage(Force, Dmg, From, Weapon, *this))
+		return false;
+
 	if(Dmg)
 	{
 		SetEmote(EMOTE_PAIN, Server()->Tick() + 500 * Server()->TickSpeed() / 1000);
@@ -1313,6 +1340,9 @@ void CCharacter::Snap(int SnappingClient)
 
 	// -1 is the default value, SnapNewItem zeroes the object, so it would incorrectly become 0
 	pDDNetCharacter->m_TuneZoneOverride = -1;
+
+	// ddnet-insta
+	GameServer()->m_pController->SnapDDNetCharacter(SnappingClient, this, pDDNetCharacter);
 }
 
 void CCharacter::PostSnap()
@@ -2139,7 +2169,8 @@ void CCharacter::DDRaceTick()
 	{
 		if(m_FreezeTime % Server()->TickSpeed() == Server()->TickSpeed() - 1)
 		{
-			GameServer()->CreateDamageInd(m_Pos, 0, (m_FreezeTime + 1) / Server()->TickSpeed(), TeamMask() & GameServer()->ClientsMaskExcludeClientVersionAndHigher(VERSION_DDNET_NEW_HUD));
+			// ddnet-insta added FreezeDamageIndicatorMask for fng
+			GameServer()->CreateDamageInd(m_Pos, 0, (m_FreezeTime + 1) / Server()->TickSpeed(), GameServer()->m_pController->FreezeDamageIndicatorMask(this));
 		}
 		m_FreezeTime--;
 		m_Input.m_Direction = 0;
@@ -2267,7 +2298,8 @@ bool CCharacter::Freeze(int Seconds)
 		return false;
 	if(m_FreezeTime == 0 || m_Core.m_FreezeStart < Server()->Tick() - Server()->TickSpeed())
 	{
-		m_Armor = 0;
+		// m_Armor = 0; // ddnet-insta do not set m_Armor use SetArmorProgress instead
+		GameServer()->m_pController->SetArmorProgressEmpty(this); // ddnet-insta
 		m_FreezeTime = Seconds * Server()->TickSpeed();
 		m_Core.m_FreezeStart = Server()->Tick();
 		return true;
@@ -2284,7 +2316,8 @@ bool CCharacter::UnFreeze()
 {
 	if(m_FreezeTime > 0)
 	{
-		m_Armor = 10;
+		// m_Armor = 10; // ddnet-insta do not set m_Armor use SetArmorProgress instead
+		GameServer()->m_pController->SetArmorProgressFull(this); // ddnet-insta
 		if(!m_Core.m_aWeapons[m_Core.m_ActiveWeapon].m_Got)
 			m_Core.m_ActiveWeapon = WEAPON_GUN;
 		m_FreezeTime = 0;
@@ -2301,7 +2334,7 @@ void CCharacter::ResetJumps()
 	m_Core.m_Jumped = 0;
 }
 
-void CCharacter::GiveWeapon(int Weapon, bool Remove)
+void CCharacter::GiveWeapon(int Weapon, bool Remove, int Ammo)
 {
 	if(Weapon == WEAPON_NINJA)
 	{
@@ -2319,7 +2352,7 @@ void CCharacter::GiveWeapon(int Weapon, bool Remove)
 	}
 	else
 	{
-		m_Core.m_aWeapons[Weapon].m_Ammo = -1;
+		m_Core.m_aWeapons[Weapon].m_Ammo = Ammo;
 	}
 
 	m_Core.m_aWeapons[Weapon].m_Got = !Remove;

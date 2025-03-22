@@ -62,6 +62,16 @@ public:
 
 class CServer : public IServer
 {
+	// ddnet-insta
+public:
+	std::vector<std::string> m_vMapPool;
+	void AddMapToRandomPool(const char *pMap) override;
+	void ClearRandomMapPool() override;
+	const char *GetRandomMapFromPool() override;
+	void ShutdownServer() override { m_RunServer = STOPPING; };
+	static void ConRedirect(IConsole::IResult *pResult, void *pUser);
+
+private:
 	friend class CServerLogger;
 
 	class IGameServer *m_pGameServer;

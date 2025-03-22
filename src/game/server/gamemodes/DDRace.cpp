@@ -6,6 +6,7 @@
 #include <engine/shared/config.h>
 #include <game/mapitems.h>
 #include <game/server/entities/character.h>
+#include <game/server/entities/flag.h>
 #include <game/server/gamecontext.h>
 #include <game/server/player.h>
 #include <game/server/score.h>
@@ -17,6 +18,7 @@
 CGameControllerDDRace::CGameControllerDDRace(class CGameContext *pGameServer) :
 	IGameController(pGameServer)
 {
+	// game
 	m_pGameType = g_Config.m_SvTestingCommands ? TEST_TYPE_NAME : GAME_TYPE_NAME;
 	m_GameFlags = protocol7::GAMEFLAG_RACE;
 }
@@ -135,8 +137,11 @@ void CGameControllerDDRace::OnPlayerConnect(CPlayer *pPlayer)
 		str_format(aBuf, sizeof(aBuf), "'%s' entered and joined the %s", Server()->ClientName(ClientId), GetTeamName(pPlayer->GetTeam()));
 		GameServer()->SendChat(-1, TEAM_ALL, aBuf, -1, CGameContext::FLAG_SIX);
 
+		GameServer()->SendChatTarget(ClientId, "DDNet-insta https://github.com/ddnet-insta/ddnet-insta/");
 		GameServer()->SendChatTarget(ClientId, "DDraceNetwork Mod. Version: " GAME_VERSION);
-		GameServer()->SendChatTarget(ClientId, "please visit DDNet.org or say /info and make sure to read our /rules");
+
+		GameServer()->AlertOnSpecialInstagibConfigs(ClientId);
+		GameServer()->ShowCurrentInstagibConfigsMotd(ClientId);
 	}
 }
 

@@ -2190,6 +2190,7 @@ set_src(ENGINE_SHARED GLOB_RECURSE src/engine/shared
   translation_context.h
   uuid_manager.cpp
   uuid_manager.h
+  variables_insta.h
   video.cpp
   video.h
   websockets.cpp
@@ -2223,6 +2224,7 @@ set_src(GAME_SHARED GLOB src/game
   mapitems_ex.cpp
   mapitems_ex.h
   mapitems_ex_types.h
+  mapitems_insta.h
   prng.cpp
   prng.h
   teamscore.cpp
@@ -2771,6 +2773,7 @@ if(SERVER)
     databases/connection_pool.h
     databases/mysql.cpp
     databases/sqlite.cpp
+    instagib/server.cpp
     main.cpp
     name_ban.cpp
     name_ban.h
@@ -2795,12 +2798,18 @@ if(SERVER)
     ddracecommands.cpp
     entities/character.cpp
     entities/character.h
+    entities/ddnet_pvp/vanilla_pickup.cpp
+    entities/ddnet_pvp/vanilla_pickup.h
+    entities/ddnet_pvp/vanilla_projectile.cpp
+    entities/ddnet_pvp/vanilla_projectile.h
     entities/door.cpp
     entities/door.h
     entities/dragger.cpp
     entities/dragger.h
     entities/dragger_beam.cpp
     entities/dragger_beam.h
+    entities/flag.cpp
+    entities/flag.h
     entities/gun.cpp
     entities/gun.h
     entities/laser.cpp
@@ -2823,10 +2832,104 @@ if(SERVER)
     gamecontroller.h
     gamemodes/DDRace.cpp
     gamemodes/DDRace.h
+    gamemodes/base_pvp/base_pvp.cpp
+    gamemodes/base_pvp/base_pvp.h
+    gamemodes/base_pvp/character.cpp
+    gamemodes/base_pvp/character.h
+    gamemodes/base_pvp/chat.cpp
+    gamemodes/base_pvp/ctf.cpp
+    gamemodes/base_pvp/ctf.h
+    gamemodes/base_pvp/player.cpp
+    gamemodes/base_pvp/player.h
+    gamemodes/ddrace/block/block.cpp
+    gamemodes/ddrace/block/block.h
+    gamemodes/instagib/base_fng.cpp
+    gamemodes/instagib/base_fng.h
+    gamemodes/instagib/base_instagib.cpp
+    gamemodes/instagib/base_instagib.h
+    gamemodes/instagib/bolofng/bolofng.cpp
+    gamemodes/instagib/bolofng/bolofng.h
+    gamemodes/instagib/bolofng/sql_columns.h
+    gamemodes/instagib/boomfng/boomfng.cpp
+    gamemodes/instagib/boomfng/boomfng.h
+    gamemodes/instagib/boomfng/sql_columns.h
+    gamemodes/instagib/ctf.cpp
+    gamemodes/instagib/ctf.h
+    gamemodes/instagib/dm.cpp
+    gamemodes/instagib/dm.h
+    gamemodes/instagib/fng/fng.cpp
+    gamemodes/instagib/fng/fng.h
+    gamemodes/instagib/fng/sql_columns.h
+    gamemodes/instagib/gctf/gctf.cpp
+    gamemodes/instagib/gctf/gctf.h
+    gamemodes/instagib/gctf/sql_columns.h
+    gamemodes/instagib/gdm/gdm.cpp
+    gamemodes/instagib/gdm/gdm.h
+    gamemodes/instagib/gtdm/gtdm.cpp
+    gamemodes/instagib/gtdm/gtdm.h
+    gamemodes/instagib/ictf/ictf.cpp
+    gamemodes/instagib/ictf/ictf.h
+    gamemodes/instagib/ictf/sql_columns.h
+    gamemodes/instagib/idm/idm.cpp
+    gamemodes/instagib/idm/idm.h
+    gamemodes/instagib/idm/sql_columns.h
+    gamemodes/instagib/itdm/itdm.cpp
+    gamemodes/instagib/itdm/itdm.h
+    gamemodes/instagib/solofng/solofng.cpp
+    gamemodes/instagib/solofng/solofng.h
+    gamemodes/instagib/solofng/sql_columns.h
+    gamemodes/instagib/tdm.cpp
+    gamemodes/instagib/tdm.h
+    gamemodes/instagib/team_fng.cpp
+    gamemodes/instagib/team_fng.h
+    gamemodes/instagib/zcatch/colors.cpp
+    gamemodes/instagib/zcatch/sql_columns.h
+    gamemodes/instagib/zcatch/track_caught_time.cpp
+    gamemodes/instagib/zcatch/zcatch.cpp
+    gamemodes/instagib/zcatch/zcatch.h
     gamemodes/mod.cpp
     gamemodes/mod.h
+    gamemodes/vanilla/base_vanilla.cpp
+    gamemodes/vanilla/base_vanilla.h
+    gamemodes/vanilla/ctf/ctf.cpp
+    gamemodes/vanilla/ctf/ctf.h
+    gamemodes/vanilla/ctf/sql_columns.h
+    gamemodes/vanilla/dm/dm.cpp
+    gamemodes/vanilla/dm/dm.h
+    gamemodes/vanilla/dm/sql_columns.h
+    gamemodes/vanilla/fly/fly.cpp
+    gamemodes/vanilla/fly/fly.h
     gameworld.cpp
     gameworld.h
+    instagib/chat_commands.cpp
+    instagib/chat_commands.h
+    instagib/enums.cpp
+    instagib/enums.h
+    instagib/extra_columns.h
+    instagib/gamecontext.h
+    instagib/gamecontext/bangcommands.cpp
+    instagib/gamecontroller.cpp
+    instagib/gamecontroller.h
+    instagib/gamelogic.cpp
+    instagib/laser_text.cpp
+    instagib/laser_text.h
+    instagib/persistent_client_data.h
+    instagib/protocol.h
+    instagib/rcon_commands.cpp
+    instagib/rcon_commands.h
+    instagib/rcon_configs.cpp
+    instagib/round_stats.cpp
+    instagib/round_stats_ascii.cpp
+    instagib/round_stats_csv.cpp
+    instagib/round_stats_player.h
+    instagib/sql_colums_all.h
+    instagib/sql_stats.cpp
+    instagib/sql_stats.h
+    instagib/sql_stats_player.h
+    instagib/strhelpers.cpp
+    instagib/strhelpers.h
+    instagib/structs.h
+    instagib/version.h
     player.cpp
     player.h
     save.cpp
