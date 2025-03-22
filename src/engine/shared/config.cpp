@@ -382,6 +382,11 @@ bool CConfigManager::Save()
 	char aaConfigFileTmp[CONFIGDOMAIN::NUM][IO_MAX_PATH_LENGTH];
 	for(CONFIGDOMAIN ConfigDomain = CONFIGDOMAIN::START; ConfigDomain < CONFIGDOMAIN::NUM; ++ConfigDomain)
 	{
+		if(s_aConfigDomains[ConfigDomain].m_aConfigPath == nullptr)
+		{
+			m_aConfigFile[ConfigDomain] = nullptr;
+			continue;
+		}
 		m_aConfigFile[ConfigDomain] = m_pStorage->OpenFile(IStorage::FormatTmpPath(
 									   aaConfigFileTmp[ConfigDomain], sizeof(aaConfigFileTmp[ConfigDomain]), s_aConfigDomains[ConfigDomain].m_aConfigPath),
 			IOFLAG_WRITE, IStorage::TYPE_SAVE);
@@ -397,7 +402,7 @@ bool CConfigManager::Save()
 	{
 		if(!s_aConfigDomains[ConfigDomain].m_HasVars)
 			continue;
-		if(m_aFailed[ConfigDomain])
+		if(!m_aConfigFile[ConfigDomain])
 			continue;
 		char aLineBuf[2048];
 		for(const SConfigVariable *pVariable : m_vpAllVariables)
@@ -414,16 +419,20 @@ bool CConfigManager::Save()
 	{
 		if(m_aFailed[ConfigDomain])
 			continue;
+		if(!m_aConfigFile[ConfigDomain])
+			continue;
 		for(const auto &Callback : m_avCallbacks[ConfigDomain])
 			Callback.m_pfnFunc(this, Callback.m_pUserData);
 	}
 
-	if(!m_aFailed[CONFIGDOMAIN::DDNET])
+	if(!m_aFailed[CONFIGDOMAIN::DDNET] && m_aConfigFile[CONFIGDOMAIN::DDNET])
 		for(const char *pCommand : m_vpUnknownCommands)
 			WriteLine(CONFIGDOMAIN::DDNET, pCommand);
 
 	for(CONFIGDOMAIN ConfigDomain = CONFIGDOMAIN::START; ConfigDomain < CONFIGDOMAIN::NUM; ++ConfigDomain)
 	{
+		if(!m_aConfigFile[ConfigDomain])
+			continue;
 		if(m_aFailed[ConfigDomain])
 		{
 			if(!aFailedError[ConfigDomain])

@@ -13,3 +13,6 @@ SET_CONFIG_DOMAIN(CONFIGDOMAIN::SOLLY)
 
 SET_CONFIG_DOMAIN(CONFIGDOMAIN::TATER)
 #include "config_variables_tater.h"
+
+SET_CONFIG_DOMAIN(CONFIGDOMAIN::INSTA)
+#include "config_variables_insta.h"
