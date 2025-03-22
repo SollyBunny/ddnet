@@ -38,8 +38,8 @@ public:
 	virtual void OnConsoleInit() override;
 	virtual void OnRender() override;
 
-	void Translate(const char *pName);
-	void Translate(CChat::CLine &Line);
+	void Translate(const char *pName, bool ShowProgress = true);
+	void Translate(CChat::CLine &Line, bool ShowProgress = true);
 };
 
 #endif

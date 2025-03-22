@@ -329,7 +329,7 @@ CChat::CLine *CTranslate::FindMessage(const char *pName)
 
 static std::atomic<unsigned int> s_NextTranslateId = 0;
 
-void CTranslate::Translate(const char *pName)
+void CTranslate::Translate(const char *pName, bool ShowProgress)
 {
 	if(m_vJobs.size() > 10)
 	{
@@ -344,10 +344,10 @@ void CTranslate::Translate(const char *pName)
 		return;
 	}
 
-	Translate(*pLine);
+	Translate(*pLine, ShowProgress);
 }
 
-void CTranslate::Translate(CChat::CLine &Line)
+void CTranslate::Translate(CChat::CLine &Line, bool ShowProgress)
 {
 	CTranslateJob Job;
 	Job.m_pLine = &Line;
@@ -367,9 +367,12 @@ void CTranslate::Translate(CChat::CLine &Line)
 		return;
 	}
 
-	str_format(Job.m_pLine->m_aTextTranslated, sizeof(Job.m_pLine->m_aTextTranslated), "[%s translating to %s]", Job.m_pBackend->Name(), g_Config.m_ClTranslateTarget);
-	Job.m_pLine->m_Time = time();
-	GameClient()->m_Chat.RebuildChat();
+	if(ShowProgress)
+	{
+		str_format(Job.m_pLine->m_aTextTranslated, sizeof(Job.m_pLine->m_aTextTranslated), "[%s translating to %s]", Job.m_pBackend->Name(), g_Config.m_ClTranslateTarget);
+		Job.m_pLine->m_Time = time();
+		GameClient()->m_Chat.RebuildChat();
+	}
 
 	m_vJobs.emplace_back(std::move(Job));
 }
