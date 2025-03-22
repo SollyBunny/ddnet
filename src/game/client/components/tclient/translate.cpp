@@ -159,6 +159,7 @@ public:
 		std::string &&JsonString = Json.GetOutputString();
 
 		auto pGet = std::make_shared<CHttpRequest>(g_Config.m_ClTranslateEndpoint);
+		pGet->LogProgress(HTTPLOG::NONE);
 		pGet->HeaderString("Content-Type", "application/json");
 		pGet->Post((const unsigned char *)JsonString.data(), JsonString.size());
 		pGet->Timeout(CTimeout{10000, 0, 500, 10});
@@ -261,6 +262,7 @@ public:
 		UrlEncode(pText, aBuf + strlen(aBuf), sizeof(aBuf) - strlen(aBuf));
 
 		auto pGet = std::make_shared<CHttpRequest>(aBuf);
+		pGet->LogProgress(HTTPLOG::NONE);
 		pGet->Timeout(CTimeout{10000, 0, 500, 10});
 
 		m_pHttpRequest = pGet;
