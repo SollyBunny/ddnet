@@ -1,7 +1,4 @@
-// ddnet-insta config variables
-#ifndef ENGINE_SHARED_VARIABLES_INSTA_H
-#define ENGINE_SHARED_VARIABLES_INSTA_H
-#undef ENGINE_SHARED_VARIABLES_INSTA_H // this file will be included several times
+// This file can be included several times.
 
 #ifndef MACRO_CONFIG_INT
 #error "The config macros must be defined"
@@ -131,5 +128,3 @@ MACRO_CONFIG_STR(SvRoundStatsOutputFile, sv_round_stats_output_file, 512, "", CF
 MACRO_CONFIG_INT(SvRoundStatsFormatDiscord, sv_round_stats_format_discord, 1, 0, 4, CFGFLAG_SERVER, "0=csv 1=psv 2=ascii table 3=markdown table 4=json")
 MACRO_CONFIG_INT(SvRoundStatsFormatHttp, sv_round_stats_format_http, 4, 0, 4, CFGFLAG_SERVER, "0=csv 1=psv 2=ascii table 3=markdown table 4=json")
 MACRO_CONFIG_INT(SvRoundStatsFormatFile, sv_round_stats_format_file, 1, 0, 4, CFGFLAG_SERVER, "0=csv 1=psv 2=ascii table 3=markdown table 4=json")
-
-#endif
