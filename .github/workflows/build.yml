@@ -208,12 +208,12 @@ jobs:
         ${{ matrix.cmake-path }}cmake --build . --config Release --target package_default ${{ matrix.build-args }}
         mkdir artifacts
         mv ${{ matrix.package-file }} artifacts
+        echo "PACKAGE_FILE=$(ls artifacts/*-win64.zip)" >> "$GITHUB_ENV"
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: ddnet-${{ matrix.os }}
-        path: release/artifacts
+        path: release/artifacts/${{ env.PACKAGE_FILE }}
 
   build-android:
     runs-on: ubuntu-24.04
