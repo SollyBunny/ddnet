@@ -357,18 +357,18 @@ void CMenus::RenderSettingsPlayer(CUIRect MainView)
 	MainView.HSplitBottom(5.0f, &MainView, nullptr);
 	QuickSearch.VSplitLeft(220.0f, &QuickSearch, nullptr);
 
-	int SelectedOld = -1;
+	int OldSelected = -1;
 	static CListBox s_ListBox;
-	s_ListBox.DoStart(48.0f, vpFilteredFlags.size(), 10, 3, SelectedOld, &MainView);
+	s_ListBox.DoStart(48.0f, vpFilteredFlags.size(), 10, 3, OldSelected, &MainView);
 
 	for(size_t i = 0; i < vpFilteredFlags.size(); i++)
 	{
 		const CCountryFlags::CCountryFlag *pEntry = vpFilteredFlags[i];
 
 		if(pEntry->m_CountryCode == *pCountry)
-			SelectedOld = i;
+			OldSelected = i;
 
-		const CListboxItem Item = s_ListBox.DoNextItem(&pEntry->m_CountryCode, SelectedOld >= 0 && (size_t)SelectedOld == i);
+		const CListboxItem Item = s_ListBox.DoNextItem(&pEntry->m_CountryCode, OldSelected >= 0 && (size_t)OldSelected == i);
 		if(!Item.m_Visible)
 			continue;
 
@@ -388,69 +388,13 @@ void CMenus::RenderSettingsPlayer(CUIRect MainView)
 	}
 
 	const int NewSelected = s_ListBox.DoEnd();
-	if(SelectedOld != NewSelected)
+	if(OldSelected != NewSelected)
 	{
 		*pCountry = vpFilteredFlags[NewSelected]->m_CountryCode;
 		SetNeedSendInfo();
 	}
 
 	Ui()->DoEditBox_Search(&s_FlagFilterInput, &QuickSearch, 14.0f, !Ui()->IsPopupOpen() && !m_pClient->m_GameConsole.IsActive());
-}
-
-struct CUISkin
-{
-	const CSkin *m_pSkin;
-
-	CUISkin() :
-		m_pSkin(nullptr) {}
-	CUISkin(const CSkin *pSkin) :
-		m_pSkin(pSkin) {}
-
-	bool operator<(const CUISkin &Other) const { return str_comp_nocase(m_pSkin->GetName(), Other.m_pSkin->GetName()) < 0; }
-
-	bool operator<(const char *pOther) const { return str_comp_nocase(m_pSkin->GetName(), pOther) < 0; }
-	bool operator==(const char *pOther) const { return !str_comp_nocase(m_pSkin->GetName(), pOther); }
-};
-
-void CMenus::Con_AddFavoriteSkin(IConsole::IResult *pResult, void *pUserData)
-{
-	auto *pSelf = (CMenus *)pUserData;
-	const char *pStr = pResult->GetString(0);
-	if(!CSkin::IsValidName(pStr))
-	{
-		log_error("menus/settings", "Favorite skin name '%s' is not valid", pStr);
-		log_error("menus/settings", "%s", CSkin::m_aSkinNameRestrictions);
-		return;
-	}
-	pSelf->m_SkinFavorites.emplace(pStr);
-	pSelf->m_SkinListLastRefreshTime = std::nullopt;
-}
-
-void CMenus::Con_RemFavoriteSkin(IConsole::IResult *pResult, void *pUserData)
-{
-	auto *pSelf = (CMenus *)pUserData;
-	const auto it = pSelf->m_SkinFavorites.find(pResult->GetString(0));
-	if(it != pSelf->m_SkinFavorites.end())
-	{
-		pSelf->m_SkinFavorites.erase(it);
-		pSelf->m_SkinListLastRefreshTime = std::nullopt;
-	}
-}
-
-void CMenus::ConfigSaveCallback(IConfigManager *pConfigManager, void *pUserData)
-{
-	auto *pSelf = (CMenus *)pUserData;
-	pSelf->OnConfigSave(pConfigManager);
-}
-
-void CMenus::OnConfigSave(IConfigManager *pConfigManager)
-{
-	for(const auto &Entry : m_SkinFavorites)
-	{
-		char aBuffer[256];
-		str_format(aBuffer, std::size(aBuffer), "add_favorite_skin \"%s\"", Entry.c_str());
-		pConfigManager->WriteLine(CONFIGDOMAIN::DDNET, aBuffer);
-	}
 }
 
 void CMenus::RenderSettingsTee(CUIRect MainView)
@@ -741,63 +685,18 @@ void CMenus::RenderSettingsTee(CUIRect MainView)
 	DirectoryButton.VSplitRight(10.0f, &DirectoryButton, nullptr);
 
 	// Skin selector
-	static std::vector<CUISkin> s_vSkinList;
-	static std::vector<CUISkin> s_vSkinListHelper;
-	static std::vector<CUISkin> s_vFavoriteSkinListHelper;
 	static CListBox s_ListBox;
+	const std::vector<CSkins::CSkinListEntry> &vSkinList = GameClient()->m_Skins.SkinList();
 
-	// be nice to the CPU
-	if(!m_SkinListLastRefreshTime.has_value() || m_SkinListLastRefreshTime.value() != m_pClient->m_Skins.LastRefreshTime())
+	int OldSelected = -1;
+	s_ListBox.DoStart(50.0f, vSkinList.size(), 4, 1, OldSelected, &MainView);
+	for(size_t i = 0; i < vSkinList.size(); ++i)
 	{
-		m_SkinListLastRefreshTime = m_pClient->m_Skins.LastRefreshTime();
-		s_vSkinList.clear();
-		s_vSkinListHelper.clear();
-		s_vFavoriteSkinListHelper.clear();
-
-		auto &&SkinNotFiltered = [&](const CSkin *pSkinToBeSelected) {
-			// filter quick search
-			if(g_Config.m_ClSkinFilterString[0] != '\0' && !str_utf8_find_nocase(pSkinToBeSelected->GetName(), g_Config.m_ClSkinFilterString))
-				return false;
-
-			// no special skins
-			if(CSkins::IsSpecialSkin(pSkinToBeSelected->GetName()))
-				return false;
-
-			return true;
-		};
-
-		for(const auto &it : m_SkinFavorites)
-		{
-			const CSkin *pSkinToBeSelected = m_pClient->m_Skins.FindOrNullptr(it.c_str(), true);
-
-			if(pSkinToBeSelected == nullptr || !SkinNotFiltered(pSkinToBeSelected))
-				continue;
-
-			s_vFavoriteSkinListHelper.emplace_back(pSkinToBeSelected);
-		}
-		for(const auto &SkinIt : m_pClient->m_Skins.GetSkinsUnsafe())
-		{
-			const auto &pSkinToBeSelected = SkinIt.second;
-			if(!SkinNotFiltered(pSkinToBeSelected.get()))
-				continue;
-
-			if(std::find(m_SkinFavorites.begin(), m_SkinFavorites.end(), pSkinToBeSelected->GetName()) == m_SkinFavorites.end())
-				s_vSkinListHelper.emplace_back(pSkinToBeSelected.get());
-		}
-		std::sort(s_vSkinListHelper.begin(), s_vSkinListHelper.end());
-		std::sort(s_vFavoriteSkinListHelper.begin(), s_vFavoriteSkinListHelper.end());
-		s_vSkinList = s_vFavoriteSkinListHelper;
-		s_vSkinList.insert(s_vSkinList.end(), s_vSkinListHelper.begin(), s_vSkinListHelper.end());
-	}
-
-	int SelectedOld = -1;
-	s_ListBox.DoStart(50.0f, s_vSkinList.size(), 4, 1, SelectedOld, &MainView);
-	for(size_t i = 0; i < s_vSkinList.size(); ++i)
-	{
-		const CSkin *pSkinToBeDraw = s_vSkinList[i].m_pSkin;
+		const CSkins::CSkinListEntry &SkinListEntry = vSkinList[i];
+		const CSkin *pSkinToBeDraw = SkinListEntry.m_pSkin;
 		if(str_comp(pSkinToBeDraw->GetName(), pSkinName) == 0)
 		{
-			SelectedOld = i;
+			OldSelected = i;
 			if(m_SkinListScrollToSelected)
 			{
 				s_ListBox.ScrollToSelected();
@@ -805,7 +704,7 @@ void CMenus::RenderSettingsTee(CUIRect MainView)
 			}
 		}
 
-		const CListboxItem Item = s_ListBox.DoNextItem(pSkinToBeDraw, SelectedOld >= 0 && (size_t)SelectedOld == i);
+		const CListboxItem Item = s_ListBox.DoNextItem(SkinListEntry.ListItemId(), OldSelected >= 0 && (size_t)OldSelected == i);
 		if(!Item.m_Visible)
 			continue;
 
@@ -825,48 +724,26 @@ void CMenus::RenderSettingsTee(CUIRect MainView)
 
 		if(g_Config.m_Debug)
 		{
-			const ColorRGBA BloodColor = *pUseCustomColor ? color_cast<ColorRGBA>(ColorHSLA(*pColorBody).UnclampLighting(ColorHSLA::DARKEST_LGT)) : pSkinToBeDraw->m_BloodColor;
 			Graphics()->TextureClear();
 			Graphics()->QuadsBegin();
-			Graphics()->SetColor(BloodColor.r, BloodColor.g, BloodColor.b, 1.0f);
+			Graphics()->SetColor(*pUseCustomColor ? color_cast<ColorRGBA>(ColorHSLA(*pColorBody).UnclampLighting(ColorHSLA::DARKEST_LGT)) : pSkinToBeDraw->m_BloodColor);
 			IGraphics::CQuadItem QuadItem(Label.x, Label.y, 12.0f, 12.0f);
 			Graphics()->QuadsDrawTL(&QuadItem, 1);
 			Graphics()->QuadsEnd();
 		}
-
-		// render skin favorite icon
-		{
-			const auto SkinItFav = m_SkinFavorites.find(pSkinToBeDraw->GetName());
-			const bool IsFav = SkinItFav != m_SkinFavorites.end();
-			CUIRect FavIcon;
-			Item.m_Rect.HSplitTop(20.0f, &FavIcon, nullptr);
-			FavIcon.VSplitRight(20.0f, nullptr, &FavIcon);
-			if(DoButton_Favorite(&pSkinToBeDraw->m_Metrics.m_Body, pSkinToBeDraw, IsFav, &FavIcon))
-			{
-				if(IsFav)
-				{
-					m_SkinFavorites.erase(SkinItFav);
-				}
-				else
-				{
-					m_SkinFavorites.emplace(pSkinToBeDraw->GetName());
-				}
-				m_SkinListLastRefreshTime = std::nullopt;
-			}
-		}
 	}
 
 	const int NewSelected = s_ListBox.DoEnd();
-	if(SelectedOld != NewSelected)
+	if(OldSelected != NewSelected)
 	{
-		str_copy(pSkinName, s_vSkinList[NewSelected].m_pSkin->GetName(), SkinNameSize);
+		str_copy(pSkinName, vSkinList[NewSelected].m_pSkin->GetName(), SkinNameSize);
 		SetNeedSendInfo();
 	}
 
 	static CLineInput s_SkinFilterInput(g_Config.m_ClSkinFilterString, sizeof(g_Config.m_ClSkinFilterString));
 	if(Ui()->DoEditBox_Search(&s_SkinFilterInput, &QuickSearch, 14.0f, !Ui()->IsPopupOpen() && !m_pClient->m_GameConsole.IsActive()))
 	{
-		m_SkinListLastRefreshTime = std::nullopt;
+		GameClient()->m_Skins.ForceRefreshSkinList();
 	}
 
 	static CButtonContainer s_SkinDatabaseButton;
@@ -887,15 +764,14 @@ void CMenus::RenderSettingsTee(CUIRect MainView)
 	TextRender()->SetFontPreset(EFontPreset::ICON_FONT);
 	TextRender()->SetRenderFlags(ETextRenderFlags::TEXT_RENDER_FLAG_ONLY_ADVANCE_WIDTH | ETextRenderFlags::TEXT_RENDER_FLAG_NO_X_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_Y_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_PIXEL_ALIGNMENT | ETextRenderFlags::TEXT_RENDER_FLAG_NO_OVERSIZE);
 	static CButtonContainer s_SkinRefreshButton;
-	if(DoButton_Menu(&s_SkinRefreshButton, FONT_ICON_ARROW_ROTATE_RIGHT, 0, &RefreshButton) || Input()->KeyPress(KEY_F5) || (Input()->KeyPress(KEY_R) && Input()->ModifierIsPressed()))
-	{
-		// reset render flags for possible loading screen
-		TextRender()->SetRenderFlags(0);
-		TextRender()->SetFontPreset(EFontPreset::DEFAULT_FONT);
-		m_pClient->RefreshSkins(CSkinDescriptor::FLAG_SIX);
-	}
+	const bool ShouldRefresh = DoButton_Menu(&s_SkinRefreshButton, FONT_ICON_ARROW_ROTATE_RIGHT, 0, &RefreshButton) || Input()->KeyPress(KEY_F5) || (Input()->KeyPress(KEY_R) && Input()->ModifierIsPressed());
 	TextRender()->SetRenderFlags(0);
 	TextRender()->SetFontPreset(EFontPreset::DEFAULT_FONT);
+
+	if(ShouldRefresh)
+	{
+		m_pClient->RefreshSkins(CSkinDescriptor::FLAG_SIX);
+	}
 }
 
 typedef struct
@@ -1445,9 +1321,9 @@ void CMenus::RenderSettingsGraphics(CUIRect MainView)
 		Ui()->DoLabel(&ModeLabel, aBuf, sc_FontSizeResListHeader, TEXTALIGN_MC);
 	}
 
-	int SelectedOld = -1;
+	int OldSelected = -1;
 	s_ListBox.SetActive(!Ui()->IsPopupOpen());
-	s_ListBox.DoStart(sc_RowHeightResList, s_NumNodes, 1, 3, SelectedOld, &ModeList);
+	s_ListBox.DoStart(sc_RowHeightResList, s_NumNodes, 1, 3, OldSelected, &ModeList);
 
 	for(int i = 0; i < s_NumNodes; ++i)
 	{
@@ -1457,10 +1333,10 @@ void CMenus::RenderSettingsGraphics(CUIRect MainView)
 			g_Config.m_GfxScreenHeight == s_aModes[i].m_WindowHeight &&
 			g_Config.m_GfxScreenRefreshRate == s_aModes[i].m_RefreshRate)
 		{
-			SelectedOld = i;
+			OldSelected = i;
 		}
 
-		const CListboxItem Item = s_ListBox.DoNextItem(&s_aModes[i], SelectedOld == i);
+		const CListboxItem Item = s_ListBox.DoNextItem(&s_aModes[i], OldSelected == i);
 		if(!Item.m_Visible)
 			continue;
 
@@ -1470,7 +1346,7 @@ void CMenus::RenderSettingsGraphics(CUIRect MainView)
 	}
 
 	const int NewSelected = s_ListBox.DoEnd();
-	if(SelectedOld != NewSelected)
+	if(OldSelected != NewSelected)
 	{
 		const int Depth = s_aModes[NewSelected].m_Red + s_aModes[NewSelected].m_Green + s_aModes[NewSelected].m_Blue > 16 ? 24 : 16;
 		g_Config.m_GfxColorDepth = Depth;
@@ -1655,7 +1531,7 @@ void CMenus::RenderSettingsGraphics(CUIRect MainView)
 			return str_comp_nocase(CheckInfo.m_pBackendName, CConfig::ms_pGfxBackend) == 0 && CheckInfo.m_Major == CConfig::ms_GfxGLMajor && CheckInfo.m_Minor == CConfig::ms_GfxGLMinor && CheckInfo.m_Patch == CConfig::ms_GfxGLPatch;
 		};
 
-		int SelectedOldBackend = -1;
+		int OldSelectedBackend = -1;
 		uint32_t CurCounter = 0;
 		for(uint32_t i = 0; i < BACKEND_TYPE_COUNT; ++i)
 		{
@@ -1670,7 +1546,7 @@ void CMenus::RenderSettingsGraphics(CUIRect MainView)
 					s_vpBackendIdNamesCStr[CurCounter] = s_vBackendIdNames[CurCounter].c_str();
 					if(str_comp_nocase(Info.m_pBackendName, g_Config.m_GfxBackend) == 0 && g_Config.m_GfxGLMajor == Info.m_Major && g_Config.m_GfxGLMinor == Info.m_Minor && g_Config.m_GfxGLPatch == Info.m_Patch)
 					{
-						SelectedOldBackend = CurCounter;
+						OldSelectedBackend = CurCounter;
 					}
 
 					s_vBackendInfos[CurCounter] = Info;
@@ -1679,7 +1555,7 @@ void CMenus::RenderSettingsGraphics(CUIRect MainView)
 			}
 		}
 
-		if(SelectedOldBackend != -1)
+		if(OldSelectedBackend != -1)
 		{
 			// no custom selected
 			BackendCount -= 1;
@@ -1690,7 +1566,7 @@ void CMenus::RenderSettingsGraphics(CUIRect MainView)
 			str_format(aTmpBackendName, sizeof(aTmpBackendName), "%s (%s %d.%d.%d)", Localize("custom"), g_Config.m_GfxBackend, g_Config.m_GfxGLMajor, g_Config.m_GfxGLMinor, g_Config.m_GfxGLPatch);
 			s_vBackendIdNames[CurCounter] = aTmpBackendName;
 			s_vpBackendIdNamesCStr[CurCounter] = s_vBackendIdNames[CurCounter].c_str();
-			SelectedOldBackend = CurCounter;
+			OldSelectedBackend = CurCounter;
 
 			s_vBackendInfos[CurCounter].m_pBackendName = "custom";
 			s_vBackendInfos[CurCounter].m_Major = g_Config.m_GfxGLMajor;
@@ -1698,15 +1574,15 @@ void CMenus::RenderSettingsGraphics(CUIRect MainView)
 			s_vBackendInfos[CurCounter].m_Patch = g_Config.m_GfxGLPatch;
 		}
 
-		static int s_SelectedOldBackend = -1;
-		if(s_SelectedOldBackend == -1)
-			s_SelectedOldBackend = SelectedOldBackend;
+		static int s_OldSelectedBackend = -1;
+		if(s_OldSelectedBackend == -1)
+			s_OldSelectedBackend = OldSelectedBackend;
 
 		static CUi::SDropDownState s_BackendDropDownState;
 		static CScrollRegion s_BackendDropDownScrollRegion;
 		s_BackendDropDownState.m_SelectionPopupContext.m_pScrollRegion = &s_BackendDropDownScrollRegion;
-		const int NewBackend = Ui()->DoDropDown(&BackendDropDown, SelectedOldBackend, s_vpBackendIdNamesCStr.data(), BackendCount, s_BackendDropDownState);
-		if(SelectedOldBackend != NewBackend)
+		const int NewBackend = Ui()->DoDropDown(&BackendDropDown, OldSelectedBackend, s_vpBackendIdNamesCStr.data(), BackendCount, s_BackendDropDownState);
+		if(OldSelectedBackend != NewBackend)
 		{
 			str_copy(g_Config.m_GfxBackend, s_vBackendInfos[NewBackend].m_pBackendName);
 			g_Config.m_GfxGLMajor = s_vBackendInfos[NewBackend].m_Major;
@@ -1714,7 +1590,7 @@ void CMenus::RenderSettingsGraphics(CUIRect MainView)
 			g_Config.m_GfxGLPatch = s_vBackendInfos[NewBackend].m_Patch;
 
 			CheckSettings = true;
-			s_GfxBackendChanged = s_SelectedOldBackend != NewBackend;
+			s_GfxBackendChanged = s_OldSelectedBackend != NewBackend;
 		}
 	}
 
@@ -1938,7 +1814,7 @@ bool CMenus::RenderLanguageSelection(CUIRect MainView)
 		}
 	}
 
-	const int SelectedOld = s_SelectedLanguage;
+	const int OldSelected = s_SelectedLanguage;
 
 	s_ListBox.DoStart(24.0f, g_Localization.Languages().size(), 1, 3, s_SelectedLanguage, &MainView);
 
@@ -1959,7 +1835,7 @@ bool CMenus::RenderLanguageSelection(CUIRect MainView)
 
 	s_SelectedLanguage = s_ListBox.DoEnd();
 
-	if(SelectedOld != s_SelectedLanguage)
+	if(OldSelected != s_SelectedLanguage)
 	{
 		str_copy(g_Config.m_ClLanguagefile, g_Localization.Languages()[s_SelectedLanguage].m_FileName.c_str());
 		GameClient()->OnLanguageChange();
