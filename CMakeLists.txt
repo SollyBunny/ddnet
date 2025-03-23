@@ -2445,8 +2445,6 @@ if(CLIENT)
     components/skins.h
     components/skins7.cpp
     components/skins7.h
-    components/solly/translate.cpp
-    components/solly/translate.h
     components/sounds.cpp
     components/sounds.h
     components/spectator.cpp
@@ -2472,6 +2470,8 @@ if(CLIENT)
     components/tclient/tater.h
     components/tclient/trails.cpp
     components/tclient/trails.h
+    components/tclient/translate.cpp
+    components/tclient/translate.h
     components/tclient/verify.cpp
     components/tclient/verify.h
     components/tclient/warlist.cpp
