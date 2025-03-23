@@ -266,28 +266,7 @@ void CTater::RandomFeetColor()
 void CTater::RandomSkin(void *pUserData)
 {
 	CTater *pThis = static_cast<CTater *>(pUserData);
-	// get the skin count
-	int SkinCount = (int)pThis->m_pClient->m_Skins.GetSkinsUnsafe().size();
-
-	// get a random skin number
-	int SkinNumber = std::rand() % SkinCount;
-
-	// get all skins as a maps
-	const std::unordered_map<std::string_view, std::unique_ptr<CSkin>> &Skins = pThis->m_pClient->m_Skins.GetSkinsUnsafe();
-
-	// map to array
-	int Counter = 0;
-	std::vector<std::pair<std::string_view, CSkin *>> SkinArray;
-	for(const auto &Skin : Skins)
-	{
-		if(Counter == SkinNumber)
-		{
-			// set the skin name
-			const char *SkinName = Skin.first.data();
-			str_copy(g_Config.m_ClPlayerSkin, SkinName, sizeof(g_Config.m_ClPlayerSkin));
-		}
-		Counter++;
-	}
+	str_copy(g_Config.m_ClPlayerSkin, pThis->m_pClient->m_Skins.SkinList()[std::rand() % (int)pThis->m_pClient->m_Skins.SkinList().size()].m_pSkin->GetName());
 }
 
 void CTater::RandomFlag(void *pUserData)
