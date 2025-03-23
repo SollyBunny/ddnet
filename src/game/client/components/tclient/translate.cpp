@@ -123,6 +123,12 @@ public:
 		}
 		if(m_pHttpRequest->State() != EHttpState::DONE)
 		{
+			str_copy(pOut, "Failed for unknown reason", Length);
+			m_pHttpRequest = nullptr;
+			return false;
+		}
+		if(m_pHttpRequest->StatusCode() != 200)
+		{
 			str_format(pOut, Length, "Got http code %d", m_pHttpRequest->StatusCode());
 			m_pHttpRequest = nullptr;
 			return false;
@@ -159,6 +165,7 @@ public:
 
 		auto pGet = std::make_shared<CHttpRequest>(g_Config.m_ClTranslateEndpoint);
 		pGet->LogProgress(HTTPLOG::NONE);
+		pGet->FailOnErrorStatus(false);
 		pGet->HeaderString("Content-Type", "application/json");
 		pGet->Post((const unsigned char *)JsonString.data(), JsonString.size());
 		pGet->Timeout(CTimeout{10000, 0, 500, 10});
@@ -234,6 +241,12 @@ public:
 		}
 		if(m_pHttpRequest->State() != EHttpState::DONE)
 		{
+			str_copy(pOut, "Failed for unknown reason", Length);
+			m_pHttpRequest = nullptr;
+			return false;
+		}
+		if(m_pHttpRequest->StatusCode() != 200)
+		{
 			str_format(pOut, Length, "Got http code %d", m_pHttpRequest->StatusCode());
 			m_pHttpRequest = nullptr;
 			return false;
@@ -262,6 +275,7 @@ public:
 
 		auto pGet = std::make_shared<CHttpRequest>(aBuf);
 		pGet->LogProgress(HTTPLOG::NONE);
+		pGet->FailOnErrorStatus(false);
 		pGet->Timeout(CTimeout{10000, 0, 500, 10});
 
 		m_pHttpRequest = pGet;
