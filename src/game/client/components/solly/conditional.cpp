@@ -42,7 +42,7 @@ void CConditional::ParseString(const char *pString, char *pOut, int Length)
 	{
 		CServerInfo CurrentServerInfo;
 		Client()->GetServerInfo(&CurrentServerInfo);
-		str_copy(pOut, CurrentServerInfo.m_aCommunityType, Length);
+		str_copy(pOut, CurrentServerInfo.m_aCommunityId, Length);
 	}
 	else if(str_comp_nocase("$(location)", pString) == 0)
 	{
@@ -133,10 +133,19 @@ void CConditional::ConIfrneq(IConsole::IResult *pResult, void *pUserData)
 	pThis->Console()->ExecuteLine(pResult->GetString(2));
 }
 
+void CConditional::ConEchoValue(IConsole::IResult *pResult, void *pUserData)
+{
+	CConditional *pThis = (CConditional *)pUserData;
+	char a[128];
+	pThis->ParseString(pResult->GetString(0), a, sizeof(a));
+	pThis->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "conditional", a);
+}
+
 void CConditional::OnConsoleInit()
 {
 	Console()->Register("ifeq", "s[a] s[b] r[command]", CFGFLAG_CLIENT, ConIfeq, this, "Comapre 2 values, if equal run the command");
 	Console()->Register("ifneq", "s[a] s[b] r[command]", CFGFLAG_CLIENT, ConIfneq, this, "Comapre 2 values, if not equal run the command");
 	Console()->Register("ifreq", "s[a] s[b] r[command]", CFGFLAG_CLIENT, ConIfreq, this, "Comapre 2 values, if a matches the regex b run the command");
 	Console()->Register("ifrneq", "s[a] s[b] r[command]", CFGFLAG_CLIENT, ConIfrneq, this, "Comapre 2 values, if a doesnt match the regex b run the command");
+	Console()->Register("echo_value", "r[value]", CFGFLAG_CLIENT, ConEchoValue, this, "TEMPORARY: print a substitued value");
 }
