@@ -2274,6 +2274,17 @@ int str_utf8_comp_confusable(const char *str1, const char *str2);
  */
 int str_utf8_tolower_codepoint(int code);
 
+/**
+ * Converts the given UTF-8 string to lowercase (locale insensitive).
+ *
+ * @ingroup Strings
+ *
+ * @param str String to convert to lowercase.
+ *
+ * @remark The strings are treated as zero-terminated strings.
+ */
+void str_utf8_tolower(const char *input, char *output, size_t size);
+
 /*
 	Function: str_utf8_comp_nocase
 		Compares two utf8 strings case insensitively.
