@@ -2424,8 +2424,6 @@ void CGameClient::OnPredict()
 	if(PredictDummy())
 		pDummyChar = m_PredictedWorld.GetCharacterById(m_PredictedDummyId);
 
-	int PredictionTick = Client()->GetPredictionTick();
-	// predict
 	// prediction actually happens here
 
 	int FinalTickRegular = Client()->PredGameTick(g_Config.m_ClDummy); // The vanilla final tick disregarding fast input
@@ -2437,7 +2435,13 @@ void CGameClient::OnPredict()
 	for(int Tick = Client()->GameTick(g_Config.m_ClDummy) + 1; Tick <= FinalTickSelf; Tick++)
 	{
 		// fetch the previous characters
-		if(Tick == PredictionTick)
+		if(Tick == FinalTickSelf)
+		{
+			m_PrevPredictedWorld.CopyWorld(&m_PredictedWorld);
+			m_PredictedPrevChar = pLocalChar->GetCore();
+			m_aClients[m_Snap.m_LocalClientId].m_PrevPredicted = pLocalChar->GetCore();
+		}
+		if(Tick == FinalTickOthers)
 		{
 			for(int i = 0; i < MAX_CLIENTS; i++)
 				if(CCharacter *pChar = m_PredictedWorld.GetCharacterById(i))
@@ -2479,10 +2483,13 @@ void CGameClient::OnPredict()
 		m_PredictedWorld.Tick();
 
 		// fetch the current characters
-		if(Tick == PredictionTick)
+		if(Tick == FinalTickSelf)
 		{
-			m_PrevPredictedWorld.CopyWorld(&m_PredictedWorld);
-
+			m_PredictedChar = pLocalChar->GetCore();
+			m_aClients[m_Snap.m_LocalClientId].m_Predicted = pLocalChar->GetCore();
+		}
+		if(Tick == FinalTickOthers)
+		{
 			for(int i = 0; i < MAX_CLIENTS; i++)
 				if(CCharacter *pChar = m_PredictedWorld.GetCharacterById(i))
 					m_aClients[i].m_Predicted = pChar->GetCore();
