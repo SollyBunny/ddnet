@@ -115,10 +115,10 @@ public:
 		}
 	}
 
-	CSkin::SSkinTextures m_OriginalRenderSkin;
-	CSkin::SSkinTextures m_ColorableRenderSkin;
+	CSkin::CSkinTextures m_OriginalRenderSkin;
+	CSkin::CSkinTextures m_ColorableRenderSkin;
 
-	CSkin::SSkinMetrics m_SkinMetrics;
+	CSkin::CSkinMetrics m_SkinMetrics;
 
 	bool m_InfectedHook = false;
 	bool m_CustomColoredSkin;
@@ -215,6 +215,8 @@ enum
 	LAYERRENDERFLAG_TRANSPARENT = 2,
 
 	TILERENDERFLAG_EXTEND = 4,
+
+	OVERLAYRENDERFLAG_TEXT = 1,
 };
 
 class IEnvelopePointAccess
@@ -321,10 +323,10 @@ public:
 	// DDRace
 	void RenderGameTileOutlines(CTile *pTiles, int w, int h, float Scale, int TileType, float Alpha = 1.0f) const;
 	void RenderTeleOutlines(CTile *pTiles, CTeleTile *pTele, int w, int h, float Scale, float Alpha = 1.0f) const;
-	void RenderTeleOverlay(CTeleTile *pTele, int w, int h, float Scale, float Alpha = 1.0f) const;
-	void RenderSpeedupOverlay(CSpeedupTile *pSpeedup, int w, int h, float Scale, float Alpha = 1.0f) const;
-	void RenderSwitchOverlay(CSwitchTile *pSwitch, int w, int h, float Scale, float Alpha = 1.0f) const;
-	void RenderTuneOverlay(CTuneTile *pTune, int w, int h, float Scale, float Alpha = 1.0f) const;
+	void RenderTeleOverlay(CTeleTile *pTele, int w, int h, float Scale, int OverlayRenderFlags, float Alpha = 1.0f) const;
+	void RenderSpeedupOverlay(CSpeedupTile *pSpeedup, int w, int h, float Scale, int OverlayRenderFlags, float Alpha = 1.0f) const;
+	void RenderSwitchOverlay(CSwitchTile *pSwitch, int w, int h, float Scale, int OverlayRenderFlags, float Alpha = 1.0f) const;
+	void RenderTuneOverlay(CTuneTile *pTune, int w, int h, float Scale, int OverlayRenderFlags, float Alpha = 1.0f) const;
 	void RenderTelemap(CTeleTile *pTele, int w, int h, float Scale, ColorRGBA Color, int RenderFlags) const;
 	void RenderSwitchmap(CSwitchTile *pSwitch, int w, int h, float Scale, ColorRGBA Color, int RenderFlags) const;
 	void RenderTunemap(CTuneTile *pTune, int w, int h, float Scale, ColorRGBA Color, int RenderFlags) const;

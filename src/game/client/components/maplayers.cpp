@@ -1542,6 +1542,7 @@ void CMapLayers::OnRender()
 			if(m_Type == TYPE_FULL_DESIGN)
 				EntityOverlayVal = 0;
 
+			int OverlayRenderFlags = g_Config.m_ClTextEntities ? OVERLAYRENDERFLAG_TEXT : 0;
 			if((Render && ((EntityOverlayVal < 100) || InfclassMenu) && !IsEntityLayer) || (EntityOverlayVal && IsGameLayer) || (m_Type == TYPE_BACKGROUND_FORCE))
 			{
 				if(pLayer->m_Type == LAYERTYPE_TILES)
@@ -1696,7 +1697,7 @@ void CMapLayers::OnRender()
 						RenderTools()->RenderSwitchmap(pSwitchTiles, pTMap->m_Width, pTMap->m_Height, 32.0f, Color, TILERENDERFLAG_EXTEND | LAYERRENDERFLAG_OPAQUE);
 						Graphics()->BlendNormal();
 						RenderTools()->RenderSwitchmap(pSwitchTiles, pTMap->m_Width, pTMap->m_Height, 32.0f, Color, TILERENDERFLAG_EXTEND | LAYERRENDERFLAG_TRANSPARENT);
-						RenderTools()->RenderSwitchOverlay(pSwitchTiles, pTMap->m_Width, pTMap->m_Height, 32.0f, EntityOverlayVal / 100.0f);
+						RenderTools()->RenderSwitchOverlay(pSwitchTiles, pTMap->m_Width, pTMap->m_Height, 32.0f, OverlayRenderFlags, EntityOverlayVal / 100.0f);
 					}
 					else
 					{
@@ -1729,7 +1730,7 @@ void CMapLayers::OnRender()
 						RenderTools()->RenderTelemap(pTeleTiles, pTMap->m_Width, pTMap->m_Height, 32.0f, Color, TILERENDERFLAG_EXTEND | LAYERRENDERFLAG_OPAQUE);
 						Graphics()->BlendNormal();
 						RenderTools()->RenderTelemap(pTeleTiles, pTMap->m_Width, pTMap->m_Height, 32.0f, Color, TILERENDERFLAG_EXTEND | LAYERRENDERFLAG_TRANSPARENT);
-						RenderTools()->RenderTeleOverlay(pTeleTiles, pTMap->m_Width, pTMap->m_Height, 32.0f, EntityOverlayVal / 100.0f);
+						RenderTools()->RenderTeleOverlay(pTeleTiles, pTMap->m_Width, pTMap->m_Height, 32.0f, OverlayRenderFlags, EntityOverlayVal / 100.0f);
 					}
 					else
 					{
@@ -1754,7 +1755,7 @@ void CMapLayers::OnRender()
 					const ColorRGBA Color = ColorRGBA(1.0f, 1.0f, 1.0f, EntityOverlayVal / 100.0f);
 					if(!Graphics()->IsTileBufferingEnabled())
 					{
-						RenderTools()->RenderSpeedupOverlay(pSpeedupTiles, pTMap->m_Width, pTMap->m_Height, 32.0f, EntityOverlayVal / 100.0f);
+						RenderTools()->RenderSpeedupOverlay(pSpeedupTiles, pTMap->m_Width, pTMap->m_Height, 32.0f, OverlayRenderFlags, EntityOverlayVal / 100.0f);
 					}
 					else
 					{
@@ -1770,6 +1771,7 @@ void CMapLayers::OnRender()
 						{
 							Graphics()->TextureSet(m_pImages->GetOverlayBottom());
 							RenderTileLayer(TileLayerCounter - 2, Color);
+
 							Graphics()->TextureSet(m_pImages->GetOverlayTop());
 							RenderTileLayer(TileLayerCounter - 1, Color);
 						}
