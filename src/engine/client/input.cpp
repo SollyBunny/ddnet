@@ -28,9 +28,78 @@
 
 // for platform specific features that aren't available or are broken in SDL
 #include <SDL_syswm.h>
-#ifdef KeyPress
-#undef KeyPress // Undo pollution from X11/Xlib.h included by SDL_syswm.h on Linux
+
+#if defined(SDL_VIDEO_DRIVER_X11)
+#include <X11/Xutil.h>
+#include <X11/keysym.h>
 #endif
+
+// Undo pollution from X11/Xlib.h included by SDL_syswm.h on Linux
+#ifdef KeyPress
+#define X11_KeyPress 2
+#undef KeyPress
+#endif
+
+bool CInput::DisableCapslock() const
+{
+	SDL_Window *pWindow = SDL_GetKeyboardFocus();
+	if(!pWindow)
+		return false;
+
+	SDL_SysWMinfo WmInfo;
+	SDL_VERSION(&WmInfo.version); // Initialize the version field
+	if(!SDL_GetWindowWMInfo(pWindow, &WmInfo))
+		return false;
+
+	if(WmInfo.subsystem == SDL_SYSWM_WINDOWS)
+	{
+#if defined(SDL_VIDEO_DRIVER_WINDOWS)
+		if (GetKeyState(VK_CAPITAL) & 1) {
+			keybd_event(VK_CAPITAL, 0, KEYEVENTF_EXTENDEDKEY, 0);
+			keybd_event(VK_CAPITAL, 0, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0);
+		}
+		return true;
+#endif
+	}
+	else if(WmInfo.subsystem == SDL_SYSWM_X11)
+	{
+#if defined(SDL_VIDEO_DRIVER_X11)
+		Window Win = WmInfo.info.x11.window;
+		Display *pDisp = WmInfo.info.x11.display;
+		if(!pDisp)
+			return false;
+		// Get caps lock key code
+		KeyCode CapsLockKey = XKeysymToKeycode(pDisp, XK_Caps_Lock);
+		if (CapsLockKey == 0)
+			return false; // Failed to find the Caps Lock keycode
+		// Get root window
+		Window Root;
+		Window DummyParent;
+		Window *pDummyChildren;
+		unsigned int pDummyChildrenCount;
+		if(!XQueryTree(pDisp, Win, &Root, &DummyParent, &pDummyChildren, &pDummyChildrenCount))
+			return false;
+		XFree(pDummyChildren);
+		// Create dummy event
+		XEvent Event;
+		Event.xkey.display = pDisp;
+		Event.xkey.window = Root;
+		Event.xkey.keycode = CapsLockKey;
+		Event.xkey.state = 0;
+		// Send capslock press event
+		Event.xkey.type = X11_KeyPress;
+		XSendEvent(pDisp, Event.xkey.window, True, KeyPressMask, &Event);
+		// Send capslock release event
+		Event.xkey.type = KeyRelease;
+		XSendEvent(pDisp, Event.xkey.window, True, KeyReleaseMask, &Event);
+		// Flush
+		XFlush(pDisp);
+		return true;
+#endif
+	}
+	return false;
+
+}
 
 void CInput::AddKeyEvent(int Key, int Flags)
 {

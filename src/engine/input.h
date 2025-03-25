@@ -84,6 +84,8 @@ public:
 	virtual const char *KeyName(int Key) const = 0;
 	virtual int FindKeyByName(const char *pKeyName) const = 0;
 
+	virtual bool DisableCapslock() const = 0;
+
 	// joystick
 	class IJoystick
 	{

@@ -131,6 +131,8 @@ public:
 	const char *KeyName(int Key) const override;
 	int FindKeyByName(const char *pKeyName) const override;
 
+	bool DisableCapslock() const override;
+
 	size_t NumJoysticks() const override { return m_vJoysticks.size(); }
 	CJoystick *GetJoystick(size_t Index) override { return &m_vJoysticks[Index]; }
 	CJoystick *GetActiveJoystick() override { return m_pActiveJoystick; }

@@ -137,6 +137,8 @@ bool CBinds::OnInput(const IInput::CEvent &Event)
 						m_MouseOnAction = true;
 					}
 				}
+				if(Event.m_Key == KEY_CAPSLOCK)
+					Input()->DisableCapslock();
 				Console()->ExecuteLineStroked(1, pBind);
 				m_vActiveBinds.emplace_back(Event.m_Key, Mask);
 			};
