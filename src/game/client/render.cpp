@@ -702,7 +702,7 @@ void CRenderTools::RenderTee6(const CAnimState *pAnim, const CTeeRenderInfo *pIn
 				const CSkin *pSkin = GameClient()->m_Skins.Find(g_Config.m_ClWhiteFeetSkin);
 				WhiteFeetInfo.m_OriginalRenderSkin = pSkin->m_OriginalSkin;
 				WhiteFeetInfo.m_ColorFeet = ColorRGBA(1, 1, 1);
-				const CSkin::SSkinTextures *pWhiteFeetTextures = &WhiteFeetInfo.m_OriginalRenderSkin;
+				const CSkin::CSkinTextures *pWhiteFeetTextures = &WhiteFeetInfo.m_OriginalRenderSkin;
 				Graphics()->TextureSet(OutLine == 1 ? pWhiteFeetTextures->m_FeetOutline : pWhiteFeetTextures->m_Feet);
 			}
 			else

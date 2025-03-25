@@ -254,17 +254,17 @@ Objects = [
 	]),
 
 	NetObjectEx("InfClassObject", "object@infclass", [
-		NetIntAny("m_Flags", 0),
-		NetIntRange("m_Owner", -1, 'MAX_CLIENTS-1', -1),
-		NetIntAny("m_X", 0),
-		NetIntAny("m_Y", 0),
-		NetIntAny("m_X2", 0),
-		NetIntAny("m_Y2", 0),
-		NetIntAny("m_Type", 0),
-		NetIntAny("m_StartTick", 0),
-		NetIntAny("m_EndTick", 0),
-		NetIntAny("m_ProximityRadius", 0),
-		NetIntAny("m_Data1", 0),
+		NetIntAny("m_Flags", default=0),
+		NetIntRange("m_Owner", -1, 'MAX_CLIENTS-1', default=-1),
+		NetIntAny("m_X", default=0),
+		NetIntAny("m_Y", default=0),
+		NetIntAny("m_X2", default=0),
+		NetIntAny("m_Y2", default=0),
+		NetIntAny("m_Type", default=0),
+		NetIntAny("m_StartTick", default=0),
+		NetIntAny("m_EndTick", default=0),
+		NetIntAny("m_ProximityRadius", default=0),
+		NetIntAny("m_Data1", default=0),
 	], validate_size=False),
 
 	NetObjectEx("InfClassPlayer", "player@infclass", [
@@ -273,10 +273,10 @@ Objects = [
 	]),
 
 	NetObjectEx("InfClassGameInfo", "gameinfo@infclass", [
-		NetIntAny("m_Version", 0),
-		NetIntAny("m_Flags", 0),
-		NetIntRange("m_TimeLimitInSeconds", 0, 'max_int', 0),
-		NetIntAny("m_HeroGiftTick", -1),
+		NetIntAny("m_Version", default=0),
+		NetIntAny("m_Flags", default=0),
+		NetIntRange("m_TimeLimitInSeconds", 0, 'max_int', default=0),
+		NetIntAny("m_HeroGiftTick", default=-1),
 	], validate_size=False),
 
 	NetObjectEx("InfClassClassInfo", "classinfo@infclass", [
@@ -514,9 +514,9 @@ Messages = [
 	]),
 
 	NetMessageEx("InfClass_ServerParams", "server-params1@infclass", [
-		NetIntAny("m_Version", 0),
-		NetIntRange("m_WhiteHoleMinKills", 0, 255, 0),
-		NetIntRange("m_SoldierBombs", 0, 255, 0),
+		NetIntAny("m_Version", default=0),
+		NetIntRange("m_WhiteHoleMinKills", 0, 255, default=0),
+		NetIntRange("m_SoldierBombs", 0, 255, default=0),
 	]),
 
 	### Client messages
