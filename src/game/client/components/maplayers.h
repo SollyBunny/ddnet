@@ -27,6 +27,7 @@ class CMapLayers : public CComponent
 {
 	friend class CBackground;
 	friend class CMenuBackground;
+	friend class CConditional;
 
 	CLayers *m_pLayers;
 	CMapImages *m_pImages;

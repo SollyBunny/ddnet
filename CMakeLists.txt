@@ -2445,6 +2445,8 @@ if(CLIENT)
     components/skins.h
     components/skins7.cpp
     components/skins7.h
+    components/solly/conditional.cpp
+    components/solly/conditional.h
     components/sounds.cpp
     components/sounds.h
     components/spectator.cpp

@@ -55,6 +55,7 @@
 #include "components/scoreboard.h"
 #include "components/skins.h"
 #include "components/skins7.h"
+#include "components/solly/conditional.h"
 #include "components/sounds.h"
 #include "components/spectator.h"
 #include "components/statboard.h"
@@ -126,6 +127,8 @@ public:
 	bool m_NoSkinChangeForFrozen;
 
 	bool m_DDRaceTeam;
+
+	char m_aGameType[16];
 };
 
 class CSnapEntities
@@ -190,6 +193,9 @@ public:
 	CGhost m_Ghost;
 
 	CTooltips m_Tooltips;
+
+	// Solly Components
+	CConditional m_Conditional;
 
 	// TClient Components
 	CSkinProfiles m_SkinProfiles;
