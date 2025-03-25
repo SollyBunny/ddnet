@@ -549,7 +549,6 @@ void CGameWorld::NetObjAdd(int ObjId, int ObjType, const void *pObjData, const C
 	}
 	else if(ObjType == NETOBJTYPE_INFCLASSOBJECT)
 	{
-
 	}
 }
 

@@ -12,7 +12,8 @@ class CLaser : public CEntity
 	friend class CGameWorld;
 
 public:
-	enum EBounce {
+	enum EBounce
+	{
 		Bounce,
 		NoBounce
 	};

@@ -97,7 +97,7 @@ void CCharacter::HandleJetpack()
 		{
 			return;
 		}
-		
+
 		if(m_Core.m_Jetpack)
 		{
 			int TuneZone = GetOverriddenTuneZone();
@@ -558,7 +558,7 @@ void CCharacter::FireWeapon()
 					return;
 				}
 			}
-				break;
+			break;
 			case PLAYERCLASS_LOOPER:
 				LaserReach = LaserReach * 0.7f;
 				FireDelay = 250;
@@ -1726,14 +1726,14 @@ void CCharacter::SaturateVelocity(vec2 Force, float MaxSpeed)
 	vec2 NewVel = m_Core.m_Vel;
 	if(Speed < MaxSpeed || VelDirFactor < 0.0f)
 	{
-		NewVel += VelDir*VelDirFactor;
+		NewVel += VelDir * VelDirFactor;
 		float NewSpeed = length(NewVel);
 		if(NewSpeed > MaxSpeed)
 		{
 			if(VelDirFactor > 0.f)
-				NewVel = VelDir*MaxSpeed;
+				NewVel = VelDir * MaxSpeed;
 			else
-				NewVel = -VelDir*MaxSpeed;
+				NewVel = -VelDir * MaxSpeed;
 		}
 	}
 

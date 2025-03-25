@@ -1,7 +1,7 @@
-#include <game/client/gameclient.h>
-#include <engine/external/remimu.h>
 #include <engine/console.h>
+#include <engine/external/remimu.h>
 #include <engine/shared/config.h>
+#include <game/client/gameclient.h>
 
 #include <optional>
 
@@ -16,7 +16,7 @@ static std::optional<bool> RegexMatch(const char *pString, const char *pRegex)
 	return regex_match(aTokens, pString, 0, 0, 0, 0) != -1;
 }
 
-void CConditional::ParseString(const char *pString, char* pOut, int Length)
+void CConditional::ParseString(const char *pString, char *pOut, int Length)
 {
 	if(str_comp_nocase("$(game_mode)", pString) == 0)
 		str_copy(pOut, GameClient()->m_GameInfo.m_aGameType, Length);
@@ -63,9 +63,8 @@ void CConditional::ParseString(const char *pString, char* pOut, int Length)
 		}
 		static const char *s_apLocations[] = {
 			"NW", "N", "NE",
-			"W",  "C", "E",
-			"SW", "S", "SE"
-		};
+			"W", "C", "E",
+			"SW", "S", "SE"};
 		dbg_msg("conditional", "%f %f / %f %f\n", x, y, w, h);
 		int i = clamp((int)(y / h * 3.0f), 0, 2) * 3 + clamp((int)(x / w * 3.0f), 0, 2);
 		str_copy(pOut, s_apLocations[i], Length);

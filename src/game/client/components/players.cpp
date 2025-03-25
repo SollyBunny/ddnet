@@ -699,93 +699,93 @@ void CPlayers::RenderPlayer(
 
 			if(Player.m_Weapon == WEAPON_HAMMER)
 			{
-				switch (g_Config.m_ClHammerRotatesWithCursor) {
+				switch(g_Config.m_ClHammerRotatesWithCursor)
+				{
 				case 0:
+				{
+					// Static position for hammer
+					WeaponPosition = Position + vec2(State.GetAttach()->m_X, State.GetAttach()->m_Y);
+					WeaponPosition.y += g_pData->m_Weapons.m_aId[CurrentWeapon].m_Offsety;
+					if(Direction.x < 0)
+						WeaponPosition.x -= g_pData->m_Weapons.m_aId[CurrentWeapon].m_Offsetx;
+					if(IsSit)
+						WeaponPosition.y += 3.0f;
+
+					// If active and attack is under way, bash stuffs
+					float QuadsRotation;
+					if(!Inactive || LastAttackTime < m_pClient->m_aTuning[g_Config.m_ClDummy].GetWeaponFireDelay(Player.m_Weapon))
 					{
-						// Static position for hammer
-						WeaponPosition = Position + vec2(State.GetAttach()->m_X, State.GetAttach()->m_Y);
-						WeaponPosition.y += g_pData->m_Weapons.m_aId[CurrentWeapon].m_Offsety;
 						if(Direction.x < 0)
-							WeaponPosition.x -= g_pData->m_Weapons.m_aId[CurrentWeapon].m_Offsetx;
-						if(IsSit)
-							WeaponPosition.y += 3.0f;
-
-						// If active and attack is under way, bash stuffs
-						float QuadsRotation;
-						if(!Inactive || LastAttackTime < m_pClient->m_aTuning[g_Config.m_ClDummy].GetWeaponFireDelay(Player.m_Weapon))
-						{
-							if(Direction.x < 0)
-								QuadsRotation = -pi / 2.0f - State.GetAttach()->m_Angle * pi * 2.0f;
-							else
-								QuadsRotation = -pi / 2.0f + State.GetAttach()->m_Angle * pi * 2.0f;
-						}
+							QuadsRotation = -pi / 2.0f - State.GetAttach()->m_Angle * pi * 2.0f;
 						else
-							QuadsRotation = Direction.x < 0.0f ? 100.0f : 500.0f;
-
-						float Scale = 1.0f;
-						if(PlayerClass == PLAYERCLASS_TANK)
-						{
-							Scale = 1.45f;
-							WeaponPosition += direction(QuadsRotation) * 8.0f;
-						}
-
-						Graphics()->QuadsSetRotation(QuadsRotation);
-						Graphics()->RenderQuadContainerAsSprite(m_WeaponEmoteQuadContainerIndex, QuadOffset, WeaponPosition.x, WeaponPosition.y, Scale, Scale);
-						break;
+							QuadsRotation = -pi / 2.0f + State.GetAttach()->m_Angle * pi * 2.0f;
 					}
-				case 1:
+					else
+						QuadsRotation = Direction.x < 0.0f ? 100.0f : 500.0f;
+
+					float Scale = 1.0f;
+					if(PlayerClass == PLAYERCLASS_TANK)
 					{
-						WeaponPosition = Position + vec2(State.GetAttach()->m_X, State.GetAttach()->m_Y);
-						WeaponPosition.y += g_pData->m_Weapons.m_aId[CurrentWeapon].m_Offsety;
-						if(Direction.x < 0.0f)
-							WeaponPosition.x -= g_pData->m_Weapons.m_aId[CurrentWeapon].m_Offsetx;
-						if(IsSit)
-							WeaponPosition.y += 3.0f;
-
-						// Set rotation
-						float QuadsRotation = -pi / 2.0f;
-						QuadsRotation += State.GetAttach()->m_Angle * (Direction.x < 0.0f ? -1.0f : 1.0f) * pi * 2.0f;
-						QuadsRotation += Angle;
-						if(Direction.x < 0.0f)
-							QuadsRotation += pi;
-
-						float Scale = 1.0f;
-						if(PlayerClass == PLAYERCLASS_TANK)
-						{
-							Scale = 1.45f;
-							WeaponPosition += direction(QuadsRotation) * 8.0f;
-						}
-
-						Graphics()->QuadsSetRotation(QuadsRotation);
-						Graphics()->RenderQuadContainerAsSprite(m_WeaponEmoteQuadContainerIndex, QuadOffset, WeaponPosition.x, WeaponPosition.y, Scale, Scale);
-						break;
+						Scale = 1.45f;
+						WeaponPosition += direction(QuadsRotation) * 8.0f;
 					}
-				case 2:
-					{
-						// TODO: should be an animation
-						Recoil = 0.0f;
-						float a = AttackTicksPassed / 5.0f;
-						if(a < 1.0f)
-							Recoil = std::sin(a * pi);
-						WeaponPosition = Position - Dir * (Recoil * 10.0f - 5.0f);
-						if(IsSit)
-							WeaponPosition.y += 3.0f;
 
-						float Scale = 1.0f;
-						if(PlayerClass == PLAYERCLASS_TANK)
-						{
-							Scale = 1.45f;
-							WeaponPosition += direction(Angle) * 8.0f;
-						}
-
-						Graphics()->QuadsSetRotation(Angle);
-						Graphics()->RenderQuadContainerAsSprite(m_WeaponEmoteQuadContainerIndex, QuadOffset, WeaponPosition.x, WeaponPosition.y, Scale, Scale);
-						RenderHand(&RenderInfo,
-							Position + Dir * g_pData->m_Weapons.m_aId[WEAPON_GUN].m_Offsetx - Dir * Recoil * 10.0f + vec2(0.0f, g_pData->m_Weapons.m_aId[WEAPON_GUN].m_Offsety),
-							Direction, -3.0f * pi / 4.0f, vec2(-15.0f, 4.0f), Alpha
-						);
-					}
+					Graphics()->QuadsSetRotation(QuadsRotation);
+					Graphics()->RenderQuadContainerAsSprite(m_WeaponEmoteQuadContainerIndex, QuadOffset, WeaponPosition.x, WeaponPosition.y, Scale, Scale);
 					break;
+				}
+				case 1:
+				{
+					WeaponPosition = Position + vec2(State.GetAttach()->m_X, State.GetAttach()->m_Y);
+					WeaponPosition.y += g_pData->m_Weapons.m_aId[CurrentWeapon].m_Offsety;
+					if(Direction.x < 0.0f)
+						WeaponPosition.x -= g_pData->m_Weapons.m_aId[CurrentWeapon].m_Offsetx;
+					if(IsSit)
+						WeaponPosition.y += 3.0f;
+
+					// Set rotation
+					float QuadsRotation = -pi / 2.0f;
+					QuadsRotation += State.GetAttach()->m_Angle * (Direction.x < 0.0f ? -1.0f : 1.0f) * pi * 2.0f;
+					QuadsRotation += Angle;
+					if(Direction.x < 0.0f)
+						QuadsRotation += pi;
+
+					float Scale = 1.0f;
+					if(PlayerClass == PLAYERCLASS_TANK)
+					{
+						Scale = 1.45f;
+						WeaponPosition += direction(QuadsRotation) * 8.0f;
+					}
+
+					Graphics()->QuadsSetRotation(QuadsRotation);
+					Graphics()->RenderQuadContainerAsSprite(m_WeaponEmoteQuadContainerIndex, QuadOffset, WeaponPosition.x, WeaponPosition.y, Scale, Scale);
+					break;
+				}
+				case 2:
+				{
+					// TODO: should be an animation
+					Recoil = 0.0f;
+					float a = AttackTicksPassed / 5.0f;
+					if(a < 1.0f)
+						Recoil = std::sin(a * pi);
+					WeaponPosition = Position - Dir * (Recoil * 10.0f - 5.0f);
+					if(IsSit)
+						WeaponPosition.y += 3.0f;
+
+					float Scale = 1.0f;
+					if(PlayerClass == PLAYERCLASS_TANK)
+					{
+						Scale = 1.45f;
+						WeaponPosition += direction(Angle) * 8.0f;
+					}
+
+					Graphics()->QuadsSetRotation(Angle);
+					Graphics()->RenderQuadContainerAsSprite(m_WeaponEmoteQuadContainerIndex, QuadOffset, WeaponPosition.x, WeaponPosition.y, Scale, Scale);
+					RenderHand(&RenderInfo,
+						Position + Dir * g_pData->m_Weapons.m_aId[WEAPON_GUN].m_Offsetx - Dir * Recoil * 10.0f + vec2(0.0f, g_pData->m_Weapons.m_aId[WEAPON_GUN].m_Offsety),
+						Direction, -3.0f * pi / 4.0f, vec2(-15.0f, 4.0f), Alpha);
+				}
+				break;
 				}
 			}
 			else if(Player.m_Weapon == WEAPON_NINJA)
@@ -959,7 +959,7 @@ void CPlayers::RenderPlayer(
 	{
 		GameClient()->m_Effects.SparkleTrail(BodyPos, Alpha);
 	}
-	
+
 	if(m_pClient->m_GameInfo.m_InfClass)
 	{
 		RenderInfCPlayer(Position, ClientId);

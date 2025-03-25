@@ -515,7 +515,7 @@ void CInfoMessages::RenderKillMsg(const CInfoMsg &InfoMsg, float x, float y)
 				TextRender()->RenderTextContainer(InfoMsg.m_AssistantTextContainerIndex, TextColor, TextRender()->DefaultTextOutlineColor(), x, y + (46.f - 36.f) / 2.f);
 
 				ColorRGBA Color = color_cast<ColorRGBA>(ColorHSLA(g_Config.m_ClKillMessageHighlightColor));
-				
+
 				x -= TextRender()->GetBoundingBoxTextContainer(InfoMsg.m_AssistantPlusContainerIndex).m_W;
 				TextRender()->RenderTextContainer(InfoMsg.m_AssistantPlusContainerIndex, Color, TextRender()->DefaultTextOutlineColor(), x, y + (46.f - 36.f) / 2.f);
 			}

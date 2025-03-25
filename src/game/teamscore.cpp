@@ -30,7 +30,7 @@ bool CTeamsCore::CanHook(int HookerId, int TargetId) const
 	{
 		if(m_aIsInfected[HookerId] != m_aIsInfected[TargetId])
 			return true;
-		
+
 		return !m_aIsProtected[TargetId];
 	}
 

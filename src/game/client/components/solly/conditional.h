@@ -5,7 +5,7 @@
 class CConditional : public CComponent
 {
 private:
-	void ParseString(const char *pString, char* pOut, int Length);
+	void ParseString(const char *pString, char *pOut, int Length);
 
 public:
 	virtual int Sizeof() const override { return sizeof(*this); }

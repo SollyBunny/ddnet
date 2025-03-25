@@ -148,7 +148,7 @@ void CLayerTiles::Render(bool Tileset)
 		Texture = m_pEditor->GetSwitchTexture();
 	else if(m_Tune)
 		Texture = m_pEditor->GetTuneTexture();
-	else if (m_pPtumZoneType)
+	else if(m_pPtumZoneType)
 		Texture = m_pEditor->GetPTUMEntitiesTexture(m_pPtumZoneType);
 	Graphics()->TextureSet(Texture);
 
