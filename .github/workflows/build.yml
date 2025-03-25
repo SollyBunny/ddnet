@@ -1,6 +1,9 @@
 name: Build
 
 on:
+  push:
+    branches-ignore:
+      - gh-readonly-queue/**
   pull_request:
   merge_group:
 
@@ -16,7 +19,7 @@ jobs:
         include:
         - os: ubuntu-latest
           cmake-args: -G Ninja -DDISCORD=ON -DDISCORD_DYNAMIC=ON -DPREFER_BUNDLED_LIBS=ON
-          cmake-init-env: CXXFLAGS=-Werror 
+          cmake-init-env: CXXFLAGS=-Werror
           package-file: "*-linux_x86_64.tar.xz"
           fancy: true
         - os: ubuntu-22.04
