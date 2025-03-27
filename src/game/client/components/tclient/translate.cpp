@@ -388,6 +388,10 @@ void CTranslate::Translate(CChat::CLine &Line, bool ShowProgress)
 		Job.m_pLine->m_Time = time();
 		GameClient()->m_Chat.RebuildChat();
 	}
+	else
+	{
+		Job.m_pLine->m_aTextTranslated[0] = '\0';
+	}
 
 	m_vJobs.emplace_back(std::move(Job));
 }
