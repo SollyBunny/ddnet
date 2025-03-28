@@ -117,7 +117,7 @@ option(PREFER_BUNDLED_LIBS "Prefer bundled libraries over system libraries" ${AU
 option(DEV "Don't generate stuff necessary for packaging" OFF)
 option(VULKAN "Enable the vulkan backend" ${AUTO_VULKAN_BACKEND})
 
-option(EXCEPTION_HANDLING "Enable exception handling (only works with Windows as of now)" OFF)
+option(EXCEPTION_HANDLING "Enable crashdumps (only works with Windows)" OFF)
 option(IPO "Enable interprocedural optimizations" OFF)
 option(FUSE_LD "Linker to use" OFF)
 option(SECURITY_COMPILER_FLAGS "Whether to set security-relevant compiler flags like -D_FORTIFY_SOURCE=2 and -fstack-protector-strong" ON)
@@ -308,7 +308,6 @@ if(NOT MSVC AND NOT HAIKU)
   endif()
 
   if(EXCEPTION_HANDLING)
-    add_cxx_compiler_flag_if_supported(OUR_FLAGS -DCONF_EXCEPTION_HANDLING)
     # use the frame pointer (frame pointer usage is disabled by default in
     # some architectures like x86_64 and for some optimization levels; and it
     # may be impossible to walk the call stack without it)
@@ -547,7 +546,7 @@ else()
 endif()
 
 if(EXCEPTION_HANDLING)
-  find_package(ExceptionHandling)
+  find_package(Crashdump)
 endif()
 
 if(SECURITY_COMPILER_FLAGS)
@@ -1716,9 +1715,6 @@ set(COPY_FILES
         ${SSP_COPY_FILES}
 )
 file(COPY ${COPY_FILES} DESTINATION .)
-# Don't add integration test files to COPY_FILES since we don't want to add
-# them in cpack.
-file(COPY ${INTEGRATION_TEST_COPY_FILES} DESTINATION .)
 
 set(COPY_DIRS ${SDL2_COPY_DIRS})
 file(COPY ${COPY_DIRS} DESTINATION .)
@@ -1823,34 +1819,35 @@ add_custom_command(OUTPUT "src/game/generated/wordlist.h"
 
 # Sources
 set_src(BASE GLOB_RECURSE src/base
-        bezier.cpp
-        bezier.h
-        color.cpp
-        color.h
-        detect.h
-        dynamic.h
-        hash.cpp
-        hash.h
-        hash_bundled.cpp
-        hash_ctxt.h
-        hash_libtomcrypt.cpp
-        hash_openssl.cpp
-        lock.h
-        log.cpp
-        log.h
-        logger.h
-        math.h
-        system.cpp
-        system.h
-        tl/threading.h
-        types.h
-        unicode/confusables.cpp
-        unicode/confusables.h
-        unicode/confusables_data.h
-        unicode/tolower.cpp
-        unicode/tolower.h
-        unicode/tolower_data.h
-        vmath.h
+  bezier.cpp
+  bezier.h
+  color.cpp
+  color.h
+  crashdump.cpp
+  detect.h
+  dynamic.h
+  hash.cpp
+  hash.h
+  hash_bundled.cpp
+  hash_ctxt.h
+  hash_libtomcrypt.cpp
+  hash_openssl.cpp
+  lock.h
+  log.cpp
+  log.h
+  logger.h
+  math.h
+  system.cpp
+  system.h
+  tl/threading.h
+  types.h
+  unicode/confusables.cpp
+  unicode/confusables.h
+  unicode/confusables_data.h
+  unicode/tolower.cpp
+  unicode/tolower.h
+  unicode/tolower_data.h
+  vmath.h
 )
 set_src(ENGINE_INTERFACE GLOB src/engine
         antibot.h
@@ -2274,6 +2271,7 @@ if(CLIENT)
           sixup_translate_game.cpp
           sixup_translate_connless.cpp
           sixup_translate_snapshot.cpp
+          skin.cpp
           skin.h
           ui.cpp
           ui.h
@@ -2767,50 +2765,53 @@ add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/src/game/generated/checksum.cpp
 # TESTS
 ########################################################################
 
-if(GTEST_FOUND OR DOWNLOAD_GTEST)
+if((GTEST_FOUND OR DOWNLOAD_GTEST) AND SERVER)
   set_src(TESTS GLOB src/test
-          aio.cpp
-          bezier.cpp
-          blocklist_driver.cpp
-          bytes_be.cpp
-          color.cpp
-          compression.cpp
-          csv.cpp
-          datafile.cpp
-          editor.cpp
-          fs.cpp
-          git_revision.cpp
-          hash.cpp
-          huffman.cpp
-          io.cpp
-          jobs.cpp
-          json.cpp
-          jsonwriter.cpp
-          linereader.cpp
-          mapbugs.cpp
-          math.cpp
-          memory.cpp
-          name_ban.cpp
-          net.cpp
-          netaddr.cpp
-          os.cpp
-          packer.cpp
-          prng.cpp
-          score.cpp
-          secure_random.cpp
-          serverbrowser.cpp
-          serverinfo.cpp
-          snapshot.cpp
-          str.cpp
-          strip_path_and_extension.cpp
-          swap_endian.cpp
-          teehistorian.cpp
-          test.cpp
-          test.h
-          thread.cpp
-          timestamp.cpp
-          unix.cpp
-          uuid.cpp
+    aio.cpp
+    bezier.cpp
+    blocklist_driver.cpp
+    bytes_be.cpp
+    chunk_header.cpp
+    color.cpp
+    compression.cpp
+    csv.cpp
+    datafile.cpp
+    editor.cpp
+    fs.cpp
+    gameworld.cpp
+    git_revision.cpp
+    hash.cpp
+    huffman.cpp
+    io.cpp
+    jobs.cpp
+    json.cpp
+    jsonwriter.cpp
+    linereader.cpp
+    mapbugs.cpp
+    math.cpp
+    memory.cpp
+    name_ban.cpp
+    net.cpp
+    netaddr.cpp
+    os.cpp
+    packer.cpp
+    prng.cpp
+    score.cpp
+    secure_random.cpp
+    serverbrowser.cpp
+    serverinfo.cpp
+    shell_execute.cpp
+    snapshot.cpp
+    str.cpp
+    strip_path_and_extension.cpp
+    swap_endian.cpp
+    teehistorian.cpp
+    test.cpp
+    test.h
+    thread.cpp
+    timestamp.cpp
+    unix.cpp
+    uuid.cpp
   )
   set(TESTS_EXTRA
           src/engine/client/blocklist_driver.cpp
@@ -2861,13 +2862,6 @@ if(GTEST_FOUND OR DOWNLOAD_GTEST)
           DEPENDS run_cxx_tests
   )
 endif()
-
-add_custom_target(run_integration_tests
-        COMMAND ${PROJECT_BINARY_DIR}/integration_test.sh ${INTEGRATIONTESTRUNNER_ARGS}
-        COMMENT Running integration tests
-        DEPENDS game-client game-server
-        USES_TERMINAL
-)
 
 ########################################################################
 # INSTALLATION
@@ -3381,6 +3375,9 @@ foreach(target ${TARGETS_OWN})
   endif()
   if(ANTIBOT)
     target_compile_definitions(${target} PRIVATE CONF_ANTIBOT)
+  endif()
+  if(EXCEPTION_HANDLING)
+    target_compile_definitions(${target} PRIVATE CONF_CRASHDUMP)
   endif()
   if(HEADLESS_CLIENT)
     target_compile_definitions(${target} PRIVATE CONF_HEADLESS_CLIENT)

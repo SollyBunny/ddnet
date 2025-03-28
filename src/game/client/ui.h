@@ -576,6 +576,7 @@ public:
 	static vec2 CalcAlignedCursorPos(const CUIRect *pRect, vec2 TextSize, int Align, const float *pBiggestCharHeight = nullptr);
 
 	void DoLabel(const CUIRect *pRect, const char *pText, float Size, int Align, const SLabelProperties &LabelProps = {}) const;
+	void DoLabel_AutoLineSize(const char *pText, float FontSize, int Align, CUIRect *pRect, float LineSize, const SLabelProperties &LabelProps = {}) const;
 
 	void DoLabel(CUIElement::SUIElementRect &RectEl, const CUIRect *pRect, const char *pText, float Size, int Align, const SLabelProperties &LabelProps = {}, int StrLen = -1, const CTextCursor *pReadCursor = nullptr) const;
 	void DoLabelStreamed(CUIElement::SUIElementRect &RectEl, const CUIRect *pRect, const char *pText, float Size, int Align, const SLabelProperties &LabelProps = {}, int StrLen = -1, const CTextCursor *pReadCursor = nullptr) const;
@@ -756,7 +757,7 @@ public:
 		const char m_ColorPickerId = 0;
 		const char m_aValueSelectorIds[5] = {0};
 		CButtonContainer m_aModeButtons[(int)MODE_HSLA + 1];
-		EEditState m_State;
+		EEditState m_State = EEditState::NONE;
 	};
 	void ShowPopupColorPicker(float X, float Y, SColorPickerPopupContext *pContext);
 

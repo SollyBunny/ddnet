@@ -40,6 +40,8 @@ public:
 
 using PartsVector = std::vector<std::unique_ptr<CNamePlatePart>>;
 
+static const ColorRGBA s_OutlineColor = ColorRGBA(0.0f, 0.0f, 0.0f, 0.5f);
+
 class CNamePlatePartText : public CNamePlatePart
 {
 protected:
@@ -88,7 +90,7 @@ public:
 		if(!m_TextContainerIndex.Valid())
 			return;
 
-		ColorRGBA OutlineColor = This.TextRender()->DefaultTextOutlineColor().WithMultipliedAlpha(m_Color.a);
+		ColorRGBA OutlineColor = s_OutlineColor.WithMultipliedAlpha(m_Color.a);
 
 		This.TextRender()->RenderTextContainer(m_TextContainerIndex,
 			m_Color, OutlineColor,
@@ -108,9 +110,9 @@ public:
 	void Render(CGameClient &This, float X, float Y) const override
 	{
 		IGraphics::CQuadItem QuadItem(X - Size().x / 2.0f, Y - Size().y / 2.0f, Size().x, Size().y);
-		This.Graphics()->SetColor(m_Color);
 		This.Graphics()->TextureSet(m_Texture);
 		This.Graphics()->QuadsBegin();
+		This.Graphics()->SetColor(m_Color);
 		This.Graphics()->QuadsSetRotation(m_Rotation);
 		This.Graphics()->QuadsDrawTL(&QuadItem, 1);
 		This.Graphics()->QuadsEnd();
@@ -211,6 +213,7 @@ public:
 			m_Offset.y = m_Size.y / 4.0f;
 			break;
 		}
+		m_Color.a = Data.m_Color.a;
 	}
 };
 
@@ -399,7 +402,7 @@ protected:
 	void UpdateText(CGameClient &This, const CNamePlateRenderData &Data) override
 	{
 		m_FontSize = Data.m_FontSizeHookStrongWeak;
-		m_StrongWeakId = Data.m_ClientId;
+		m_StrongWeakId = Data.m_HookStrongWeakId;
 		switch(Data.m_HookStrongWeak)
 		{
 		case CNamePlateRenderData::HOOKSTRONGWEAK_STRONG:
@@ -464,6 +467,11 @@ private:
 			return;
 		m_Inited = true;
 
+		AddPart<CNamePlatePartDirection>(This, DIRECTION_LEFT);
+		AddPart<CNamePlatePartDirection>(This, DIRECTION_UP);
+		AddPart<CNamePlatePartDirection>(This, DIRECTION_RIGHT);
+		AddPart<CNamePlatePartNewLine>(This);
+
 		AddPart<CNamePlatePartClientId>(This, false);
 		AddPart<CNamePlatePartFriendMark>(This);
 		AddPart<CNamePlatePartName>(This);
@@ -477,11 +485,6 @@ private:
 
 		AddPart<CNamePlatePartHookStrongWeak>(This);
 		AddPart<CNamePlatePartHookStrongWeakId>(This);
-		AddPart<CNamePlatePartNewLine>(This);
-
-		AddPart<CNamePlatePartDirection>(This, DIRECTION_LEFT);
-		AddPart<CNamePlatePartDirection>(This, DIRECTION_UP);
-		AddPart<CNamePlatePartDirection>(This, DIRECTION_RIGHT);
 	}
 	void Update(CGameClient &This, const CNamePlateRenderData *pData)
 	{
@@ -504,7 +507,7 @@ public:
 		Update(This, pData);
 		int Flags = ETextRenderFlags::TEXT_RENDER_FLAG_NO_FIRST_CHARACTER_X_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_LAST_CHARACTER_ADVANCE;
 		if(m_InGame)
-			Flags |= ETextRenderFlags::TEXT_RENDER_FLAG_NO_PIXEL_ALIGMENT;
+			Flags |= ETextRenderFlags::TEXT_RENDER_FLAG_NO_PIXEL_ALIGNMENT;
 		This.TextRender()->SetRenderFlags(Flags);
 		float X = m_Position.x;
 		float Y = m_Position.y;

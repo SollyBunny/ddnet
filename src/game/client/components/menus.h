@@ -9,7 +9,6 @@
 #include <chrono>
 #include <deque>
 #include <optional>
-#include <unordered_set>
 #include <vector>
 
 #include <engine/console.h>
@@ -30,6 +29,8 @@
 #include <game/voting.h>
 
 #include <game/client/components/skins7.h>
+
+static constexpr const char *DEFAULT_SAVED_RCON_USER = "local-server";
 
 struct CServerProcess
 {
@@ -109,7 +110,6 @@ class CMenus : public CComponent
 	void DoJoystickAxisPicker(CUIRect View);
 	void DoJoystickBar(const CUIRect *pRect, float Current, float Tolerance, bool Active);
 
-	std::optional<std::chrono::nanoseconds> m_SkinListLastRefreshTime;
 	bool m_SkinListScrollToSelected = false;
 	std::optional<std::chrono::nanoseconds> m_SkinList7LastRefreshTime;
 	std::optional<std::chrono::nanoseconds> m_SkinPartsList7LastRefreshTime;
@@ -313,6 +313,7 @@ protected:
 		bool m_IsLink;
 		int m_StorageType;
 		time_t m_Date;
+		int64_t m_Size;
 
 		bool m_InfosLoaded;
 		bool m_Valid;
@@ -330,7 +331,7 @@ protected:
 			return bytes_be_to_uint(m_Info.m_aLength);
 		}
 
-		unsigned Size() const
+		unsigned MapSize() const
 		{
 			return bytes_be_to_uint(m_Info.m_aMapSize);
 		}
@@ -613,13 +614,6 @@ protected:
 	void RenderCommunityIcon(const SCommunityIcon *pIcon, CUIRect Rect, bool Active);
 	void UpdateCommunityIcons();
 
-	// skin favorite list
-	std::unordered_set<std::string> m_SkinFavorites;
-	static void Con_AddFavoriteSkin(IConsole::IResult *pResult, void *pUserData);
-	static void Con_RemFavoriteSkin(IConsole::IResult *pResult, void *pUserData);
-	static void ConfigSaveCallback(IConfigManager *pConfigManager, void *pUserData);
-	void OnConfigSave(IConfigManager *pConfigManager);
-
 	// found in menus_settings.cpp
 	void RenderLanguageSettings(CUIRect MainView);
 	bool RenderLanguageSelection(CUIRect MainView);
@@ -701,7 +695,6 @@ public:
 	bool IsServerRunning() const;
 
 	virtual void OnInit() override;
-	void OnConsoleInit() override;
 
 	virtual void OnStateChange(int NewState, int OldState) override;
 	virtual void OnWindowResize() override;

@@ -262,7 +262,7 @@ int CMenus::DoButton_Favorite(const void *pButtonId, const void *pParentId, bool
 	if(Checked || (pParentId != nullptr && Ui()->HotItem() == pParentId) || Ui()->HotItem() == pButtonId)
 	{
 		TextRender()->SetFontPreset(EFontPreset::ICON_FONT);
-		TextRender()->SetRenderFlags(ETextRenderFlags::TEXT_RENDER_FLAG_ONLY_ADVANCE_WIDTH | ETextRenderFlags::TEXT_RENDER_FLAG_NO_X_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_Y_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_PIXEL_ALIGMENT | ETextRenderFlags::TEXT_RENDER_FLAG_NO_OVERSIZE);
+		TextRender()->SetRenderFlags(ETextRenderFlags::TEXT_RENDER_FLAG_ONLY_ADVANCE_WIDTH | ETextRenderFlags::TEXT_RENDER_FLAG_NO_X_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_Y_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_PIXEL_ALIGNMENT | ETextRenderFlags::TEXT_RENDER_FLAG_NO_OVERSIZE);
 		const float Alpha = Ui()->HotItem() == pButtonId ? 0.2f : 0.0f;
 		TextRender()->TextColor(Checked ? ColorRGBA(1.0f, 0.85f, 0.3f, 0.8f + Alpha) : ColorRGBA(0.5f, 0.5f, 0.5f, 0.8f + Alpha));
 		SLabelProperties Props;
@@ -287,7 +287,7 @@ int CMenus::DoButton_CheckBox_Common(const void *pId, const char *pText, const c
 	const bool Checkable = *pBoxText == 'X';
 	if(Checkable)
 	{
-		TextRender()->SetRenderFlags(ETextRenderFlags::TEXT_RENDER_FLAG_ONLY_ADVANCE_WIDTH | ETextRenderFlags::TEXT_RENDER_FLAG_NO_X_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_Y_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_OVERSIZE | ETextRenderFlags::TEXT_RENDER_FLAG_NO_PIXEL_ALIGMENT);
+		TextRender()->SetRenderFlags(ETextRenderFlags::TEXT_RENDER_FLAG_ONLY_ADVANCE_WIDTH | ETextRenderFlags::TEXT_RENDER_FLAG_NO_X_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_Y_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_OVERSIZE | ETextRenderFlags::TEXT_RENDER_FLAG_NO_PIXEL_ALIGNMENT);
 		TextRender()->SetFontPreset(EFontPreset::ICON_FONT);
 		Ui()->DoLabel(&Box, FONT_ICON_XMARK, Box.h * CUi::ms_FontmodHeight, TEXTALIGN_MC);
 		TextRender()->SetFontPreset(EFontPreset::DEFAULT_FONT);
@@ -303,44 +303,16 @@ int CMenus::DoButton_CheckBox_Common(const void *pId, const char *pText, const c
 
 void CMenus::DoLaserPreview(const CUIRect *pRect, const ColorHSLA LaserOutlineColor, const ColorHSLA LaserInnerColor, const int LaserType)
 {
-	ColorRGBA LaserRGB;
 	CUIRect Section = *pRect;
 	vec2 From = vec2(Section.x + 50.0f, Section.y + Section.h / 2.0f);
 	vec2 Pos = vec2(Section.x + Section.w - 10.0f, Section.y + Section.h / 2.0f);
 
-	Graphics()->BlendNormal();
-	Graphics()->TextureClear();
-	Graphics()->QuadsBegin();
+	const ColorRGBA OuterColor = color_cast<ColorRGBA>(ColorHSLA(LaserOutlineColor));
+	const ColorRGBA InnerColor = color_cast<ColorRGBA>(ColorHSLA(LaserInnerColor));
+	const float TicksHead = Client()->GlobalTime() * Client()->GameTickSpeed();
 
-	LaserRGB = color_cast<ColorRGBA, ColorHSLA>(LaserOutlineColor);
-	ColorRGBA OuterColor(LaserRGB.r, LaserRGB.g, LaserRGB.b, 1.0f);
-	Graphics()->SetColor(LaserRGB.r, LaserRGB.g, LaserRGB.b, 1.0f);
-	vec2 Out = vec2(0.0f, -1.0f) * (3.15f);
-
-	IGraphics::CFreeformItem Freeform(From.x - Out.x, From.y - Out.y, From.x + Out.x, From.y + Out.y, Pos.x - Out.x, Pos.y - Out.y, Pos.x + Out.x, Pos.y + Out.y);
-	Graphics()->QuadsDrawFreeform(&Freeform, 1);
-
-	LaserRGB = color_cast<ColorRGBA, ColorHSLA>(LaserInnerColor);
-	ColorRGBA InnerColor(LaserRGB.r, LaserRGB.g, LaserRGB.b, 1.0f);
-	Out = vec2(0.0f, -1.0f) * (2.25f);
-	Graphics()->SetColor(InnerColor.r, InnerColor.g, InnerColor.b, 1.0f);
-
-	Freeform = IGraphics::CFreeformItem(From.x - Out.x, From.y - Out.y, From.x + Out.x, From.y + Out.y, Pos.x - Out.x, Pos.y - Out.y, Pos.x + Out.x, Pos.y + Out.y);
-	Graphics()->QuadsDrawFreeform(&Freeform, 1);
-	Graphics()->QuadsEnd();
-
-	Graphics()->BlendNormal();
-	int SpriteIndex = time_get() % 3;
-	Graphics()->TextureSet(GameClient()->m_ParticlesSkin.m_aSpriteParticleSplat[SpriteIndex]);
-	Graphics()->QuadsBegin();
-	Graphics()->QuadsSetRotation(time_get());
-	Graphics()->SetColor(OuterColor.r, OuterColor.g, OuterColor.b, 1.0f);
-	IGraphics::CQuadItem QuadItem(Pos.x, Pos.y, 24, 24);
-	Graphics()->QuadsDraw(&QuadItem, 1);
-	Graphics()->SetColor(InnerColor.r, InnerColor.g, InnerColor.b, 1.0f);
-	QuadItem = IGraphics::CQuadItem(Pos.x, Pos.y, 20, 20);
-	Graphics()->QuadsDraw(&QuadItem, 1);
-	Graphics()->QuadsEnd();
+	// TicksBody = 4.0 for less laser width for weapon alignment
+	GameClient()->m_Items.RenderLaser(From, Pos, OuterColor, InnerColor, 4.0f, TicksHead, LaserType);
 
 	switch(LaserType)
 	{
@@ -361,14 +333,7 @@ void CMenus::DoLaserPreview(const CUIRect *pRect, const ColorHSLA LaserOutlineCo
 		Graphics()->QuadsEnd();
 		break;
 	default:
-		Graphics()->QuadsBegin();
-		Graphics()->SetColor(OuterColor.r, OuterColor.g, OuterColor.b, 1.0f);
-		QuadItem = IGraphics::CQuadItem(From.x, From.y, 24, 24);
-		Graphics()->QuadsDraw(&QuadItem, 1);
-		Graphics()->SetColor(InnerColor.r, InnerColor.g, InnerColor.b, 1.0f);
-		QuadItem = IGraphics::CQuadItem(From.x, From.y, 20, 20);
-		Graphics()->QuadsDraw(&QuadItem, 1);
-		Graphics()->QuadsEnd();
+		GameClient()->m_Items.RenderLaser(From, From, OuterColor, InnerColor, 4.0f, TicksHead, LaserType);
 	}
 }
 
@@ -618,7 +583,7 @@ void CMenus::RenderMenubar(CUIRect Box, IClient::EClientState ClientState)
 	// First render buttons aligned from right side so remaining
 	// width is known when rendering buttons from left side.
 	TextRender()->SetFontPreset(EFontPreset::ICON_FONT);
-	TextRender()->SetRenderFlags(ETextRenderFlags::TEXT_RENDER_FLAG_ONLY_ADVANCE_WIDTH | ETextRenderFlags::TEXT_RENDER_FLAG_NO_X_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_Y_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_PIXEL_ALIGMENT | ETextRenderFlags::TEXT_RENDER_FLAG_NO_OVERSIZE);
+	TextRender()->SetRenderFlags(ETextRenderFlags::TEXT_RENDER_FLAG_ONLY_ADVANCE_WIDTH | ETextRenderFlags::TEXT_RENDER_FLAG_NO_X_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_Y_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_PIXEL_ALIGNMENT | ETextRenderFlags::TEXT_RENDER_FLAG_NO_OVERSIZE);
 
 	Box.VSplitRight(33.0f, &Box, &Button);
 	static CButtonContainer s_QuitButton;
@@ -676,7 +641,7 @@ void CMenus::RenderMenubar(CUIRect Box, IClient::EClientState ClientState)
 		Box.VSplitLeft(33.0f, &Button, &Box);
 
 		TextRender()->SetFontPreset(EFontPreset::ICON_FONT);
-		TextRender()->SetRenderFlags(ETextRenderFlags::TEXT_RENDER_FLAG_ONLY_ADVANCE_WIDTH | ETextRenderFlags::TEXT_RENDER_FLAG_NO_X_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_Y_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_PIXEL_ALIGMENT | ETextRenderFlags::TEXT_RENDER_FLAG_NO_OVERSIZE);
+		TextRender()->SetRenderFlags(ETextRenderFlags::TEXT_RENDER_FLAG_ONLY_ADVANCE_WIDTH | ETextRenderFlags::TEXT_RENDER_FLAG_NO_X_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_Y_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_PIXEL_ALIGNMENT | ETextRenderFlags::TEXT_RENDER_FLAG_NO_OVERSIZE);
 
 		bool GotNewsOrUpdate = false;
 
@@ -1006,13 +971,6 @@ void CMenus::OnInit()
 	m_DirectionQuadContainerIndex = Graphics()->CreateQuadContainer(false);
 	RenderTools()->QuadContainerAddSprite(m_DirectionQuadContainerIndex, 0.f, 0.f, 22.f);
 	Graphics()->QuadContainerUpload(m_DirectionQuadContainerIndex);
-}
-
-void CMenus::OnConsoleInit()
-{
-	ConfigManager()->RegisterCallback(CMenus::ConfigSaveCallback, this);
-	Console()->Register("add_favorite_skin", "s[skin_name]", CFGFLAG_CLIENT, Con_AddFavoriteSkin, this, "Add a skin as a favorite");
-	Console()->Register("remove_favorite_skin", "s[skin_name]", CFGFLAG_CLIENT, Con_RemFavoriteSkin, this, "Remove a skin from the favorites");
 }
 
 void CMenus::ConchainBackgroundEntities(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)

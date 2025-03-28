@@ -58,6 +58,7 @@ void CScoreboard::DoIconLabeledButton(CUIRect *pRect, const char *pTitle, const 
 	DoIconButton(&Label, pIcon, TextSize, IconColor);
 	Ui()->DoLabel(pRect, pTitle, TextSize, TEXTALIGN_MC);
 }
+
 void CScoreboard::DoIconButton(CUIRect *pRect, const char *pIcon, float TextSize, ColorRGBA IconColor) const
 {
 	TextRender()->SetFontPreset(EFontPreset::ICON_FONT);

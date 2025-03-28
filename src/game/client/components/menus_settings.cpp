@@ -397,62 +397,6 @@ void CMenus::RenderSettingsPlayer(CUIRect MainView)
 	Ui()->DoEditBox_Search(&s_FlagFilterInput, &QuickSearch, 14.0f, !Ui()->IsPopupOpen() && !m_pClient->m_GameConsole.IsActive());
 }
 
-struct CUISkin
-{
-	const CSkin *m_pSkin;
-
-	CUISkin() :
-		m_pSkin(nullptr) {}
-	CUISkin(const CSkin *pSkin) :
-		m_pSkin(pSkin) {}
-
-	bool operator<(const CUISkin &Other) const { return str_comp_nocase(m_pSkin->GetName(), Other.m_pSkin->GetName()) < 0; }
-
-	bool operator<(const char *pOther) const { return str_comp_nocase(m_pSkin->GetName(), pOther) < 0; }
-	bool operator==(const char *pOther) const { return !str_comp_nocase(m_pSkin->GetName(), pOther); }
-};
-
-void CMenus::Con_AddFavoriteSkin(IConsole::IResult *pResult, void *pUserData)
-{
-	auto *pSelf = (CMenus *)pUserData;
-	const char *pStr = pResult->GetString(0);
-	if(!CSkin::IsValidName(pStr))
-	{
-		log_error("menus/settings", "Favorite skin name '%s' is not valid", pStr);
-		log_error("menus/settings", "%s", CSkin::m_aSkinNameRestrictions);
-		return;
-	}
-	pSelf->m_SkinFavorites.emplace(pStr);
-	pSelf->m_SkinListLastRefreshTime = std::nullopt;
-}
-
-void CMenus::Con_RemFavoriteSkin(IConsole::IResult *pResult, void *pUserData)
-{
-	auto *pSelf = (CMenus *)pUserData;
-	const auto it = pSelf->m_SkinFavorites.find(pResult->GetString(0));
-	if(it != pSelf->m_SkinFavorites.end())
-	{
-		pSelf->m_SkinFavorites.erase(it);
-		pSelf->m_SkinListLastRefreshTime = std::nullopt;
-	}
-}
-
-void CMenus::ConfigSaveCallback(IConfigManager *pConfigManager, void *pUserData)
-{
-	auto *pSelf = (CMenus *)pUserData;
-	pSelf->OnConfigSave(pConfigManager);
-}
-
-void CMenus::OnConfigSave(IConfigManager *pConfigManager)
-{
-	for(const auto &Entry : m_SkinFavorites)
-	{
-		char aBuffer[256];
-		str_format(aBuffer, std::size(aBuffer), "add_favorite_skin \"%s\"", Entry.c_str());
-		pConfigManager->WriteLine(aBuffer);
-	}
-}
-
 void CMenus::RenderSettingsTee(CUIRect MainView)
 {
 	CUIRect TabBar, PlayerTab, DummyTab, ChangeInfo;
@@ -627,7 +571,7 @@ void CMenus::RenderSettingsTee(CUIRect MainView)
 	static const char *s_apDice[] = {FONT_ICON_DICE_ONE, FONT_ICON_DICE_TWO, FONT_ICON_DICE_THREE, FONT_ICON_DICE_FOUR, FONT_ICON_DICE_FIVE, FONT_ICON_DICE_SIX};
 	static int s_CurrentDie = rand() % std::size(s_apDice);
 	TextRender()->SetFontPreset(EFontPreset::ICON_FONT);
-	TextRender()->SetRenderFlags(ETextRenderFlags::TEXT_RENDER_FLAG_ONLY_ADVANCE_WIDTH | ETextRenderFlags::TEXT_RENDER_FLAG_NO_X_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_Y_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_PIXEL_ALIGMENT | ETextRenderFlags::TEXT_RENDER_FLAG_NO_OVERSIZE);
+	TextRender()->SetRenderFlags(ETextRenderFlags::TEXT_RENDER_FLAG_ONLY_ADVANCE_WIDTH | ETextRenderFlags::TEXT_RENDER_FLAG_NO_X_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_Y_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_PIXEL_ALIGNMENT | ETextRenderFlags::TEXT_RENDER_FLAG_NO_OVERSIZE);
 	if(DoButton_Menu(&s_RandomSkinButton, s_apDice[s_CurrentDie], 0, &RandomSkinButton, BUTTONFLAG_LEFT, nullptr, IGraphics::CORNER_ALL, 5.0f, -0.2f))
 	{
 		GameClient()->m_Skins.RandomizeSkin(m_Dummy);
@@ -714,60 +658,15 @@ void CMenus::RenderSettingsTee(CUIRect MainView)
 	DirectoryButton.VSplitRight(10.0f, &DirectoryButton, nullptr);
 
 	// Skin selector
-	static std::vector<CUISkin> s_vSkinList;
-	static std::vector<CUISkin> s_vSkinListHelper;
-	static std::vector<CUISkin> s_vFavoriteSkinListHelper;
 	static CListBox s_ListBox;
-
-	// be nice to the CPU
-	if(!m_SkinListLastRefreshTime.has_value() || m_SkinListLastRefreshTime.value() != m_pClient->m_Skins.LastRefreshTime())
-	{
-		m_SkinListLastRefreshTime = m_pClient->m_Skins.LastRefreshTime();
-		s_vSkinList.clear();
-		s_vSkinListHelper.clear();
-		s_vFavoriteSkinListHelper.clear();
-
-		auto &&SkinNotFiltered = [&](const CSkin *pSkinToBeSelected) {
-			// filter quick search
-			if(g_Config.m_ClSkinFilterString[0] != '\0' && !str_utf8_find_nocase(pSkinToBeSelected->GetName(), g_Config.m_ClSkinFilterString))
-				return false;
-
-			// no special skins
-			if(CSkins::IsSpecialSkin(pSkinToBeSelected->GetName()))
-				return false;
-
-			return true;
-		};
-
-		for(const auto &it : m_SkinFavorites)
-		{
-			const CSkin *pSkinToBeSelected = m_pClient->m_Skins.FindOrNullptr(it.c_str(), true);
-
-			if(pSkinToBeSelected == nullptr || !SkinNotFiltered(pSkinToBeSelected))
-				continue;
-
-			s_vFavoriteSkinListHelper.emplace_back(pSkinToBeSelected);
-		}
-		for(const auto &SkinIt : m_pClient->m_Skins.GetSkinsUnsafe())
-		{
-			const auto &pSkinToBeSelected = SkinIt.second;
-			if(!SkinNotFiltered(pSkinToBeSelected.get()))
-				continue;
-
-			if(std::find(m_SkinFavorites.begin(), m_SkinFavorites.end(), pSkinToBeSelected->GetName()) == m_SkinFavorites.end())
-				s_vSkinListHelper.emplace_back(pSkinToBeSelected.get());
-		}
-		std::sort(s_vSkinListHelper.begin(), s_vSkinListHelper.end());
-		std::sort(s_vFavoriteSkinListHelper.begin(), s_vFavoriteSkinListHelper.end());
-		s_vSkinList = s_vFavoriteSkinListHelper;
-		s_vSkinList.insert(s_vSkinList.end(), s_vSkinListHelper.begin(), s_vSkinListHelper.end());
-	}
+	const std::vector<CSkins::CSkinListEntry> &vSkinList = GameClient()->m_Skins.SkinList();
 
 	int OldSelected = -1;
-	s_ListBox.DoStart(50.0f, s_vSkinList.size(), 4, 1, OldSelected, &MainView);
-	for(size_t i = 0; i < s_vSkinList.size(); ++i)
+	s_ListBox.DoStart(50.0f, vSkinList.size(), 4, 1, OldSelected, &MainView);
+	for(size_t i = 0; i < vSkinList.size(); ++i)
 	{
-		const CSkin *pSkinToBeDraw = s_vSkinList[i].m_pSkin;
+		const CSkins::CSkinListEntry &SkinListEntry = vSkinList[i];
+		const CSkin *pSkinToBeDraw = SkinListEntry.m_pSkin;
 		if(str_comp(pSkinToBeDraw->GetName(), pSkinName) == 0)
 		{
 			OldSelected = i;
@@ -778,7 +677,7 @@ void CMenus::RenderSettingsTee(CUIRect MainView)
 			}
 		}
 
-		const CListboxItem Item = s_ListBox.DoNextItem(pSkinToBeDraw, OldSelected >= 0 && (size_t)OldSelected == i);
+		const CListboxItem Item = s_ListBox.DoNextItem(SkinListEntry.ListItemId(), OldSelected >= 0 && (size_t)OldSelected == i);
 		if(!Item.m_Visible)
 			continue;
 
@@ -798,10 +697,9 @@ void CMenus::RenderSettingsTee(CUIRect MainView)
 
 		if(g_Config.m_Debug)
 		{
-			const ColorRGBA BloodColor = *pUseCustomColor ? color_cast<ColorRGBA>(ColorHSLA(*pColorBody).UnclampLighting(ColorHSLA::DARKEST_LGT)) : pSkinToBeDraw->m_BloodColor;
 			Graphics()->TextureClear();
 			Graphics()->QuadsBegin();
-			Graphics()->SetColor(BloodColor.r, BloodColor.g, BloodColor.b, 1.0f);
+			Graphics()->SetColor(*pUseCustomColor ? color_cast<ColorRGBA>(ColorHSLA(*pColorBody).UnclampLighting(ColorHSLA::DARKEST_LGT)) : pSkinToBeDraw->m_BloodColor);
 			IGraphics::CQuadItem QuadItem(Label.x, Label.y, 12.0f, 12.0f);
 			Graphics()->QuadsDrawTL(&QuadItem, 1);
 			Graphics()->QuadsEnd();
@@ -809,22 +707,19 @@ void CMenus::RenderSettingsTee(CUIRect MainView)
 
 		// render skin favorite icon
 		{
-			const auto SkinItFav = m_SkinFavorites.find(pSkinToBeDraw->GetName());
-			const bool IsFav = SkinItFav != m_SkinFavorites.end();
 			CUIRect FavIcon;
 			Item.m_Rect.HSplitTop(20.0f, &FavIcon, nullptr);
 			FavIcon.VSplitRight(20.0f, nullptr, &FavIcon);
-			if(DoButton_Favorite(&pSkinToBeDraw->m_Metrics.m_Body, pSkinToBeDraw, IsFav, &FavIcon))
+			if(DoButton_Favorite(SkinListEntry.FavoriteButtonId(), SkinListEntry.ListItemId(), SkinListEntry.m_Favorite, &FavIcon))
 			{
-				if(IsFav)
+				if(SkinListEntry.m_Favorite)
 				{
-					m_SkinFavorites.erase(SkinItFav);
+					GameClient()->m_Skins.RemoveFavorite(pSkinToBeDraw->GetName());
 				}
 				else
 				{
-					m_SkinFavorites.emplace(pSkinToBeDraw->GetName());
+					GameClient()->m_Skins.AddFavorite(pSkinToBeDraw->GetName());
 				}
-				m_SkinListLastRefreshTime = std::nullopt;
 			}
 		}
 	}
@@ -832,14 +727,14 @@ void CMenus::RenderSettingsTee(CUIRect MainView)
 	const int NewSelected = s_ListBox.DoEnd();
 	if(OldSelected != NewSelected)
 	{
-		str_copy(pSkinName, s_vSkinList[NewSelected].m_pSkin->GetName(), SkinNameSize);
+		str_copy(pSkinName, vSkinList[NewSelected].m_pSkin->GetName(), SkinNameSize);
 		SetNeedSendInfo();
 	}
 
 	static CLineInput s_SkinFilterInput(g_Config.m_ClSkinFilterString, sizeof(g_Config.m_ClSkinFilterString));
 	if(Ui()->DoEditBox_Search(&s_SkinFilterInput, &QuickSearch, 14.0f, !Ui()->IsPopupOpen() && !m_pClient->m_GameConsole.IsActive()))
 	{
-		m_SkinListLastRefreshTime = std::nullopt;
+		GameClient()->m_Skins.ForceRefreshSkinList();
 	}
 
 	static CButtonContainer s_SkinDatabaseButton;
@@ -858,17 +753,16 @@ void CMenus::RenderSettingsTee(CUIRect MainView)
 	GameClient()->m_Tooltips.DoToolTip(&s_DirectoryButton, &DirectoryButton, Localize("Open the directory to add custom skins"));
 
 	TextRender()->SetFontPreset(EFontPreset::ICON_FONT);
-	TextRender()->SetRenderFlags(ETextRenderFlags::TEXT_RENDER_FLAG_ONLY_ADVANCE_WIDTH | ETextRenderFlags::TEXT_RENDER_FLAG_NO_X_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_Y_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_PIXEL_ALIGMENT | ETextRenderFlags::TEXT_RENDER_FLAG_NO_OVERSIZE);
+	TextRender()->SetRenderFlags(ETextRenderFlags::TEXT_RENDER_FLAG_ONLY_ADVANCE_WIDTH | ETextRenderFlags::TEXT_RENDER_FLAG_NO_X_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_Y_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_PIXEL_ALIGNMENT | ETextRenderFlags::TEXT_RENDER_FLAG_NO_OVERSIZE);
 	static CButtonContainer s_SkinRefreshButton;
-	if(DoButton_Menu(&s_SkinRefreshButton, FONT_ICON_ARROW_ROTATE_RIGHT, 0, &RefreshButton) || Input()->KeyPress(KEY_F5) || (Input()->KeyPress(KEY_R) && Input()->ModifierIsPressed()))
-	{
-		// reset render flags for possible loading screen
-		TextRender()->SetRenderFlags(0);
-		TextRender()->SetFontPreset(EFontPreset::DEFAULT_FONT);
-		m_pClient->RefreshSkins(CSkinDescriptor::FLAG_SIX);
-	}
+	const bool ShouldRefresh = DoButton_Menu(&s_SkinRefreshButton, FONT_ICON_ARROW_ROTATE_RIGHT, 0, &RefreshButton) || Input()->KeyPress(KEY_F5) || (Input()->KeyPress(KEY_R) && Input()->ModifierIsPressed());
 	TextRender()->SetRenderFlags(0);
 	TextRender()->SetFontPreset(EFontPreset::DEFAULT_FONT);
+
+	if(ShouldRefresh)
+	{
+		m_pClient->RefreshSkins(CSkinDescriptor::FLAG_SIX);
+	}
 }
 
 typedef struct
@@ -1380,7 +1274,6 @@ void CMenus::RenderSettingsGraphics(CUIRect MainView)
 	static int s_GfxFsaaSamples = g_Config.m_GfxFsaaSamples;
 	static bool s_GfxBackendChanged = false;
 	static bool s_GfxGpuChanged = false;
-	static int s_GfxHighdpi = g_Config.m_GfxHighdpi;
 
 	static int s_InitDisplayAllVideoModes = g_Config.m_GfxDisplayAllVideoModes;
 
@@ -1438,8 +1331,8 @@ void CMenus::RenderSettingsGraphics(CUIRect MainView)
 		if(!Item.m_Visible)
 			continue;
 
-		int G = std::gcd(s_aModes[i].m_CanvasWidth, s_aModes[i].m_CanvasHeight);
-		str_format(aBuf, sizeof(aBuf), " %dx%d @%dhz %d bit (%d:%d)", s_aModes[i].m_CanvasWidth, s_aModes[i].m_CanvasHeight, s_aModes[i].m_RefreshRate, Depth, s_aModes[i].m_CanvasWidth / G, s_aModes[i].m_CanvasHeight / G);
+		int G = std::gcd(s_aModes[i].m_WindowWidth, s_aModes[i].m_WindowHeight);
+		str_format(aBuf, sizeof(aBuf), " %dx%d @%dhz %d bit (%d:%d)", s_aModes[i].m_CanvasWidth, s_aModes[i].m_CanvasHeight, s_aModes[i].m_RefreshRate, Depth, s_aModes[i].m_WindowWidth / G, s_aModes[i].m_WindowHeight / G);
 		Ui()->DoLabel(&Item.m_Rect, aBuf, sc_FontSizeResList, TEXTALIGN_ML);
 	}
 
@@ -1565,13 +1458,6 @@ void CMenus::RenderSettingsGraphics(CUIRect MainView)
 	if(DoButton_CheckBox(&g_Config.m_ClShowfps, Localize("Show FPS"), g_Config.m_ClShowfps, &Button))
 		g_Config.m_ClShowfps ^= 1;
 	GameClient()->m_Tooltips.DoToolTip(&g_Config.m_ClShowfps, &Button, Localize("Renders your frame rate in the top right"));
-
-	MainView.HSplitTop(20.0f, &Button, &MainView);
-	if(DoButton_CheckBox(&g_Config.m_GfxHighdpi, Localize("Use high DPI"), g_Config.m_GfxHighdpi, &Button))
-	{
-		CheckSettings = true;
-		g_Config.m_GfxHighdpi ^= 1;
-	}
 
 	MainView.HSplitTop(20.0f, &Button, &MainView);
 	str_copy(aBuf, " ");
@@ -1763,8 +1649,7 @@ void CMenus::RenderSettingsGraphics(CUIRect MainView)
 	{
 		m_NeedRestartGraphics = !(s_GfxFsaaSamples == g_Config.m_GfxFsaaSamples &&
 					  !s_GfxBackendChanged &&
-					  !s_GfxGpuChanged &&
-					  s_GfxHighdpi == g_Config.m_GfxHighdpi);
+					  !s_GfxGpuChanged);
 	}
 }
 
@@ -2346,7 +2231,7 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 	char aBuf[128];
 	static int s_CurTab = 0;
 
-	CUIRect TabBar, LeftView, RightView, Button, Label;
+	CUIRect TabBar, LeftView, RightView, Button;
 
 	MainView.HSplitTop(20.0f, &TabBar, &MainView);
 	const float TabWidth = TabBar.w / NUMBER_OF_APPEARANCE_TABS;
@@ -2386,8 +2271,8 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 		MainView.VSplitMid(&LeftView, &RightView, MarginBetweenViews);
 
 		// ***** HUD ***** //
-		LeftView.HSplitTop(HeadlineHeight, &Label, &LeftView);
-		Ui()->DoLabel(&Label, Localize("HUD"), HeadlineFontSize, TEXTALIGN_ML);
+		Ui()->DoLabel_AutoLineSize(Localize("HUD"), HeadlineFontSize,
+			TEXTALIGN_ML, &LeftView, HeadlineHeight);
 		LeftView.HSplitTop(MarginSmall, nullptr, &LeftView);
 
 		// Switch of the entire HUD
@@ -2404,8 +2289,8 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 
 		// ***** Scoreboard ***** //
 		LeftView.HSplitTop(MarginBetweenViews, nullptr, &LeftView);
-		LeftView.HSplitTop(HeadlineHeight, &Label, &LeftView);
-		Ui()->DoLabel(&Label, Localize("Scoreboard"), HeadlineFontSize, TEXTALIGN_ML);
+		Ui()->DoLabel_AutoLineSize(Localize("Scoreboard"), HeadlineFontSize,
+			TEXTALIGN_ML, &LeftView, HeadlineHeight);
 		LeftView.HSplitTop(MarginSmall, nullptr, &LeftView);
 
 		ColorRGBA GreenDefault(0.78f, 1.0f, 0.8f, 1.0f);
@@ -2414,8 +2299,8 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 		DoLine_ColorPicker(&s_SameClanColor, ColorPickerLineSize, ColorPickerLabelSize, ColorPickerLineSpacing, &LeftView, Localize("Same clan color in scoreboard"), &g_Config.m_ClSameClanColor, GreenDefault, false);
 
 		// ***** DDRace HUD ***** //
-		RightView.HSplitTop(HeadlineHeight, &Label, &RightView);
-		Ui()->DoLabel(&Label, Localize("DDRace HUD"), HeadlineFontSize, TEXTALIGN_ML);
+		Ui()->DoLabel_AutoLineSize(Localize("DDRace HUD"), HeadlineFontSize,
+			TEXTALIGN_ML, &RightView, HeadlineHeight);
 		RightView.HSplitTop(MarginSmall, nullptr, &RightView);
 
 		// Switches of various DDRace HUD elements
@@ -2458,8 +2343,8 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 		TopView.VSplitMid(&LeftView, &RightView, MarginBetweenViews);
 
 		// ***** Chat ***** //
-		LeftView.HSplitTop(HeadlineHeight, &Label, &LeftView);
-		Ui()->DoLabel(&Label, Localize("Chat"), HeadlineFontSize, TEXTALIGN_ML);
+		Ui()->DoLabel_AutoLineSize(Localize("Chat"), HeadlineFontSize,
+			TEXTALIGN_ML, &LeftView, HeadlineHeight);
 		LeftView.HSplitTop(MarginSmall, nullptr, &LeftView);
 
 		// General chat settings
@@ -2498,8 +2383,8 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 		}
 
 		// ***** Messages ***** //
-		RightView.HSplitTop(HeadlineHeight, &Label, &RightView);
-		Ui()->DoLabel(&Label, Localize("Messages"), HeadlineFontSize, TEXTALIGN_ML);
+		Ui()->DoLabel_AutoLineSize(Localize("Messages"), HeadlineFontSize,
+			TEXTALIGN_ML, &RightView, HeadlineHeight);
 		RightView.HSplitTop(MarginSmall, nullptr, &RightView);
 
 		// Message Colors and extra settings
@@ -2519,8 +2404,8 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 		DoLine_ColorPicker(&s_ClientMessageColor, ColorPickerLineSize, ColorPickerLabelSize, ColorPickerLineSpacing, &RightView, aBuf, &g_Config.m_ClMessageClientColor, ColorRGBA(0.5f, 0.78f, 1.0f));
 
 		// ***** Chat Preview ***** //
-		PreviewView.HSplitTop(HeadlineHeight, &Label, &PreviewView);
-		Ui()->DoLabel(&Label, Localize("Preview"), HeadlineFontSize, TEXTALIGN_ML);
+		Ui()->DoLabel_AutoLineSize(Localize("Preview"), HeadlineFontSize,
+			TEXTALIGN_ML, &PreviewView, HeadlineHeight);
 		PreviewView.HSplitTop(MarginSmall, nullptr, &PreviewView);
 
 		// Use the rest of the view for preview
@@ -2807,8 +2692,8 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 		MainView.VSplitMid(&LeftView, &RightView, MarginBetweenViews);
 
 		// ***** Name Plate ***** //
-		LeftView.HSplitTop(HeadlineHeight, &Label, &LeftView);
-		Ui()->DoLabel(&Label, Localize("Name Plate"), HeadlineFontSize, TEXTALIGN_ML);
+		Ui()->DoLabel_AutoLineSize(Localize("Name Plate"), HeadlineFontSize,
+			TEXTALIGN_ML, &LeftView, HeadlineHeight);
 		LeftView.HSplitTop(MarginSmall, nullptr, &LeftView);
 
 		// General name plate settings
@@ -2848,8 +2733,8 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 
 		// ***** Hook Strength ***** //
 		LeftView.HSplitTop(MarginBetweenViews, nullptr, &LeftView);
-		LeftView.HSplitTop(HeadlineHeight, &Label, &LeftView);
-		Ui()->DoLabel(&Label, Localize("Hook Strength"), HeadlineFontSize, TEXTALIGN_ML);
+		Ui()->DoLabel_AutoLineSize(Localize("Hook Strength"), HeadlineFontSize,
+			TEXTALIGN_ML, &LeftView, HeadlineHeight);
 		LeftView.HSplitTop(MarginSmall, nullptr, &LeftView);
 
 		LeftView.HSplitTop(LineSize, &Button, &LeftView);
@@ -2873,8 +2758,8 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 
 		// ***** Key Presses ***** //
 		LeftView.HSplitTop(MarginBetweenViews, nullptr, &LeftView);
-		LeftView.HSplitTop(HeadlineHeight, &Label, &LeftView);
-		Ui()->DoLabel(&Label, Localize("Key Presses"), HeadlineFontSize, TEXTALIGN_ML);
+		Ui()->DoLabel_AutoLineSize(Localize("Key Presses"), HeadlineFontSize,
+			TEXTALIGN_ML, &LeftView, HeadlineHeight);
 		LeftView.HSplitTop(MarginSmall, nullptr, &LeftView);
 
 		DoLine_RadioMenu(LeftView, Localize("Show players' key presses"),
@@ -2888,8 +2773,8 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 			Ui()->DoScrollbarOption(&g_Config.m_ClDirectionSize, &g_Config.m_ClDirectionSize, &Button, Localize("Size of key press icons"), -50, 100);
 
 		// ***** Name Plate Preview ***** //
-		RightView.HSplitTop(HeadlineHeight, &Label, &RightView);
-		Ui()->DoLabel(&Label, Localize("Preview"), HeadlineFontSize, TEXTALIGN_ML);
+		Ui()->DoLabel_AutoLineSize(Localize("Preview"), HeadlineFontSize,
+			TEXTALIGN_ML, &RightView, HeadlineHeight);
 		RightView.HSplitTop(2.0f * MarginSmall, nullptr, &RightView);
 
 		// ***** Name Plate Dummy Preview ***** //
@@ -2908,8 +2793,8 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 		MainView.VSplitMid(&LeftView, &RightView, MarginBetweenViews);
 
 		// ***** Hookline ***** //
-		LeftView.HSplitTop(HeadlineHeight, &Label, &LeftView);
-		Ui()->DoLabel(&Label, Localize("Hook collision line"), HeadlineFontSize, TEXTALIGN_ML);
+		Ui()->DoLabel_AutoLineSize(Localize("Hook collision line"), HeadlineFontSize,
+			TEXTALIGN_ML, &LeftView, HeadlineHeight);
 		LeftView.HSplitTop(MarginSmall, nullptr, &LeftView);
 
 		// General hookline settings
@@ -2951,18 +2836,18 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 		static CButtonContainer s_HookCollNoCollResetId, s_HookCollHookableCollResetId, s_HookCollTeeCollResetId;
 		static int s_HookCollToolTip;
 
-		LeftView.HSplitTop(LineSize, &Label, &LeftView);
-		LeftView.HSplitTop(MarginSmall, nullptr, &LeftView);
-		Ui()->DoLabel(&Label, Localize("Colors of the hook collision line, in case of a possible collision with:"), 13.0f, TEXTALIGN_ML);
-		Ui()->DoButtonLogic(&s_HookCollToolTip, 0, &Label, BUTTONFLAG_NONE); // Just for the tooltip, result ignored
-		GameClient()->m_Tooltips.DoToolTip(&s_HookCollToolTip, &Label, Localize("Your movements are not taken into account when calculating the line colors"));
+		Ui()->DoLabel_AutoLineSize(Localize("Colors of the hook collision line, in case of a possible collision with:"), 13.0f,
+			TEXTALIGN_ML, &LeftView, HeadlineHeight);
+
+		Ui()->DoButtonLogic(&s_HookCollToolTip, 0, &LeftView, BUTTONFLAG_NONE); // Just for the tooltip, result ignored
+		GameClient()->m_Tooltips.DoToolTip(&s_HookCollToolTip, &LeftView, Localize("Your movements are not taken into account when calculating the line colors"));
 		DoLine_ColorPicker(&s_HookCollNoCollResetId, ColorPickerLineSize, ColorPickerLabelSize, ColorPickerLineSpacing, &LeftView, Localize("Nothing hookable"), &g_Config.m_ClHookCollColorNoColl, ColorRGBA(1.0f, 0.0f, 0.0f, 1.0f), false);
 		DoLine_ColorPicker(&s_HookCollHookableCollResetId, ColorPickerLineSize, ColorPickerLabelSize, ColorPickerLineSpacing, &LeftView, Localize("Something hookable"), &g_Config.m_ClHookCollColorHookableColl, ColorRGBA(130.0f / 255.0f, 232.0f / 255.0f, 160.0f / 255.0f, 1.0f), false);
 		DoLine_ColorPicker(&s_HookCollTeeCollResetId, ColorPickerLineSize, ColorPickerLabelSize, ColorPickerLineSpacing, &LeftView, Localize("A Tee"), &g_Config.m_ClHookCollColorTeeColl, ColorRGBA(1.0f, 1.0f, 0.0f, 1.0f), false);
 
 		// ***** Hook collisions preview ***** //
-		RightView.HSplitTop(HeadlineHeight, &Label, &RightView);
-		Ui()->DoLabel(&Label, Localize("Preview"), HeadlineFontSize, TEXTALIGN_ML);
+		Ui()->DoLabel_AutoLineSize(Localize("Preview"), HeadlineFontSize,
+			TEXTALIGN_ML, &RightView, HeadlineHeight);
 		RightView.HSplitTop(2 * MarginSmall, nullptr, &RightView);
 
 		auto DoHookCollision = [this](const vec2 &Pos, const float &Length, const int &Size, const ColorRGBA &Color, const bool &Invert) {
@@ -3079,8 +2964,8 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 		MainView.VSplitMid(&LeftView, &RightView, MarginBetweenViews);
 
 		// ***** Info Messages ***** //
-		LeftView.HSplitTop(HeadlineHeight, &Label, &LeftView);
-		Ui()->DoLabel(&Label, Localize("Info Messages"), HeadlineFontSize, TEXTALIGN_ML);
+		Ui()->DoLabel_AutoLineSize(Localize("Info Messages"), HeadlineFontSize,
+			TEXTALIGN_ML, &LeftView, HeadlineHeight);
 		LeftView.HSplitTop(MarginSmall, nullptr, &LeftView);
 
 		// General info messages settings
@@ -3105,8 +2990,8 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 		MainView.VSplitMid(&LeftView, &RightView, MarginBetweenViews);
 
 		// ***** Weapons ***** //
-		LeftView.HSplitTop(HeadlineHeight, &Label, &LeftView);
-		Ui()->DoLabel(&Label, Localize("Weapons"), HeadlineFontSize, TEXTALIGN_ML);
+		Ui()->DoLabel_AutoLineSize(Localize("Weapons"), HeadlineFontSize,
+			TEXTALIGN_ML, &LeftView, HeadlineHeight);
 		LeftView.HSplitTop(MarginSmall, nullptr, &LeftView);
 
 		// General weapon laser settings
@@ -3119,8 +3004,8 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 
 		// ***** Entities ***** //
 		LeftView.HSplitTop(10.0f, nullptr, &LeftView);
-		LeftView.HSplitTop(HeadlineHeight, &Label, &LeftView);
-		Ui()->DoLabel(&Label, Localize("Entities"), HeadlineFontSize, TEXTALIGN_ML);
+		Ui()->DoLabel_AutoLineSize(Localize("Entities"), HeadlineFontSize,
+			TEXTALIGN_ML, &LeftView, HeadlineHeight);
 		LeftView.HSplitTop(MarginSmall, nullptr, &LeftView);
 
 		// General entity laser settings
@@ -3161,8 +3046,8 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 		}
 
 		// ***** Laser Preview ***** //
-		RightView.HSplitTop(HeadlineHeight, &Label, &RightView);
-		Ui()->DoLabel(&Label, Localize("Preview"), HeadlineFontSize, TEXTALIGN_ML);
+		Ui()->DoLabel_AutoLineSize(Localize("Preview"), HeadlineFontSize,
+			TEXTALIGN_ML, &RightView, HeadlineHeight);
 		RightView.HSplitTop(MarginSmall, nullptr, &RightView);
 
 		const float LaserPreviewHeight = 50.0f;
