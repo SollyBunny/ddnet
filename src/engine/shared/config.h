@@ -9,10 +9,11 @@
 #include <engine/console.h>
 #include <engine/shared/memheap.h>
 
-#include <vector>
-
-// include protocol for MAX_CLIENT used in config_variables
+// For constants used in variables
 #include <engine/shared/protocol.h>
+#include <game/teamscore.h>
+
+#include <vector>
 
 #define AUTOEXEC_FILE "autoexec.cfg"
 #define AUTOEXEC_CLIENT_FILE "autoexec_client.cfg"
@@ -218,7 +219,7 @@ class CConfigManager : public IConfigManager
 
 	std::vector<SConfigVariable *> m_vpAllVariables;
 	std::vector<SConfigVariable *> m_vpGameVariables;
-	std::vector<const char *> m_vpUnknownCommands;
+	std::vector<const char *> m_vpUnknownCommands; // TODO: per config domain
 	CHeap m_ConfigHeap;
 
 	static void Con_Reset(IConsole::IResult *pResult, void *pUserData);
@@ -236,9 +237,9 @@ public:
 
 	CConfig *Values() override { return &g_Config; }
 
-	void RegisterCallback(CONFIGDOMAIN ConfigDomain, SAVECALLBACKFUNC pfnFunc, void *pUserData) override;
+	void RegisterCallback(SAVECALLBACKFUNC pfnFunc, void *pUserData, CONFIGDOMAIN ConfigDomain = CONFIGDOMAIN::DDNET) override;
 
-	void WriteLine(CONFIGDOMAIN ConfigDomain, const char *pLine) override;
+	void WriteLine(const char *pLine, CONFIGDOMAIN ConfigDomain = CONFIGDOMAIN::DDNET) override;
 
 	void StoreUnknownCommand(const char *pCommand) override;
 

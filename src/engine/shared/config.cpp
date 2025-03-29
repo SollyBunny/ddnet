@@ -9,8 +9,6 @@
 #include <engine/shared/protocol.h>
 #include <engine/storage.h>
 
-#include <game/server/instagib/enums.h> // ddnet-insta
-
 CConfig g_Config;
 
 // ----------------------- Config Variables
@@ -410,7 +408,7 @@ bool CConfigManager::Save()
 			if(pVariable->m_ConfigDomain == ConfigDomain && (pVariable->m_Flags & CFGFLAG_SAVE) != 0 && !pVariable->IsDefault())
 			{
 				pVariable->Serialize(aLineBuf, sizeof(aLineBuf));
-				WriteLine(ConfigDomain, aLineBuf);
+				WriteLine(aLineBuf, ConfigDomain);
 			}
 		}
 	}
@@ -427,7 +425,7 @@ bool CConfigManager::Save()
 
 	if(!m_aFailed[CONFIGDOMAIN::DDNET] && m_aConfigFile[CONFIGDOMAIN::DDNET])
 		for(const char *pCommand : m_vpUnknownCommands)
-			WriteLine(CONFIGDOMAIN::DDNET, pCommand);
+			WriteLine(pCommand);
 
 	for(CONFIGDOMAIN ConfigDomain = CONFIGDOMAIN::START; ConfigDomain < CONFIGDOMAIN::NUM; ++ConfigDomain)
 	{
@@ -471,12 +469,12 @@ bool CConfigManager::Save()
 	return true;
 }
 
-void CConfigManager::RegisterCallback(CONFIGDOMAIN ConfigDomain, SAVECALLBACKFUNC pfnFunc, void *pUserData)
+void CConfigManager::RegisterCallback(SAVECALLBACKFUNC pfnFunc, void *pUserData, CONFIGDOMAIN ConfigDomain)
 {
 	m_avCallbacks[ConfigDomain].emplace_back(pfnFunc, pUserData);
 }
 
-void CConfigManager::WriteLine(CONFIGDOMAIN ConfigDomain, const char *pLine)
+void CConfigManager::WriteLine(const char *pLine, CONFIGDOMAIN ConfigDomain)
 {
 	if(!m_aConfigFile[ConfigDomain] ||
 		io_write(m_aConfigFile[ConfigDomain], pLine, str_length(pLine)) != static_cast<unsigned>(str_length(pLine)) ||

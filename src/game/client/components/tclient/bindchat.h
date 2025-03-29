@@ -1,6 +1,9 @@
 #ifndef GAME_CLIENT_COMPONENTS_TCLIENT_BINDCHAT_H
 #define GAME_CLIENT_COMPONENTS_TCLIENT_BINDCHAT_H
+
 #include <game/client/component.h>
+
+#include <engine/console.h>
 
 class IConfigManager;
 
@@ -38,9 +41,8 @@ public:
 	std::vector<CBind> m_vBinds;
 
 	CBindchat();
-	virtual int Sizeof() const override { return sizeof(*this); }
-
-	virtual void OnConsoleInit() override;
+	int Sizeof() const override { return sizeof(*this); }
+	void OnConsoleInit() override;
 
 	void AddBind(const char *pName, const char *pCommand);
 

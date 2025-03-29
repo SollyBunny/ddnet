@@ -318,7 +318,7 @@ const CSkin *CSkins::LoadSkin(const char *pName, CImageInfo &Info)
 
 void CSkins::OnConsoleInit()
 {
-	ConfigManager()->RegisterCallback(CONFIGDOMAIN::DDNET, CSkins::ConfigSaveCallback, this);
+	ConfigManager()->RegisterCallback(CSkins::ConfigSaveCallback, this);
 	Console()->Register("add_favorite_skin", "s[skin_name]", CFGFLAG_CLIENT, ConAddFavoriteSkin, this, "Add a skin as a favorite");
 	Console()->Register("remove_favorite_skin", "s[skin_name]", CFGFLAG_CLIENT, ConRemFavoriteSkin, this, "Remove a skin from the favorites");
 }
@@ -754,6 +754,6 @@ void CSkins::OnConfigSave(IConfigManager *pConfigManager)
 	{
 		char aBuffer[32 + MAX_SKIN_LENGTH];
 		str_format(aBuffer, sizeof(aBuffer), "add_favorite_skin \"%s\"", Favorite.c_str());
-		pConfigManager->WriteLine(CONFIGDOMAIN::DDNET, aBuffer);
+		pConfigManager->WriteLine(aBuffer);
 	}
 }

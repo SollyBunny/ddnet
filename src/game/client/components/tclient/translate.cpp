@@ -374,7 +374,7 @@ void CTranslate::Translate(CChat::CLine &Line, bool ShowProgress)
 
 	if(str_comp_nocase(g_Config.m_ClTranslateBackend, "libretranslate") == 0)
 		Job.m_pBackend = new CTranslateBackendLibretranslate(*Http(), Job.m_pLine->m_aText);
-	if(str_comp_nocase(g_Config.m_ClTranslateBackend, "ftapi") == 0)
+	else if(str_comp_nocase(g_Config.m_ClTranslateBackend, "ftapi") == 0)
 		Job.m_pBackend = new CTranslateBackendFtapi(*Http(), Job.m_pLine->m_aText);
 	else
 	{
@@ -393,7 +393,7 @@ void CTranslate::Translate(CChat::CLine &Line, bool ShowProgress)
 		Job.m_pLine->m_aTextTranslated[0] = '\0';
 	}
 
-	m_vJobs.emplace_back(std::move(Job));
+	m_vJobs.emplace_back(Job);
 }
 
 void CTranslate::OnRender()
@@ -408,14 +408,17 @@ void CTranslate::OnRender()
 			return false; // Keep ongoing tasks
 		if(*Done)
 		{
-			// Check for no translation difference
-			if(str_comp_nocase(Job.m_pLine->m_aText, aBuf) == 0)
+			if(str_comp_nocase(g_Config.m_ClTranslateTarget, aBuf + strlen(aBuf) + 1) == 0) // Check for no language difference
+				Job.m_pLine->m_aTextTranslated[0] = '\0';
+			else if(str_comp_nocase(Job.m_pLine->m_aText, aBuf) == 0) // Check for no translation difference
 				Job.m_pLine->m_aTextTranslated[0] = '\0';
 			else
 				str_format(Job.m_pLine->m_aTextTranslated, sizeof(Job.m_pLine->m_aTextTranslated), "%s [%s]", aBuf, aBuf + strlen(aBuf) + 1);
 		}
 		else
+		{
 			str_format(Job.m_pLine->m_aTextTranslated, sizeof(Job.m_pLine->m_aTextTranslated), "[%s to %s failed: %s]", Job.m_pBackend->Name(), g_Config.m_ClTranslateTarget, aBuf);
+		}
 		Job.m_pLine->m_Time = Time;
 		GameClient->m_Chat.RebuildChat();
 		return true;

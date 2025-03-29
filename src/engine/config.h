@@ -3,21 +3,20 @@
 #ifndef ENGINE_CONFIG_H
 #define ENGINE_CONFIG_H
 
-#include <game/teamscore.h>
-
 #include "kernel.h"
 
 #define CONFIG_DOMAIN(Name, ConfigPath, HasVars) Name,
-enum CONFIGDOMAIN
+enum CONFIGDOMAIN // NOLINT(readability-enum-initial-value)
 {
 #include "shared/config_domains.h"
 	NUM,
 	START = 0
 };
 #undef CONFIG_DOMAIN
-static inline CONFIGDOMAIN &operator++(CONFIGDOMAIN &domain)
+
+static inline CONFIGDOMAIN &operator++(CONFIGDOMAIN &Domain)
 {
-	return domain = static_cast<CONFIGDOMAIN>(static_cast<int>(domain) + 1);
+	return Domain = static_cast<CONFIGDOMAIN>(static_cast<int>(Domain) + 1);
 }
 
 class CConfigDomain
@@ -46,9 +45,9 @@ public:
 	virtual bool Save() = 0;
 	virtual class CConfig *Values() = 0;
 
-	virtual void RegisterCallback(CONFIGDOMAIN ConfigDomain, SAVECALLBACKFUNC pfnFunc, void *pUserData) = 0;
+	virtual void RegisterCallback(SAVECALLBACKFUNC pfnFunc, void *pUserData, CONFIGDOMAIN ConfigDomain = CONFIGDOMAIN::DDNET) = 0;
 
-	virtual void WriteLine(CONFIGDOMAIN ConfigDomain, const char *pLine) = 0;
+	virtual void WriteLine(const char *pLine, CONFIGDOMAIN ConfigDomain = CONFIGDOMAIN::DDNET) = 0;
 
 	virtual void StoreUnknownCommand(const char *pCommand) = 0;
 

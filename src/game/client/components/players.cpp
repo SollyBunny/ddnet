@@ -703,7 +703,7 @@ void CPlayers::RenderPlayer(
 				{
 				case 0:
 				{
-					// Static position for hammer
+					// static position for hammer
 					WeaponPosition = Position + vec2(State.GetAttach()->m_X, State.GetAttach()->m_Y);
 					WeaponPosition.y += g_pData->m_Weapons.m_aId[CurrentWeapon].m_Offsety;
 					if(Direction.x < 0)

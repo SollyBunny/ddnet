@@ -11,54 +11,42 @@ enum
 class CStatusItem
 {
 public:
-	std::function<void()> RenderItem;
-	std::function<float()> GetWidth;
+	std::function<void()> m_RenderItem;
+	std::function<float()> m_GetWidth;
 	char m_aName[32];
 	char m_aDisplayName[32];
 	char m_aDesc[128];
 	char m_aLetters[STATUSBAR_TYPE_LETTERS] = {};
 	bool m_ShowLabel = true;
-	CStatusItem(std::function<void()> Render, std::function<float()> Width, const char *pLetters, const char *pName, const char *pDisplayName, const char *pDesc, bool ShowLabel = true)
-	{
-		RenderItem = Render;
-		GetWidth = Width;
-		str_copy(m_aLetters, pLetters);
-		str_copy(m_aName, pName);
-		if(str_comp(pDisplayName, "") != 0)
-			str_copy(m_aDisplayName, pDisplayName);
-		else
-			str_copy(m_aDisplayName, pName);
-		str_copy(m_aDesc, pDesc);
-		m_ShowLabel = ShowLabel;
-	}
+	CStatusItem(std::function<void()> Render, std::function<float()> Width, const char *pLetters, const char *pName, const char *pDisplayName, const char *pDesc, bool ShowLabel = true);
 };
 
 class CStatusBar : public CComponent
 {
 public:
-	virtual int Sizeof() const override { return sizeof(*this); }
-	virtual void OnRender() override;
-	virtual void OnInit() override;
+	int Sizeof() const override { return sizeof(*this); }
+	void OnRender() override;
+	void OnInit() override;
 
-	CStatusItem m_Angle = CStatusItem(std::bind(&CStatusBar::AngleRender, this), std::bind(&CStatusBar::AngleWidth, this),
+	CStatusItem m_Angle = CStatusItem([this] { AngleRender(); }, std::bind(&CStatusBar::AngleWidth, this),
 		"a", "Angle", "", "Displays your current angle in degrees");
-	CStatusItem m_Ping = CStatusItem(std::bind(&CStatusBar::PingRender, this), std::bind(&CStatusBar::PingWidth, this),
+	CStatusItem m_Ping = CStatusItem([this] { PingRender(); }, std::bind(&CStatusBar::PingWidth, this),
 		"p", "Ping", "", "Displays your ping to the current server");
-	CStatusItem m_Prediction = CStatusItem(std::bind(&CStatusBar::PredictionRender, this), std::bind(&CStatusBar::PredictionWidth, this),
+	CStatusItem m_Prediction = CStatusItem([this] { PredictionRender(); }, std::bind(&CStatusBar::PredictionWidth, this),
 		"d", "Prediction", "Pred", "Displays your current prediction amount");
-	CStatusItem m_Position = CStatusItem(std::bind(&CStatusBar::PositionRender, this), std::bind(&CStatusBar::PositionWidth, this),
+	CStatusItem m_Position = CStatusItem([this] { PositionRender(); }, std::bind(&CStatusBar::PositionWidth, this),
 		"c", "Position", "Pos", "Displays position");
-	CStatusItem m_LocalTime = CStatusItem(std::bind(&CStatusBar::LocalTimeRender, this), std::bind(&CStatusBar::LocalTimeWidth, this),
+	CStatusItem m_LocalTime = CStatusItem([this] { LocalTimeRender(); }, std::bind(&CStatusBar::LocalTimeWidth, this),
 		"l", "Local Time", "", "Displays your local time", false);
-	CStatusItem m_RaceTime = CStatusItem(std::bind(&CStatusBar::RaceTimeRender, this), std::bind(&CStatusBar::RaceTimeWidth, this),
+	CStatusItem m_RaceTime = CStatusItem([this] { RaceTimeRender(); }, std::bind(&CStatusBar::RaceTimeWidth, this),
 		"r", "Race Time", "", "Display your race time", false);
-	CStatusItem m_FPS = CStatusItem(std::bind(&CStatusBar::FPSRender, this), std::bind(&CStatusBar::FPSWidth, this),
+	CStatusItem m_FPS = CStatusItem([this] { FPSRender(); }, std::bind(&CStatusBar::FPSWidth, this),
 		"f", "FPS", "", "Displays your frames per second");
-	CStatusItem m_Velocity = CStatusItem(std::bind(&CStatusBar::VelocityRender, this), std::bind(&CStatusBar::VelocityWidth, this),
+	CStatusItem m_Velocity = CStatusItem([this] { VelocityRender(); }, std::bind(&CStatusBar::VelocityWidth, this),
 		"v", "Velocity", "", "Displays X and Y velocity");
-	CStatusItem m_Zoom = CStatusItem(std::bind(&CStatusBar::ZoomRender, this), std::bind(&CStatusBar::ZoomWidth, this),
+	CStatusItem m_Zoom = CStatusItem([this] { ZoomRender(); }, std::bind(&CStatusBar::ZoomWidth, this),
 		"z", "Zoom", "", "Displays current zoom value");
-	CStatusItem m_Space = CStatusItem(std::bind(&CStatusBar::SpaceRender, this), std::bind(&CStatusBar::SpaceWidth, this),
+	CStatusItem m_Space = CStatusItem([this] { SpaceRender(); }, std::bind(&CStatusBar::SpaceWidth, this),
 		" _", "Space", " ", "Gap between statusbar items", false);
 
 	std::vector<CStatusItem> m_StatusItemTypes = {m_Angle, m_Ping, m_Prediction, m_Position, m_LocalTime, m_RaceTime, m_FPS, m_Velocity, m_Zoom, m_Space};
@@ -79,8 +67,8 @@ private:
 	float m_BarHeight, m_Margin;
 
 	int m_CurrentRaceTime = 0;
-	float GetDurationWidth(int Time);
-	int GetDigitsIndex(const int Value, const int Max);
+	float GetDurationWidth(int Duration);
+	int GetDigitsIndex(int Value, int Max);
 	float AngleWidth();
 	void AngleRender();
 
@@ -113,11 +101,6 @@ private:
 
 	void LabelRender(const char *pLabel);
 	float LabelWidth(const char *pLabel);
-
-	// float Width();
-	// void Render();
-	// float Width();
-	// void Render();
 };
 
 #endif

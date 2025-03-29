@@ -446,9 +446,12 @@ void CClient::SetState(EClientState State)
 
 	if(State == IClient::STATE_ONLINE)
 	{
-		const bool AnnounceAddr = m_ServerBrowser.IsRegistered(ServerAddress());
-		Discord()->SetGameInfo(ServerAddress(), m_aCurrentMap, AnnounceAddr);
-		Steam()->SetGameInfo(ServerAddress(), m_aCurrentMap, AnnounceAddr);
+		const bool Registered = m_ServerBrowser.IsRegistered(ServerAddress());
+		CServerInfo CurrentServerInfo;
+		GetServerInfo(&CurrentServerInfo);
+
+		Discord()->SetGameInfo(CurrentServerInfo, m_aCurrentMap, Registered);
+		Steam()->SetGameInfo(ServerAddress(), m_aCurrentMap, Registered);
 	}
 	else if(OldState == IClient::STATE_ONLINE)
 	{
@@ -1397,6 +1400,7 @@ void CClient::ProcessServerInfo(int RawType, NETADDR *pFrom, const void *pData, 
 			{
 				m_CurrentServerInfo = Info;
 				m_CurrentServerInfoRequestTime = -1;
+				Discord()->UpdateServerInfo(Info, m_aCurrentMap);
 			}
 
 			bool ValidPong = false;
@@ -3179,7 +3183,7 @@ void CClient::InitInterfaces()
 	m_Updater.Init(&m_Http);
 #endif
 
-	m_pConfigManager->RegisterCallback(CONFIGDOMAIN::DDNET, IFavorites::ConfigSaveCallback, m_pFavorites);
+	m_pConfigManager->RegisterCallback(IFavorites::ConfigSaveCallback, m_pFavorites);
 	m_Friends.Init();
 	m_Foes.Init(true);
 
@@ -4100,6 +4104,9 @@ const char *CClient::DemoPlayer_Play(const char *pFilename, int StorageType)
 	if(str_startswith(m_CurrentServerInfo.m_aMap, "infc_"))
 		str_copy(m_CurrentServerInfo.m_aGameType, "InfclassR");
 
+	// enter demo playback state
+	SetState(IClient::STATE_DEMOPLAYBACK);
+
 	GameClient()->OnConnected();
 
 	// setup buffers
@@ -4114,9 +4121,6 @@ const char *CClient::DemoPlayer_Play(const char *pFilename, int StorageType)
 		m_aapSnapshots[0][SnapshotType]->m_AltSnapSize = 0;
 		m_aapSnapshots[0][SnapshotType]->m_Tick = -1;
 	}
-
-	// enter demo playback state
-	SetState(IClient::STATE_DEMOPLAYBACK);
 
 	m_DemoPlayer.Play();
 	GameClient()->OnEnterGame();

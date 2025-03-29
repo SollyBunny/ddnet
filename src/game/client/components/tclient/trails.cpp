@@ -224,9 +224,9 @@ void CTrails::OnRender()
 			if(g_Config.m_ClTeeTrailFade)
 				Part.Col.a *= 1.0 - Part.Progress;
 
-			Part.Width = g_Config.m_ClTeeTrailWidth;
+			Part.Width = Width;
 			if(g_Config.m_ClTeeTrailTaper)
-				Part.Width = g_Config.m_ClTeeTrailWidth * (1.0 - Part.Progress);
+				Part.Width = Width * (1.0 - Part.Progress);
 		}
 
 		// Remove duplicate elements (those with same Pos)

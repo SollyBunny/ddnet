@@ -12,25 +12,25 @@
 #include "bindwheel.h"
 #include <game/client/gameclient.h>
 
-CBindwheel::CBindwheel()
+CBindWheel::CBindWheel()
 {
 	OnReset();
 }
 
-void CBindwheel::ConBindwheelExecuteHover(IConsole::IResult *pResult, void *pUserData)
+void CBindWheel::ConBindwheelExecuteHover(IConsole::IResult *pResult, void *pUserData)
 {
-	CBindwheel *pThis = (CBindwheel *)pUserData;
+	CBindWheel *pThis = (CBindWheel *)pUserData;
 	pThis->ExecuteHoveredBind();
 }
 
-void CBindwheel::ConOpenBindwheel(IConsole::IResult *pResult, void *pUserData)
+void CBindWheel::ConOpenBindwheel(IConsole::IResult *pResult, void *pUserData)
 {
-	CBindwheel *pThis = (CBindwheel *)pUserData;
+	CBindWheel *pThis = (CBindWheel *)pUserData;
 	if(pThis->Client()->State() != IClient::STATE_DEMOPLAYBACK)
 		pThis->m_Active = pResult->GetInteger(0) != 0;
 }
 
-void CBindwheel::ConAddBindwheelLegacy(IConsole::IResult *pResult, void *pUserData)
+void CBindWheel::ConAddBindwheelLegacy(IConsole::IResult *pResult, void *pUserData)
 {
 	int BindPos = pResult->GetInteger(0);
 	if(BindPos < 0 || BindPos >= BINDWHEEL_MAX_BINDS)
@@ -39,7 +39,7 @@ void CBindwheel::ConAddBindwheelLegacy(IConsole::IResult *pResult, void *pUserDa
 	const char *aName = pResult->GetString(1);
 	const char *aCommand = pResult->GetString(2);
 
-	CBindwheel *pThis = static_cast<CBindwheel *>(pUserData);
+	CBindWheel *pThis = static_cast<CBindWheel *>(pUserData);
 	while(pThis->m_vBinds.size() <= (size_t)BindPos)
 		pThis->AddBind("EMPTY", "");
 
@@ -47,31 +47,31 @@ void CBindwheel::ConAddBindwheelLegacy(IConsole::IResult *pResult, void *pUserDa
 	str_copy(pThis->m_vBinds[BindPos].m_aCommand, aCommand);
 }
 
-void CBindwheel::ConAddBindwheel(IConsole::IResult *pResult, void *pUserData)
+void CBindWheel::ConAddBindwheel(IConsole::IResult *pResult, void *pUserData)
 {
 	const char *aName = pResult->GetString(0);
 	const char *aCommand = pResult->GetString(1);
 
-	CBindwheel *pThis = static_cast<CBindwheel *>(pUserData);
+	CBindWheel *pThis = static_cast<CBindWheel *>(pUserData);
 	pThis->AddBind(aName, aCommand);
 }
 
-void CBindwheel::ConRemoveBindwheel(IConsole::IResult *pResult, void *pUserData)
+void CBindWheel::ConRemoveBindwheel(IConsole::IResult *pResult, void *pUserData)
 {
 	const char *aName = pResult->GetString(0);
 	const char *aCommand = pResult->GetString(1);
 
-	CBindwheel *pThis = static_cast<CBindwheel *>(pUserData);
+	CBindWheel *pThis = static_cast<CBindWheel *>(pUserData);
 	pThis->RemoveBind(aName, aCommand);
 }
 
-void CBindwheel::ConRemoveAllBindwheelBinds(IConsole::IResult *pResult, void *pUserData)
+void CBindWheel::ConRemoveAllBindwheelBinds(IConsole::IResult *pResult, void *pUserData)
 {
-	CBindwheel *pThis = static_cast<CBindwheel *>(pUserData);
+	CBindWheel *pThis = static_cast<CBindWheel *>(pUserData);
 	pThis->RemoveAllBinds();
 }
 
-void CBindwheel::AddBind(const char *pName, const char *pCommand)
+void CBindWheel::AddBind(const char *pName, const char *pCommand)
 {
 	if((pName[0] == '\0' && pCommand[0] == '\0') || m_vBinds.size() >= BINDWHEEL_MAX_BINDS)
 		return;
@@ -82,7 +82,7 @@ void CBindwheel::AddBind(const char *pName, const char *pCommand)
 	m_vBinds.push_back(Bind);
 }
 
-void CBindwheel::RemoveBind(const char *pName, const char *pCommand)
+void CBindWheel::RemoveBind(const char *pName, const char *pCommand)
 {
 	CBind Bind;
 	str_copy(Bind.m_aName, pName);
@@ -92,7 +92,7 @@ void CBindwheel::RemoveBind(const char *pName, const char *pCommand)
 		m_vBinds.erase(it);
 }
 
-void CBindwheel::RemoveBind(int Index)
+void CBindWheel::RemoveBind(int Index)
 {
 	if(Index >= static_cast<int>(m_vBinds.size()) || Index < 0)
 		return;
@@ -100,16 +100,16 @@ void CBindwheel::RemoveBind(int Index)
 	m_vBinds.erase(Pos);
 }
 
-void CBindwheel::RemoveAllBinds()
+void CBindWheel::RemoveAllBinds()
 {
 	m_vBinds.clear();
 }
 
-void CBindwheel::OnConsoleInit()
+void CBindWheel::OnConsoleInit()
 {
 	IConfigManager *pConfigManager = Kernel()->RequestInterface<IConfigManager>();
 	if(pConfigManager)
-		pConfigManager->RegisterCallback(CONFIGDOMAIN::TATER, ConfigSaveCallback, this);
+		pConfigManager->RegisterCallback(ConfigSaveCallback, this, CONFIGDOMAIN::TATER);
 
 	Console()->Register("+bindwheel", "", CFGFLAG_CLIENT, ConOpenBindwheel, this, "Open bindwheel selector");
 	Console()->Register("+bindwheel_execute_hover", "", CFGFLAG_CLIENT, ConBindwheelExecuteHover, this, "Execute hovered bindwheel bind");
@@ -120,19 +120,19 @@ void CBindwheel::OnConsoleInit()
 	Console()->Register("delete_all_bindwheel_binds", "", CFGFLAG_CLIENT, ConRemoveAllBindwheelBinds, this, "Removes all bindwheel binds");
 }
 
-void CBindwheel::OnReset()
+void CBindWheel::OnReset()
 {
 	m_WasActive = false;
 	m_Active = false;
 	m_SelectedBind = -1;
 }
 
-void CBindwheel::OnRelease()
+void CBindWheel::OnRelease()
 {
 	m_Active = false;
 }
 
-bool CBindwheel::OnCursorMove(float x, float y, IInput::ECursorType CursorType)
+bool CBindWheel::OnCursorMove(float x, float y, IInput::ECursorType CursorType)
 {
 	if(!m_Active)
 		return false;
@@ -142,12 +142,12 @@ bool CBindwheel::OnCursorMove(float x, float y, IInput::ECursorType CursorType)
 	return true;
 }
 
-void CBindwheel::DrawCircle(float x, float y, float r, int Segments)
+void CBindWheel::DrawCircle(float x, float y, float r, int Segments)
 {
 	Graphics()->DrawCircle(x, y, r, Segments);
 }
 
-void CBindwheel::OnRender()
+void CBindWheel::OnRender()
 {
 	if(!m_Active)
 	{
@@ -165,15 +165,21 @@ void CBindwheel::OnRender()
 		m_SelectorMouse = normalize(m_SelectorMouse) * 170.0f;
 
 	int SegmentCount = m_vBinds.size();
-	float SegmentAngle = 2.0f * pi / SegmentCount;
-
-	float SelectedAngle = angle(m_SelectorMouse) + SegmentAngle / 2.0f;
-	if(SelectedAngle < 0.0f)
-		SelectedAngle += 2.0f * pi;
-	if(length(m_SelectorMouse) > 110.0f)
-		m_SelectedBind = (int)(SelectedAngle / (2.0f * pi) * SegmentCount);
-	else
+	if(SegmentCount == 0)
+	{
 		m_SelectedBind = -1;
+	}
+	else
+	{
+		float SegmentAngle = 2.0f * pi / SegmentCount;
+		float SelectedAngle = angle(m_SelectorMouse) + SegmentAngle / 2.0f;
+		if(SelectedAngle < 0.0f)
+			SelectedAngle += 2.0f * pi;
+		if(length(m_SelectorMouse) > 110.0f)
+			m_SelectedBind = (int)(SelectedAngle / (2.0f * pi) * SegmentCount);
+		else
+			m_SelectedBind = -1;
+	}
 
 	CUIRect Screen = *Ui()->Screen();
 
@@ -210,19 +216,19 @@ void CBindwheel::OnRender()
 	RenderTools()->RenderCursor(m_SelectorMouse + vec2(Screen.w, Screen.h) / 2.0f, 24.0f);
 }
 
-void CBindwheel::ExecuteBind(int Bind)
+void CBindWheel::ExecuteBind(int Bind)
 {
 	Console()->ExecuteLine(m_vBinds[Bind].m_aCommand);
 }
-void CBindwheel::ExecuteHoveredBind()
+void CBindWheel::ExecuteHoveredBind()
 {
 	if(m_SelectedBind >= 0)
 		Console()->ExecuteLine(m_vBinds[m_SelectedBind].m_aCommand);
 }
 
-void CBindwheel::ConfigSaveCallback(IConfigManager *pConfigManager, void *pUserData)
+void CBindWheel::ConfigSaveCallback(IConfigManager *pConfigManager, void *pUserData)
 {
-	CBindwheel *pThis = (CBindwheel *)pUserData;
+	CBindWheel *pThis = (CBindWheel *)pUserData;
 
 	for(CBind &Bind : pThis->m_vBinds)
 	{
@@ -238,6 +244,6 @@ void CBindwheel::ConfigSaveCallback(IConfigManager *pConfigManager, void *pUserD
 		pDst = aBuf + str_length(aBuf);
 		str_escape(&pDst, Bind.m_aCommand, pEnd);
 		str_append(aBuf, "\"");
-		pConfigManager->WriteLine(CONFIGDOMAIN::TATER, aBuf);
+		pConfigManager->WriteLine(aBuf, CONFIGDOMAIN::TATER);
 	}
 }

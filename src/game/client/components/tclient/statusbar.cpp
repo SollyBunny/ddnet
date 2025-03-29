@@ -8,6 +8,20 @@
 #include "statusbar.h"
 #include <game/client/gameclient.h>
 
+CStatusItem::CStatusItem(std::function<void()> Render, std::function<float()> Width, const char *pLetters, const char *pName, const char *pDisplayName, const char *pDesc, bool ShowLabel)
+{
+	m_RenderItem = std::move(Render);
+	m_GetWidth = std::move(Width);
+	str_copy(m_aLetters, pLetters);
+	str_copy(m_aName, pName);
+	if(str_comp(pDisplayName, "") != 0)
+		str_copy(m_aDisplayName, pDisplayName);
+	else
+		str_copy(m_aDisplayName, pName);
+	str_copy(m_aDesc, pDesc);
+	m_ShowLabel = ShowLabel;
+}
+
 int CStatusBar::GetDigitsIndex(const int Value, const int Max)
 {
 	int s_Value = Value;
@@ -98,11 +112,11 @@ float CStatusBar::LocalTimeWidth()
 }
 void CStatusBar::LocalTimeRender()
 {
-	static char aTimeBuf[12] = {0};
-	str_timestamp_format(aTimeBuf, sizeof(aTimeBuf), g_Config.m_ClStatusBar12HourClock ? (g_Config.m_ClStatusBarLocalTimeSeocnds ? "%I:%M:%S %p" : "%I:%M %p") : (g_Config.m_ClStatusBarLocalTimeSeocnds ? "%H:%M:%S" : "%H:%M"));
-	if(aTimeBuf[0] == '0')
-		str_copy(aTimeBuf, &aTimeBuf[1], sizeof(aTimeBuf) - 1);
-	TextRender()->Text(m_CursorX, m_CursorY, m_FontSize, aTimeBuf);
+	static char s_aTimeBuf[12];
+	str_timestamp_format(s_aTimeBuf, sizeof(s_aTimeBuf), g_Config.m_ClStatusBar12HourClock ? (g_Config.m_ClStatusBarLocalTimeSeocnds ? "%I:%M:%S %p" : "%I:%M %p") : (g_Config.m_ClStatusBarLocalTimeSeocnds ? "%H:%M:%S" : "%H:%M"));
+	if(s_aTimeBuf[0] == '0')
+		str_copy(s_aTimeBuf, &s_aTimeBuf[1], sizeof(s_aTimeBuf) - 1);
+	TextRender()->Text(m_CursorX, m_CursorY, m_FontSize, s_aTimeBuf);
 }
 
 float CStatusBar::RaceTimeWidth()
@@ -248,14 +262,14 @@ void CStatusBar::ApplyStatusBarScheme(const char *pScheme)
 	m_StatusBarItems.clear();
 	for(int i = 0; pScheme[i] != '\0'; ++i)
 	{
-		char letter = pScheme[i];
-		for(auto &itemType : m_StatusItemTypes)
+		char SchemeLetter = pScheme[i];
+		for(CStatusItem &ItemType : m_StatusItemTypes)
 		{
-			for(int l = 0; l < STATUSBAR_TYPE_LETTERS; ++l)
+			for(char ItemLetter : ItemType.m_aLetters)
 			{
-				if(itemType.m_aLetters[l] == letter)
+				if(ItemLetter == SchemeLetter)
 				{
-					m_StatusBarItems.push_back(&itemType);
+					m_StatusBarItems.push_back(&ItemType);
 					break;
 				}
 			}
@@ -265,16 +279,14 @@ void CStatusBar::ApplyStatusBarScheme(const char *pScheme)
 
 void CStatusBar::UpdateStatusBarScheme(char *pScheme)
 {
-	int index = 0;
-	for(const auto &item : m_StatusBarItems)
+	int Index = 0;
+	for(CStatusItem *&pItem : m_StatusBarItems)
 	{
-		if(index >= STATUSBAR_MAX_SIZE)
-		{
+		if(Index >= STATUSBAR_MAX_SIZE)
 			break;
-		}
-		pScheme[index++] = item->m_aLetters[0];
+		pScheme[Index++] = pItem->m_aLetters[0];
 	}
-	pScheme[index] = '\0';
+	pScheme[Index] = '\0';
 }
 
 void CStatusBar::OnRender()
@@ -297,7 +309,7 @@ void CStatusBar::OnRender()
 	Graphics()->DrawRect(m_BarX, m_BarY, m_Width, m_BarHeight, color_cast<ColorRGBA>(ColorHSLA(g_Config.m_ClStatusBarColor)).WithAlpha(g_Config.m_ClStatusBarAlpha / 100.0f), 0, 0);
 	TextRender()->TextColor(color_cast<ColorRGBA>(ColorHSLA(g_Config.m_ClStatusBarTextColor)).WithAlpha(g_Config.m_ClStatusBarTextAlpha / 100.0f));
 
-	//	std::vector<CStatusItem *> m_StatusBarItems = {&m_LocalTime, &m_LocalTime, &m_Space, &m_LocalTime};
+	// std::vector<CStatusItem *> m_StatusBarItems = {&m_LocalTime, &m_LocalTime, &m_Space, &m_LocalTime};
 	int SpaceCount = 0;
 	const int ItemCount = (int)m_StatusBarItems.size();
 	float UsedWidth = 0.0f;
@@ -309,10 +321,9 @@ void CStatusBar::OnRender()
 			++SpaceCount;
 		else
 		{
-			float ItemWidth = Item->GetWidth();
+			float ItemWidth = Item->m_GetWidth();
 			if(g_Config.m_ClStatusBarLabels && Item->m_ShowLabel && ItemWidth > 0.0f)
 				ItemWidth += LabelWidth(Item->m_aDisplayName);
-
 			UsedWidth += ItemWidth;
 		}
 	}
@@ -332,7 +343,7 @@ void CStatusBar::OnRender()
 	for(const CStatusItem *Item : m_StatusBarItems)
 	{
 		m_CursorX += m_Margin;
-		float ItemWidth = Item->GetWidth();
+		float ItemWidth = Item->m_GetWidth();
 
 		if(ItemWidth > 0.0f)
 		{
@@ -341,7 +352,7 @@ void CStatusBar::OnRender()
 				LabelRender(Item->m_aDisplayName);
 				m_CursorX += LabelWidth(Item->m_aDisplayName);
 			}
-			Item->RenderItem();
+			Item->m_RenderItem();
 		}
 
 		m_CursorX += ItemWidth;

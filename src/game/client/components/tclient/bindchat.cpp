@@ -2,7 +2,6 @@
 #include <game/client/gameclient.h>
 
 #include "../chat.h"
-#include "../emoticon.h"
 
 #include "bindchat.h"
 
@@ -166,7 +165,7 @@ void CBindchat::OnConsoleInit()
 {
 	IConfigManager *pConfigManager = Kernel()->RequestInterface<IConfigManager>();
 	if(pConfigManager)
-		pConfigManager->RegisterCallback(CONFIGDOMAIN::TATERCHATBINDS, ConfigSaveCallback, this);
+		pConfigManager->RegisterCallback(ConfigSaveCallback, this, CONFIGDOMAIN::TATERCHATBINDS);
 
 	Console()->Register("bindchat", "s[name] r[command]", CFGFLAG_CLIENT, ConAddBindchat, this, "Add a chat bind");
 	Console()->Register("bindchats", "?s[name]", CFGFLAG_CLIENT, ConBindchats, this, "Print command executed by this name or all chat binds");
@@ -230,7 +229,7 @@ bool CBindchat::ChatDoAutocomplete(bool ShiftPressed)
 {
 	CChat &Chat = GameClient()->m_Chat;
 
-	if(m_vBinds.size() == 0)
+	if(m_vBinds.empty())
 		return false;
 	if(*Chat.m_aCompletionBuffer == '\0')
 		return false;
@@ -307,7 +306,7 @@ bool CBindchat::ChatDoAutocomplete(bool ShiftPressed)
 void CBindchat::ConfigSaveCallback(IConfigManager *pConfigManager, void *pUserData)
 {
 	CBindchat *pThis = (CBindchat *)pUserData;
-	pConfigManager->WriteLine(CONFIGDOMAIN::TATERCHATBINDS, "unbindchatall");
+	pConfigManager->WriteLine("unbindchatall", CONFIGDOMAIN::TATERCHATBINDS);
 	for(CBind &Bind : pThis->m_vBinds)
 	{
 		char aBuf[BINDCHAT_MAX_CMD * 2] = "";
@@ -322,6 +321,6 @@ void CBindchat::ConfigSaveCallback(IConfigManager *pConfigManager, void *pUserDa
 		pDst = aBuf + str_length(aBuf);
 		str_escape(&pDst, Bind.m_aCommand, pEnd);
 		str_append(aBuf, "\"");
-		pConfigManager->WriteLine(CONFIGDOMAIN::TATERCHATBINDS, aBuf);
+		pConfigManager->WriteLine(aBuf, CONFIGDOMAIN::TATERCHATBINDS);
 	}
 }

@@ -1014,7 +1014,7 @@ void CChat::OnPrepareLines(float y)
 		const char *pTextTranslated = Line.m_TranslateId.has_value() && Line.m_aTextTranslated[0] != '\0' ? Line.m_aTextTranslated : nullptr;
 		// If hidden and there is translated text
 		if(pText != Line.m_aText && pTextTranslated)
-			pTextTranslated = "Translated text hidden due to streamer mode";
+			pTextTranslated = TCLocalize("Translated text hidden due to streamer mode");
 
 		// get the y offset (calculate it if we haven't done that yet)
 		if(Line.m_aYOffset[OffsetType] < 0.0f)

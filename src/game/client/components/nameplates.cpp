@@ -24,7 +24,6 @@ protected:
 	bool m_NewLine = false; // Whether this part is a new line (doesn't do anything else)
 	bool m_Visible = true; // Whether this part is visible
 	bool m_ShiftOnInvis = false; // Whether when not visible will still take up space
-	CNamePlatePart() = delete;
 	CNamePlatePart(CGameClient &This) {}
 
 public:
@@ -37,6 +36,7 @@ public:
 	bool NewLine() const { return m_NewLine; }
 	bool Visible() const { return m_Visible; }
 	bool ShiftOnInvis() const { return m_ShiftOnInvis; }
+	CNamePlatePart() = delete;
 	virtual ~CNamePlatePart() = default;
 };
 
@@ -336,9 +336,9 @@ protected:
 		// TClient
 		if(g_Config.m_ClWarList)
 		{
-			if(This.m_WarList.GetWarData(Data.m_ClientId).IsWarName)
+			if(This.m_WarList.GetWarData(Data.m_ClientId).m_WarName)
 				m_Color = This.m_WarList.GetNameplateColor(Data.m_ClientId).WithAlpha(Data.m_Color.a);
-			else if(This.m_WarList.GetWarData(Data.m_ClientId).IsWarClan)
+			else if(This.m_WarList.GetWarData(Data.m_ClientId).m_WarClan)
 				m_Color = This.m_WarList.GetClanColor(Data.m_ClientId).WithAlpha(Data.m_Color.a);
 		}
 		return m_FontSize != Data.m_FontSize || str_comp(m_aText, Data.m_pName) != 0;
@@ -371,7 +371,7 @@ protected:
 			return false;
 		m_Color = Data.m_Color;
 		// TClient
-		if(This.m_WarList.GetWarData(Data.m_ClientId).IsWarClan)
+		if(This.m_WarList.GetWarData(Data.m_ClientId).m_WarClan)
 			m_Color = This.m_WarList.GetClanColor(Data.m_ClientId).WithAlpha(Data.m_Color.a);
 		return m_FontSize != Data.m_FontSizeClan || str_comp(m_aText, Data.m_pClan) != 0;
 	}
@@ -902,7 +902,7 @@ void CNamePlates::RenderNamePlateGame(vec2 Position, const CNetObj_PlayerInfo *p
 	}
 
 	// TClient
-	if(g_Config.m_ClWarList && g_Config.m_ClWarListShowClan && GameClient()->m_WarList.GetWarData(pPlayerInfo->m_ClientId).IsWarClan)
+	if(g_Config.m_ClWarList && g_Config.m_ClWarListShowClan && GameClient()->m_WarList.GetWarData(pPlayerInfo->m_ClientId).m_WarClan)
 		Data.m_ShowClan = true;
 
 	// Check if the nameplate is actually on screen
@@ -996,8 +996,8 @@ void CNamePlates::RenderNamePlatePreview(vec2 Position, int Dummy)
 
 void CNamePlates::ResetNamePlates()
 {
-	for(int i = 0; i < MAX_CLIENTS; ++i)
-		m_pData->m_aNamePlates[i].Reset(*GameClient());
+	for(CNamePlate &NamePlate : m_pData->m_aNamePlates)
+		NamePlate.Reset(*GameClient());
 }
 
 void CNamePlates::OnRender()

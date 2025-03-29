@@ -59,6 +59,7 @@
 #include "components/sounds.h"
 #include "components/spectator.h"
 #include "components/statboard.h"
+#include "components/tclient/bg_draw.h"
 #include "components/tclient/bindchat.h"
 #include "components/tclient/bindwheel.h"
 #include "components/tclient/outlines.h"
@@ -201,7 +202,8 @@ public:
 	CSkinProfiles m_SkinProfiles;
 	CStatusBar m_StatusBar;
 	CBindchat m_Bindchat;
-	CBindwheel m_Bindwheel;
+	CBindWheel m_BindWheel;
+	CBgDraw m_BgDraw;
 	CTater m_Tater;
 	CTrails m_Trails;
 	CTranslate m_Translate;
@@ -232,6 +234,7 @@ private:
 	class IEditor *m_pEditor;
 	class IFriends *m_pFriends;
 	class IFriends *m_pFoes;
+	class IDiscord *m_pDiscord;
 #if defined(CONF_AUTOUPDATE)
 	class IUpdater *m_pUpdater;
 #endif
@@ -514,7 +517,7 @@ public:
 		//vec2 m_DebugVector3 = vec2(0, 0);
 		float m_Uncertainty = 0.0f;
 
-		std::shared_ptr<CManagedTeeRenderInfo> m_pSkinInfo; // this is what the server reports
+		std::shared_ptr<CManagedTeeRenderInfo> m_pSkinInfo = nullptr; // this is what the server reports
 		CTeeRenderInfo m_InfClassSkinInfo; // the local idea about the proper class skin TODO: use managed
 		CTeeRenderInfo m_RenderInfo; // this is what we use
 		vec2 m_aOwnerIconPositions[16];

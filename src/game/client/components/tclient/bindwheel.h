@@ -1,6 +1,8 @@
 #ifndef GAME_CLIENT_COMPONENTS_TCLIENT_BINDWHEEL_H
 #define GAME_CLIENT_COMPONENTS_TCLIENT_BINDWHEEL_H
 #include <game/client/component.h>
+#include <engine/console.h>
+
 class IConfigManager;
 
 enum
@@ -10,7 +12,7 @@ enum
 	BINDWHEEL_MAX_BINDS = 64
 };
 
-class CBindwheel : public CComponent
+class CBindWheel : public CComponent
 {
 	void DrawCircle(float x, float y, float r, int Segments);
 
@@ -44,7 +46,7 @@ public:
 
 	std::vector<CBind> m_vBinds;
 
-	CBindwheel();
+	CBindWheel();
 	virtual int Sizeof() const override { return sizeof(*this); }
 
 	virtual void OnReset() override;

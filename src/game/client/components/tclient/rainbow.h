@@ -2,11 +2,13 @@
 #define GAME_CLIENT_COMPONENTS_TCLIENT_RAINBOW_H
 #include <game/client/component.h>
 
+#include <base/color.h>
+
 class CRainbow : public CComponent
 {
 public:
-	virtual int Sizeof() const override { return sizeof(*this); }
-	virtual void OnRender() override;
+	int Sizeof() const override { return sizeof(*this); }
+	void OnRender() override;
 
 	enum COLORMODES
 	{
@@ -17,6 +19,8 @@ public:
 	};
 
 	ColorRGBA m_RainbowColor = ColorRGBA(1, 1, 1, 1);
+
+	float m_Time = 0.0f;
 };
 
 #endif

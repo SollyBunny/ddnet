@@ -7,6 +7,7 @@
 #include <engine/client/checksum.h>
 #include <engine/client/enums.h>
 #include <engine/demo.h>
+#include <engine/discord.h>
 #include <engine/editor.h>
 #include <engine/engine.h>
 #include <engine/favorites.h>
@@ -109,6 +110,7 @@ void CGameClient::OnConsoleInit()
 	m_pFavorites = Kernel()->RequestInterface<IFavorites>();
 	m_pFriends = Kernel()->RequestInterface<IFriends>();
 	m_pFoes = Client()->Foes();
+	m_pDiscord = Kernel()->RequestInterface<IDiscord>();
 #if defined(CONF_AUTOUPDATE)
 	m_pUpdater = Kernel()->RequestInterface<IUpdater>();
 #endif
@@ -133,10 +135,12 @@ void CGameClient::OnConsoleInit()
 					      &m_MapSounds,
 					      &m_Background, // render instead of m_MapLayersBackground when g_Config.m_ClOverlayEntities == 100
 					      &m_MapLayersBackground, // first to render
+					      &m_BgDraw,
 					      &m_Particles.m_RenderTrail,
 					      &m_Particles.m_RenderTrailExtra,
 					      &m_Items,
 					      &m_Trails,
+					      &m_Translate,
 					      &m_Ghost,
 					      &m_Players,
 					      &m_MapLayersForeground,
@@ -155,7 +159,7 @@ void CGameClient::OnConsoleInit()
 					      &m_Spectator,
 					      &m_Emoticon,
 					      &m_Bindchat,
-					      &m_Bindwheel,
+					      &m_BindWheel,
 					      &m_WarList,
 					      &m_StatusBar,
 					      &m_InfoMessages,
@@ -180,7 +184,7 @@ void CGameClient::OnConsoleInit()
 						  &m_Chat, // chat has higher prio, due to that you can quit it by pressing esc
 						  &m_Motd, // for pressing esc to remove it
 						  &m_Spectator,
-						  &m_Bindwheel,
+						  &m_BindWheel,
 						  &m_Emoticon,
 						  &m_Menus,
 						  &m_Controls,
@@ -2052,6 +2056,11 @@ void CGameClient::OnNewSnapshot()
 		}
 	}
 
+	if(Client()->State() == IClient::STATE_ONLINE)
+	{
+		m_pDiscord->UpdatePlayerCount(m_Snap.m_NumPlayers);
+	}
+
 	for(int i = 0; i < MAX_CLIENTS; ++i)
 	{
 		// update friend state
@@ -2715,10 +2724,10 @@ void CGameClient::OnPredict()
 
 			// Cursed hack to get the game tick consistently
 			int GameTick = Client()->GameTick(g_Config.m_ClDummy) + (int)Client()->IntraGameTick(g_Config.m_ClDummy);
-			static int PrevGameTick = 0;
-			if(PrevGameTick == GameTick)
+			static int s_PrevGameTick = 0;
+			if(s_PrevGameTick == GameTick)
 				GameTick++;
-			PrevGameTick = Client()->GameTick(g_Config.m_ClDummy) + (int)Client()->IntraGameTick(g_Config.m_ClDummy);
+			s_PrevGameTick = Client()->GameTick(g_Config.m_ClDummy) + (int)Client()->IntraGameTick(g_Config.m_ClDummy);
 
 			vec2 ServerPos = m_aClients[i].m_aPredPos[GameTick % 200];
 			vec2 PrevServerPos = m_aClients[i].m_aPredPos[(GameTick - 1) % 200];
@@ -2815,9 +2824,9 @@ void CGameClient::OnPredict()
 			// Decompose prediction vector into 2 components based on the trusted vector
 			vec2 PredVector = PredPos - ServerPos;
 			vec2 Forward = normalize(TrustedVector);
-			float dotPF = std::max(0.0f, dot(normalize(PredVector), Forward));
-			vec2 ConfidenceParallel = Forward * dotPF * length(PredVector);
-			if(dotPF == 0.0f)
+			float DotPf = std::max(0.0f, dot(normalize(PredVector), Forward));
+			vec2 ConfidenceParallel = Forward * DotPf * length(PredVector);
+			if(DotPf == 0.0f)
 				ConfidenceParallel = vec2(0, 0);
 			vec2 ConfidencePerp = PredVector - ConfidenceParallel;
 
@@ -3069,7 +3078,12 @@ void CGameClient::CClientData::Reset()
 	m_Predicted.Reset();
 	m_PrevPredicted.Reset();
 
-	m_pSkinInfo = nullptr;
+	if(m_pSkinInfo != nullptr)
+	{
+		// Make sure other `shared_ptr`s to this skin info will not use the refresh callback that refers to this reset client data
+		m_pSkinInfo->SetRefreshCallback(nullptr);
+		m_pSkinInfo = nullptr;
+	}
 	m_RenderInfo.Reset();
 
 	m_Angle = 0.0f;
