@@ -151,6 +151,7 @@ void dbg_assert_imp(const char *filename, int line, const char *fmt, ...)
 
 void dbg_break()
 {
+	int _ = *(volatile int*)nullptr;
 #ifdef __GNUC__
 	__builtin_trap();
 #else
