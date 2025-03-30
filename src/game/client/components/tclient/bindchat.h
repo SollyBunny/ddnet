@@ -1,6 +1,7 @@
 #ifndef GAME_CLIENT_COMPONENTS_TCLIENT_BINDCHAT_H
 #define GAME_CLIENT_COMPONENTS_TCLIENT_BINDCHAT_H
 
+#include "base/system.h"
 #include <game/client/component.h>
 
 #include <engine/console.h>
@@ -36,6 +37,23 @@ public:
 		{
 			return str_comp(m_aName, Other.m_aName) == 0 && str_comp(m_aCommand, Other.m_aCommand) == 0;
 		}
+		CBind() = default;
+		CBind(const char *pName, const char *pCommand)
+		{
+			str_copy(m_aName, pName);
+			str_copy(m_aCommand, pCommand);
+		}
+	};
+	class CBindDefault
+	{
+	public:
+		const char *m_pTitle;
+		CBind m_Bind;
+		CBindDefault(const char *pTitle, const char *pName, const char *pCommand)
+		{
+			m_pTitle = pTitle;
+			m_Bind = CBind(pName, pCommand);
+		}
 	};
 
 	std::vector<CBind> m_vBinds;
@@ -45,6 +63,7 @@ public:
 	void OnConsoleInit() override;
 
 	void AddBind(const char *pName, const char *pCommand);
+	void AddBind(const CBind &Bind);
 
 	void RemoveBindCommand(const char *pCommand);
 	void RemoveBind(const char *pName);
@@ -57,6 +76,35 @@ public:
 	bool CheckBindChat(const char *pText);
 	bool ChatDoBinds(const char *pText);
 	bool ChatDoAutocomplete(bool ShiftPressed);
+};
+
+static CBindChat::CBindDefault s_aDefaultBindChatKaomoji[] = {
+	{"Shrug:", "!shrug", "say ¯\\_(ツ)_/¯"},
+	{"Flip:", "!flip", "say (╯°□°)╯︵ ┻━┻"},
+	{"Unflip:", "!unflip", "say ┬─┬ノ( º _ ºノ)"},
+	{"Cute:", "!cute", "say ૮ ˶ᵔ ᵕ ᵔ˶ ა"},
+	{"Lenny:", "!lenny", "say ( ͡° ͜ʖ ͡°)"},
+};
+
+static CBindChat::CBindDefault s_aDefaultBindChatWar[] = { // These don't get displayed in settings
+	{nullptr, "!war", "war_name_index 1"},
+	{nullptr, "!warclan", "war_clan_index 1"},
+	{nullptr, "!team", "war_name_index 2"},
+	{nullptr, "!teamclan", "war_clan_index 2"},
+	{nullptr, "!delwar", "remove_war_name_index 1"},
+	{nullptr, "!delwarclan", "remove_war_clan_index 1"},
+	{nullptr, "!delteam", "remove_war_name_index 2"},
+	{nullptr, "!delteamclan", "remove_war_clan_index 2"},
+	{nullptr, "!name", "war_name"},
+	{nullptr, "!clan", "war_clan"},
+	{nullptr, "!delname", "remove_war_name"},
+	{nullptr, "!delclan", "remove_war_clan"},
+};
+
+static CBindChat::CBindDefault s_aDefaultBindChatOther[] = {
+	{"Translate:", "!translate", "translate"},
+	{"Mute:", "!mute", "add_foe"},
+	{"Unmute:", "!unmute", "remove_foe"},
 };
 
 #endif

@@ -65,27 +65,12 @@ void CBindChat::ConBindchatDefaults(IConsole::IResult *pResult, void *pUserData)
 {
 	CBindChat *pThis = static_cast<CBindChat *>(pUserData);
 
-	pThis->AddBind("!shrug", "say ¯\\_(ツ)_/¯");
-	pThis->AddBind("!flip", "say (╯°□°)╯︵ ┻━┻");
-	pThis->AddBind("!unflip", "say ┬─┬ノ( º _ ºノ)");
-
-	pThis->AddBind("!translate", "translate");
-
-	pThis->AddBind("!mute", "add_foe");
-	pThis->AddBind("!unmute", "remove_foe");
-
-	pThis->AddBind("!war", "war_name_index 1");
-	pThis->AddBind("!warclan", "war_clan_index 1");
-	pThis->AddBind("!team", "war_name_index 2");
-	pThis->AddBind("!teamclan", "war_clan_index 2");
-	pThis->AddBind("!delwar", "remove_war_name_index 1");
-	pThis->AddBind("!delwarclan", "remove_war_clan_index 1");
-	pThis->AddBind("!delteam", "remove_war_name_index 2");
-	pThis->AddBind("!delteamclan", "remove_war_clan_index 2");
-	pThis->AddBind("!name", "war_name");
-	pThis->AddBind("!clan", "war_clan");
-	pThis->AddBind("!delname", "remove_war_name");
-	pThis->AddBind("!delclan", "remove_war_clan");
+	for(const CBindDefault &BindDefault : s_aDefaultBindChatKaomoji)
+		pThis->AddBind(BindDefault.m_Bind);
+	for(const CBindDefault &BindDefault : s_aDefaultBindChatWar)
+		pThis->AddBind(BindDefault.m_Bind);
+	for(const CBindDefault &BindDefault : s_aDefaultBindChatOther)
+		pThis->AddBind(BindDefault.m_Bind);
 }
 
 void CBindChat::AddBind(const char *pName, const char *pCommand)
@@ -99,6 +84,11 @@ void CBindChat::AddBind(const char *pName, const char *pCommand)
 	str_copy(Bind.m_aName, pName);
 	str_copy(Bind.m_aCommand, pCommand);
 	m_vBinds.push_back(Bind);
+}
+
+void CBindChat::AddBind(const CBind &Bind)
+{
+	AddBind(Bind.m_aName, Bind.m_aCommand);
 }
 
 void CBindChat::RemoveBindCommand(const char *pCommand)
