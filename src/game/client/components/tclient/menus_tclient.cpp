@@ -1835,7 +1835,7 @@ void CMenus::RenderSettingsProfiles(CUIRect MainView)
 	bool DoClan = g_Config.m_ClApplyProfileClan;
 	bool DoFlag = g_Config.m_ClApplyProfileFlag;
 
-	//======AFTER LOAD======
+	// After load
 	if(s_SelectedProfile != -1 && s_SelectedProfile < (int)GameClient()->m_SkinProfiles.m_Profiles.size())
 	{
 		CProfile LoadProfile = GameClient()->m_SkinProfiles.m_Profiles[s_SelectedProfile];
