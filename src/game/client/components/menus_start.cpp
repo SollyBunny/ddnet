@@ -245,7 +245,6 @@ void CMenus::RenderStartMenu(CUIRect MainView)
 	if(State == IUpdater::CLEAN && NeedUpdate)
 	{
 		str_format(aBuf, sizeof(aBuf), Localize("DDNet %s is out!"), Client()->LatestVersion());
-		CUi::ReplaceHardcodedGameName(aBuf, aBuf, sizeof(aBuf));
 		TextRender()->TextColor(1.0f, 0.4f, 0.4f, 1.0f);
 	}
 	else if(State == IUpdater::CLEAN)
@@ -275,7 +274,6 @@ void CMenus::RenderStartMenu(CUIRect MainView)
 	{
 		char aBuf[64];
 		const char *pText = Localize("DDNet %s is out!");
-		pText = CUi::ReplaceHardcodedGameName(pText);
 		str_format(aBuf, sizeof(aBuf), pText, Client()->LatestVersion());
 
 		TextRender()->TextColor(TextRender()->DefaultTextColor());
