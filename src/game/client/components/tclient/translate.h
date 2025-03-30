@@ -4,6 +4,7 @@
 #include <game/client/component.h>
 #include <game/client/components/chat.h>
 
+#include <memory>
 #include <optional>
 #include <vector>
 
@@ -24,7 +25,7 @@ class CTranslate : public CComponent
 	class CTranslateJob
 	{
 	public:
-		ITranslateBackend *m_pBackend = nullptr;
+		std::unique_ptr<ITranslateBackend> m_pBackend = nullptr;
 		// For chat translations
 		CChat::CLine *m_pLine = nullptr;
 		unsigned int m_pTranslateId;

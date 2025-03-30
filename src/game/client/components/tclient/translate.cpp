@@ -175,10 +175,6 @@ public:
 		m_pHttpRequest = pGet;
 		Http.Run(pGet);
 	}
-	~CTranslateBackendLibretranslate() override
-	{
-		m_pHttpRequest = nullptr;
-	}
 };
 
 class CTranslateBackendFtapi : public ITranslateBackend
@@ -283,10 +279,6 @@ public:
 		m_pHttpRequest = pGet;
 		Http.Run(pGet);
 	}
-	~CTranslateBackendFtapi() override
-	{
-		m_pHttpRequest = nullptr;
-	}
 };
 
 void CTranslate::ConTranslate(IConsole::IResult *pResult, void *pUserData)
@@ -375,9 +367,9 @@ void CTranslate::Translate(CChat::CLine &Line, bool ShowProgress)
 	Job.m_pLine->m_TranslateId = Job.m_pTranslateId;
 
 	if(str_comp_nocase(g_Config.m_ClTranslateBackend, "libretranslate") == 0)
-		Job.m_pBackend = new CTranslateBackendLibretranslate(*Http(), Job.m_pLine->m_aText);
+		Job.m_pBackend = std::make_unique<CTranslateBackendLibretranslate>(*Http(), Job.m_pLine->m_aText);
 	else if(str_comp_nocase(g_Config.m_ClTranslateBackend, "ftapi") == 0)
-		Job.m_pBackend = new CTranslateBackendFtapi(*Http(), Job.m_pLine->m_aText);
+		Job.m_pBackend = std::make_unique<CTranslateBackendFtapi>(*Http(), Job.m_pLine->m_aText);
 	else
 	{
 		GameClient()->m_Chat.Echo("Invalid translate backend");
@@ -427,3 +419,5 @@ void CTranslate::OnRender()
 	};
 	m_vJobs.erase(std::remove_if(m_vJobs.begin(), m_vJobs.end(), ForEach), m_vJobs.end());
 }
+
+void CTranslate::~CTranslate
