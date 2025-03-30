@@ -421,5 +421,3 @@ void CTranslate::OnRender()
 	};
 	m_vJobs.erase(std::remove_if(m_vJobs.begin(), m_vJobs.end(), ForEach), m_vJobs.end());
 }
-
-void CTranslate::~CTranslate
