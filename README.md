@@ -7,7 +7,8 @@ A combination of
 * [Infclass Client](https://github.com/infclass/infclass-client)
 
 Also some random other things
-* Translate
+* Auto translate
+* Conditional execution
 
 ## Download
 
