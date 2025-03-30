@@ -356,28 +356,28 @@ void CMenus::RenderSettingsTClient(CUIRect MainView)
 		float MouseDist = distance(Pos, Ui()->MousePos());
 		if(MouseDist < Radius && MouseDist > Radius * 0.25f)
 		{
-			int SegmentCount = GameClient()->m_Bindwheel.m_vBinds.size();
-			float SegmentAngle = 2 * pi / SegmentCount;
+			int SegmentCount = GameClient()->m_BindWheel.m_vBinds.size();
+			float SegmentAngle = 2.0f * pi / SegmentCount;
 
-			float HoveringAngle = angle(Ui()->MousePos() - Pos) + SegmentAngle / 2;
+			float HoveringAngle = angle(Ui()->MousePos() - Pos) + SegmentAngle / 2.0f;
 			if(HoveringAngle < 0.0f)
 				HoveringAngle += 2.0f * pi;
 
-			HoveringIndex = (int)(HoveringAngle / (2 * pi) * SegmentCount);
+			HoveringIndex = (int)(HoveringAngle / (2.0f * pi) * SegmentCount);
 			if(Ui()->MouseButtonClicked(0))
 			{
 				s_SelectedBindIndex = HoveringIndex;
-				str_copy(s_aBindName, GameClient()->m_Bindwheel.m_vBinds[HoveringIndex].m_aName);
-				str_copy(s_aBindCommand, GameClient()->m_Bindwheel.m_vBinds[HoveringIndex].m_aCommand);
+				str_copy(s_aBindName, GameClient()->m_BindWheel.m_vBinds[HoveringIndex].m_aName);
+				str_copy(s_aBindCommand, GameClient()->m_BindWheel.m_vBinds[HoveringIndex].m_aCommand);
 			}
 			else if(Ui()->MouseButtonClicked(1) && s_SelectedBindIndex >= 0 && HoveringIndex >= 0 && HoveringIndex != s_SelectedBindIndex)
 			{
-				CBindWheel::CBind BindA = GameClient()->m_Bindwheel.m_vBinds[s_SelectedBindIndex];
-				CBindWheel::CBind BindB = GameClient()->m_Bindwheel.m_vBinds[HoveringIndex];
-				str_copy(GameClient()->m_Bindwheel.m_vBinds[s_SelectedBindIndex].m_aName, BindB.m_aName);
-				str_copy(GameClient()->m_Bindwheel.m_vBinds[s_SelectedBindIndex].m_aCommand, BindB.m_aCommand);
-				str_copy(GameClient()->m_Bindwheel.m_vBinds[HoveringIndex].m_aName, BindA.m_aName);
-				str_copy(GameClient()->m_Bindwheel.m_vBinds[HoveringIndex].m_aCommand, BindA.m_aCommand);
+				CBindWheel::CBind BindA = GameClient()->m_BindWheel.m_vBinds[s_SelectedBindIndex];
+				CBindWheel::CBind BindB = GameClient()->m_BindWheel.m_vBinds[HoveringIndex];
+				str_copy(GameClient()->m_BindWheel.m_vBinds[s_SelectedBindIndex].m_aName, BindB.m_aName);
+				str_copy(GameClient()->m_BindWheel.m_vBinds[s_SelectedBindIndex].m_aCommand, BindB.m_aCommand);
+				str_copy(GameClient()->m_BindWheel.m_vBinds[HoveringIndex].m_aName, BindA.m_aName);
+				str_copy(GameClient()->m_BindWheel.m_vBinds[HoveringIndex].m_aCommand, BindA.m_aCommand);
 			}
 			else if(Ui()->MouseButtonClicked(2))
 			{
@@ -391,8 +391,8 @@ void CMenus::RenderSettingsTClient(CUIRect MainView)
 			str_copy(s_aBindCommand, "");
 		}
 
-		const float Theta = pi * 2.0f / GameClient()->m_Bindwheel.m_vBinds.size();
-		for(int i = 0; i < static_cast<int>(GameClient()->m_Bindwheel.m_vBinds.size()); i++)
+		const float Theta = pi * 2.0f / GameClient()->m_BindWheel.m_vBinds.size();
+		for(int i = 0; i < static_cast<int>(GameClient()->m_BindWheel.m_vBinds.size()); i++)
 		{
 			float SegmentFontSize = FontSize * 1.1f;
 			if(i == s_SelectedBindIndex)
@@ -401,9 +401,11 @@ void CMenus::RenderSettingsTClient(CUIRect MainView)
 				TextRender()->TextColor(ColorRGBA(0.5f, 1.0f, 0.75f, 1.0f));
 			}
 			else if(i == HoveringIndex)
-				SegmentFontSize = FontSize * 1.35;
+			{
+				SegmentFontSize = FontSize * 1.35f;
+			}
 
-			const CBindWheel::CBind Bind = GameClient()->m_Bindwheel.m_vBinds[i];
+			const CBindWheel::CBind Bind = GameClient()->m_BindWheel.m_vBinds[i];
 			const float Angle = Theta * i;
 			vec2 TextPos = direction(Angle);
 			TextPos *= Radius * 0.75f;
@@ -444,8 +446,8 @@ void CMenus::RenderSettingsTClient(CUIRect MainView)
 			else
 				str_copy(TempBind.m_aName, s_aBindName);
 
-			str_copy(GameClient()->m_Bindwheel.m_vBinds[s_SelectedBindIndex].m_aName, TempBind.m_aName);
-			str_copy(GameClient()->m_Bindwheel.m_vBinds[s_SelectedBindIndex].m_aCommand, s_aBindCommand);
+			str_copy(GameClient()->m_BindWheel.m_vBinds[s_SelectedBindIndex].m_aName, TempBind.m_aName);
+			str_copy(GameClient()->m_BindWheel.m_vBinds[s_SelectedBindIndex].m_aCommand, s_aBindCommand);
 		}
 		LeftView.HSplitTop(MarginSmall, nullptr, &LeftView);
 		LeftView.HSplitTop(LineSize, &Button, &LeftView);
@@ -459,12 +461,12 @@ void CMenus::RenderSettingsTClient(CUIRect MainView)
 			else
 				str_copy(TempBind.m_aName, s_aBindName);
 
-			GameClient()->m_Bindwheel.AddBind(TempBind.m_aName, s_aBindCommand);
-			s_SelectedBindIndex = static_cast<int>(GameClient()->m_Bindwheel.m_vBinds.size()) - 1;
+			GameClient()->m_BindWheel.AddBind(TempBind.m_aName, s_aBindCommand);
+			s_SelectedBindIndex = static_cast<int>(GameClient()->m_BindWheel.m_vBinds.size()) - 1;
 		}
 		if(DoButton_Menu(&s_RemoveButton, TCLocalize("Remove Bind"), 0, &ButtonRemove) && s_SelectedBindIndex >= 0)
 		{
-			GameClient()->m_Bindwheel.RemoveBind(s_SelectedBindIndex);
+			GameClient()->m_BindWheel.RemoveBind(s_SelectedBindIndex);
 			s_SelectedBindIndex = -1;
 		}
 

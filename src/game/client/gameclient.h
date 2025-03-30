@@ -193,7 +193,7 @@ public:
 	CSkinProfiles m_SkinProfiles;
 	CStatusBar m_StatusBar;
 	CBindChat m_BindChat;
-	CBindWheel m_Bindwheel;
+	CBindWheel m_BindWheel;
 	CBgDraw m_BgDraw;
 	CTater m_Tater;
 	CTrails m_Trails;
