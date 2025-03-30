@@ -1,6 +1,9 @@
-#ifndef GAME_CLIENT_COMPONENTS_TRANSLATE_H
-#define GAME_CLIENT_COMPONENTS_TRANSLATE_H
+#ifndef GAME_CLIENT_COMPONENTS_TCLIENT_TRANSLATE_H
+#define GAME_CLIENT_COMPONENTS_TCLIENT_TRANSLATE_H
+
 #include <game/client/component.h>
+#include <game/client/components/chat.h>
+
 #include <optional>
 #include <vector>
 
@@ -33,10 +36,10 @@ class CTranslate : public CComponent
 	CChat::CLine *FindMessage(const char *pName);
 
 public:
-	virtual int Sizeof() const override { return sizeof(*this); }
+	int Sizeof() const override { return sizeof(*this); }
 
-	virtual void OnConsoleInit() override;
-	virtual void OnRender() override;
+	void OnConsoleInit() override;
+	void OnRender() override;
 
 	void Translate(const char *pName, bool ShowProgress = true);
 	void Translate(CChat::CLine &Line, bool ShowProgress = true);

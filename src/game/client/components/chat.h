@@ -148,7 +148,7 @@ class CChat : public CComponent
 	bool LineShouldHighlight(const char *pLine, const char *pName);
 	void StoreSave(const char *pText);
 
-	friend class CBindchat;
+	friend class CBindChat;
 	friend class CTranslate;
 
 public:

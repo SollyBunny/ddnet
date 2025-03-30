@@ -201,8 +201,8 @@ public:
 	// TClient Components
 	CSkinProfiles m_SkinProfiles;
 	CStatusBar m_StatusBar;
-	CBindchat m_Bindchat;
-	CBindWheel m_BindWheel;
+	CBindChat m_BindChat;
+	CBindWheel m_Bindwheel;
 	CBgDraw m_BgDraw;
 	CTater m_Tater;
 	CTrails m_Trails;

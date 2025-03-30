@@ -14,7 +14,7 @@ enum
 	BINDCHAT_MAX_BINDS = 256,
 };
 
-class CBindchat : public CComponent
+class CBindChat : public CComponent
 {
 	static void ConAddBindchat(IConsole::IResult *pResult, void *pUserData);
 	static void ConBindchats(IConsole::IResult *pResult, void *pUserData);
@@ -40,7 +40,7 @@ public:
 
 	std::vector<CBind> m_vBinds;
 
-	CBindchat();
+	CBindChat();
 	int Sizeof() const override { return sizeof(*this); }
 	void OnConsoleInit() override;
 

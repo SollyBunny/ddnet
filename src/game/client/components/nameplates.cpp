@@ -18,9 +18,9 @@
 class CNamePlatePart
 {
 protected:
-	vec2 m_Size = vec2();
+	vec2 m_Size = vec2(0.0f, 0.0f);
 	vec2 m_Padding = vec2(5.0f, 5.0f);
-	vec2 m_Offset = vec2(); // Offset to rendered X and Y not effecting layout
+	vec2 m_Offset = vec2(0.0f, 0.0f); // Offset to rendered X and Y not effecting layout
 	bool m_NewLine = false; // Whether this part is a new line (doesn't do anything else)
 	bool m_Visible = true; // Whether this part is visible
 	bool m_ShiftOnInvis = false; // Whether when not visible will still take up space
@@ -180,10 +180,10 @@ public:
 
 // Part Definitions
 
-class CNamePlatePartBreak : public CNamePlatePart
+class CNamePlatePartNewLine : public CNamePlatePart
 {
 public:
-	CNamePlatePartBreak(CGameClient &This) :
+	CNamePlatePartNewLine(CGameClient &This) :
 		CNamePlatePart(This)
 	{
 		m_NewLine = true;
@@ -226,7 +226,7 @@ public:
 	{
 		if(!Data.m_ShowDirection)
 		{
-			m_Size = vec2();
+			m_Size = vec2(0.0f, 0.0f);
 			m_Visible = false;
 			return;
 		}
@@ -615,7 +615,7 @@ class CNamePlate
 private:
 	bool m_Inited = false;
 	bool m_InGame = false;
-	vec2 m_Position = vec2();
+	vec2 m_Position = vec2(0.0f, 0.0f);
 	PartsVector m_vpParts;
 	void RenderLine(CGameClient &This,
 		vec2 Pos, vec2 Size,
@@ -649,25 +649,25 @@ private:
 		AddPart<CNamePlatePartDirection>(This, DIRECTION_LEFT);
 		AddPart<CNamePlatePartDirection>(This, DIRECTION_UP);
 		AddPart<CNamePlatePartDirection>(This, DIRECTION_RIGHT);
-		AddPart<CNamePlatePartBreak>(This);
+		AddPart<CNamePlatePartNewLine>(This);
 
 		AddPart<CNamePlatePartPing>(This); // TClient
 		AddPart<CNamePlatePartIgnoreMark>(This); // TClient
 		AddPart<CNamePlatePartFriendMark>(This);
 		AddPart<CNamePlatePartClientId>(This, false);
 		AddPart<CNamePlatePartName>(This);
-		AddPart<CNamePlatePartBreak>(This);
+		AddPart<CNamePlatePartNewLine>(This);
 
 		AddPart<CNamePlatePartClan>(This);
-		AddPart<CNamePlatePartBreak>(This);
+		AddPart<CNamePlatePartNewLine>(This);
 
 		AddPart<CNamePlatePartReason>(This); // TClient
-		AddPart<CNamePlatePartBreak>(This); // TClient
+		AddPart<CNamePlatePartNewLine>(This); // TClient
 		AddPart<CNamePlatePartSkin>(This); // TClient
-		AddPart<CNamePlatePartBreak>(This); // TClient
+		AddPart<CNamePlatePartNewLine>(This); // TClient
 
 		AddPart<CNamePlatePartClientId>(This, true);
-		AddPart<CNamePlatePartBreak>(This);
+		AddPart<CNamePlatePartNewLine>(This);
 
 		AddPart<CNamePlatePartHookStrongWeak>(This);
 		AddPart<CNamePlatePartHookStrongWeakId>(This);
@@ -693,7 +693,7 @@ public:
 		Update(This, pData);
 		vec2 Pos = m_Position;
 		// X: Total width including padding of line, Y: Max height of line parts
-		vec2 Size = vec2();
+		vec2 Size = vec2(0.0f, 0.0f);
 		bool Empty = true;
 		auto Start = m_vpParts.begin();
 		for(auto PartIt = m_vpParts.begin(); PartIt != m_vpParts.end(); ++PartIt)
@@ -709,7 +709,7 @@ public:
 					Pos.y -= Size.y;
 				}
 				Start = std::next(PartIt);
-				Size = vec2();
+				Size = vec2(0.0f, 0.0f);
 			}
 			else if(Part.Visible() || Part.ShiftOnInvis())
 			{
@@ -725,7 +725,7 @@ public:
 	{
 		Update(This, pData);
 		// X: Total width including padding of line, Y: Max height of line parts
-		vec2 Size = vec2();
+		vec2 Size = vec2(0.0f, 0.0f);
 		float WMax = 0.0f;
 		float HTotal = 0.0f;
 		bool Empty = true;
@@ -742,7 +742,7 @@ public:
 						WMax = Size.x;
 					HTotal += Size.y;
 				}
-				Size = vec2();
+				Size = vec2(0.0f, 0.0f);
 			}
 			else if(Part.Visible() || Part.ShiftOnInvis())
 			{
@@ -773,7 +773,6 @@ void CNamePlates::RenderNamePlateGame(vec2 Position, const CNetObj_PlayerInfo *p
 	// Assume that the name plate fits into a 800x800 box placed directly above the tee
 	ScreenX0 -= 400;
 	ScreenX1 += 400;
-	ScreenY0 -= 0;
 	ScreenY1 += 800;
 	if(!(in_range(Position.x, ScreenX0, ScreenX1) && in_range(Position.y, ScreenY0, ScreenY1)))
 		return;
@@ -909,7 +908,6 @@ void CNamePlates::RenderNamePlateGame(vec2 Position, const CNetObj_PlayerInfo *p
 	vec2 NamePlateSize = m_pData->m_aNamePlates[pPlayerInfo->m_ClientId].Size(*GameClient(), &Data);
 	ScreenX0 -= NamePlateSize.x / 2.0f;
 	ScreenX1 += NamePlateSize.x / 2.0f;
-	ScreenY0 -= 0;
 	ScreenY1 += NamePlateSize.y;
 	if(!(in_range(Position.x, ScreenX0, ScreenX1) && in_range(Position.y, ScreenY0, ScreenY1)))
 		return;
@@ -1041,4 +1039,8 @@ void CNamePlates::OnWindowResize()
 
 CNamePlates::CNamePlates() :
 	m_pData(new CNamePlates::CNamePlatesData()) {}
-CNamePlates::~CNamePlates() { delete m_pData; }
+
+CNamePlates::~CNamePlates()
+{
+	delete m_pData;
+}

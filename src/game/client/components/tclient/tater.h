@@ -1,7 +1,10 @@
 #ifndef GAME_CLIENT_COMPONENTS_TCLIENT_TATER_H
 #define GAME_CLIENT_COMPONENTS_TCLIENT_TATER_H
-#include <engine/shared/http.h>
+
 #include <game/client/component.h>
+
+#include <engine/shared/console.h>
+#include <engine/shared/http.h>
 
 class CTater : public CComponent
 {

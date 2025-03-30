@@ -1,5 +1,6 @@
 #ifndef GAME_CLIENT_COMPONENTS_TCLIENT_STATUSBAR_H
 #define GAME_CLIENT_COMPONENTS_TCLIENT_STATUSBAR_H
+
 #include <game/client/component.h>
 
 enum

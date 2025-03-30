@@ -1,23 +1,29 @@
 #ifndef GAME_CLIENT_COMPONENTS_TCLIENT_TRAILS_H
 #define GAME_CLIENT_COMPONENTS_TCLIENT_TRAILS_H
+
 #include <game/client/component.h>
-class STrailPart
+
+#include <engine/shared/protocol.h>
+
+#include <base/color.h>
+
+class CTrailPart
 {
 public:
-	vec2 Pos = vec2(0, 0);
-	vec2 UnmovedPos = vec2(0, 0);
-	ColorRGBA Col = {};
-	float Width = 0.0f;
-	vec2 Normal = vec2(0, 0);
-	vec2 Top = vec2(0, 0);
-	vec2 Bot = vec2(0, 0);
-	bool Flip = false;
-	float Progress = 1.0f;
-	int Tick = -1;
+	vec2 m_Pos = vec2(0.0f, 0.0f);
+	vec2 m_UnmovedPos = vec2(0.0f, 0.0f);
+	ColorRGBA m_Col;
+	float m_Width = 0.0f;
+	vec2 m_Normal = vec2(0.0f, 0.0f);
+	vec2 m_Top = vec2(0.0f, 0.0f);
+	vec2 m_Bot = vec2(0.0f, 0.0f);
+	bool m_Flip = false;
+	float m_Progress = 1.0f;
+	int m_Tick = -1;
 
-	bool operator==(const STrailPart &Other) const
+	bool operator==(const CTrailPart &Other) const
 	{
-		return Pos == Other.Pos;
+		return m_Pos == Other.m_Pos;
 	}
 };
 

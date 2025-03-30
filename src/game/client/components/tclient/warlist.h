@@ -153,9 +153,9 @@ public:
 
 	CWarDataCache m_WarPlayers[MAX_CLIENTS];
 
-	virtual int Sizeof() const override { return sizeof(*this); }
-	virtual void OnNewSnapshot() override;
-	virtual void OnConsoleInit() override;
+	int Sizeof() const override { return sizeof(*this); }
+	void OnNewSnapshot() override;
+	void OnConsoleInit() override;
 
 	void UpdateWarPlayers();
 

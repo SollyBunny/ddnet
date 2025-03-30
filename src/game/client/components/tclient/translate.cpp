@@ -1,9 +1,11 @@
-#include <algorithm>
-#include <atomic>
-#include <engine/shared/json.h>
-#include <engine/shared/jsonwriter.h>
 #include <game/client/gameclient.h>
 #include <game/client/lineinput.h>
+
+#include <engine/shared/json.h>
+#include <engine/shared/jsonwriter.h>
+
+#include <algorithm>
+#include <atomic>
 
 #include "translate.h"
 

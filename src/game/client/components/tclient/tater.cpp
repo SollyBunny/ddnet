@@ -1,18 +1,17 @@
-﻿#include <engine/graphics.h>
-#include <engine/shared/config.h>
-#include <engine/shared/json.h>
-#include <game/generated/protocol.h>
-#include <game/version.h>
-
-#include "../chat.h"
-#include "../emoticon.h"
-
+﻿#include <game/client/gameclient.h>
 #include <game/client/animstate.h>
+#include <game/client/components/chat.h>
 #include <game/client/render.h>
 #include <game/client/ui.h>
 
+#include <game/generated/protocol.h>
+#include <game/version.h>
+
+#include <engine/graphics.h>
+#include <engine/shared/config.h>
+#include <engine/shared/json.h>
+
 #include "tater.h"
-#include <game/client/gameclient.h>
 
 static constexpr const char *TCLIENT_INFO_URL = "https://update.tclient.app/info.json";
 
@@ -26,8 +25,8 @@ void CTater::ConRandomTee(IConsole::IResult *pResult, void *pUserData) {}
 void CTater::ConchainRandomColor(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
 {
 	CTater *pThis = static_cast<CTater *>(pUserData);
-	// resolve type to randomize
-	// check length of type (0 = all, 1 = body, 2 = feet, 3 = skin, 4 = flag)
+	// Resolve type to randomize
+	// Check length of type (0 = all, 1 = body, 2 = feet, 3 = skin, 4 = flag)
 	bool RandomizeBody = false;
 	bool RandomizeFeet = false;
 	bool RandomizeSkin = false;
@@ -53,25 +52,25 @@ void CTater::ConchainRandomColor(IConsole::IResult *pResult, void *pUserData, IC
 		}
 		else if(Length == 1)
 		{
-			// randomize body
+			// Randomize body
 			RandomizeBody = Type[0] == '1';
 		}
 		else if(Length == 2)
 		{
-			// check for body and feet
+			// Check for body and feet
 			RandomizeBody = Type[0] == '1';
 			RandomizeFeet = Type[1] == '1';
 		}
 		else if(Length == 3)
 		{
-			// check for body, feet and skin
+			// Check for body, feet and skin
 			RandomizeBody = Type[0] == '1';
 			RandomizeFeet = Type[1] == '1';
 			RandomizeSkin = Type[2] == '1';
 		}
 		else if(Length == 4)
 		{
-			// check for body, feet, skin and flag
+			// Check for body, feet, skin and flag
 			RandomizeBody = Type[0] == '1';
 			RandomizeFeet = Type[1] == '1';
 			RandomizeSkin = Type[2] == '1';
@@ -97,7 +96,7 @@ void CTater::OnInit()
 	FetchTClientInfo();
 }
 
-bool LineShouldHighlight(const char *pLine, const char *pName)
+static bool LineShouldHighlight(const char *pLine, const char *pName)
 {
 	const char *pHL = str_utf8_find_nocase(pLine, pName);
 	if(pHL)
@@ -329,7 +328,7 @@ void CTater::FetchTClientInfo()
 typedef std::tuple<int, int, int> TVersion;
 static const TVersion gs_InvalidTCVersion = std::make_tuple(-1, -1, -1);
 
-TVersion ToTCVersion(char *pStr)
+static TVersion ToTCVersion(char *pStr)
 {
 	int aVersion[3] = {0, 0, 0};
 	const char *p = strtok(pStr, ".");

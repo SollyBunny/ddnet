@@ -2,15 +2,12 @@
 #include <engine/shared/config.h>
 #include <game/generated/protocol.h>
 
-#include "../chat.h"
-#include "../emoticon.h"
-
 #include <game/client/animstate.h>
+#include <game/client/gameclient.h>
 #include <game/client/render.h>
 #include <game/client/ui.h>
 
 #include "bindwheel.h"
-#include <game/client/gameclient.h>
 
 CBindWheel::CBindWheel()
 {

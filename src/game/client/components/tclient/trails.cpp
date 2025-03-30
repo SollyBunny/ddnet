@@ -1,12 +1,11 @@
 #include <engine/graphics.h>
 #include <engine/shared/config.h>
-#include <game/generated/protocol.h>
 
 #include <game/client/animstate.h>
+#include <game/client/gameclient.h>
 #include <game/client/render.h>
 
 #include "trails.h"
-#include <game/client/gameclient.h>
 
 bool CTrails::ShouldPredictPlayer(int ClientId)
 {
@@ -119,7 +118,7 @@ void CTrails::OnRender()
 		int TrailLength = g_Config.m_ClTeeTrailLength;
 		float Width = g_Config.m_ClTeeTrailWidth;
 
-		static std::vector<STrailPart> s_Trail;
+		static std::vector<CTrailPart> s_Trail;
 		s_Trail.clear();
 
 		// TODO: figure out why this is required
@@ -129,13 +128,13 @@ void CTrails::OnRender()
 		// Fill trail list with initial positions
 		for(int i = 0; i < TrailLength; i++)
 		{
-			STrailPart Part;
+			CTrailPart Part;
 			int PosTick = StartTick - i;
 			if(PredictPlayer)
 			{
 				if(GameClient()->m_aClients[ClientId].m_aPredTick[PosTick % 200] != PosTick)
 					continue;
-				Part.Pos = GameClient()->m_aClients[ClientId].m_aPredPos[PosTick % 200];
+				Part.m_Pos = GameClient()->m_aClients[ClientId].m_aPredPos[PosTick % 200];
 				if(i == TrailLength - 1)
 					TrailFull = true;
 			}
@@ -143,12 +142,12 @@ void CTrails::OnRender()
 			{
 				if(m_History[ClientId][PosTick % 200].m_Tick != PosTick)
 					continue;
-				Part.Pos = m_History[ClientId][PosTick % 200].m_Pos;
+				Part.m_Pos = m_History[ClientId][PosTick % 200].m_Pos;
 				if(i == TrailLength - 2 || i == TrailLength - 3)
 					TrailFull = true;
 			}
-			Part.UnmovedPos = Part.Pos;
-			Part.Tick = PosTick;
+			Part.m_UnmovedPos = Part.m_Pos;
+			Part.m_Tick = PosTick;
 			s_Trail.push_back(Part);
 		}
 
@@ -165,41 +164,41 @@ void CTrails::OnRender()
 			continue;
 
 		if(PredictPlayer)
-			s_Trail.at(0).Pos = GameClient()->m_aClients[ClientId].m_RenderPos;
+			s_Trail.at(0).m_Pos = GameClient()->m_aClients[ClientId].m_RenderPos;
 		else
-			s_Trail.at(0).Pos = mix(PrevServerPos, CurServerPos, IntraTick);
+			s_Trail.at(0).m_Pos = mix(PrevServerPos, CurServerPos, IntraTick);
 
 		if(TrailFull)
-			s_Trail.at(s_Trail.size() - 1).Pos = mix(s_Trail.at(s_Trail.size() - 1).Pos, s_Trail.at(s_Trail.size() - 2).Pos, std::fmod(IntraTick, 1.0f));
+			s_Trail.at(s_Trail.size() - 1).m_Pos = mix(s_Trail.at(s_Trail.size() - 1).m_Pos, s_Trail.at(s_Trail.size() - 2).m_Pos, std::fmod(IntraTick, 1.0f));
 
 		// Set progress
 		for(int i = 0; i < (int)s_Trail.size(); i++)
 		{
 			float Size = float(s_Trail.size() - 1 + TrimTicks);
-			STrailPart &Part = s_Trail.at(i);
+			CTrailPart &Part = s_Trail.at(i);
 			if(i == 0)
-				Part.Progress = 0.0f;
+				Part.m_Progress = 0.0f;
 			else if(i == (int)s_Trail.size() - 1)
-				Part.Progress = 1.0f;
+				Part.m_Progress = 1.0f;
 			else
-				Part.Progress = ((float)i + IntraTick - 1.0f) / (Size - 1.0f);
+				Part.m_Progress = ((float)i + IntraTick - 1.0f) / (Size - 1.0f);
 
 			switch(g_Config.m_ClTeeTrailColorMode)
 			{
 			case COLORMODE_SOLID:
-				Part.Col = color_cast<ColorRGBA>(ColorHSLA(g_Config.m_ClTeeTrailColor));
+				Part.m_Col = color_cast<ColorRGBA>(ColorHSLA(g_Config.m_ClTeeTrailColor));
 				break;
 			case COLORMODE_TEE:
 				if(TeeInfo.m_CustomColoredSkin)
-					Part.Col = TeeInfo.m_ColorBody;
+					Part.m_Col = TeeInfo.m_ColorBody;
 				else
-					Part.Col = TeeInfo.m_BloodColor;
+					Part.m_Col = TeeInfo.m_BloodColor;
 				break;
 			case COLORMODE_RAINBOW:
 			{
 				float Cycle = (1.0f / TrailLength) * 0.5f;
-				float Hue = std::fmod(((Part.Tick + 6361 * ClientId) % 1000000) * Cycle, 1.0f);
-				Part.Col = color_cast<ColorRGBA>(ColorHSLA(Hue, 1.0f, 0.5f));
+				float Hue = std::fmod(((Part.m_Tick + 6361 * ClientId) % 1000000) * Cycle, 1.0f);
+				Part.m_Col = color_cast<ColorRGBA>(ColorHSLA(Hue, 1.0f, 0.5f));
 				break;
 			}
 			case COLORMODE_SPEED:
@@ -208,11 +207,11 @@ void CTrails::OnRender()
 				if(s_Trail.size() > 3)
 				{
 					if(i < 2)
-						Speed = distance(s_Trail.at(i + 2).UnmovedPos, Part.UnmovedPos) / std::abs(s_Trail.at(i + 2).Tick - Part.Tick);
+						Speed = distance(s_Trail.at(i + 2).m_UnmovedPos, Part.m_UnmovedPos) / std::abs(s_Trail.at(i + 2).m_Tick - Part.m_Tick);
 					else
-						Speed = distance(Part.UnmovedPos, s_Trail.at(i - 2).UnmovedPos) / std::abs(Part.Tick - s_Trail.at(i - 2).Tick);
+						Speed = distance(Part.m_UnmovedPos, s_Trail.at(i - 2).m_UnmovedPos) / std::abs(Part.m_Tick - s_Trail.at(i - 2).m_Tick);
 				}
-				Part.Col = color_cast<ColorRGBA>(ColorHSLA(65280 * ((int)(Speed * Speed / 12.5f) + 1)).UnclampLighting(ColorHSLA::DARKEST_LGT));
+				Part.m_Col = color_cast<ColorRGBA>(ColorHSLA(65280 * ((int)(Speed * Speed / 12.5f) + 1)).UnclampLighting(ColorHSLA::DARKEST_LGT));
 				break;
 			}
 			default:
@@ -220,13 +219,13 @@ void CTrails::OnRender()
 				dbg_break();
 			}
 
-			Part.Col.a = Alpha;
+			Part.m_Col.a = Alpha;
 			if(g_Config.m_ClTeeTrailFade)
-				Part.Col.a *= 1.0 - Part.Progress;
+				Part.m_Col.a *= 1.0 - Part.m_Progress;
 
-			Part.Width = Width;
+			Part.m_Width = Width;
 			if(g_Config.m_ClTeeTrailTaper)
-				Part.Width = Width * (1.0 - Part.Progress);
+				Part.m_Width = Width * (1.0 - Part.m_Progress);
 		}
 
 		// Remove duplicate elements (those with same Pos)
@@ -239,38 +238,38 @@ void CTrails::OnRender()
 		// Calculate the widths
 		for(int i = 0; i < (int)s_Trail.size(); i++)
 		{
-			STrailPart &Part = s_Trail.at(i);
+			CTrailPart &Part = s_Trail.at(i);
 			vec2 PrevPos;
-			vec2 Pos = s_Trail.at(i).Pos;
+			vec2 Pos = s_Trail.at(i).m_Pos;
 			vec2 NextPos;
 
 			if(i == 0)
 			{
-				vec2 Direction = normalize(s_Trail.at(i + 1).Pos - Pos);
+				vec2 Direction = normalize(s_Trail.at(i + 1).m_Pos - Pos);
 				PrevPos = Pos - Direction;
 			}
 			else
-				PrevPos = s_Trail.at(i - 1).Pos;
+				PrevPos = s_Trail.at(i - 1).m_Pos;
 
 			if(i == (int)s_Trail.size() - 1)
 			{
-				vec2 Direction = normalize(Pos - s_Trail.at(i - 1).Pos);
+				vec2 Direction = normalize(Pos - s_Trail.at(i - 1).m_Pos);
 				NextPos = Pos + Direction;
 			}
 			else
-				NextPos = s_Trail.at(i + 1).Pos;
+				NextPos = s_Trail.at(i + 1).m_Pos;
 
 			vec2 NextDirection = normalize(NextPos - Pos);
 			vec2 PrevDirection = normalize(Pos - PrevPos);
 
 			vec2 Normal = vec2(-PrevDirection.y, PrevDirection.x);
-			Part.Normal = Normal;
+			Part.m_Normal = Normal;
 			vec2 Tanget = normalize(NextDirection + PrevDirection);
-			if(Tanget == vec2(0, 0))
+			if(Tanget == vec2(0.0f, 0.0f))
 				Tanget = Normal;
 
 			vec2 PerpVec = vec2(-Tanget.y, Tanget.x);
-			Width = Part.Width;
+			Width = Part.m_Width;
 			float ScaledWidth = Width / dot(Normal, PerpVec);
 			float TopScaled = ScaledWidth;
 			float BotScaled = ScaledWidth;
@@ -281,8 +280,8 @@ void CTrails::OnRender()
 
 			vec2 Top = Pos + PerpVec * TopScaled;
 			vec2 Bot = Pos - PerpVec * BotScaled;
-			Part.Top = Top;
-			Part.Bot = Bot;
+			Part.m_Top = Top;
+			Part.m_Bot = Bot;
 
 			// Bevel Cap
 			if(dot(PrevDirection, NextDirection) < -0.25f)
@@ -293,17 +292,17 @@ void CTrails::OnRender()
 				float Det = PrevDirection.x * NextDirection.y - PrevDirection.y * NextDirection.x;
 				if(Det >= 0.0f)
 				{
-					Part.Top = Top;
-					Part.Bot = Bot;
+					Part.m_Top = Top;
+					Part.m_Bot = Bot;
 					if(i > 0)
-						s_Trail.at(i).Flip = true;
+						s_Trail.at(i).m_Flip = true;
 				}
 				else // <-Left Direction
 				{
-					Part.Top = Bot;
-					Part.Bot = Top;
+					Part.m_Top = Bot;
+					Part.m_Bot = Top;
 					if(i > 0)
-						s_Trail.at(i).Flip = true;
+						s_Trail.at(i).m_Flip = true;
 				}
 			}
 		}
@@ -316,35 +315,35 @@ void CTrails::OnRender()
 		// Draw the trail
 		for(int i = 0; i < (int)s_Trail.size() - 1; i++)
 		{
-			const STrailPart &Part = s_Trail.at(i);
-			const STrailPart &NextPart = s_Trail.at(i + 1);
-			if(distance(Part.Pos, NextPart.Pos) > 120.0f)
+			const CTrailPart &Part = s_Trail.at(i);
+			const CTrailPart &NextPart = s_Trail.at(i + 1);
+			if(distance(Part.m_Pos, NextPart.m_Pos) > 120.0f)
 				continue;
 
 			if(LineMode)
 			{
-				Graphics()->SetColor(Part.Col);
-				LineItem = IGraphics::CLineItem(Part.Pos.x, Part.Pos.y, NextPart.Pos.x, NextPart.Pos.y);
+				Graphics()->SetColor(Part.m_Col);
+				LineItem = IGraphics::CLineItem(Part.m_Pos.x, Part.m_Pos.y, NextPart.m_Pos.x, NextPart.m_Pos.y);
 				Graphics()->LinesDraw(&LineItem, 1);
 			}
 			else
 			{
 				vec2 Top, Bot;
-				if(Part.Flip)
+				if(Part.m_Flip)
 				{
-					Top = Part.Bot;
-					Bot = Part.Top;
+					Top = Part.m_Bot;
+					Bot = Part.m_Top;
 				}
 				else
 				{
-					Top = Part.Top;
-					Bot = Part.Bot;
+					Top = Part.m_Top;
+					Bot = Part.m_Bot;
 				}
 
-				vec2 NextTop = NextPart.Top;
-				vec2 NextBot = NextPart.Bot;
+				vec2 NextTop = NextPart.m_Top;
+				vec2 NextBot = NextPart.m_Bot;
 
-				Graphics()->SetColor4(NextPart.Col, NextPart.Col, Part.Col, Part.Col);
+				Graphics()->SetColor4(NextPart.m_Col, NextPart.m_Col, Part.m_Col, Part.m_Col);
 				// IGraphics::CFreeformItem FreeformItem(Top.x, Top.y, Bot.x, Bot.y, NextTop.x, NextTop.y, NextBot.x, NextBot.y);
 				IGraphics::CFreeformItem FreeformItem(NextTop.x, NextTop.y, NextBot.x, NextBot.y, Top.x, Top.y, Bot.x, Bot.y);
 
