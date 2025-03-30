@@ -357,13 +357,13 @@ void CMenus::RenderSettingsTClient(CUIRect MainView)
 		if(MouseDist < Radius && MouseDist > Radius * 0.25f)
 		{
 			int SegmentCount = GameClient()->m_BindWheel.m_vBinds.size();
-			float SegmentAngle = 2 * pi / SegmentCount;
+			float SegmentAngle = 2.0f * pi / SegmentCount;
 
-			float HoveringAngle = angle(Ui()->MousePos() - Pos) + SegmentAngle / 2;
+			float HoveringAngle = angle(Ui()->MousePos() - Pos) + SegmentAngle / 2.0f;
 			if(HoveringAngle < 0.0f)
 				HoveringAngle += 2.0f * pi;
 
-			HoveringIndex = (int)(HoveringAngle / (2 * pi) * SegmentCount);
+			HoveringIndex = (int)(HoveringAngle / (2.0f * pi) * SegmentCount);
 			if(Ui()->MouseButtonClicked(0))
 			{
 				s_SelectedBindIndex = HoveringIndex;
@@ -401,7 +401,9 @@ void CMenus::RenderSettingsTClient(CUIRect MainView)
 				TextRender()->TextColor(ColorRGBA(0.5f, 1.0f, 0.75f, 1.0f));
 			}
 			else if(i == HoveringIndex)
-				SegmentFontSize = FontSize * 1.35;
+			{
+				SegmentFontSize = FontSize * 1.35f;
+			}
 
 			const CBindWheel::CBind Bind = GameClient()->m_BindWheel.m_vBinds[i];
 			const float Angle = Theta * i;
@@ -1145,11 +1147,11 @@ void CMenus::RenderSettingsWarList(CUIRect MainView)
 	LeftView.VSplitLeft(MarginSmall, nullptr, &LeftView);
 	RightView.VSplitRight(MarginSmall, &RightView, nullptr);
 
-	// WAR LIST will have 4 columns
-	//  [War entries] - [Entry Editing] - [Group Types] - [Recent Players]
-	//									 [Group Editing]
+	// War List has 4 columns
+	// [War entries] - [Entry Editing] - [Group Types]   - [Recent Players]
+	//                                   [Group Editing]
 
-	// putting this here so it can be updated by the entry list
+	// Putting this here so it can be updated by the entry list
 	static char s_aEntryName[MAX_NAME_LENGTH];
 	static char s_aEntryClan[MAX_CLAN_LENGTH];
 	static char s_aEntryReason[MAX_WARLIST_REASON_LENGTH];
@@ -1159,7 +1161,7 @@ void CMenus::RenderSettingsWarList(CUIRect MainView)
 	LeftView.VSplitMid(&Column1, &Column2, Margin);
 	RightView.VSplitMid(&Column3, &Column4, Margin);
 
-	// ======WAR ENTRIES======
+	// War Entries
 	Column1.HSplitTop(HeadlineHeight, &Label, &Column1);
 	Label.VSplitRight(25.0f, &Label, &Button);
 	Ui()->DoLabel(&Label, TCLocalize("War Entries"), HeadlineFontSize, TEXTALIGN_ML);
@@ -1301,7 +1303,7 @@ void CMenus::RenderSettingsWarList(CUIRect MainView)
 
 	Ui()->DoEditBox_Search(&s_EntriesFilterInput, &EntriesSearch, 14.0f, !Ui()->IsPopupOpen() && !m_pClient->m_GameConsole.IsActive());
 
-	// ======WAR ENTRY EDITING======
+	// War Entry Editing
 	Column2.HSplitTop(HeadlineHeight, &Label, &Column2);
 	Label.VSplitRight(25.0f, &Label, &Button);
 	Ui()->DoLabel(&Label, TCLocalize("Edit Entry"), HeadlineFontSize, TEXTALIGN_ML);
@@ -1408,7 +1410,7 @@ void CMenus::RenderSettingsWarList(CUIRect MainView)
 	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClWarListSpectate, TCLocalize("Colors in spectate select"), &g_Config.m_ClWarListSpectate, &Column2, LineSize);
 	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClWarListShowClan, TCLocalize("Show clan if war"), &g_Config.m_ClWarListShowClan, &Column2, LineSize);
 
-	// ======WAR TYPE EDITING======
+	// War Type Editing
 
 	Column3.HSplitTop(HeadlineHeight, &Label, &Column3);
 	Ui()->DoLabel(&Label, TCLocalize("War Groups"), HeadlineFontSize, TEXTALIGN_ML);
@@ -1510,7 +1512,7 @@ void CMenus::RenderSettingsWarList(CUIRect MainView)
 		GameClient()->m_WarList.AddWarType(s_aTypeName, s_GroupColor);
 	}
 
-	// ======ONLINE PLAYER LIST======
+	// Online Player List
 
 	Column4.HSplitTop(HeadlineHeight, &Label, &Column4);
 	Ui()->DoLabel(&Label, TCLocalize("Online Players"), HeadlineFontSize, TEXTALIGN_ML);
@@ -1658,7 +1660,7 @@ void CMenus::RenderSettingsInfo(CUIRect MainView)
 		Client()->ViewFile(aBuf);
 	}
 
-	// =======RIGHT VIEW========
+	// Right View
 
 	RightView.HSplitTop(HeadlineHeight, &Label, &RightView);
 	Ui()->DoLabel(&Label, TCLocalize("TClient Developers"), HeadlineFontSize, TEXTALIGN_ML);
@@ -1784,7 +1786,7 @@ void CMenus::RenderSettingsProfiles(CUIRect MainView)
 	}
 	OwnSkinInfo.m_Size = 50.0f;
 
-	//======YOUR PROFILE======
+	// Your Profile
 	char aTempBuf[256];
 	str_format(aTempBuf, sizeof(aTempBuf), "%s:", TCLocalize("Your profile"));
 	MainView.HSplitTop(LineSize, &Label, &MainView);
