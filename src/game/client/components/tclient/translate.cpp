@@ -37,15 +37,15 @@ static void UrlEncode(const char *pText, char *pOut, size_t Length)
 class CTranslateBackendLibretranslate : public ITranslateBackend
 {
 	std::shared_ptr<CHttpRequest> m_pHttpRequest = nullptr;
-	bool ParseResponse(const json_value *Obj, char *pOut, size_t Length)
+	bool ParseResponse(const json_value *pObj, char *pOut, size_t Length)
 	{
-		if(Obj->type != json_object)
+		if(pObj->type != json_object)
 		{
 			str_copy(pOut, "Response is not object", Length);
 			return false;
 		}
 
-		const json_value *pError = json_object_get(Obj, "error");
+		const json_value *pError = json_object_get(pObj, "error");
 		if(pError != &json_value_none)
 		{
 			if(pError->type != json_string)
@@ -55,7 +55,7 @@ class CTranslateBackendLibretranslate : public ITranslateBackend
 			return false;
 		}
 
-		const json_value *pTranslatedText = json_object_get(Obj, "translatedText");
+		const json_value *pTranslatedText = json_object_get(pObj, "translatedText");
 		if(pTranslatedText == &json_value_none)
 		{
 			str_copy(pOut, "No translatedText", Length);
@@ -67,7 +67,7 @@ class CTranslateBackendLibretranslate : public ITranslateBackend
 			return false;
 		}
 
-		const json_value *pDetectedLanguage = json_object_get(Obj, "detectedLanguage");
+		const json_value *pDetectedLanguage = json_object_get(pObj, "detectedLanguage");
 		if(pDetectedLanguage == &json_value_none)
 		{
 			str_copy(pOut, "No pDetectedLanguage", Length);
@@ -136,14 +136,15 @@ public:
 			return false;
 		}
 
-		const json_value *Obj = m_pHttpRequest->ResultJson();
-		if(Obj == nullptr)
+		json_value *pObj = m_pHttpRequest->ResultJson();
+		if(pObj == nullptr)
 		{
 			str_copy(pOut, "Error while parsing JSON", Length);
 			m_pHttpRequest = nullptr;
 			return false;
 		}
-		const bool Result = ParseResponse(Obj, pOut, Length);
+		const bool Result = ParseResponse(pObj, pOut, Length);
+		json_value_free(pObj);
 		m_pHttpRequest = nullptr;
 
 		return Result;
@@ -180,16 +181,16 @@ public:
 class CTranslateBackendFtapi : public ITranslateBackend
 {
 	std::shared_ptr<CHttpRequest> m_pHttpRequest = nullptr;
-	bool ParseResponse(const json_value *Obj, char *pOut, size_t Length)
+	bool ParseResponse(const json_value *pObj, char *pOut, size_t Length)
 	{
-		if(Obj->type != json_object)
+		if(pObj->type != json_object)
 		{
 			str_copy(pOut, "Response is not object", Length);
 			m_pHttpRequest = nullptr;
 			return false;
 		}
 
-		const json_value *pTranslatedText = json_object_get(Obj, "destination-text");
+		const json_value *pTranslatedText = json_object_get(pObj, "destination-text");
 		if(pTranslatedText == &json_value_none)
 		{
 			str_copy(pOut, "No destination-text", Length);
@@ -201,7 +202,7 @@ class CTranslateBackendFtapi : public ITranslateBackend
 			return false;
 		}
 
-		const json_value *pDetectedLanguage = json_object_get(Obj, "source-language");
+		const json_value *pDetectedLanguage = json_object_get(pObj, "source-language");
 		if(pDetectedLanguage == &json_value_none)
 		{
 			str_copy(pOut, "No source-language", Length);
@@ -250,14 +251,15 @@ public:
 			return false;
 		}
 
-		const json_value *Obj = m_pHttpRequest->ResultJson();
-		if(Obj == nullptr)
+		json_value *pObj = m_pHttpRequest->ResultJson();
+		if(pObj == nullptr)
 		{
 			str_copy(pOut, "Error while parsing JSON", Length);
 			m_pHttpRequest = nullptr;
 			return false;
 		}
-		const bool Result = ParseResponse(Obj, pOut, Length);
+		const bool Result = ParseResponse(pObj, pOut, Length);
+		json_value_free(pObj);
 		m_pHttpRequest = nullptr;
 
 		return Result;
@@ -387,7 +389,7 @@ void CTranslate::Translate(CChat::CLine &Line, bool ShowProgress)
 		Job.m_pLine->m_aTextTranslated[0] = '\0';
 	}
 
-	m_vJobs.emplace_back(Job);
+	m_vJobs.emplace_back(std::move(Job));
 }
 
 void CTranslate::OnRender()
