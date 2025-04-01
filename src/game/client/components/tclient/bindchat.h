@@ -1,7 +1,6 @@
 #ifndef GAME_CLIENT_COMPONENTS_TCLIENT_BINDCHAT_H
 #define GAME_CLIENT_COMPONENTS_TCLIENT_BINDCHAT_H
 
-#include "base/system.h"
 #include <game/client/component.h>
 
 #include <engine/console.h>

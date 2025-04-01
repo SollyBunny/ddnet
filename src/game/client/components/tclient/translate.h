@@ -13,11 +13,12 @@ class CTranslate;
 class ITranslateBackend
 {
 public:
-	virtual ~ITranslateBackend(){};
+	virtual ~ITranslateBackend() = default;
+	virtual const char *ParseTarget(const char *pTarget) const;
+	virtual bool CompareTargets(const char *pA, const char *pB) const;
 	virtual const char *Name() const = 0;
 	// "[translated message]\0[guessed language code]"
 	virtual std::optional<bool> Update(char *pOut, size_t Length) = 0;
-	virtual const char *Url() { return nullptr; }
 };
 
 class CTranslate : public CComponent

@@ -1,7 +1,6 @@
 #include <engine/shared/config.h>
-#include <game/client/gameclient.h>
 
-#include "../chat.h"
+#include <game/client/gameclient.h>
 
 #include "bindchat.h"
 

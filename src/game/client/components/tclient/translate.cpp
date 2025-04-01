@@ -34,6 +34,24 @@ static void UrlEncode(const char *pText, char *pOut, size_t Length)
 	pOut[OutPos] = '\0';
 }
 
+const char *ITranslateBackend::ParseTarget(const char *pTarget) const
+{
+	if(!pTarget || pTarget[0] == '\0')
+		return CConfig::ms_pClTranslateTarget;
+	return pTarget;
+}
+
+bool ITranslateBackend::CompareTargets(const char *pA, const char *pB) const
+{
+	if(pA == pB) // if(!pA && !pB)
+		return true;
+	if(!pA || !pB)
+		return false;
+	if(str_comp_nocase(ParseTarget(pA), ParseTarget(pB)) == 0)
+		return true;
+	return false;
+}
+
 class CTranslateBackendLibretranslate : public ITranslateBackend
 {
 	std::shared_ptr<CHttpRequest> m_pHttpRequest = nullptr;
@@ -158,7 +176,7 @@ public:
 		Json.WriteAttribute("source");
 		Json.WriteStrValue("auto");
 		Json.WriteAttribute("target");
-		Json.WriteStrValue(g_Config.m_ClTranslateTarget);
+		Json.WriteStrValue(ParseTarget(g_Config.m_ClTranslateTarget));
 		Json.WriteAttribute("format");
 		Json.WriteStrValue("text");
 		Json.WriteAttribute("api_key");
@@ -221,6 +239,14 @@ class CTranslateBackendFtapi : public ITranslateBackend
 	}
 
 public:
+	const char *ParseTarget(const char *pTarget) const override
+	{
+		if(!pTarget || pTarget[0] == '\0')
+			return CConfig::ms_pClTranslateTarget;
+		if(str_comp_nocase(pTarget, "zh") == 0)
+			return "zh-cn";
+		return pTarget;
+	}
 	const char *Name() const override
 	{
 		return "FreeTranslateAPI";
@@ -269,7 +295,7 @@ public:
 		char aBuf[2048];
 		str_format(aBuf, sizeof(aBuf), "%s/translate?dl=%s&text=",
 			g_Config.m_ClTranslateEndpoint[0] ? g_Config.m_ClTranslateEndpoint : "https://ftapi.pythonanywhere.com",
-			g_Config.m_ClTranslateTarget);
+			ParseTarget(g_Config.m_ClTranslateTarget));
 
 		UrlEncode(pText, aBuf + strlen(aBuf), sizeof(aBuf) - strlen(aBuf));
 
@@ -404,7 +430,7 @@ void CTranslate::OnRender()
 			return false; // Keep ongoing tasks
 		if(*Done)
 		{
-			if(str_comp_nocase(g_Config.m_ClTranslateTarget, aBuf + strlen(aBuf) + 1) == 0) // Check for no language difference
+			if(Job.m_pBackend->CompareTargets(g_Config.m_ClTranslateTarget, aBuf + strlen(aBuf) + 1)) // Check for no language difference
 				Job.m_pLine->m_aTextTranslated[0] = '\0';
 			else if(str_comp_nocase(Job.m_pLine->m_aText, aBuf) == 0) // Check for no translation difference
 				Job.m_pLine->m_aTextTranslated[0] = '\0';

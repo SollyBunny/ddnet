@@ -284,7 +284,7 @@ public:
 
 	void DrawSprite(float x, float y, float Size) const;
 	void DrawSprite(float x, float y, float ScaledWidth, float ScaledHeight) const;
-	void RenderCursor(vec2 Center, float Size) const;
+	void RenderCursor(vec2 Center, float Size, float Alpha = 1.0f) const;
 	void RenderIcon(int ImageId, int SpriteId, const CUIRect *pRect, const ColorRGBA *pColor = nullptr) const;
 	int QuadContainerAddSprite(int QuadContainerIndex, float x, float y, float Size) const;
 	int QuadContainerAddSprite(int QuadContainerIndex, float Size) const;
