@@ -427,6 +427,15 @@ void CMenus::RenderSettingsTee(CUIRect MainView)
 		Ui()->DoLabel(&ChangeInfo, aChangeInfo, 10.f, TEXTALIGN_ML);
 	}
 
+	if(g_Config.m_Debug)
+	{
+		const CSkins::CSkinLoadingStats Stats = GameClient()->m_Skins.LoadingStats();
+		char aStats[256];
+		str_format(aStats, sizeof(aStats), "unloaded: %" PRIzu ", pending: %" PRIzu ", loading: %" PRIzu ",\nloaded: %" PRIzu ", error: %" PRIzu ", notfound: %" PRIzu,
+			Stats.m_NumUnloaded, Stats.m_NumPending, Stats.m_NumLoading, Stats.m_NumLoaded, Stats.m_NumError, Stats.m_NumNotFound);
+		Ui()->DoLabel(&ChangeInfo, aStats, 9.0f, TEXTALIGN_MR);
+	}
+
 	char *pSkinName;
 	size_t SkinNameSize;
 	int *pUseCustomColor;
@@ -476,25 +485,26 @@ void CMenus::RenderSettingsTee(CUIRect MainView)
 	Checkboxes.VSplitRight(20.0f, &Checkboxes, nullptr);
 
 	// Checkboxes
+	bool ShouldRefresh = false;
 	Checkboxes.HSplitTop(20.0f, &Button, &Checkboxes);
 	if(DoButton_CheckBox(&g_Config.m_ClDownloadSkins, Localize("Download skins"), g_Config.m_ClDownloadSkins, &Button))
 	{
 		g_Config.m_ClDownloadSkins ^= 1;
-		m_pClient->RefreshSkins(CSkinDescriptor::FLAG_SIX);
+		ShouldRefresh = true;
 	}
 
 	Checkboxes.HSplitTop(20.0f, &Button, &Checkboxes);
 	if(DoButton_CheckBox(&g_Config.m_ClDownloadCommunitySkins, Localize("Download community skins"), g_Config.m_ClDownloadCommunitySkins, &Button))
 	{
 		g_Config.m_ClDownloadCommunitySkins ^= 1;
-		m_pClient->RefreshSkins(CSkinDescriptor::FLAG_SIX);
+		ShouldRefresh = true;
 	}
 
 	Checkboxes.HSplitTop(20.0f, &Button, &Checkboxes);
 	if(DoButton_CheckBox(&g_Config.m_ClVanillaSkinsOnly, Localize("Vanilla skins only"), g_Config.m_ClVanillaSkinsOnly, &Button))
 	{
 		g_Config.m_ClVanillaSkinsOnly ^= 1;
-		m_pClient->RefreshSkins(CSkinDescriptor::FLAG_SIX);
+		ShouldRefresh = true;
 	}
 
 	Checkboxes.HSplitTop(20.0f, &Button, &Checkboxes);
@@ -547,10 +557,15 @@ void CMenus::RenderSettingsTee(CUIRect MainView)
 	str_format(aBuf, sizeof(aBuf), "%s:", Localize("Your skin"));
 	Ui()->DoLabel(&Label, aBuf, 14.0f, TEXTALIGN_ML);
 
-	// Note: get the skin info after the settings buttons, because they can trigger a refresh
-	// which invalidates the skin.
+	const CSkin *pDefaultSkin = GameClient()->m_Skins.Find("default");
+	const CSkins::CSkinContainer *pOwnSkinContainer = GameClient()->m_Skins.FindContainerOrNullptr(pSkinName[0] == '\0' ? "default" : pSkinName);
+	if(pOwnSkinContainer != nullptr && pOwnSkinContainer->IsSpecial())
+	{
+		pOwnSkinContainer = nullptr; // Special skins cannot be selected, show as missing due to invalid name
+	}
+
 	CTeeRenderInfo OwnSkinInfo;
-	OwnSkinInfo.Apply(m_pClient->m_Skins.Find(pSkinName));
+	OwnSkinInfo.Apply(pOwnSkinContainer == nullptr || pOwnSkinContainer->Skin() == nullptr ? pDefaultSkin : pOwnSkinContainer->Skin().get());
 	OwnSkinInfo.ApplyColors(*pUseCustomColor, *pColorBody, *pColorFeet);
 	OwnSkinInfo.m_Size = 50.0f;
 
@@ -561,6 +576,53 @@ void CMenus::RenderSettingsTee(CUIRect MainView)
 		const vec2 TeeRenderPos = vec2(YourSkin.x + YourSkin.w / 2.0f, YourSkin.y + YourSkin.h / 2.0f + OffsetToMid.y);
 		RenderTools()->RenderTee(CAnimState::GetIdle(), &OwnSkinInfo, *pEmote, vec2(1.0f, 0.0f), TeeRenderPos);
 	}
+
+	// Skin loading status
+	const auto &&RenderSkinStatus = [&](CUIRect Parent, const CSkins::CSkinContainer *pSkinContainer, const void *pStatusTooltipId) {
+		if(pSkinContainer != nullptr && pSkinContainer->State() == CSkins::CSkinContainer::EState::LOADED)
+		{
+			return;
+		}
+
+		CUIRect StatusIcon;
+		Parent.HSplitTop(20.0f, &StatusIcon, nullptr);
+		StatusIcon.VSplitLeft(20.0f, &StatusIcon, nullptr);
+
+		if(pSkinContainer != nullptr &&
+			(pSkinContainer->State() == CSkins::CSkinContainer::EState::UNLOADED ||
+				pSkinContainer->State() == CSkins::CSkinContainer::EState::PENDING ||
+				pSkinContainer->State() == CSkins::CSkinContainer::EState::LOADING))
+		{
+			Ui()->RenderProgressSpinner(StatusIcon.Center(), 5.0f);
+		}
+		else
+		{
+			TextRender()->TextColor(ColorRGBA(1.0f, 0.0f, 0.0f, 1.0f));
+			TextRender()->SetFontPreset(EFontPreset::ICON_FONT);
+			TextRender()->SetRenderFlags(ETextRenderFlags::TEXT_RENDER_FLAG_ONLY_ADVANCE_WIDTH | ETextRenderFlags::TEXT_RENDER_FLAG_NO_X_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_Y_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_PIXEL_ALIGNMENT | ETextRenderFlags::TEXT_RENDER_FLAG_NO_OVERSIZE);
+			Ui()->DoLabel(&StatusIcon, pSkinContainer == nullptr || pSkinContainer->State() == CSkins::CSkinContainer::EState::ERROR ? FONT_ICON_TRIANGLE_EXCLAMATION : FONT_ICON_QUESTION, 12.0f, TEXTALIGN_MC);
+			TextRender()->SetRenderFlags(0);
+			TextRender()->SetFontPreset(EFontPreset::DEFAULT_FONT);
+			TextRender()->TextColor(TextRender()->DefaultTextColor());
+			Ui()->DoButtonLogic(pStatusTooltipId, 0, &StatusIcon, BUTTONFLAG_NONE);
+			const char *pErrorTooltip;
+			if(pSkinContainer == nullptr)
+			{
+				pErrorTooltip = Localize("This skin name cannot be used.");
+			}
+			else if(pSkinContainer->State() == CSkins::CSkinContainer::EState::ERROR)
+			{
+				pErrorTooltip = Localize("Skin could not be loaded due to an error. Check the local console for details.");
+			}
+			else
+			{
+				pErrorTooltip = Localize("Skin could not be found.");
+			}
+			GameClient()->m_Tooltips.DoToolTip(pStatusTooltipId, &StatusIcon, pErrorTooltip);
+		}
+	};
+	static char s_StatusTooltipId;
+	RenderSkinStatus(YourSkin, pOwnSkinContainer, &s_StatusTooltipId);
 
 	// Skin name
 	static CLineInput s_SkinInput;
@@ -686,15 +748,15 @@ void CMenus::RenderSettingsTee(CUIRect MainView)
 
 	// Skin selector
 	static CListBox s_ListBox;
-	const std::vector<CSkins::CSkinListEntry> &vSkinList = GameClient()->m_Skins.SkinList();
+	std::vector<CSkins::CSkinListEntry> &vSkinList = GameClient()->m_Skins.SkinList();
 
 	int OldSelected = -1;
 	s_ListBox.DoStart(50.0f, vSkinList.size(), 4, 1, OldSelected, &MainView);
 	for(size_t i = 0; i < vSkinList.size(); ++i)
 	{
-		const CSkins::CSkinListEntry &SkinListEntry = vSkinList[i];
-		const CSkin *pSkinToBeDraw = SkinListEntry.m_pSkin;
-		if(str_comp(pSkinToBeDraw->GetName(), pSkinName) == 0)
+		CSkins::CSkinListEntry &SkinListEntry = vSkinList[i];
+		const CSkins::CSkinContainer *pSkinContainer = vSkinList[i].SkinContainer();
+		if(str_utf8_comp_nocase(pSkinContainer->NormalizedName(), pSkinName) == 0)
 		{
 			OldSelected = i;
 			if(m_SkinListScrollToSelected)
@@ -708,35 +770,61 @@ void CMenus::RenderSettingsTee(CUIRect MainView)
 		if(!Item.m_Visible)
 			continue;
 
+		SkinListEntry.RequestLoad();
+		const CSkin *pSkin = pSkinContainer->State() == CSkins::CSkinContainer::EState::LOADED ? pSkinContainer->Skin().get() : pDefaultSkin;
+
 		Item.m_Rect.VSplitLeft(60.0f, &Button, &Label);
 
-		CTeeRenderInfo Info = OwnSkinInfo;
-		Info.Apply(pSkinToBeDraw);
+		{
+			CTeeRenderInfo Info = OwnSkinInfo;
+			Info.Apply(pSkin);
+			vec2 OffsetToMid;
+			CRenderTools::GetRenderTeeOffsetToRenderedTee(CAnimState::GetIdle(), &Info, OffsetToMid);
+			const vec2 TeeRenderPos = vec2(Button.x + Button.w / 2.0f, Button.y + Button.h / 2 + OffsetToMid.y);
+			RenderTools()->RenderTee(CAnimState::GetIdle(), &Info, *pEmote, vec2(1.0f, 0.0f), TeeRenderPos);
+		}
 
-		vec2 OffsetToMid;
-		CRenderTools::GetRenderTeeOffsetToRenderedTee(CAnimState::GetIdle(), &Info, OffsetToMid);
-		const vec2 TeeRenderPos = vec2(Button.x + Button.w / 2.0f, Button.y + Button.h / 2 + OffsetToMid.y);
-		RenderTools()->RenderTee(CAnimState::GetIdle(), &Info, *pEmote, vec2(1.0f, 0.0f), TeeRenderPos);
-
-		SLabelProperties Props;
-		Props.m_MaxWidth = Label.w - 5.0f;
-		Ui()->DoLabel(&Label, pSkinToBeDraw->GetName(), 12.0f, TEXTALIGN_ML, Props);
+		{
+			SLabelProperties Props;
+			Props.m_MaxWidth = Label.w - 5.0f;
+			Ui()->DoLabel(&Label, pSkinContainer->Name(), 12.0f, TEXTALIGN_ML, Props);
+		}
 
 		if(g_Config.m_Debug)
 		{
 			Graphics()->TextureClear();
 			Graphics()->QuadsBegin();
-			Graphics()->SetColor(*pUseCustomColor ? color_cast<ColorRGBA>(ColorHSLA(*pColorBody).UnclampLighting(ColorHSLA::DARKEST_LGT)) : pSkinToBeDraw->m_BloodColor);
+			Graphics()->SetColor(*pUseCustomColor ? color_cast<ColorRGBA>(ColorHSLA(*pColorBody).UnclampLighting(ColorHSLA::DARKEST_LGT)) : pSkin->m_BloodColor);
 			IGraphics::CQuadItem QuadItem(Label.x, Label.y, 12.0f, 12.0f);
 			Graphics()->QuadsDrawTL(&QuadItem, 1);
 			Graphics()->QuadsEnd();
 		}
+
+		// render skin favorite icon
+		{
+			CUIRect FavIcon;
+			Item.m_Rect.HSplitTop(20.0f, &FavIcon, nullptr);
+			FavIcon.VSplitRight(20.0f, nullptr, &FavIcon);
+			if(DoButton_Favorite(SkinListEntry.FavoriteButtonId(), SkinListEntry.ListItemId(), SkinListEntry.IsFavorite(), &FavIcon))
+			{
+				if(SkinListEntry.IsFavorite())
+				{
+					GameClient()->m_Skins.RemoveFavorite(pSkinContainer->Name());
+				}
+				else
+				{
+					GameClient()->m_Skins.AddFavorite(pSkinContainer->Name());
+				}
+			}
+		}
+
+		RenderSkinStatus(Item.m_Rect, pSkinContainer, SkinListEntry.ErrorTooltipId());
 	}
 
 	const int NewSelected = s_ListBox.DoEnd();
 	if(OldSelected != NewSelected)
 	{
-		str_copy(pSkinName, vSkinList[NewSelected].m_pSkin->GetName(), SkinNameSize);
+		str_copy(pSkinName, vSkinList[NewSelected].SkinContainer()->Name(), SkinNameSize);
 		SetNeedSendInfo();
 	}
 
@@ -764,7 +852,10 @@ void CMenus::RenderSettingsTee(CUIRect MainView)
 	TextRender()->SetFontPreset(EFontPreset::ICON_FONT);
 	TextRender()->SetRenderFlags(ETextRenderFlags::TEXT_RENDER_FLAG_ONLY_ADVANCE_WIDTH | ETextRenderFlags::TEXT_RENDER_FLAG_NO_X_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_Y_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_PIXEL_ALIGNMENT | ETextRenderFlags::TEXT_RENDER_FLAG_NO_OVERSIZE);
 	static CButtonContainer s_SkinRefreshButton;
-	const bool ShouldRefresh = DoButton_Menu(&s_SkinRefreshButton, FONT_ICON_ARROW_ROTATE_RIGHT, 0, &RefreshButton) || Input()->KeyPress(KEY_F5) || (Input()->KeyPress(KEY_R) && Input()->ModifierIsPressed());
+	if(DoButton_Menu(&s_SkinRefreshButton, FONT_ICON_ARROW_ROTATE_RIGHT, 0, &RefreshButton) || Input()->KeyPress(KEY_F5) || (Input()->KeyPress(KEY_R) && Input()->ModifierIsPressed()))
+	{
+		ShouldRefresh = true;
+	}
 	TextRender()->SetRenderFlags(0);
 	TextRender()->SetFontPreset(EFontPreset::DEFAULT_FONT);
 
