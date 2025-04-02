@@ -268,7 +268,7 @@ void CTater::RandomFeetColor()
 void CTater::RandomSkin(void *pUserData)
 {
 	CTater *pThis = static_cast<CTater *>(pUserData);
-	str_copy(g_Config.m_ClPlayerSkin, pThis->m_pClient->m_Skins.SkinList()[std::rand() % (int)pThis->m_pClient->m_Skins.SkinList().size()].m_pSkin->GetName());
+	str_copy(g_Config.m_ClPlayerSkin, pThis->m_pClient->m_Skins.SkinList()[std::rand() % (int)pThis->m_pClient->m_Skins.SkinList().size()].SkinContainer()->Name());
 }
 
 void CTater::RandomFlag(void *pUserData)
