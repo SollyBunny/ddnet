@@ -146,7 +146,10 @@ bool CBindWheel::OnCursorMove(float x, float y, IInput::ECursorType CursorType)
 
 void CBindWheel::OnRender()
 {
-	auto QuadEaseInOut = [](float t) -> float {
+	if(Client()->State() != IClient::STATE_ONLINE && Client()->State() != IClient::STATE_DEMOPLAYBACK)
+		return;
+
+	static const auto QuadEaseInOut = [](float t) -> float {
 		if(t == 0.0f)
 			return 0.0f;
 		if(t == 1.0f)
@@ -159,28 +162,35 @@ void CBindWheel::OnRender()
 	static const float s_OuterItemRadius = 140.0f; // 10.0f less than emoticons for extra text space
 	static const float s_OuterCircleRadius = 190.0f;
 	// static const float s_InnerCircleRadius = 100.0f;
-	static const float s_AnimationTime = 0.2f;
 	static const float s_FontSize = 12.0f;
 	static const float s_FontSizeSelected = 18.0f;
-	static const float s_ItemAnimationTime = 0.1f;
 
-	if(Client()->State() != IClient::STATE_ONLINE && Client()->State() != IClient::STATE_DEMOPLAYBACK)
-		return;
+	const float AnimationTime = (float)g_Config.m_ClAnimateWheelTime / 1000.0f;
+	const float ItemAnimationTime = AnimationTime / 2.0f;
 
-	for(float &AnimationTime : m_aAnimationTimeItems)
+	if(AnimationTime != 0.0f)
 	{
-		AnimationTime -= Client()->RenderFrameTime();
-		if(AnimationTime <= 0.0f)
-			AnimationTime = 0.0f;
+		for(float &Time : m_aAnimationTimeItems)
+		{
+			Time -= Client()->RenderFrameTime();
+			if(Time <= 0.0f)
+				Time = 0.0f;
+		}
 	}
 
 	if(!m_Active)
 	{
-		if(g_Config.m_ClResetBindWheelMouse)
-			GameClient()->m_Emoticon.m_SelectorMouse = vec2(0.0f, 0.0f);
-		if(m_WasActive && m_SelectedBind != -1)
-			ExecuteBind(m_SelectedBind);
+		if(m_WasActive)
+		{
+			if(g_Config.m_ClResetBindWheelMouse)
+				GameClient()->m_Emoticon.m_SelectorMouse = vec2(0.0f, 0.0f);
+			if(m_SelectedBind != -1)
+				ExecuteBind(m_SelectedBind);
+		}
 		m_WasActive = false;
+
+		if(AnimationTime == 0.0f)
+			return;
 
 		m_AnimationTime -= Client()->RenderFrameTime() * 3.0f; // Close animation 3x faster
 		if(m_AnimationTime <= 0.0f)
@@ -191,15 +201,50 @@ void CBindWheel::OnRender()
 	}
 	else
 	{
+		m_AnimationTime += Client()->RenderFrameTime();
+		if(m_AnimationTime > AnimationTime)
+			m_AnimationTime = AnimationTime;
 		m_WasActive = true;
 	}
 
-	m_AnimationTime += Client()->RenderFrameTime();
-	if(m_AnimationTime > s_AnimationTime)
-		m_AnimationTime = s_AnimationTime;
-	const float AnimationPhase1 = QuadEaseInOut(m_AnimationTime / s_AnimationTime);
-	const float AnimationPhase2 = AnimationPhase1 * AnimationPhase1;
-	// const float AnimationPhase3 = AnimationPhase2 * AnimationPhase2;
+		if(m_pClient->m_Snap.m_SpecInfo.m_Active)
+	{
+		m_Active = false;
+		m_WasActive = false;
+	}
+
+	const CUIRect Screen = *Ui()->Screen();
+
+	const bool WasTouchPressed =  GameClient()->m_Emoticon.m_TouchState.m_AnyPressed;
+	Ui()->UpdateTouchState(GameClient()->m_Emoticon.m_TouchState);
+	if(GameClient()->m_Emoticon.m_TouchState.m_AnyPressed)
+	{
+		const vec2 TouchPos = (GameClient()->m_Emoticon.m_TouchState.m_PrimaryPosition - vec2(0.5f, 0.5f)) * Screen.Size();
+		const float TouchCenterDistance = length(TouchPos);
+		if(TouchCenterDistance <= s_OuterMouseLimitRadius)
+		{
+			GameClient()->m_Emoticon.m_SelectorMouse = TouchPos;
+		}
+		else if(TouchCenterDistance > s_OuterCircleRadius)
+		{
+			GameClient()->m_Emoticon.m_TouchPressedOutside = true;
+		}
+	}
+	else if(WasTouchPressed)
+	{
+		m_Active = false;
+	}
+
+	std::array<float, 2> aAnimationPhase;
+	if(AnimationTime == 0.0f)
+	{
+		aAnimationPhase.fill(1.0f);
+	}
+	else
+	{
+		aAnimationPhase[0] = QuadEaseInOut(m_AnimationTime / AnimationTime);
+		aAnimationPhase[1] = aAnimationPhase[0] * aAnimationPhase[0];
+	}
 
 	if(length(GameClient()->m_Emoticon.m_SelectorMouse) > s_OuterMouseLimitRadius)
 		GameClient()->m_Emoticon.m_SelectorMouse = normalize(GameClient()->m_Emoticon.m_SelectorMouse) * s_OuterMouseLimitRadius;
@@ -224,19 +269,17 @@ void CBindWheel::OnRender()
 	if(m_SelectedBind != -1)
 	{
 		m_aAnimationTimeItems[m_SelectedBind] += Client()->RenderFrameTime() * 2.0f; // To counteract earlier decrement
-		if(m_aAnimationTimeItems[m_SelectedBind] >= s_ItemAnimationTime)
-			m_aAnimationTimeItems[m_SelectedBind] = s_ItemAnimationTime;
+		if(m_aAnimationTimeItems[m_SelectedBind] >= ItemAnimationTime)
+			m_aAnimationTimeItems[m_SelectedBind] = ItemAnimationTime;
 	}
-
-	CUIRect Screen = *Ui()->Screen();
 
 	Ui()->MapScreen();
 
 	Graphics()->BlendNormal();
 	Graphics()->TextureClear();
 	Graphics()->QuadsBegin();
-	Graphics()->SetColor(0.0f, 0.0f, 0.0f, 0.3f * AnimationPhase1);
-	Graphics()->DrawCircle(Screen.w / 2.0f, Screen.h / 2.0f, s_OuterCircleRadius * AnimationPhase1, 64);
+	Graphics()->SetColor(0.0f, 0.0f, 0.0f, 0.3f * aAnimationPhase[0]);
+	Graphics()->DrawCircle(Screen.w / 2.0f, Screen.h / 2.0f, s_OuterCircleRadius * aAnimationPhase[0], 64);
 	Graphics()->QuadsEnd();
 
 	Graphics()->WrapClamp();
@@ -245,17 +288,18 @@ void CBindWheel::OnRender()
 	{
 		const CBind &Bind = m_vBinds[i];
 		const float Angle = Theta * i;
-		const vec2 Pos = direction(Angle) * s_OuterItemRadius * AnimationPhase2;
-		const float FontSize = (s_FontSize + QuadEaseInOut(m_aAnimationTimeItems[i] / s_ItemAnimationTime) * (s_FontSizeSelected - s_FontSize)) * AnimationPhase2;
+		const vec2 Pos = direction(Angle) * s_OuterItemRadius * aAnimationPhase[1];
+		const float Phase = ItemAnimationTime == 0.0f ? (i == m_SelectedBind ? 1.0f : 0.0f) : QuadEaseInOut(m_aAnimationTimeItems[i] / ItemAnimationTime);
+		const float FontSize = (s_FontSize + Phase * (s_FontSizeSelected - s_FontSize)) * aAnimationPhase[1];
 		const char *pName = Bind.m_aName;
 		if(pName[0] == '\0')
 		{
 			pName = "Empty";
-			TextRender()->TextColor(0.7f, 0.7f, 0.7f, AnimationPhase2);
+			TextRender()->TextColor(0.7f, 0.7f, 0.7f, aAnimationPhase[1]);
 		}
 		else
 		{
-			TextRender()->TextColor(1.0f, 1.0f, 1.0f, AnimationPhase2);
+			TextRender()->TextColor(1.0f, 1.0f, 1.0f, aAnimationPhase[1]);
 		}
 		float Width = TextRender()->TextWidth(FontSize, pName);
 		TextRender()->Text(Screen.w / 2.0f + Pos.x - Width / 2.0f, Screen.h / 2.0f + Pos.y - FontSize / 2.0f, FontSize, pName);
@@ -270,7 +314,7 @@ void CBindWheel::OnRender()
 	// DrawCircle(Screen.w / 2.0f, Screen.h / 2.0f, s_InnerCircleRadius * AnimationPhase3, 64);
 	// Graphics()->QuadsEnd();
 
-	RenderTools()->RenderCursor(GameClient()->m_Emoticon.m_SelectorMouse + vec2(Screen.w, Screen.h) / 2.0f, 24.0f, AnimationPhase1);
+	RenderTools()->RenderCursor(GameClient()->m_Emoticon.m_SelectorMouse + vec2(Screen.w, Screen.h) / 2.0f, 24.0f, aAnimationPhase[0]);
 }
 
 void CBindWheel::ExecuteBind(int Bind)

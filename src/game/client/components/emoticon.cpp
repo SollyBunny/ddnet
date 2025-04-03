@@ -76,7 +76,10 @@ bool CEmoticon::OnInput(const IInput::CEvent &Event)
 
 void CEmoticon::OnRender()
 {
-	auto QuadEaseInOut = [](float t) -> float {
+	if(Client()->State() != IClient::STATE_ONLINE && Client()->State() != IClient::STATE_DEMOPLAYBACK)
+		return;
+
+	static const auto QuadEaseInOut = [](float t) -> float {
 		if(t == 0.0f)
 			return 0.0f;
 		if(t == 1.0f)
@@ -91,17 +94,18 @@ void CEmoticon::OnRender()
 	static const float s_OuterItemRadius = 150.0f;
 	static const float s_InnerCircleRadius = 100.0f;
 	static const float s_OuterCircleRadius = 190.0f;
-	static const float s_AnimationTime = 0.2f;
-	static const float s_ItemAnimationTime = 0.1f;
+	
+	const float AnimationTime = (float)g_Config.m_ClAnimateWheelTime / 1000.0f;
+	const float ItemAnimationTime = AnimationTime / 2.0f;
 
-	if(Client()->State() != IClient::STATE_ONLINE && Client()->State() != IClient::STATE_DEMOPLAYBACK)
-		return;
-
-	for(float &AnimationTime : m_aAnimationTimeItems)
+	if(AnimationTime != 0.0f)
 	{
-		AnimationTime -= Client()->RenderFrameTime();
-		if(AnimationTime <= 0.0f)
-			AnimationTime = 0.0f;
+		for(float &Time : m_aAnimationTimeItems)
+		{
+			Time -= Client()->RenderFrameTime();
+			if(Time <= 0.0f)
+				Time = 0.0f;
+		}
 	}
 
 	if(!m_Active)
@@ -119,6 +123,9 @@ void CEmoticon::OnRender()
 			EyeEmote(m_SelectedEyeEmote);
 		m_WasActive = false;
 
+		if(AnimationTime == 0.0f)
+			return;
+
 		m_AnimationTime -= Client()->RenderFrameTime() * 3.0f; // Close animation 3x faster
 		if(m_AnimationTime <= 0.0f)
 		{
@@ -128,6 +135,12 @@ void CEmoticon::OnRender()
 	}
 	else
 	{
+		if(AnimationTime != 0.0f)
+		{
+			m_AnimationTime += Client()->RenderFrameTime();
+			if(m_AnimationTime > AnimationTime)
+				m_AnimationTime = AnimationTime;
+		}
 		m_WasActive = true;
 	}
 
@@ -159,14 +172,19 @@ void CEmoticon::OnRender()
 		m_Active = false;
 	}
 
-	m_AnimationTime += Client()->RenderFrameTime();
-	if(m_AnimationTime > s_AnimationTime)
-		m_AnimationTime = s_AnimationTime;
-	const float AnimationPhase1 = QuadEaseInOut(m_AnimationTime / s_AnimationTime);
-	const float AnimationPhase2 = AnimationPhase1 * AnimationPhase1;
-	const float AnimationPhase3 = AnimationPhase2 * AnimationPhase2;
-	const float AnimationPhase4 = AnimationPhase3 * AnimationPhase3;
-	const float AnimationPhase5 = AnimationPhase4 * AnimationPhase4;
+	std::array<float, 5> aAnimationPhase;
+	if(AnimationTime == 0.0f)
+	{
+		aAnimationPhase.fill(1.0f);
+	}
+	else
+	{
+		aAnimationPhase[0] = QuadEaseInOut(m_AnimationTime / AnimationTime);
+		aAnimationPhase[1] = aAnimationPhase[0] * aAnimationPhase[0];
+		aAnimationPhase[2] = aAnimationPhase[1] * aAnimationPhase[1];
+		aAnimationPhase[3] = aAnimationPhase[2] * aAnimationPhase[2];
+		aAnimationPhase[4] = aAnimationPhase[3] * aAnimationPhase[3];
+	}
 
 	if(length(m_SelectorMouse) > s_OuterMouseLimitRadius)
 		m_SelectorMouse = normalize(m_SelectorMouse) * s_OuterMouseLimitRadius;
@@ -185,14 +203,14 @@ void CEmoticon::OnRender()
 	if(m_SelectedEmote != -1)
 	{
 		m_aAnimationTimeItems[m_SelectedEmote] += Client()->RenderFrameTime() * 2.0f; // To counteract earlier decrement
-		if(m_aAnimationTimeItems[m_SelectedEmote] >= s_ItemAnimationTime)
-			m_aAnimationTimeItems[m_SelectedEmote] = s_ItemAnimationTime;
+		if(m_aAnimationTimeItems[m_SelectedEmote] >= ItemAnimationTime)
+			m_aAnimationTimeItems[m_SelectedEmote] = ItemAnimationTime;
 	}
 	if(m_SelectedEyeEmote != -1)
 	{
 		m_aAnimationTimeItems[NUM_EMOTICONS + m_SelectedEyeEmote] += Client()->RenderFrameTime() * 2.0f; // To counteract earlier decrement
-		if(m_aAnimationTimeItems[NUM_EMOTICONS + m_SelectedEyeEmote] >= s_ItemAnimationTime)
-			m_aAnimationTimeItems[NUM_EMOTICONS + m_SelectedEyeEmote] = s_ItemAnimationTime;
+		if(m_aAnimationTimeItems[NUM_EMOTICONS + m_SelectedEyeEmote] >= ItemAnimationTime)
+			m_aAnimationTimeItems[NUM_EMOTICONS + m_SelectedEyeEmote] = ItemAnimationTime;
 	}
 
 	const vec2 ScreenCenter = Screen.Center();
@@ -203,8 +221,8 @@ void CEmoticon::OnRender()
 
 	Graphics()->TextureClear();
 	Graphics()->QuadsBegin();
-	Graphics()->SetColor(0.0f, 0.0f, 0.0f, 0.3f * AnimationPhase1);
-	Graphics()->DrawCircle(ScreenCenter.x, ScreenCenter.y, s_OuterCircleRadius * AnimationPhase1, 64);
+	Graphics()->SetColor(0.0f, 0.0f, 0.0f, 0.3f * aAnimationPhase[0]);
+	Graphics()->DrawCircle(ScreenCenter.x, ScreenCenter.y, s_OuterCircleRadius * aAnimationPhase[0], 64);
 	Graphics()->QuadsEnd();
 
 	Graphics()->WrapClamp();
@@ -217,9 +235,10 @@ void CEmoticon::OnRender()
 		Graphics()->TextureSet(GameClient()->m_EmoticonsSkin.m_aSpriteEmoticons[Emote]);
 		Graphics()->QuadsSetSubset(0, 0, 1, 1);
 		Graphics()->QuadsBegin();
-		const vec2 Nudge = direction(Angle) * s_OuterItemRadius * AnimationPhase2;
-		const float Size = (50.0f + m_aAnimationTimeItems[Emote] / s_ItemAnimationTime * 30.0f) * AnimationPhase2;
-		IGraphics::CQuadItem QuadItem(ScreenCenter.x + Nudge.x, ScreenCenter.y + Nudge.y, Size * AnimationPhase2, Size * AnimationPhase2);
+		const vec2 Nudge = direction(Angle) * s_OuterItemRadius * aAnimationPhase[1];
+		const float Phase = ItemAnimationTime == 0.0f ? (Emote == m_SelectedEmote ? 1.0f : 0.0f) : QuadEaseInOut(m_aAnimationTimeItems[Emote] / ItemAnimationTime);
+		const float Size = (50.0f + Phase * 30.0f) * aAnimationPhase[1];
+		IGraphics::CQuadItem QuadItem(ScreenCenter.x + Nudge.x, ScreenCenter.y + Nudge.y, Size * aAnimationPhase[1], Size * aAnimationPhase[1]);
 		Graphics()->QuadsDraw(&QuadItem, 1);
 		Graphics()->QuadsEnd();
 	}
@@ -229,8 +248,8 @@ void CEmoticon::OnRender()
 	{
 		Graphics()->TextureClear();
 		Graphics()->QuadsBegin();
-		Graphics()->SetColor(1.0f, 1.0f, 1.0f, 0.3f * AnimationPhase3);
-		Graphics()->DrawCircle(ScreenCenter.x, ScreenCenter.y, s_InnerCircleRadius * AnimationPhase3, 64);
+		Graphics()->SetColor(1.0f, 1.0f, 1.0f, 0.3f * aAnimationPhase[2]);
+		Graphics()->DrawCircle(ScreenCenter.x, ScreenCenter.y, s_InnerCircleRadius * aAnimationPhase[2], 64);
 		Graphics()->QuadsEnd();
 
 		CTeeRenderInfo TeeInfo = m_pClient->m_aClients[m_pClient->m_aLocalIds[g_Config.m_ClDummy]].m_RenderInfo;
@@ -241,21 +260,22 @@ void CEmoticon::OnRender()
 			if(Angle > pi)
 				Angle -= 2.0f * pi;
 
-			const vec2 Nudge = direction(Angle) * s_InnerItemRadius * AnimationPhase4;
-			TeeInfo.m_Size = (48.0f + m_aAnimationTimeItems[NUM_EMOTICONS + Emote] / s_ItemAnimationTime * 18.0f) * AnimationPhase4;
-			RenderTools()->RenderTee(CAnimState::GetIdle(), &TeeInfo, Emote, vec2(-1.0f, 0.0f), ScreenCenter + Nudge, AnimationPhase4);
+			const vec2 Nudge = direction(Angle) * s_InnerItemRadius * aAnimationPhase[3];
+			const float Phase = ItemAnimationTime == 0.0f ? (Emote == m_SelectedEyeEmote ? 1.0f : 0.0f) : QuadEaseInOut(m_aAnimationTimeItems[NUM_EMOTICONS + Emote] / ItemAnimationTime);
+			TeeInfo.m_Size = (48.0f + Phase * 18.0f) * aAnimationPhase[3];
+			RenderTools()->RenderTee(CAnimState::GetIdle(), &TeeInfo, Emote, vec2(-1.0f, 0.0f), ScreenCenter + Nudge, aAnimationPhase[3]);
 		}
 
 		Graphics()->TextureClear();
 		Graphics()->QuadsBegin();
-		Graphics()->SetColor(0.0f, 0.0f, 0.0f, 0.3f * AnimationPhase5);
-		Graphics()->DrawCircle(ScreenCenter.x, ScreenCenter.y, 30.0f * AnimationPhase5, 64);
+		Graphics()->SetColor(0.0f, 0.0f, 0.0f, 0.3f * aAnimationPhase[4]);
+		Graphics()->DrawCircle(ScreenCenter.x, ScreenCenter.y, 30.0f * aAnimationPhase[4], 64);
 		Graphics()->QuadsEnd();
 	}
 	else
 		m_SelectedEyeEmote = -1;
 
-	RenderTools()->RenderCursor(ScreenCenter + m_SelectorMouse, 24.0f, AnimationPhase1);
+	RenderTools()->RenderCursor(ScreenCenter + m_SelectorMouse, 24.0f, aAnimationPhase[0]);
 }
 
 void CEmoticon::Emote(int Emoticon)
