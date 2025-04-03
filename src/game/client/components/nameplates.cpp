@@ -560,7 +560,7 @@ protected:
 		m_Visible = pReason[0] != '\0' && !This.m_Snap.m_apPlayerInfos[Data.m_ClientId]->m_Local;
 		if(!m_Visible)
 			return false;
-		m_Color = Data.m_Color;
+		m_Color = ColorRGBA(0.7f, 0.7f, 0.7f, Data.m_Color.a);
 		return m_FontSize != Data.m_FontSizeClan || str_comp(m_aText, pReason) != 0;
 	}
 	void UpdateText(CGameClient &This, const CNamePlateData &Data) override
