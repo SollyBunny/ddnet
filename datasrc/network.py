@@ -7,11 +7,13 @@ Emotes = ["NORMAL", "PAIN", "HAPPY", "SURPRISE", "ANGRY", "BLINK"]
 PlayerFlags = ["PLAYING", "IN_MENU", "CHATTING", "SCOREBOARD", "AIM", "SPEC_CAM"]
 GameFlags = ["TEAMS", "FLAGS"]
 GameStateFlags = ["GAMEOVER", "SUDDENDEATH", "PAUSED", "RACETIME"]
-CharacterFlags = ["SOLO", "JETPACK", "COLLISION_DISABLED", "ENDLESS_HOOK", "ENDLESS_JUMP", "SUPER",
-                  "HAMMER_HIT_DISABLED", "SHOTGUN_HIT_DISABLED", "GRENADE_HIT_DISABLED", "LASER_HIT_DISABLED", "HOOK_HIT_DISABLED",
-                  "TELEGUN_GUN", "TELEGUN_GRENADE", "TELEGUN_LASER",
-                  "WEAPON_HAMMER", "WEAPON_GUN", "WEAPON_SHOTGUN", "WEAPON_GRENADE", "WEAPON_LASER", "WEAPON_NINJA",
-				  "MOVEMENTS_DISABLED", "IN_FREEZE", "PRACTICE_MODE", "LOCK_MODE", "TEAM0_MODE", "INVINCIBLE"]
+CharacterFlags = [
+	"SOLO", "JETPACK", "COLLISION_DISABLED", "ENDLESS_HOOK", "ENDLESS_JUMP", "SUPER",
+	"HAMMER_HIT_DISABLED", "SHOTGUN_HIT_DISABLED", "GRENADE_HIT_DISABLED", "LASER_HIT_DISABLED", "HOOK_HIT_DISABLED",
+	"TELEGUN_GUN", "TELEGUN_GRENADE", "TELEGUN_LASER",
+	"WEAPON_HAMMER", "WEAPON_GUN", "WEAPON_SHOTGUN", "WEAPON_GRENADE", "WEAPON_LASER", "WEAPON_NINJA",
+	"MOVEMENTS_DISABLED", "IN_FREEZE", "PRACTICE_MODE", "LOCK_MODE", "TEAM0_MODE", "INVINCIBLE"
+]
 GameInfoFlags = [
 	"TIMESCORE", "GAMETYPE_RACE", "GAMETYPE_FASTCAP", "GAMETYPE_FNG",
 	"GAMETYPE_DDRACE", "GAMETYPE_DDNET", "GAMETYPE_BLOCK_WORLDS",
@@ -51,7 +53,7 @@ Authed = ["NO", "HELPER", "MOD", "ADMIN"]
 EntityClasses = ["PROJECTILE", "DOOR", "DRAGGER_WEAK", "DRAGGER_NORMAL", "DRAGGER_STRONG", "GUN_NORMAL", "GUN_EXPLOSIVE", "GUN_FREEZE", "GUN_UNFREEZE", "LIGHT", "PICKUP"]
 Teams = ["ALL", "SPECTATORS", "RED", "BLUE", "WHISPER_SEND", "WHISPER_RECV"]
 
-RawHeader = '''
+RawHeader = """
 #include <engine/shared/teehistorian_ex.h>
 
 enum
@@ -73,7 +75,7 @@ enum
 {
 	GAMEINFO_CURVERSION=10,
 };
-'''
+"""
 
 Enums = [
 	Enum("EMOTE", Emotes),
@@ -326,24 +328,22 @@ Objects = [
 		NetIntRange("m_SpectatorCount", 0, 'MAX_CLIENTS-1', default=0),
 	]),
 
-	## Events
+	# Events
 
 	NetEvent("Common", [
 		NetIntAny("m_X"),
 		NetIntAny("m_Y"),
 	]),
 
-
 	NetEvent("Explosion:Common", []),
 	NetEvent("Spawn:Common", []),
 	NetEvent("HammerHit:Common", []),
-
 
 	NetEvent("Death:Common", [
 		NetIntRange("m_ClientId", 0, 'MAX_CLIENTS-1'),
 	]),
 
-	NetEvent("SoundGlobal:Common", [ #TODO 0.7: remove me
+	NetEvent("SoundGlobal:Common", [  # TODO 0.7: remove me
 		NetIntRange("m_SoundId", 0, 'NUM_SOUNDS-1'),
 	]),
 
@@ -391,8 +391,7 @@ Objects = [
 ]
 
 Messages = [
-
-	### Server messages
+	# Server messages
 	NetMessage("Sv_Motd", [
 		NetString("m_pMessage"),
 	]),
@@ -436,8 +435,8 @@ Messages = [
 
 	NetMessage("Sv_VoteOptionListAdd", [
 		NetIntRange("m_NumOptions", 1, 15),
-		NetStringStrict("m_pDescription0"), NetStringStrict("m_pDescription1"),	NetStringStrict("m_pDescription2"),
-		NetStringStrict("m_pDescription3"),	NetStringStrict("m_pDescription4"),	NetStringStrict("m_pDescription5"),
+		NetStringStrict("m_pDescription0"), NetStringStrict("m_pDescription1"), NetStringStrict("m_pDescription2"),
+		NetStringStrict("m_pDescription3"), NetStringStrict("m_pDescription4"), NetStringStrict("m_pDescription5"),
 		NetStringStrict("m_pDescription6"), NetStringStrict("m_pDescription7"), NetStringStrict("m_pDescription8"),
 		NetStringStrict("m_pDescription9"), NetStringStrict("m_pDescription10"), NetStringStrict("m_pDescription11"),
 		NetStringStrict("m_pDescription12"), NetStringStrict("m_pDescription13"), NetStringStrict("m_pDescription14"),
@@ -464,7 +463,7 @@ Messages = [
 		NetIntRange("m_Total", 0, 'MAX_CLIENTS'),
 	]),
 
-	### Client messages
+	# Client messages
 	NetMessage("Cl_Say", [
 		NetBool("m_Team"),
 		NetStringHalfStrict("m_pMessage"),
@@ -535,7 +534,7 @@ Messages = [
 	NetMessage("Cl_ShowOthersLegacy", [
 		NetBool("m_Show"),
 	]),
-# Can't add any NetMessages here!
+	# Can't add any NetMessages here!
 
 	NetMessageEx("Sv_MyOwnMessage", "my-own-message@heinrich5991.de", [
 		NetIntAny("m_Test"),
@@ -568,7 +567,7 @@ Messages = [
 		NetIntAny("m_ServerTimeBest"),
 		NetIntAny("m_PlayerTimeBest"),
 	]),
-    
+
 	NetMessageEx("Sv_KillMsgTeam", "killmsgteam@netmsg.ddnet.tw", [
 		NetIntRange("m_Team", 0, 'MAX_CLIENTS-1'),
 		NetIntRange("m_First", -1, 'MAX_CLIENTS-1'),
