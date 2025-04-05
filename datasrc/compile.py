@@ -4,7 +4,8 @@ import network
 
 from datatypes import EmitDefinition, EmitTypeDeclaration
 
-def create_enum_table(names, num, start = 0):
+
+def create_enum_table(names, num, start=0):
 	lines = []
 	lines += ["enum", "{"]
 	if len(names) > 0 and start != 0:
@@ -51,7 +52,7 @@ def gen_network_header():
 	print(network.RawHeader)
 
 	for e in network.Enums:
-		for line in create_enum_table([f"{e.name}_{v}" for v in e.values], f'NUM_{e.name}S', e.start): # pylint: disable=no-member
+		for line in create_enum_table([f"{e.name}_{v}" for v in e.values], f'NUM_{e.name}S', e.start):  # pylint: disable=no-member
 			print(line)
 		print("")
 
@@ -62,18 +63,18 @@ def gen_network_header():
 
 	non_extended = [o for o in network.Objects if o.ex is None]
 	extended = [o for o in network.Objects if o.ex is not None]
-	for line in create_enum_table(["NETOBJTYPE_EX"]+[o.enum_name for o in non_extended], "NUM_NETOBJTYPES"):
+	for line in create_enum_table(["NETOBJTYPE_EX"] + [o.enum_name for o in non_extended], "NUM_NETOBJTYPES"):
 		print(line)
-	for line in create_enum_table(["__NETOBJTYPE_UUID_HELPER=OFFSET_GAME_UUID-1"]+[o.enum_name for o in extended], "OFFSET_NETMSGTYPE_UUID"):
+	for line in create_enum_table(["__NETOBJTYPE_UUID_HELPER=OFFSET_GAME_UUID-1"] + [o.enum_name for o in extended], "OFFSET_NETMSGTYPE_UUID"):
 		print(line)
 	print("")
 
 	non_extended = [o for o in network.Messages if o.ex is None]
 	extended = [o for o in network.Messages if o.ex is not None]
-	for line in create_enum_table(["NETMSGTYPE_EX"]+[o.enum_name for o in non_extended], "NUM_NETMSGTYPES"):
+	for line in create_enum_table(["NETMSGTYPE_EX"] + [o.enum_name for o in non_extended], "NUM_NETMSGTYPES"):
 		print(line)
 	print("")
-	for line in create_enum_table(["__NETMSGTYPE_UUID_HELPER=OFFSET_NETMSGTYPE_UUID-1"]+[o.enum_name for o in extended], "OFFSET_MAPITEMTYPE_UUID"):
+	for line in create_enum_table(["__NETMSGTYPE_UUID_HELPER=OFFSET_NETMSGTYPE_UUID-1"] + [o.enum_name for o in extended], "OFFSET_MAPITEMTYPE_UUID"):
 		print(line)
 	print("")
 
@@ -166,7 +167,6 @@ int CNetObjHandler::ClampInt(const char *pErrorMsg, int Value, int Min, int Max)
 	return Value;
 }
 	""")
-
 
 	lines = []
 	lines += ["const char *CNetObjHandler::ms_apObjNames[] = {"]
@@ -295,7 +295,6 @@ void *CNetObjHandler::SecureUnpackObj(int Type, CUnpacker *pUnpacker)
 	for line in lines:
 		print(line)
 
-
 	lines = []
 	lines += ["""\
 void *CNetObjHandler::SecureUnpackMsg(int Type, CUnpacker *pUnpacker)
@@ -328,7 +327,6 @@ void *CNetObjHandler::SecureUnpackMsg(int Type, CUnpacker *pUnpacker)
 	for line in lines:
 		print(line)
 
-
 	lines = []
 	lines += ["""\
 bool CNetObjHandler::TeeHistorianRecordMsg(int Type)
@@ -353,7 +351,6 @@ bool CNetObjHandler::TeeHistorianRecordMsg(int Type)
 	"""]
 	for line in lines:
 		print(line)
-
 
 	lines = []
 	lines += ["""\
@@ -400,6 +397,7 @@ def gen_common_content_header():
 	EmitEnum([f"IMAGE_{i.name.value.upper()}" for i in content.container.images.items], "NUM_IMAGES")
 	EmitEnum([f"ANIM_{i.name.value.upper()}" for i in content.container.animations.items], "NUM_ANIMS")
 	EmitEnum([f"SPRITE_{i.name.value.upper()}" for i in content.container.sprites.items], "NUM_SPRITES")
+
 
 def gen_common_content_source():
 	EmitDefinition(content.container, "datacontainer")
@@ -454,6 +452,7 @@ def main():
 	parser.add_argument('file_to_generate', choices=FUNCTION_MAP.keys())
 	args = parser.parse_args()
 	FUNCTION_MAP[args.file_to_generate]()
+
 
 if __name__ == '__main__':
 	main()

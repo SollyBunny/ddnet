@@ -1,10 +1,8 @@
 # coding: utf-8
 # pylint: skip-file
 from socket import socket, AF_INET, SOCK_DGRAM
-import sys
 import threading
 import time
-
 
 
 NUM_MASTERSERVERS = 4
@@ -22,14 +20,12 @@ PACKET_GETINFO2 = "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xffgie2" + "\x00"
 PACKET_GETINFO3 = "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xffgie3" + "\x00"
 
 
-
 class Server_Info(threading.Thread):
-
 	def __init__(self, address, typ):
 		self.address = address
 		self.type = typ
 		self.finished = False
-		threading.Thread.__init__(self, target = self.run)
+		threading.Thread.__init__(self, target=self.run)
 
 	def run(self):
 		self.info = None
@@ -43,6 +39,7 @@ class Server_Info(threading.Thread):
 
 
 def get_server_info(address):
+	sock = None
 	try:
 		sock = socket(AF_INET, SOCK_DGRAM)
 		sock.settimeout(TIMEOUT)
@@ -50,7 +47,7 @@ def get_server_info(address):
 		data, _addr = sock.recvfrom(1024)
 		sock.close()
 
-		data = data[14:] # skip header
+		data = data[14:]  # skip header
 		slots = data.split("\x00")
 
 		server_info = {}
@@ -66,18 +63,21 @@ def get_server_info(address):
 
 		for i in range(0, server_info["num_players"]):
 			player = {}
-			player["name"] = slots[8+i*2]
-			player["score"] = int(slots[8+i*2+1])
+			player["name"] = slots[8 + i * 2]
+			player["score"] = int(slots[8 + i * 2 + 1])
 			server_info["players"].append(player)
 
 		return server_info
 
-	except:
-		sock.close()
-		return None
+	except BlockingIOError:
+		pass
+	finally:
+		if sock:
+			sock.close()
 
 
 def get_server_info2(address):
+	sock = None
 	try:
 		sock = socket(AF_INET, SOCK_DGRAM)
 		sock.settimeout(TIMEOUT)
@@ -85,7 +85,7 @@ def get_server_info2(address):
 		data, _addr = sock.recvfrom(1024)
 		sock.close()
 
-		data = data[14:] # skip header
+		data = data[14:]  # skip header
 		slots = data.split("\x00")
 
 		server_info = {}
@@ -102,26 +102,29 @@ def get_server_info2(address):
 
 		for i in range(0, server_info["num_players"]):
 			player = {}
-			player["name"] = slots[9+i*2]
-			player["score"] = int(slots[9+i*2+1])
+			player["name"] = slots[9 + i * 2]
+			player["score"] = int(slots[9 + i * 2 + 1])
 			server_info["players"].append(player)
 
 		return server_info
 
-	except:
-		sock.close()
-		return None
+	except BlockingIOError:
+		pass
+	finally:
+		if sock:
+			sock.close()
 
 
 def get_server_info3(address):
+	sock = None
 	try:
 		sock = socket(AF_INET, SOCK_DGRAM)
 		sock.settimeout(TIMEOUT)
 		sock.sendto(PACKET_GETINFO3, address)
-		data, addr = sock.recvfrom(1400)
+		data, _addr = sock.recvfrom(1400)
 		sock.close()
 
-		data = data[14:] # skip header
+		data = data[14:]  # skip header
 		slots = data.split("\x00")
 
 		server_info = {}
@@ -139,11 +142,11 @@ def get_server_info3(address):
 
 		for i in range(0, server_info["num_clients"]):
 			player = {}
-			player["name"] = slots[10+i*5]
-			player["clan"] = slots[10+i*5+1]
-			player["country"] = int(slots[10+i*5+2])
-			player["score"] = int(slots[10+i*5+3])
-			if int(slots[10+i*5+4]):
+			player["name"] = slots[10 + i * 5]
+			player["clan"] = slots[10 + i * 5 + 1]
+			player["country"] = int(slots[10 + i * 5 + 2])
+			player["score"] = int(slots[10 + i * 5 + 3])
+			if int(slots[10 + i * 5 + 4]):
 				player["player"] = True
 			else:
 				player["player"] = False
@@ -151,10 +154,11 @@ def get_server_info3(address):
 
 		return server_info
 
-	except:
-		sock.close()
-		return None
-
+	except BlockingIOError:
+		pass
+	finally:
+		if sock:
+			sock.close()
 
 
 class Master_Server_Info(threading.Thread):
@@ -162,7 +166,7 @@ class Master_Server_Info(threading.Thread):
 	def __init__(self, address):
 		self.address = address
 		self.finished = False
-		threading.Thread.__init__(self, target = self.run)
+		threading.Thread.__init__(self, target=self.run)
 
 	def run(self):
 		self.servers = get_list(self.address) + get_list2(self.address)
@@ -172,24 +176,28 @@ class Master_Server_Info(threading.Thread):
 def get_list(address):
 	servers = []
 
+	sock = None
 	try:
 		sock = socket(AF_INET, SOCK_DGRAM)
 		sock.settimeout(TIMEOUT)
 		sock.sendto(PACKET_GETLIST, address)
 
-		while 1:
+		while True:
 			data, _addr = sock.recvfrom(1024)
 
 			data = data[14:]
 			num_servers = len(data) / 6
 
 			for n in range(0, num_servers):
-				ip = ".".join(map(str, map(ord, data[n*6:n*6+4])))
-				port = ord(data[n*6+5]) * 256 + ord(data[n*6+4])
+				ip = ".".join(map(str, map(ord, data[n * 6:n * 6 + 4])))
+				port = ord(data[n * 6 + 5]) * 256 + ord(data[n * 6 + 4])
 				servers += [[(ip, port), SERVERTYPE_LEGACY]]
 
-	except:
-		sock.close()
+	except BlockingIOError:
+		pass
+	finally:
+		if sock:
+			sock.close()
 
 	return servers
 
@@ -197,39 +205,41 @@ def get_list(address):
 def get_list2(address):
 	servers = []
 
+	sock = None
 	try:
 		sock = socket(AF_INET, SOCK_DGRAM)
 		sock.settimeout(TIMEOUT)
 		sock.sendto(PACKET_GETLIST2, address)
 
-		while 1:
+		while True:
 			data, _addr = sock.recvfrom(1400)
 
 			data = data[14:]
 			num_servers = len(data) / 18
 
 			for n in range(0, num_servers):
-				if data[n*18:n*18+12] == "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xff":
-					ip = ".".join(map(str, map(ord, data[n*18+12:n*18+16])))
+				if data[n * 18:n * 18 + 12] == "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xff":
+					ip = ".".join(map(str, map(ord, data[n * 18 + 12:n * 18 + 16])))
 				else:
-					ip = ":".join(map(str, map(ord, data[n*18:n*18+16])))
-				port = (ord(data[n*18+16])<<8) + ord(data[n*18+17])
+					ip = ":".join(map(str, map(ord, data[n * 18:n * 18 + 16])))
+				port = (ord(data[n * 18 + 16]) << 8) + ord(data[n * 18 + 17])
 				servers += [[(ip, port), SERVERTYPE_NORMAL]]
 
-	except:
-		sock.close()
+	finally:
+		if sock:
+			sock.close()
+		pass
 
 	return servers
 
 
-
 master_servers = []
 
-for i in range(1, NUM_MASTERSERVERS+1):
+for i in range(1, NUM_MASTERSERVERS + 1):
 	m = Master_Server_Info((f"master{int(i)}.teeworlds.com", MASTERSERVER_PORT))
 	master_servers.append(m)
 	m.start()
-	time.sleep(0.001) # avoid issues
+	time.sleep(0.001)  # avoid issues
 
 servers = []
 
@@ -238,7 +248,7 @@ while len(master_servers) != 0:
 		if master_servers[0].servers:
 			servers += master_servers[0].servers
 		del master_servers[0]
-	time.sleep(0.001) # be nice
+	time.sleep(0.001)  # be nice
 
 servers_info = []
 
@@ -248,7 +258,7 @@ for server in servers:
 	s = Server_Info(server[0], server[1])
 	servers_info.append(s)
 	s.start()
-	time.sleep(0.001) # avoid issues
+	time.sleep(0.001)  # avoid issues
 
 num_players = 0
 num_clients = 0
@@ -265,6 +275,6 @@ while len(servers_info) != 0:
 
 		del servers_info[0]
 
-	time.sleep(0.001) # be nice
+	time.sleep(0.001)  # be nice
 
-print(str(num_players) + " players and " + str(num_clients-num_players) + " spectators")
+print(f"{num_players} players and {num_clients - num_players} spectators")
