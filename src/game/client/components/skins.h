@@ -162,14 +162,18 @@ public:
 		CSkinListEntry() :
 			m_pSkinContainer(nullptr),
 			m_Favorite(false) {}
-		CSkinListEntry(CSkinContainer *pSkinContainer, bool Favorite) :
+		CSkinListEntry(CSkinContainer *pSkinContainer, bool Favorite, const char *pNameMatchStart, const char *pNameMatchEnd) :
 			m_pSkinContainer(pSkinContainer),
-			m_Favorite(Favorite) {}
+			m_Favorite(Favorite),
+			m_pNameMatchStart(pNameMatchStart),
+			m_pNameMatchEnd(pNameMatchEnd) {}
 
 		bool operator<(const CSkinListEntry &Other) const;
 
 		const CSkinContainer *SkinContainer() const { return m_pSkinContainer; }
 		bool IsFavorite() const { return m_Favorite; }
+		const char *NameMatchStart() const { return m_pNameMatchStart; }
+		const char *NameMatchEnd() const { return m_pNameMatchEnd; }
 		const void *ListItemId() const { return &m_ListItemId; }
 		const void *FavoriteButtonId() const { return &m_FavoriteButtonId; }
 		const void *ErrorTooltipId() const { return &m_ErrorTooltipId; }
@@ -182,6 +186,8 @@ public:
 	private:
 		CSkinContainer *m_pSkinContainer;
 		bool m_Favorite;
+		const char *m_pNameMatchStart;
+		const char *m_pNameMatchEnd;
 		char m_ListItemId;
 		char m_FavoriteButtonId;
 		char m_ErrorTooltipId;

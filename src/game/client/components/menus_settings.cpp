@@ -787,6 +787,12 @@ void CMenus::RenderSettingsTee(CUIRect MainView)
 		{
 			SLabelProperties Props;
 			Props.m_MaxWidth = Label.w - 5.0f;
+			// TODO: should be done cleaner
+			if(SkinListEntry.NameMatchStart() != nullptr && SkinListEntry.NameMatchEnd() != nullptr)
+			{
+				Props.m_vColorSplits.emplace_back(SkinListEntry.NameMatchStart() - pSkinContainer->Name(),
+					SkinListEntry.NameMatchEnd() - SkinListEntry.NameMatchStart(), ColorRGBA(0.4f, 0.4f, 1.0f, 1.0f));
+			}
 			Ui()->DoLabel(&Label, pSkinContainer->Name(), 12.0f, TEXTALIGN_ML, Props);
 		}
 

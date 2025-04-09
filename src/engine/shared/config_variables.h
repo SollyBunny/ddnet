@@ -140,9 +140,9 @@ MACRO_CONFIG_STR(ClLanguagefile, cl_languagefile, 255, "", CFGFLAG_CLIENT | CFGF
 
 // skin loading
 #if defined(CONF_ARCH_IA32)
-MACRO_CONFIG_INT(ClSkinsLoadedMax, cl_skins_loaded_max, 256, 256, 8192, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Maximum number of skins being loaded at the same time")
+MACRO_CONFIG_INT(ClSkinsLoadedMax, cl_skins_loaded_max, 256, 256, 8192, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Maximum number of skins that can be loaded at the same time")
 #else
-MACRO_CONFIG_INT(ClSkinsLoadedMax, cl_skins_loaded_max, 512, 256, 8192, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Maximum number of skins being loaded at the same time")
+MACRO_CONFIG_INT(ClSkinsLoadedMax, cl_skins_loaded_max, 512, 256, 8192, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Maximum number of skins that can be loaded at the same time")
 #endif
 MACRO_CONFIG_STR(ClSkinDownloadUrl, cl_skin_download_url, 100, "https://skins.ddnet.org/skin/", CFGFLAG_CLIENT | CFGFLAG_SAVE, "URL used to download skins")
 MACRO_CONFIG_STR(ClSkinCommunityDownloadUrl, cl_skin_community_download_url, 100, "https://skins.ddnet.org/skin/community/", CFGFLAG_CLIENT | CFGFLAG_SAVE, "URL used to download community skins")

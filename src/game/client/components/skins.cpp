@@ -41,7 +41,6 @@ CSkins::CSkinLoadJob::CSkinLoadJob(CSkins *pSkins, const char *pName, int Storag
 {
 }
 
-// TODO: maybe also load favorite skins immediately and keep them loaded?
 CSkins::CSkinContainer::CSkinContainer(const char *pName, EType Type, int StorageType) :
 	m_Type(Type),
 	m_StorageType(StorageType)
@@ -95,6 +94,13 @@ bool CSkins::CSkinContainer::operator<(const CSkinContainer &Other) const
 	return str_comp(m_aNormalizedName, Other.m_aNormalizedName) < 0;
 }
 
+static constexpr std::chrono::nanoseconds MIN_REQUESTED_TIME_FOR_PENDING = 250ms;
+static constexpr std::chrono::nanoseconds MAX_REQUESTED_TIME_FOR_PENDING = 500ms;
+static constexpr std::chrono::nanoseconds MIN_UNLOAD_TIME_PENDING = 1s;
+static constexpr std::chrono::nanoseconds MIN_UNLOAD_TIME_LOADED = 2s;
+static_assert(MIN_REQUESTED_TIME_FOR_PENDING < MAX_REQUESTED_TIME_FOR_PENDING);
+static_assert(MIN_REQUESTED_TIME_FOR_PENDING < MIN_UNLOAD_TIME_PENDING, "Unloading pending skins must take longer than adding more pending skins");
+
 void CSkins::CSkinContainer::RequestLoad()
 {
 	// Delay loading skins a bit after the load has been requested to avoid loading a lot of skins
@@ -102,18 +108,14 @@ void CSkins::CSkinContainer::RequestLoad()
 	if(m_State == CSkins::CSkinContainer::EState::UNLOADED)
 	{
 		const std::chrono::nanoseconds Now = time_get_nanoseconds();
-		if(!m_FirstLoadRequest.has_value() || !m_LastLoadRequest.has_value())
+		if(!m_FirstLoadRequest.has_value() ||
+			!m_LastLoadRequest.has_value() ||
+			Now - m_LastLoadRequest.value() > MAX_REQUESTED_TIME_FOR_PENDING)
 		{
 			m_FirstLoadRequest = Now;
 			m_LastLoadRequest = m_FirstLoadRequest;
 		}
-
-		if(Now - m_LastLoadRequest.value() > 500ms)
-		{
-			m_FirstLoadRequest = Now;
-			m_LastLoadRequest = m_FirstLoadRequest;
-		}
-		else if(Now - m_FirstLoadRequest.value() > 250ms)
+		else if(Now - m_FirstLoadRequest.value() > MIN_REQUESTED_TIME_FOR_PENDING)
 		{
 			m_State = CSkins::CSkinContainer::EState::PENDING;
 		}
@@ -512,17 +514,14 @@ void CSkins::OnUpdate()
 
 void CSkins::UpdateUnloadSkins(CSkinLoadingStats &Stats)
 {
-	static const std::chrono::nanoseconds MIN_UNUSED_TIME_PENDING = 1s;
-	static const std::chrono::nanoseconds MIN_UNUSED_TIME_LOADED = 2s;
-
-	// TODO: possibly also detect low VRAM and unload some
 	size_t NumToUnload = 0;
 	if(Stats.m_NumPending + Stats.m_NumLoaded + Stats.m_NumLoading > (size_t)g_Config.m_ClSkinsLoadedMax)
 	{
 		NumToUnload += Stats.m_NumPending + Stats.m_NumLoaded + Stats.m_NumLoading - (size_t)g_Config.m_ClSkinsLoadedMax;
 	}
 
-	const std::chrono::nanoseconds Now = time_get_nanoseconds();
+	const size_t OldNumToUnload = NumToUnload;
+	const std::chrono::nanoseconds UnloadStart = time_get_nanoseconds();
 	while(NumToUnload > 0)
 	{
 		CSkinContainer *pToUnload = nullptr;
@@ -539,13 +538,14 @@ void CSkins::UpdateUnloadSkins(CSkinLoadingStats &Stats)
 				continue;
 			}
 
-			const std::chrono::nanoseconds TimeUnused = Now - pSkinContainer->m_LastLoadRequest.value();
-			if(TimeUnused < (pSkinContainer->m_State == CSkinContainer::EState::PENDING ? MIN_UNUSED_TIME_PENDING : MIN_UNUSED_TIME_LOADED))
+			const std::chrono::nanoseconds TimeUnused = UnloadStart - pSkinContainer->m_LastLoadRequest.value();
+			if(TimeUnused < (pSkinContainer->m_State == CSkinContainer::EState::PENDING ? MIN_UNLOAD_TIME_PENDING : MIN_UNLOAD_TIME_LOADED))
 			{
 				continue;
 			}
-			// TODO: experiment more
-			const std::chrono::nanoseconds TimeUsed = Now - pSkinContainer->m_FirstLoadRequest.value();
+			// TODO: experiment more; just removing the first skin found would be 4-5x faster and
+			// there's no noticeable difference ot using this value, just prefer unloading pending skins then
+			const std::chrono::nanoseconds TimeUsed = UnloadStart - pSkinContainer->m_FirstLoadRequest.value();
 			float UnloadValue = 0.0f;
 			UnloadValue += 10.0f * std::chrono::duration_cast<std::chrono::microseconds>(TimeUnused).count() / 1000.0f;
 			UnloadValue -= 2.0f * std::chrono::duration_cast<std::chrono::microseconds>(TimeUsed).count() / 1000.0f;
@@ -560,7 +560,6 @@ void CSkins::UpdateUnloadSkins(CSkinLoadingStats &Stats)
 				pToUnload = pSkinContainer.get();
 				HighestUnloadValue = UnloadValue;
 			}
-			// TODO: test how efficient this function is; maybe try to break early if we found a relatively good value already
 		}
 		if(pToUnload == nullptr)
 		{
@@ -568,8 +567,6 @@ void CSkins::UpdateUnloadSkins(CSkinLoadingStats &Stats)
 		}
 		if(pToUnload->m_State == CSkinContainer::EState::LOADED)
 		{
-			// TODO: remove debug
-			dbg_msg("debug", "unloading LOADED skin '%s' with value %f, %" PRIzu " more to go", pToUnload->Name(), HighestUnloadValue, NumToUnload);
 			pToUnload->m_pSkin->m_OriginalSkin.Unload(Graphics());
 			pToUnload->m_pSkin->m_ColorableSkin.Unload(Graphics());
 			pToUnload->m_pSkin = nullptr;
@@ -577,12 +574,17 @@ void CSkins::UpdateUnloadSkins(CSkinLoadingStats &Stats)
 		}
 		else
 		{
-			// TODO: remove debug
-			dbg_msg("debug", "unloading PENDING skin '%s' with value %f, %" PRIzu " more to go", pToUnload->Name(), HighestUnloadValue, NumToUnload);
 			Stats.m_NumPending--;
 		}
 		pToUnload->m_State = CSkinContainer::EState::UNLOADED;
+		pToUnload->m_FirstLoadRequest.reset();
+		pToUnload->m_LastLoadRequest.reset();
 		NumToUnload--;
+	}
+	// TODO: remove debug
+	if(OldNumToUnload > 0)
+	{
+		dbg_msg("debug", "unloading %" PRIzu " skins took %" PRId64 " µs", OldNumToUnload, std::chrono::duration_cast<std::chrono::microseconds>(time_get_nanoseconds() - UnloadStart).count());
 	}
 }
 
@@ -731,22 +733,28 @@ std::vector<CSkins::CSkinListEntry> &CSkins::SkinList()
 			continue;
 		}
 
-		if(g_Config.m_ClSkinFilterString[0] != '\0' && !str_utf8_find_nocase(pSkinContainer->NormalizedName(), g_Config.m_ClSkinFilterString))
-		{
-			continue;
-		}
-
 		// Don't include skins in the list that couldn't be found in the database except the current player
 		// and dummy skins to avoid showing a lot of not-found entries while the user is typing a skin name.
 		if(pSkinContainer->m_State == CSkinContainer::EState::NOT_FOUND &&
 			!pSkinContainer->IsSpecial() &&
-			str_utf8_comp_nocase(pSkinContainer->NormalizedName(), g_Config.m_ClPlayerSkin) != 0 &&
-			str_utf8_comp_nocase(pSkinContainer->NormalizedName(), g_Config.m_ClDummySkin) != 0)
+			str_utf8_comp_nocase(pSkinContainer->Name(), g_Config.m_ClPlayerSkin) != 0 &&
+			str_utf8_comp_nocase(pSkinContainer->Name(), g_Config.m_ClDummySkin) != 0)
 		{
 			continue;
 		}
 
-		m_vSkinList.emplace_back(pSkinContainer.get(), m_Favorites.find(pSkinContainer->NormalizedName()) != m_Favorites.end());
+		const char *pNameMatchStart = nullptr;
+		const char *pNameMatchEnd = nullptr;
+		if(g_Config.m_ClSkinFilterString[0] != '\0')
+		{
+			pNameMatchStart = str_utf8_find_nocase(pSkinContainer->Name(), g_Config.m_ClSkinFilterString, &pNameMatchEnd);
+			if(pNameMatchStart == nullptr)
+			{
+				continue;
+			}
+		}
+
+		m_vSkinList.emplace_back(pSkinContainer.get(), IsFavorite(pSkinContainer->Name()), pNameMatchStart, pNameMatchEnd);
 	}
 
 	std::sort(m_vSkinList.begin(), m_vSkinList.end());
@@ -796,7 +804,7 @@ const CSkins::CSkinContainer *CSkins::FindContainerOrNullptr(const char *pName)
 const CSkin *CSkins::FindOrNullptr(const char *pName, bool IgnorePrefix)
 {
 	const char *pSkinPrefix = m_aEventSkinPrefix[0] != '\0' ? m_aEventSkinPrefix : g_Config.m_ClSkinPrefix;
-	if(!(g_Config.m_ClVanillaSkinsOnly > 0 && !GameClient()->m_GameInfo.m_InfClass) && !IgnorePrefix && pSkinPrefix[0] != '\0')
+	if(!(g_Config.m_ClVanillaSkinsOnly && !GameClient()->m_GameInfo.m_InfClass) && !IgnorePrefix && pSkinPrefix[0] != '\0')
 	{
 		char aNameWithPrefix[2 * MAX_SKIN_LENGTH + 2]; // Larger than skin name length to allow IsValidName to check if it's too long
 		str_format(aNameWithPrefix, sizeof(aNameWithPrefix), "%s_%s", pSkinPrefix, pName);
