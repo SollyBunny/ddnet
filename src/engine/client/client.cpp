@@ -3222,7 +3222,7 @@ void CClient::Run()
 		g_UuidManager.DebugDump();
 	}
 
-#ifndef CONF_WEBASM
+#if !defined(CONF_PLATFORM_EMSCRIPTEN)
 	char aNetworkError[256];
 	if(!InitNetworkClient(aNetworkError, sizeof(aNetworkError)))
 	{
