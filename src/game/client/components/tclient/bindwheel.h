@@ -58,6 +58,7 @@ public:
 	void OnConsoleInit() override;
 	void OnRelease() override;
 	bool OnCursorMove(float x, float y, IInput::ECursorType CursorType) override;
+	bool OnInput(const IInput::CEvent &Event) override;
 
 	void AddBind(const char *Name, const char *Command);
 	void RemoveBind(const char *Name, const char *Command);

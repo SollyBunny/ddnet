@@ -144,6 +144,16 @@ bool CBindWheel::OnCursorMove(float x, float y, IInput::ECursorType CursorType)
 	return true;
 }
 
+bool CBindWheel::OnInput(const IInput::CEvent &Event)
+{
+	if(IsActive() && Event.m_Flags & IInput::FLAG_PRESS && Event.m_Key == KEY_ESCAPE)
+	{
+		OnRelease();
+		return true;
+	}
+	return false;
+}
+
 void CBindWheel::OnRender()
 {
 	if(Client()->State() != IClient::STATE_ONLINE && Client()->State() != IClient::STATE_DEMOPLAYBACK)
