@@ -448,7 +448,7 @@ int CMenus::DoButton_FoldableSection(SFoldableSection *pSection, const char *pTe
 	int Checked = (int)pSection->m_Opened;
 	pRect->Draw(ColorRGBA(0, 0, 0, (Checked ? 0.4f : 0.25f) * Ui()->ButtonColorMul(pSection)), !Checked ? IGraphics::CORNER_ALL : IGraphics::CORNER_TL | IGraphics::CORNER_TR, CornerRounding);
 
-	TextRender()->SetRenderFlags(ETextRenderFlags::TEXT_RENDER_FLAG_ONLY_ADVANCE_WIDTH | ETextRenderFlags::TEXT_RENDER_FLAG_NO_X_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_Y_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_OVERSIZE | ETextRenderFlags::TEXT_RENDER_FLAG_NO_PIXEL_ALIGMENT);
+	TextRender()->SetRenderFlags(ETextRenderFlags::TEXT_RENDER_FLAG_ONLY_ADVANCE_WIDTH | ETextRenderFlags::TEXT_RENDER_FLAG_NO_X_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_Y_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_OVERSIZE);
 	TextRender()->SetFontPreset(EFontPreset::ICON_FONT);
 	Ui()->DoLabel(&Box, Checked ? FONT_ICON_CIRCLE_CHEVRON_DOWN : FONT_ICON_CIRCLE_CHEVRON_RIGHT, FontSize, TEXTALIGN_MC);
 	TextRender()->SetFontPreset(EFontPreset::DEFAULT_FONT);

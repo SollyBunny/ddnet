@@ -53,86 +53,60 @@ const float MarginBetweenViews = 20.0f;
 const float ColorPickerLabelSize = 13.0f;
 const float ColorPickerLineSpacing = 5.0f;
 
+
+typedef struct
+{
+	const char *m_pName;
+	const char *m_pCommand;
+	int m_KeyId;
+	int m_ModifierCombination;
+} CKeyInfo;
+
+enum
+{
+	PULSE_TAB_GLOBAL = 0,
+	PULSE_TAB_CONSOLE = 1,
+	NUMBER_OF_PULSE_TABS = 2,
+};
+
 void CMenus::RenderSettingsPulse(CUIRect MainView)
 {
-static CScrollRegion s_ScrollRegion;
-	vec2 ScrollOffset(0.0f, 0.0f);
-	CScrollRegionParams ScrollParams;
-	ScrollParams.m_ScrollUnit = 120.0f;
-	s_ScrollRegion.Begin(&MainView, &ScrollOffset, &ScrollParams);
-	MainView.y += ScrollOffset.y;
+	static int s_CurTab = 0;
+	CUIRect TabBar, Button;
 
+	MainView.HSplitTop(20.0f, &TabBar, &MainView);
+	const float TabWidth = TabBar.w / NUMBER_OF_PULSE_TABS;
+	static CButtonContainer s_aPageTabs[NUMBER_OF_PULSE_TABS] = {};
+	const char *apTabNames[NUMBER_OF_PULSE_TABS] = {
+		Localize("Pulse"),
+		Localize("Console"),
+	};
 
-
-	CUIRect DebugGroup;
-
-	MainView.y -= 10.0f;
-
-	// Начало одной секции
-	static SFoldableSection s_InDebugGroup;
-	MainView.HSplitTop(Margin, nullptr, &DebugGroup);
-	DoFoldableSection(&s_InDebugGroup, Localize("General"), FontSize, &DebugGroup, &MainView, 5.0f, [&]() -> int {
-		DebugGroup.VMargin(Margin, &DebugGroup);
-		DebugGroup.HMargin(Margin, &DebugGroup);
-
-		// Начало любого говнокода в секции
-		char aBuf[64];
-		str_format(aBuf, sizeof(aBuf), "Key is pressed (ALT): %d", Input()->KeyIsPressed(KEY_LALT));
-		Ui()->DoLabel(&DebugGroup, aBuf, FontSize, TEXTALIGN_TL);
-
-		DebugGroup.HSplitTop(LineSize, nullptr, &DebugGroup);
-
-		char aBuf2[64];
-		str_format(aBuf2, sizeof(aBuf2), "Global time: %f", Client()->GlobalTime());
-		Ui()->DoLabel(&DebugGroup, aBuf2, FontSize, TEXTALIGN_TL);
-		// Конец любого говнокода в секции
-
-		int TotalHeight = 40.0f; // Длинна секции вниз
-		return TotalHeight + Margin;
-	});
-	s_ScrollRegion.AddRect(DebugGroup);
-	// Конец одной секци|
-
-	// Начало одной секции
-	static SFoldableSection s_InConsoleGroup;
-	CUIRect ConsoleGroup;
-	MainView.HSplitTop(Margin, nullptr, &ConsoleGroup);
-	DoFoldableSection(&s_InConsoleGroup, Localize("Console"), FontSize, &ConsoleGroup, &MainView, 5.0f, [&]() -> int {
-		ConsoleGroup.VMargin(Margin, &ConsoleGroup);
-		ConsoleGroup.HMargin(Margin, &ConsoleGroup);
-
+	for(int Tab = PULSE_TAB_GLOBAL; Tab < NUMBER_OF_PULSE_TABS; ++Tab)
+	{
+		TabBar.VSplitLeft(TabWidth, &Button, &TabBar);
+		const int Corners = Tab == PULSE_TAB_GLOBAL ? IGraphics::CORNER_L : Tab == NUMBER_OF_PULSE_TABS - 1 ? IGraphics::CORNER_R : IGraphics::CORNER_NONE;
+		if(DoButton_MenuTab(&s_aPageTabs[Tab], apTabNames[Tab], s_CurTab == Tab, &Button, Corners, nullptr, nullptr, nullptr, nullptr, 4.0f))
+		{
+			s_CurTab = Tab;
+		}
+	}
+	if(s_CurTab == PULSE_TAB_GLOBAL)
+	{
+		MainView.HSplitTop(10.0f, nullptr, &MainView);
 		CUIRect Left, Right;
-		CUIRect Button, Label;
-		ConsoleGroup.VSplitMid(&Left, &Right);
 
-		Left.HSplitTop(20.0f, &Button, &Left);
-		if(DoButton_CheckBox(&g_Config.m_ClCustomConsole, Localize("Enable custom console"), g_Config.m_ClCustomConsole, &Button))
-		{
-			g_Config.m_ClCustomConsole ^= 1;
-		}
+		MainView.VSplitMid(&Left, &Right, 10.0f);
 
-		if(g_Config.m_ClCustomConsole)
-		{
-			Left.HSplitTop(20.0f, &Button, &Left);
-			if(g_Config.m_ClCustomConsoleFading)
-				Ui()->DoScrollbarOption(&g_Config.m_ClCustomConsoleFading, &g_Config.m_ClCustomConsoleFading, &Button, Localize("Fading"), 1, 100, &CUi::ms_LinearScrollbarScale, CUi::SCROLLBAR_OPTION_NOCLAMPVALUE);
+		CUIRect Label;
+		Left.HSplitTop(20.0f, &Label, &Left);
+		Ui()->DoLabel(&Label, Localize("Left Section"), 14.0f, TEXTALIGN_ML);
 
-			Left.HSplitTop(20.0f, &Button, &Left);
-			if(g_Config.m_ClCustomConsoleAlpha)
-				Ui()->DoScrollbarOption(&g_Config.m_ClCustomConsoleAlpha, &g_Config.m_ClCustomConsoleAlpha, &Button, Localize("Alpha"), 1, 100, &CUi::ms_LinearScrollbarScale, CUi::SCROLLBAR_OPTION_NOCLAMPVALUE);
+		Right.HSplitTop(20.0f, &Label, &Right);
+		Ui()->DoLabel(&Label, Localize("Right Section"), 14.0f, TEXTALIGN_ML);
 
-
-		}
-
-		int TotalHeight = 40.0f;
-		return TotalHeight + Margin;
-	});
-	s_ScrollRegion.AddRect(DebugGroup);
-	// Конец одной секци|
-
-	s_ScrollRegion.End();
+	}
 }
-
 
 void CMenus::RenderSettingsProfs(CUIRect MainView)
 {
