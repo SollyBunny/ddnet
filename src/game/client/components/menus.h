@@ -107,6 +107,7 @@ class CMenus : public CComponent
 	void DoSettingsControlsButtons(int Start, int Stop, CUIRect View);
 
 	float RenderSettingsControlsJoystick(CUIRect View);
+	void RenderConsoleImages(CUIRect MainView);
 	void DoJoystickAxisPicker(CUIRect View);
 	void DoJoystickBar(const CUIRect *pRect, float Current, float Tolerance, bool Active);
 

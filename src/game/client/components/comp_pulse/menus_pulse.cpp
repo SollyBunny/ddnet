@@ -53,6 +53,127 @@ const float MarginBetweenViews = 20.0f;
 const float ColorPickerLabelSize = 13.0f;
 const float ColorPickerLineSpacing = 5.0f;
 
+struct CConsoleImage
+{
+	char m_aName[64];
+	IGraphics::CTextureHandle m_Texture;
+	bool m_IsLoaded;
+};
+
+static int ListConsoleImagesCallback(const char *pName, int IsDir, int StorageType, void *pUser)
+{
+	std::vector<CConsoleImage> *pFiles = static_cast<std::vector<CConsoleImage> *>(pUser);
+	
+	if(!IsDir && str_endswith(pName, ".png"))
+	{
+		CConsoleImage Image;
+		str_copy(Image.m_aName, pName);
+		Image.m_IsLoaded = false;
+		pFiles->push_back(Image);
+		dbg_msg("console_images", "Found PNG file: %s", pName);
+	}
+	
+	return 0;
+}
+
+void CMenus::RenderConsoleImages(CUIRect MainView)
+{
+	static std::vector<CConsoleImage> s_vConsoleImages;
+	static bool s_ImagesLoaded = false;
+
+	if(!s_ImagesLoaded)
+	{
+		const char *apPaths[] = {
+			"pulse/assets/console",
+			"ddnet/pulse/assets/console"
+		};
+
+		for(const char *pBasePath : apPaths)
+		{
+			char aPath[IO_MAX_PATH_LENGTH];
+			str_format(aPath, sizeof(aPath), "%s", pBasePath);
+			dbg_msg("console_images", "Checking path: %s", aPath);
+			
+			// Get list of PNG files in directory
+			std::vector<CConsoleImage> vFiles;
+			Storage()->ListDirectory(IStorage::TYPE_ALL, aPath, ListConsoleImagesCallback, &vFiles);
+			dbg_msg("console_images", "Found %d PNG files in %s", vFiles.size(), aPath);
+			
+			// Load each image
+			for(CConsoleImage &Image : vFiles)
+			{
+				// Check if we already have this image
+				bool bExists = false;
+				for(const CConsoleImage &ExistingImage : s_vConsoleImages)
+				{
+					if(str_comp(ExistingImage.m_aName, Image.m_aName) == 0)
+					{
+						bExists = true;
+						break;
+					}
+				}
+				
+				if(!bExists)
+				{
+					CImageInfo ImgInfo;
+					char aFullPath[IO_MAX_PATH_LENGTH];
+					str_format(aFullPath, sizeof(aFullPath), "%s/%s", aPath, Image.m_aName);
+					dbg_msg("console_images", "Loading image: %s", aFullPath);
+					
+					if(Graphics()->LoadPng(ImgInfo, aFullPath, IStorage::TYPE_ALL))
+					{
+						Image.m_Texture = Graphics()->LoadTextureRaw(ImgInfo, 0);
+						Image.m_IsLoaded = true;
+						s_vConsoleImages.push_back(Image);
+						dbg_msg("console_images", "Successfully loaded image: %s", Image.m_aName);
+					}
+					else
+					{
+						dbg_msg("console_images", "Failed to load image: %s", aFullPath);
+					}
+				}
+			}
+		}
+		
+		dbg_msg("console_images", "Total images loaded: %d", s_vConsoleImages.size());
+		s_ImagesLoaded = true;
+	}
+
+	// Listint (хомяка...)
+	static CListBox s_ListBox;
+	s_ListBox.DoHeader(&MainView, Localize("Console Images"), 20.0f);
+	s_ListBox.DoStart(20.0f, s_vConsoleImages.size(), 1, 3, -1);
+
+	for(size_t i = 0; i < s_vConsoleImages.size(); i++)
+	{
+		const CConsoleImage &Image = s_vConsoleImages[i];
+		const CListboxItem Item = s_ListBox.DoNextItem(&Image.m_aName, false);
+
+		if(!Item.m_Visible)
+			continue;
+
+		CUIRect Icon, Label;
+		Item.m_Rect.VSplitLeft(Item.m_Rect.h * 2.0f, &Icon, &Label);
+
+		// Draw icon if loaded
+		if(Image.m_IsLoaded && Image.m_Texture.IsValid())
+		{
+			Icon.VMargin(6.0f, &Icon);
+			Icon.HMargin(3.0f, &Icon);
+			Graphics()->TextureSet(Image.m_Texture);
+			Graphics()->QuadsBegin();
+			Graphics()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+			IGraphics::CQuadItem QuadItem(Icon.x, Icon.y, Icon.w, Icon.h);
+			Graphics()->QuadsDrawTL(&QuadItem, 1);
+			Graphics()->QuadsEnd();
+		}
+
+		Ui()->DoLabel(&Label, Image.m_aName, 16.0f * CUi::ms_FontmodHeight, TEXTALIGN_ML);
+	}
+
+	s_ListBox.DoEnd();
+//Me rn -> https://open.spotify.com/track/4kNKL8kCCV3vt9U2k28Lyx?si=f38b4295ad5f4d50
+}
 
 typedef struct
 {
@@ -91,6 +212,7 @@ void CMenus::RenderSettingsPulse(CUIRect MainView)
 			s_CurTab = Tab;
 		}
 	}
+
 	if(s_CurTab == PULSE_TAB_GLOBAL)
 	{
 		MainView.HSplitTop(10.0f, nullptr, &MainView);
@@ -104,7 +226,11 @@ void CMenus::RenderSettingsPulse(CUIRect MainView)
 
 		Right.HSplitTop(20.0f, &Label, &Right);
 		Ui()->DoLabel(&Label, Localize("Right Section"), 14.0f, TEXTALIGN_ML);
-
+	}
+	else if(s_CurTab == PULSE_TAB_CONSOLE)
+	{
+		MainView.HSplitTop(10.0f, nullptr, &MainView);
+		RenderConsoleImages(MainView);
 	}
 }
 
