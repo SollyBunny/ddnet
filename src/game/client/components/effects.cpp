@@ -315,6 +315,26 @@ void CEffects::Confetti(vec2 Pos, float Alpha)
 		m_pClient->m_Particles.Add(CParticles::GROUP_GENERAL, &p);
 	}
 }
+//Pulse
+void CEffects::PlayerTrail(vec2 Pos, float Alpha)
+{
+	if(!m_Add50hz)
+		return;
+
+	CParticle p;
+	p.SetDefault();
+	p.m_Spr = SPRITE_PART_SPARKLE;
+	p.m_Pos = Pos + random_direction() * random_float(0.0f, 20.0f);
+	p.m_Vel = vec2(0, 0);
+	p.m_LifeSpan = 1.5f;
+	p.m_StartSize = random_float(42.0f, 35.0f);
+	p.m_EndSize = 0;
+	p.m_UseAlphaFading = true;
+	p.m_StartAlpha = Alpha;
+	p.m_EndAlpha = 0.0f;
+	p.m_Color = ColorRGBA(0.0f, 0.8f, 1.0f, Alpha);
+	m_pClient->m_Particles.Add(CParticles::GROUP_TRAIL_EXTRA, &p);
+}
 
 void CEffects::Explosion(vec2 Pos, float Alpha)
 {

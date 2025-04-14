@@ -32,6 +32,7 @@ public:
 	void FreezingFlakes(vec2 Pos, vec2 Size, float Alpha = 1.0f);
 	void SparkleTrail(vec2 Pos, float Alpha = 1.0f);
 	void Confetti(vec2 Pos, float Alpha = 1.0f);
+	void PlayerTrail(vec2 Pos, float Alpha = 1.0f);
 
 	void Update();
 };

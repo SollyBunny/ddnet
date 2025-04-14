@@ -500,6 +500,19 @@ void CPlayers::RenderPlayer(
 		Position = mix(vec2(Prev.m_X, Prev.m_Y), vec2(Player.m_X, Player.m_Y), IntraTick);
 	vec2 Vel = mix(vec2(Prev.m_VelX / 256.0f, Prev.m_VelY / 256.0f), vec2(Player.m_VelX / 256.0f, Player.m_VelY / 256.0f), IntraTick);
 
+	//Pulse aura
+	//TODO: finish this with png supply
+	/*
+	vec2 GlowPos = Position;
+	float GlowSize = 64.0f;
+	Graphics()->TextureSet(g_pData->m_aImages[IMAGE_NULL].m_Id);
+	Graphics()->BlendNormal();
+	Graphics()->QuadsBegin();
+	Graphics()->SetColor(1.0f, 1.0f, 0.5f, 0.4f);
+	IGraphics::CQuadItem Quad(GlowPos.x - GlowSize/2, GlowPos.y - GlowSize/2, GlowSize, GlowSize);
+	Graphics()->QuadsDrawTL(&Quad, 1);
+	Graphics()->QuadsEnd();
+*/
 	m_pClient->m_Flow.Add(Position, Vel * 100.0f, 10.0f);
 
 	RenderInfo.m_GotAirJump = Player.m_Jumped & 2 ? false : true;
@@ -838,6 +851,11 @@ void CPlayers::RenderPlayer(
 			Graphics()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 			Graphics()->QuadsSetRotation(0);
 		}
+	}
+
+	if(m_pClient->m_Snap.m_pLocalInfo && ClientId == m_pClient->m_Snap.m_pLocalInfo->m_ClientId)
+	{
+		m_pClient->m_Effects.PlayerTrail(Position, Alpha);
 	}
 }
 
