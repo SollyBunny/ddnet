@@ -62,7 +62,7 @@ void CScoreboard::DoIconLabeledButton(CUIRect *pRect, const char *pTitle, const 
 void CScoreboard::DoIconButton(CUIRect *pRect, const char *pIcon, float TextSize, ColorRGBA IconColor) const
 {
 	TextRender()->SetFontPreset(EFontPreset::ICON_FONT);
-	TextRender()->SetRenderFlags(ETextRenderFlags::TEXT_RENDER_FLAG_ONLY_ADVANCE_WIDTH | ETextRenderFlags::TEXT_RENDER_FLAG_NO_X_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_Y_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_PIXEL_ALIGMENT | ETextRenderFlags::TEXT_RENDER_FLAG_NO_OVERSIZE);
+	TextRender()->SetRenderFlags(ETextRenderFlags::TEXT_RENDER_FLAG_ONLY_ADVANCE_WIDTH | ETextRenderFlags::TEXT_RENDER_FLAG_NO_X_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_Y_BEARING | ETextRenderFlags::TEXT_RENDER_FLAG_NO_OVERSIZE);
 	TextRender()->TextColor(IconColor);
 	Ui()->DoLabel(pRect, pIcon, TextSize, TEXTALIGN_MC);
 	TextRender()->TextColor(TextRender()->DefaultTextColor());
@@ -127,8 +127,20 @@ bool CScoreboard::OnCursorMove(float x, float y, IInput::ECursorType CursorType)
 
 	Ui()->ConvertMouseMove(&x, &y, CursorType);
 
+	vec2 OldPos = m_Mouse.m_Position;
 	m_Mouse.m_Position.x += x;
 	m_Mouse.m_Position.y += y;
+
+	// Check if we're dragging
+	if(m_Mouse.m_MouseInput && !m_Mouse.m_IsDragging)
+	{
+		float DragThreshold = 5.0f;
+		if(distance(OldPos, m_Mouse.m_Position) > DragThreshold)
+		{
+			m_Mouse.m_IsDragging = true;
+			m_Mouse.m_DragStart = OldPos;
+		}
+	}
 
 	const float ScreenWidth = 400.0f * 3.0f * Graphics()->ScreenAspect();
 	const float ScreenHeight = 400.0f * 3.0f;
@@ -144,29 +156,36 @@ bool CScoreboard::OnInput(const IInput::CEvent &Event)
 		return false;
 
 	if(Event.m_Flags & IInput::FLAG_PRESS && Event.m_Key == KEY_MOUSE_3)
+	{
 		m_Mouse.m_Unlocked = !m_Mouse.m_Unlocked;
+		if(!m_Mouse.m_Unlocked)
+		{
+			m_Mouse.reset();
+			m_Popup.reset();
+		}
+	}
 
 	m_Mouse.m_LastMouseInput = m_Mouse.m_MouseInput;
 	m_Mouse.m_MouseInput = m_Mouse.m_Unlocked && (Event.m_Flags & IInput::FLAG_PRESS && (Event.m_Key == KEY_MOUSE_1 || Event.m_Key == KEY_MOUSE_2));
+	
+	// Reset dragging state when mouse button is released
+	if(!m_Mouse.m_MouseInput && m_Mouse.m_LastMouseInput)
+	{
+		m_Mouse.m_IsDragging = false;
+	}
+
 	m_Mouse.m_Clicked = !m_Mouse.m_LastMouseInput && m_Mouse.m_MouseInput;
 
-	return m_Mouse.m_Clicked;
-}
-
-void CScoreboard::SPlayerPopup::toggle(const bool Show, const vec2 Pos, const int Id)
-{
-	m_Visible = Show;
-	if(Show)
+	// Handle popup interaction
+	if(m_Popup.m_Visible && m_Mouse.m_Clicked)
 	{
-		m_Position = Pos;
-		m_PlayerId = Id;
+		if(!m_Popup.m_Rect.Inside(m_Mouse.m_Position))
+		{
+			m_Popup.m_IsInteracting = false;
+		}
 	}
-}
 
-bool CScoreboard::SPlayerPopup::shouldHide(const SMouseState &Mouse, const bool PlayerHovered) const
-{
-	return (!PlayerHovered && Mouse.m_Clicked) ||
-	       !Mouse.m_Unlocked;
+	return m_Mouse.m_Clicked;
 }
 
 void CScoreboard::RenderTitle(CUIRect TitleBar, int Team, const char *pTitle)
