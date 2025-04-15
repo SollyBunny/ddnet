@@ -2446,6 +2446,8 @@ if(CLIENT)
     components/statboard.h
     components/tclient/bg_draw.cpp
     components/tclient/bg_draw.h
+    components/tclient/bg_draw_file.cpp
+    components/tclient/bg_draw_file.h
     components/tclient/bindchat.cpp
     components/tclient/bindchat.h
     components/tclient/bindwheel.cpp
