@@ -63,7 +63,7 @@ struct CConsoleImage
 static int ListConsoleImagesCallback(const char *pName, int IsDir, int StorageType, void *pUser)
 {
 	std::vector<CConsoleImage> *pFiles = static_cast<std::vector<CConsoleImage> *>(pUser);
-	
+
 	if(!IsDir && str_endswith(pName, ".png"))
 	{
 		CConsoleImage Image;
@@ -72,7 +72,7 @@ static int ListConsoleImagesCallback(const char *pName, int IsDir, int StorageTy
 		pFiles->push_back(Image);
 		dbg_msg("console_images", "Found PNG file: %s", pName);
 	}
-	
+
 	return 0;
 }
 
@@ -80,6 +80,7 @@ void CMenus::RenderConsoleImages(CUIRect MainView)
 {
 	static std::vector<CConsoleImage> s_vConsoleImages;
 	static bool s_ImagesLoaded = false;
+	static int s_SelectedImage = -1;
 
 	if(!s_ImagesLoaded)
 	{
@@ -94,15 +95,12 @@ void CMenus::RenderConsoleImages(CUIRect MainView)
 			str_format(aPath, sizeof(aPath), "%s", pBasePath);
 			dbg_msg("console_images", "Checking path: %s", aPath);
 			
-			// Get list of PNG files in directory
 			std::vector<CConsoleImage> vFiles;
 			Storage()->ListDirectory(IStorage::TYPE_ALL, aPath, ListConsoleImagesCallback, &vFiles);
 			dbg_msg("console_images", "Found %d PNG files in %s", vFiles.size(), aPath);
 			
-			// Load each image
 			for(CConsoleImage &Image : vFiles)
 			{
-				// Check if we already have this image
 				bool bExists = false;
 				for(const CConsoleImage &ExistingImage : s_vConsoleImages)
 				{
@@ -112,7 +110,7 @@ void CMenus::RenderConsoleImages(CUIRect MainView)
 						break;
 					}
 				}
-				
+
 				if(!bExists)
 				{
 					CImageInfo ImgInfo;
@@ -134,20 +132,18 @@ void CMenus::RenderConsoleImages(CUIRect MainView)
 				}
 			}
 		}
-		
-		dbg_msg("console_images", "Total images loaded: %d", s_vConsoleImages.size());
 		s_ImagesLoaded = true;
 	}
 
-	// Listint (хомяка...)
+	// Display images in list
 	static CListBox s_ListBox;
 	s_ListBox.DoHeader(&MainView, Localize("Console Images"), 20.0f);
-	s_ListBox.DoStart(20.0f, s_vConsoleImages.size(), 1, 3, -1);
+	s_ListBox.DoStart(20.0f, s_vConsoleImages.size(), 1, 3, s_SelectedImage);
 
 	for(size_t i = 0; i < s_vConsoleImages.size(); i++)
 	{
 		const CConsoleImage &Image = s_vConsoleImages[i];
-		const CListboxItem Item = s_ListBox.DoNextItem(&Image.m_aName, false);
+		const CListboxItem Item = s_ListBox.DoNextItem(&Image.m_aName, s_SelectedImage == (int)i);
 
 		if(!Item.m_Visible)
 			continue;
@@ -155,7 +151,6 @@ void CMenus::RenderConsoleImages(CUIRect MainView)
 		CUIRect Icon, Label;
 		Item.m_Rect.VSplitLeft(Item.m_Rect.h * 2.0f, &Icon, &Label);
 
-		// Draw icon if loaded
 		if(Image.m_IsLoaded && Image.m_Texture.IsValid())
 		{
 			Icon.VMargin(6.0f, &Icon);
@@ -171,17 +166,30 @@ void CMenus::RenderConsoleImages(CUIRect MainView)
 		Ui()->DoLabel(&Label, Image.m_aName, 16.0f * CUi::ms_FontmodHeight, TEXTALIGN_ML);
 	}
 
-	s_ListBox.DoEnd();
-//Me rn -> https://open.spotify.com/track/4kNKL8kCCV3vt9U2k28Lyx?si=f38b4295ad5f4d50
-}
+	const int NewSelected = s_ListBox.DoEnd();
+	if(s_SelectedImage != NewSelected)
+	{
+		s_SelectedImage = NewSelected;
+		if(s_SelectedImage >= 0 && s_SelectedImage < (int)s_vConsoleImages.size())
+		{
+			const CConsoleImage &SelectedImage = s_vConsoleImages[s_SelectedImage];
 
-typedef struct
-{
-	const char *m_pName;
-	const char *m_pCommand;
-	int m_KeyId;
-	int m_ModifierCombination;
-} CKeyInfo;
+			//gg
+			char a_cleanName[64];
+			str_copy(a_cleanName, SelectedImage.m_aName, sizeof(a_cleanName));
+			int len = str_length(a_cleanName);
+			if(len > 4 && str_comp(a_cleanName + len - 4, ".png") == 0)
+				a_cleanName[len - 4] = '\0';
+
+			char a_buf[128];
+			str_format(a_buf, sizeof(a_buf), "p_console_asset %s", a_cleanName);
+			Console()->ExecuteLine(a_buf);
+			Console()->ExecuteLine("p_console_reload");
+
+			dbg_msg("console_images", "Selected image: %s", a_cleanName);
+		}
+	}
+}
 
 enum
 {
