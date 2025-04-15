@@ -557,6 +557,7 @@ void CMenus::RenderSettingsTee(CUIRect MainView)
 	str_format(aBuf, sizeof(aBuf), "%s:", Localize("Your skin"));
 	Ui()->DoLabel(&Label, aBuf, 14.0f, TEXTALIGN_ML);
 
+	CSkins::CSkinList &SkinList = GameClient()->m_Skins.SkinList();
 	const CSkin *pDefaultSkin = GameClient()->m_Skins.Find("default");
 	const CSkins::CSkinContainer *pOwnSkinContainer = GameClient()->m_Skins.FindContainerOrNullptr(pSkinName[0] == '\0' ? "default" : pSkinName);
 	if(pOwnSkinContainer != nullptr && pOwnSkinContainer->IsSpecial())
@@ -632,6 +633,7 @@ void CMenus::RenderSettingsTee(CUIRect MainView)
 	{
 		SetNeedSendInfo();
 		m_SkinListScrollToSelected = true;
+		SkinList.ForceRefresh();
 	}
 
 	// Random skin button
@@ -748,15 +750,15 @@ void CMenus::RenderSettingsTee(CUIRect MainView)
 
 	// Skin selector
 	static CListBox s_ListBox;
-	std::vector<CSkins::CSkinListEntry> &vSkinList = GameClient()->m_Skins.SkinList();
-
+	std::vector<CSkins::CSkinListEntry> &vSkinList = SkinList.Skins();
 	int OldSelected = -1;
-	s_ListBox.DoStart(50.0f, vSkinList.size(), 4, 1, OldSelected, &MainView);
+	s_ListBox.DoStart(50.0f, vSkinList.size(), 4, 2, OldSelected, &MainView);
 	for(size_t i = 0; i < vSkinList.size(); ++i)
 	{
 		CSkins::CSkinListEntry &SkinListEntry = vSkinList[i];
 		const CSkins::CSkinContainer *pSkinContainer = vSkinList[i].SkinContainer();
-		if(str_utf8_comp_nocase(pSkinContainer->NormalizedName(), pSkinName) == 0)
+
+		if(!m_Dummy ? SkinListEntry.IsSelectedMain() : SkinListEntry.IsSelectedDummy())
 		{
 			OldSelected = i;
 			if(m_SkinListScrollToSelected)
@@ -768,7 +770,9 @@ void CMenus::RenderSettingsTee(CUIRect MainView)
 
 		const CListboxItem Item = s_ListBox.DoNextItem(SkinListEntry.ListItemId(), OldSelected >= 0 && (size_t)OldSelected == i);
 		if(!Item.m_Visible)
+		{
 			continue;
+		}
 
 		SkinListEntry.RequestLoad();
 		const CSkin *pSkin = pSkinContainer->State() == CSkins::CSkinContainer::EState::LOADED ? pSkinContainer->Skin().get() : pDefaultSkin;
@@ -787,11 +791,11 @@ void CMenus::RenderSettingsTee(CUIRect MainView)
 		{
 			SLabelProperties Props;
 			Props.m_MaxWidth = Label.w - 5.0f;
-			// TODO: should be done cleaner
-			if(SkinListEntry.NameMatchStart() != nullptr && SkinListEntry.NameMatchEnd() != nullptr)
+			const auto &NameMatch = SkinListEntry.NameMatch();
+			if(NameMatch.has_value())
 			{
-				Props.m_vColorSplits.emplace_back(SkinListEntry.NameMatchStart() - pSkinContainer->Name(),
-					SkinListEntry.NameMatchEnd() - SkinListEntry.NameMatchStart(), ColorRGBA(0.4f, 0.4f, 1.0f, 1.0f));
+				const auto [MatchStart, MatchLength] = NameMatch.value();
+				Props.m_vColorSplits.emplace_back(MatchStart, MatchLength, ColorRGBA(0.4f, 0.4f, 1.0f, 1.0f));
 			}
 			Ui()->DoLabel(&Label, pSkinContainer->Name(), 12.0f, TEXTALIGN_ML, Props);
 		}
@@ -831,13 +835,30 @@ void CMenus::RenderSettingsTee(CUIRect MainView)
 	if(OldSelected != NewSelected)
 	{
 		str_copy(pSkinName, vSkinList[NewSelected].SkinContainer()->Name(), SkinNameSize);
+		SkinList.ForceRefresh();
 		SetNeedSendInfo();
 	}
 
 	static CLineInput s_SkinFilterInput(g_Config.m_ClSkinFilterString, sizeof(g_Config.m_ClSkinFilterString));
+	if(SkinList.UnfilteredCount() > 0 && vSkinList.empty())
+	{
+		CUIRect FilterLabel, ResetButton;
+		MainView.HMargin((MainView.h - (16.0f + 18.0f + 8.0f)) / 2.0f, &FilterLabel);
+		FilterLabel.HSplitTop(16.0f, &FilterLabel, &ResetButton);
+		ResetButton.HSplitTop(8.0f, nullptr, &ResetButton);
+		ResetButton.VMargin((ResetButton.w - 200.0f) / 2.0f, &ResetButton);
+		Ui()->DoLabel(&FilterLabel, Localize("No skins match your filter criteria"), 16.0f, TEXTALIGN_MC);
+		static CButtonContainer s_ResetButton;
+		if(DoButton_Menu(&s_ResetButton, Localize("Reset filter"), 0, &ResetButton))
+		{
+			s_SkinFilterInput.Clear();
+			SkinList.ForceRefresh();
+		}
+	}
+
 	if(Ui()->DoEditBox_Search(&s_SkinFilterInput, &QuickSearch, 14.0f, !Ui()->IsPopupOpen() && !m_pClient->m_GameConsole.IsActive()))
 	{
-		GameClient()->m_Skins.ForceRefreshSkinList();
+		SkinList.ForceRefresh();
 	}
 
 	static CButtonContainer s_SkinDatabaseButton;

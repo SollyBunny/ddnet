@@ -2280,8 +2280,12 @@ int str_utf8_tolower_codepoint(int code);
  * @ingroup Strings
  *
  * @param str String to convert to lowercase.
+ * @param output Buffer that will receive the lowercase string.
+ * @param size Size of the output buffer.
  *
  * @remark The strings are treated as zero-terminated strings.
+ * @remark This function does not work in-place as converting a UTF-8 string to
+ *         lowercase may increase its length.
  */
 void str_utf8_tolower(const char *input, char *output, size_t size);
 

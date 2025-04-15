@@ -12,10 +12,12 @@
 #include <game/client/skin.h>
 
 #include <chrono>
+#include <list>
 #include <optional>
 #include <set>
 #include <string_view>
 #include <unordered_map>
+#include <utility>
 
 class CHttpRequest;
 
@@ -40,7 +42,7 @@ private:
 	};
 
 	/**
-	 * An abstract job to load a skin from a source determined by the subclass.
+	 * An abstract job to load a skin from a source determined by the derived class.
 	 */
 	class CAbstractSkinLoadJob : public IJob
 	{
@@ -58,7 +60,7 @@ private:
 
 public:
 	/**
-	 * Container for a skin its loading state and job.
+	 * Container for a skin, its loading state, job and various meta data.
 	 */
 	class CSkinContainer
 	{
@@ -107,7 +109,7 @@ public:
 		};
 
 		CSkinContainer(CSkinContainer &&Other) = default;
-		CSkinContainer(const char *pName, EType Type, int StorageType);
+		CSkinContainer(CSkins *pSkins, const char *pName, EType Type, int StorageType);
 		~CSkinContainer();
 
 		bool operator<(const CSkinContainer &Other) const;
@@ -119,6 +121,7 @@ public:
 		int StorageType() const { return m_StorageType; }
 		bool IsVanilla() const { return m_Vanilla; }
 		bool IsSpecial() const { return m_Special; }
+		bool IsAlwaysLoaded() const { return m_AlwaysLoaded; }
 		EState State() const { return m_State; }
 		const std::unique_ptr<CSkin> &Skin() const { return m_pSkin; }
 
@@ -128,29 +131,34 @@ public:
 		void RequestLoad();
 
 	private:
+		CSkins *m_pSkins;
 		char m_aName[MAX_SKIN_LENGTH];
 		char m_aNormalizedName[NORMALIZED_SKIN_NAME_LENGTH];
 		EType m_Type;
 		int m_StorageType;
 		bool m_Vanilla;
 		bool m_Special;
+		bool m_AlwaysLoaded;
 
-		EState m_State;
+		EState m_State = EState::UNLOADED;
 		std::unique_ptr<CSkin> m_pSkin = nullptr;
 		std::shared_ptr<CAbstractSkinLoadJob> m_pLoadJob = nullptr;
 
 		/**
-		 * When loading of this skin was first requested.
+		 * The time when loading of this skin was first requested.
 		 */
 		std::optional<std::chrono::nanoseconds> m_FirstLoadRequest;
 		/**
-		 * When loading of this skin was most recently requested.
+		 * The time when loading of this skin was most recently requested.
 		 */
 		std::optional<std::chrono::nanoseconds> m_LastLoadRequest;
 		/**
-		 * How many times this skin has been set to loading state.
+		 * Iterator into @link CSkins::m_SkinsUsageList @endlink for this skin container.
 		 */
-		uint32_t m_LoadCount = 0;
+		std::optional<std::list<std::string_view>::iterator> m_UsageEntryIterator;
+
+		EState DetermineInitialState() const;
+		void SetState(EState State);
 	};
 
 	/**
@@ -162,18 +170,21 @@ public:
 		CSkinListEntry() :
 			m_pSkinContainer(nullptr),
 			m_Favorite(false) {}
-		CSkinListEntry(CSkinContainer *pSkinContainer, bool Favorite, const char *pNameMatchStart, const char *pNameMatchEnd) :
+		CSkinListEntry(CSkinContainer *pSkinContainer, bool Favorite, bool SelectedMain, bool SelectedDummy, std::optional<std::pair<int, int>> NameMatch) :
 			m_pSkinContainer(pSkinContainer),
 			m_Favorite(Favorite),
-			m_pNameMatchStart(pNameMatchStart),
-			m_pNameMatchEnd(pNameMatchEnd) {}
+			m_SelectedMain(SelectedMain),
+			m_SelectedDummy(SelectedDummy),
+			m_NameMatch(NameMatch) {}
 
 		bool operator<(const CSkinListEntry &Other) const;
 
 		const CSkinContainer *SkinContainer() const { return m_pSkinContainer; }
 		bool IsFavorite() const { return m_Favorite; }
-		const char *NameMatchStart() const { return m_pNameMatchStart; }
-		const char *NameMatchEnd() const { return m_pNameMatchEnd; }
+		bool IsSelectedMain() const { return m_SelectedMain; }
+		bool IsSelectedDummy() const { return m_SelectedDummy; }
+		const std::optional<std::pair<int, int>> &NameMatch() const { return m_NameMatch; }
+
 		const void *ListItemId() const { return &m_ListItemId; }
 		const void *FavoriteButtonId() const { return &m_FavoriteButtonId; }
 		const void *ErrorTooltipId() const { return &m_ErrorTooltipId; }
@@ -186,11 +197,27 @@ public:
 	private:
 		CSkinContainer *m_pSkinContainer;
 		bool m_Favorite;
-		const char *m_pNameMatchStart;
-		const char *m_pNameMatchEnd;
+		bool m_SelectedMain;
+		bool m_SelectedDummy;
+		std::optional<std::pair<int, int>> m_NameMatch;
 		char m_ListItemId;
 		char m_FavoriteButtonId;
 		char m_ErrorTooltipId;
+	};
+
+	class CSkinList
+	{
+		friend class CSkins;
+
+	public:
+		std::vector<CSkinListEntry> &Skins() { return m_vSkins; }
+		int UnfilteredCount() const { return m_UnfilteredCount; }
+		void ForceRefresh() { m_NeedsUpdate = true; }
+
+	private:
+		std::vector<CSkinListEntry> m_vSkins;
+		int m_UnfilteredCount;
+		bool m_NeedsUpdate = true;
 	};
 
 	class CSkinLoadingStats
@@ -216,9 +243,7 @@ public:
 
 	void Refresh(TSkinLoadedCallback &&SkinLoadedCallback);
 	CSkinLoadingStats LoadingStats() const;
-
-	std::vector<CSkinListEntry> &SkinList();
-	void ForceRefreshSkinList();
+	CSkinList &SkinList();
 
 	const CSkinContainer *FindContainerOrNullptr(const char *pName);
 	const CSkin *FindOrNullptr(const char *pName, bool IgnorePrefix = false);
@@ -267,12 +292,14 @@ private:
 	};
 
 	std::unordered_map<std::string_view, std::unique_ptr<CSkinContainer>> m_Skins;
-	std::optional<std::chrono::nanoseconds> m_LastRefreshTime;
 	std::optional<std::chrono::nanoseconds> m_ContainerUpdateTime;
+	/**
+	 * Sorted from most recently to least recently used. Must be kept synchronized with the skin containers.
+	 * Only contains pending and loaded skins as only these are unloaded.
+	 */
+	std::list<std::string_view> m_SkinsUsageList;
 
-	std::vector<CSkinListEntry> m_vSkinList;
-	std::optional<std::chrono::nanoseconds> m_SkinListLastRefreshTime;
-
+	CSkinList m_SkinList;
 	std::set<std::string> m_Favorites;
 
 	CSkin m_PlaceholderSkin;
@@ -286,11 +313,12 @@ private:
 
 	void UpdateUnloadSkins(CSkinLoadingStats &Stats);
 	void UpdateStartLoading(CSkinLoadingStats &Stats);
-	void UpdateFinishLoading(std::chrono::nanoseconds StartTime, std::chrono::nanoseconds MaxTime);
+	void UpdateFinishLoading(CSkinLoadingStats &Stats, std::chrono::nanoseconds StartTime, std::chrono::nanoseconds MaxTime);
 
 	static void ConAddFavoriteSkin(IConsole::IResult *pResult, void *pUserData);
 	static void ConRemFavoriteSkin(IConsole::IResult *pResult, void *pUserData);
 	static void ConfigSaveCallback(IConfigManager *pConfigManager, void *pUserData);
 	void OnConfigSave(IConfigManager *pConfigManager);
+	static void ConchainRefreshSkinList(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
 };
 #endif
