@@ -237,8 +237,28 @@ void CMenus::RenderSettingsPulse(CUIRect MainView)
 	}
 	else if(s_CurTab == PULSE_TAB_CONSOLE)
 	{
-		MainView.HSplitTop(10.0f, nullptr, &MainView);
-		RenderConsoleImages(MainView);
+		CUIRect Left, Right;
+		MainView.VSplitMid(&Left, &Right);
+		Left.HSplitTop(20.0f, &Button, &Left);
+
+
+		if(DoButton_CheckBox(&g_Config.m_ClCustomConsole, Localize("Toggle Custom Console"), g_Config.m_ClCustomConsole, &Button))
+			g_Config.m_ClCustomConsole ^= 1;
+
+		if(g_Config.m_ClCustomConsole)
+		{
+			Right.Draw(ColorRGBA(0.0f, 0.0f, 0.0f, 0.3f), IGraphics::CORNER_ALL, 5.0f);
+			RenderConsoleImages(Right);
+			CUIRect Title;
+			Left.HSplitTop(40.0f, &Title, &Left);
+			Ui()->DoLabel(&Title, Localize("Console Settings"), 20.0f, TEXTALIGN_BC);
+
+			Left.HSplitTop(20.0f, &Button, &Left);
+			Ui()->DoScrollbarOption(&g_Config.m_ClCustomConsoleAlpha, &g_Config.m_ClCustomConsoleAlpha, &Button, Localize("Console Alpha"), 0, 100);
+
+			Left.HSplitTop(20.0f, &Button, &Left);
+			Ui()->DoScrollbarOption(&g_Config.m_ClCustomConsoleFading, &g_Config.m_ClCustomConsoleFading, &Button, Localize("Console Brightness"), 100, 0);
+		}
 	}
 }
 
