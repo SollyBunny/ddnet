@@ -29,6 +29,7 @@
 #include "components/broadcast.h"
 #include "components/camera.h"
 #include "components/chat.h"
+//#include "components/comp_pulse/colormode.h" TODO: ADD
 #include "components/comp_pulse/skinprofiles.h"
 #include "components/console.h"
 #include "components/controls.h"
@@ -130,6 +131,8 @@ enum class EClientIdFormat
 class CGameClient : public IGameClient
 {
 public:
+	//Pulse
+	//    CRainbow m_Rainbow;
 	// all components
 	CInfoMessages m_InfoMessages;
 	CCamera m_Camera;

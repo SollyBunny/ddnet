@@ -53,7 +53,7 @@ public:
 		DiscordCreateParams Params;
 		DiscordCreateParamsSetDefault(&Params);
 
-		Params.client_id = 752165779117441075; // DDNet
+		Params.client_id = 1361501457269919775;
 		Params.flags = EDiscordCreateFlags::DiscordCreateFlags_NoRequireDiscord;
 		Params.event_data = this;
 		Params.activity_events = &m_ActivityEvents;
@@ -94,10 +94,10 @@ public:
 	{
 		mem_zero(&m_Activity, sizeof(DiscordActivity));
 
-		str_copy(m_Activity.assets.large_image, "ddnet_logo", sizeof(m_Activity.assets.large_image));
-		str_copy(m_Activity.assets.large_text, "DDNet logo", sizeof(m_Activity.assets.large_text));
+		str_copy(m_Activity.assets.large_image, "silly", sizeof(m_Activity.assets.large_image));
+		str_copy(m_Activity.assets.large_text, "Bleh :p", sizeof(m_Activity.assets.large_text));
 		m_Activity.timestamps.start = time_timestamp();
-		str_copy(m_Activity.details, "Offline", sizeof(m_Activity.details));
+		str_copy(m_Activity.details, "Chillin in menus", sizeof(m_Activity.details));
 		m_Activity.instance = false;
 
 		m_UpdateActivity = true;
@@ -107,10 +107,10 @@ public:
 	{
 		mem_zero(&m_Activity, sizeof(DiscordActivity));
 
-		str_copy(m_Activity.assets.large_image, "ddnet_logo", sizeof(m_Activity.assets.large_image));
-		str_copy(m_Activity.assets.large_text, "DDNet logo", sizeof(m_Activity.assets.large_text));
+		str_copy(m_Activity.assets.large_image, "silly", sizeof(m_Activity.assets.large_image));
+		str_copy(m_Activity.assets.large_text, "Bleh :p", sizeof(m_Activity.assets.large_text));
 		m_Activity.timestamps.start = time_timestamp();
-		str_copy(m_Activity.name, "Online", sizeof(m_Activity.name));
+		str_copy(m_Activity.name, "In-Game", sizeof(m_Activity.name));
 		m_Activity.instance = true;
 
 		str_copy(m_Activity.details, ServerInfo.m_aName, sizeof(m_Activity.details));

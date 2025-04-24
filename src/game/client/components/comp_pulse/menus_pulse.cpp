@@ -94,11 +94,11 @@ void CMenus::RenderConsoleImages(CUIRect MainView)
 			char aPath[IO_MAX_PATH_LENGTH];
 			str_format(aPath, sizeof(aPath), "%s", pBasePath);
 			dbg_msg("console_images", "Checking path: %s", aPath);
-			
+
 			std::vector<CConsoleImage> vFiles;
 			Storage()->ListDirectory(IStorage::TYPE_ALL, aPath, ListConsoleImagesCallback, &vFiles);
 			dbg_msg("console_images", "Found %d PNG files in %s", vFiles.size(), aPath);
-			
+
 			for(CConsoleImage &Image : vFiles)
 			{
 				bool bExists = false;
@@ -117,7 +117,7 @@ void CMenus::RenderConsoleImages(CUIRect MainView)
 					char aFullPath[IO_MAX_PATH_LENGTH];
 					str_format(aFullPath, sizeof(aFullPath), "%s/%s", aPath, Image.m_aName);
 					dbg_msg("console_images", "Loading image: %s", aFullPath);
-					
+
 					if(Graphics()->LoadPng(ImgInfo, aFullPath, IStorage::TYPE_ALL))
 					{
 						Image.m_Texture = Graphics()->LoadTextureRaw(ImgInfo, 0);
@@ -229,8 +229,14 @@ void CMenus::RenderSettingsPulse(CUIRect MainView)
 		MainView.VSplitMid(&Left, &Right, 10.0f);
 
 		CUIRect Label;
-		Left.HSplitTop(20.0f, &Label, &Left);
-		Ui()->DoLabel(&Label, Localize("Left Section"), 14.0f, TEXTALIGN_ML);
+		Left.HSplitTop(40.0f, &Label, &Left);
+		Ui()->DoLabel(&Label, Localize("Properties"), 20.0f, TEXTALIGN_MC);
+
+
+		Left.HSplitTop(20.0f, &Button, &Left);
+		if(DoButton_CheckBox(&g_Config.m_ClFastInp, Localize("Fast Input"), g_Config.m_ClFastInp, &Button))
+			g_Config.m_ClFastInp ^= 1;
+
 
 		Right.HSplitTop(20.0f, &Label, &Right);
 		Ui()->DoLabel(&Label, Localize("Right Section"), 14.0f, TEXTALIGN_ML);

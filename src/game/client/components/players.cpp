@@ -855,7 +855,11 @@ void CPlayers::RenderPlayer(
 
 	if(m_pClient->m_Snap.m_pLocalInfo && ClientId == m_pClient->m_Snap.m_pLocalInfo->m_ClientId)
 	{
-		m_pClient->m_Effects.PlayerTrail(Position, Alpha);
+		//TODO: aura thingy
+		// if(g_Config.m_ClToggleAura)
+		// 	m_pClient->m_Effects.PlayerAura(Position, Alpha);
+		if(g_Config.m_ClToggleTrail)
+			m_pClient->m_Effects.PlayerTrail(Position, Alpha);
 	}
 }
 
