@@ -683,7 +683,7 @@ void CPlayers::RenderPlayer(
 				break;
 				}
 			}
-			else if(Player.m_Weapon == WEAPON_NINJA)
+			else if(Player.m_Weapon == WEAPON_NINJA || (g_Config.m_ClFreezeKatana > 0 && (RenderInfo.m_TeeRenderFlags & TEE_EFFECT_FROZEN)))
 			{
 				WeaponPosition = Position;
 				WeaponPosition.y += g_pData->m_Weapons.m_aId[CurrentWeapon].m_Offsety;
@@ -1134,7 +1134,7 @@ void CPlayers::RenderPlayerGhost(
 
 				Graphics()->RenderQuadContainerAsSprite(m_WeaponEmoteQuadContainerIndex, QuadOffset, WeaponPosition.x, WeaponPosition.y);
 			}
-			else if(Player.m_Weapon == WEAPON_NINJA)
+			else if(Player.m_Weapon == WEAPON_NINJA || (g_Config.m_ClFreezeKatana > 0 && (RenderInfo.m_TeeRenderFlags & TEE_EFFECT_FROZEN)))
 			{
 				WeaponPosition = Position;
 				WeaponPosition.y += g_pData->m_Weapons.m_aId[CurrentWeapon].m_Offsety;
