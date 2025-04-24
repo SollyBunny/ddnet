@@ -7,7 +7,5 @@
 #define MACRO_CONFIG_STR(Name, ScriptName, Len, Def, Save, Desc) ;
 #endif
 
-MACRO_CONFIG_INT(ClCursorScale, sc_cursor_scale, 100, 0, 500, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Amount to scale the in game cursor by as a percentage (50 = half, 200 = double)")
-
 // Translate
 MACRO_CONFIG_INT(ClTranslateAuto, sc_translate_auto, 1, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Automatically translate chat messages")

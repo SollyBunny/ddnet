@@ -126,6 +126,8 @@ MACRO_CONFIG_INT(ClRenderNameplateSpec, tc_render_nameplate_spec, 0, 0, 1, CFGFL
 MACRO_CONFIG_INT(ClTinyTees, tc_tiny_tees, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Render tees smaller")
 MACRO_CONFIG_INT(ClTinyTeesOthers, tc_tiny_tees_others, 1, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Render other tees smaller")
 
+MACRO_CONFIG_INT(ClCursorScale, tc_cursor_scale, 100, 0, 500, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Amount to scale the in game cursor by as a percentage (50 = half, 200 = double)")
+
 // Profiles
 MACRO_CONFIG_INT(ClApplyProfileSkin, tc_profile_skin, 1, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Apply skin in profiles")
 MACRO_CONFIG_INT(ClApplyProfileName, tc_profile_name, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Apply name in profiles")
