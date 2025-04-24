@@ -28,11 +28,12 @@ private:
 	bool Save(const char *pFile);
 	bool Load(const char *pFile);
 	template<typename... Args>
-	CBgDrawItem *AddItem(Args&&... args);
+	CBgDrawItem *AddItem(Args &&... args);
 	void MakeSpaceFor(size_t Count);
 
 public:
-	enum class InputMode {
+	enum class InputMode
+	{
 		NONE = 0,
 		DRAW = 1,
 		ERASE = 2,

@@ -153,7 +153,7 @@ void CGameClient::OnConsoleInit()
 					      &m_DamageInd,
 					      &m_PlayerIndicator,
 					      &m_Verify,
-					      &m_Tater,
+					      &m_TClient,
 					      &m_Translate,
 					      &m_Hud,
 					      &m_Spectator,

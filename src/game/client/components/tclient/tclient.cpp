@@ -11,20 +11,20 @@
 #include <engine/shared/config.h>
 #include <engine/shared/json.h>
 
-#include "tater.h"
+#include "tclient.h"
 
 static constexpr const char *TCLIENT_INFO_URL = "https://update.tclient.app/info.json";
 
-CTater::CTater()
+CTClient::CTClient()
 {
 	OnReset();
 }
 
-void CTater::ConRandomTee(IConsole::IResult *pResult, void *pUserData) {}
+void CTClient::ConRandomTee(IConsole::IResult *pResult, void *pUserData) {}
 
-void CTater::ConchainRandomColor(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
+void CTClient::ConchainRandomColor(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
 {
-	CTater *pThis = static_cast<CTater *>(pUserData);
+	CTClient *pThis = static_cast<CTClient *>(pUserData);
 	// Resolve type to randomize
 	// Check length of type (0 = all, 1 = body, 2 = feet, 3 = skin, 4 = flag)
 	bool RandomizeBody = false;
@@ -89,7 +89,7 @@ void CTater::ConchainRandomColor(IConsole::IResult *pResult, void *pUserData, IC
 	pThis->m_pClient->SendInfo(false);
 }
 
-void CTater::OnInit()
+void CTClient::OnInit()
 {
 	TextRender()->SetCustomFace(g_Config.m_ClCustomFont);
 	m_pGraphics = Kernel()->RequestInterface<IEngineGraphics>();
@@ -108,7 +108,7 @@ static bool LineShouldHighlight(const char *pLine, const char *pName)
 	return false;
 }
 
-bool CTater::SendNonDuplicateMessage(int Team, const char *pLine)
+bool CTClient::SendNonDuplicateMessage(int Team, const char *pLine)
 {
 	if(str_comp(pLine, m_PreviousOwnMessage) != 0)
 	{
@@ -119,7 +119,7 @@ bool CTater::SendNonDuplicateMessage(int Team, const char *pLine)
 	return false;
 }
 
-void CTater::OnMessage(int MsgType, void *pRawMsg)
+void CTClient::OnMessage(int MsgType, void *pRawMsg)
 {
 	if(Client()->State() == IClient::STATE_DEMOPLAYBACK)
 		return;
@@ -249,32 +249,32 @@ void CTater::OnMessage(int MsgType, void *pRawMsg)
 	}
 }
 
-void CTater::OnConsoleInit()
+void CTClient::OnConsoleInit()
 {
 	Console()->Register("tc_random_player", "s[type]", CFGFLAG_CLIENT, ConRandomTee, this, "Randomize player color (0 = all, 1 = body, 2 = feet, 3 = skin, 4 = flag) example: 0011 = randomize skin and flag [number is position] ");
 	Console()->Chain("tc_random_player", ConchainRandomColor, this);
 }
 
-void CTater::RandomBodyColor()
+void CTClient::RandomBodyColor()
 {
 	g_Config.m_ClPlayerColorBody = ColorHSLA((std::rand() % 100) / 100.0f, (std::rand() % 100) / 100.0f, (std::rand() % 100) / 100.0f, 1.0f).Pack(false);
 }
 
-void CTater::RandomFeetColor()
+void CTClient::RandomFeetColor()
 {
 	g_Config.m_ClPlayerColorFeet = ColorHSLA((std::rand() % 100) / 100.0f, (std::rand() % 100) / 100.0f, (std::rand() % 100) / 100.0f, 1.0f).Pack(false);
 }
 
-void CTater::RandomSkin(void *pUserData)
+void CTClient::RandomSkin(void *pUserData)
 {
-	CTater *pThis = static_cast<CTater *>(pUserData);
+	CTClient *pThis = static_cast<CTClient *>(pUserData);
 	const auto &Skins = pThis->m_pClient->m_Skins.SkinList().Skins();
 	str_copy(g_Config.m_ClPlayerSkin, Skins[std::rand() % (int)Skins.size()].SkinContainer()->Name());
 }
 
-void CTater::RandomFlag(void *pUserData)
+void CTClient::RandomFlag(void *pUserData)
 {
-	CTater *pThis = static_cast<CTater *>(pUserData);
+	CTClient *pThis = static_cast<CTClient *>(pUserData);
 	// get the flag count
 	int FlagCount = pThis->m_pClient->m_CountryFlags.Num();
 
@@ -288,7 +288,7 @@ void CTater::RandomFlag(void *pUserData)
 	g_Config.m_PlayerCountry = pFlag->m_CountryCode;
 }
 
-void CTater::OnRender()
+void CTClient::OnRender()
 {
 	if(m_pTClientInfoTask)
 	{
@@ -300,12 +300,12 @@ void CTater::OnRender()
 	}
 }
 
-bool CTater::NeedUpdate()
+bool CTClient::NeedUpdate()
 {
 	return str_comp(m_aVersionStr, "0") != 0;
 }
 
-void CTater::ResetTClientInfoTask()
+void CTClient::ResetTClientInfoTask()
 {
 	if(m_pTClientInfoTask)
 	{
@@ -314,7 +314,7 @@ void CTater::ResetTClientInfoTask()
 	}
 }
 
-void CTater::FetchTClientInfo()
+void CTClient::FetchTClientInfo()
 {
 	if(m_pTClientInfoTask && !m_pTClientInfoTask->Done())
 		return;
@@ -349,7 +349,7 @@ static TVersion ToTCVersion(char *pStr)
 	return std::make_tuple(aVersion[0], aVersion[1], aVersion[2]);
 }
 
-void CTater::FinishTClientInfo()
+void CTClient::FinishTClientInfo()
 {
 	json_value *pJson = m_pTClientInfoTask->ResultJson();
 	if(!pJson)

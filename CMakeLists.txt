@@ -2094,7 +2094,7 @@ set_src(ENGINE_SHARED GLOB_RECURSE src/engine/shared
   config_variables_inf.h
   config_variables_insta.h
   config_variables_solly.h
-  config_variables_tater.h
+  config_variables_tclient.h
   console.cpp
   console.h
   csv.cpp
@@ -2463,8 +2463,8 @@ if(CLIENT)
     components/tclient/skinprofiles.h
     components/tclient/statusbar.cpp
     components/tclient/statusbar.h
-    components/tclient/tater.cpp
-    components/tclient/tater.h
+    components/tclient/tclient.cpp
+    components/tclient/tclient.h
     components/tclient/trails.cpp
     components/tclient/trails.h
     components/tclient/translate.cpp

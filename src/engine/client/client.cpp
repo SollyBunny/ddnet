@@ -207,7 +207,7 @@ int CClient::SendMsgActive(CMsgPacker *pMsg, int Flags)
 	return SendMsg(g_Config.m_ClDummy, pMsg, Flags);
 }
 
-void CClient::SendTaterInfo(int Conn)
+void CClient::SendTClientInfo(int Conn)
 {
 	CMsgPacker Msg(NETMSG_IAMTATER, true);
 	Msg.AddString("Built on " __DATE__ ", " __TIME__);
@@ -216,7 +216,7 @@ void CClient::SendTaterInfo(int Conn)
 
 void CClient::SendInfo(int Conn)
 {
-	SendTaterInfo(CONN_MAIN);
+	SendTClientInfo(CONN_MAIN);
 
 	CMsgPacker MsgVer(NETMSG_CLIENTVER, true);
 	MsgVer.AddRaw(&m_ConnectionId, sizeof(m_ConnectionId));
@@ -1792,9 +1792,9 @@ void CClient::ProcessServerPacket(CNetChunk *pPacket, int Conn, bool Dummy)
 		}
 		else if(Msg == NETMSG_TATER_CHECKSUM_REQUEST)
 		{
-#ifndef TATER_CHECKSUM_SALT
+#ifndef TCLIENT_CHECKSUM_SALT
 // salt@sjrc6.github.io: 26e65800-d8d9-3e8f-8d53-acdd1461f0a9
-#define TATER_CHECKSUM_SALT \
+#define TCLIENT_CHECKSUM_SALT \
 	{ \
 		{ \
 			0x26, 0xe6, 0x58, 0x00, 0xd8, 0xd9, 0x3e, 0x8f, \
@@ -1809,7 +1809,7 @@ void CClient::ProcessServerPacket(CNetChunk *pPacket, int Conn, bool Dummy)
 			}
 			SHA256_CTX Sha256Ctxt;
 			sha256_init(&Sha256Ctxt);
-			CUuid Salt = TATER_CHECKSUM_SALT;
+			CUuid Salt = TCLIENT_CHECKSUM_SALT;
 			sha256_update(&Sha256Ctxt, &Salt, sizeof(Salt));
 			sha256_update(&Sha256Ctxt, pUuid, sizeof(*pUuid));
 			SHA256_DIGEST Sha256 = sha256_finish(&Sha256Ctxt);
@@ -3368,7 +3368,7 @@ void CClient::Run()
 			m_DummySendConnInfo = false;
 
 			// send client info
-			SendTaterInfo(CONN_DUMMY);
+			SendTClientInfo(CONN_DUMMY);
 
 			SendInfo(CONN_DUMMY);
 			m_aNetClient[CONN_DUMMY].Update();
@@ -3556,7 +3556,7 @@ void CClient::Run()
 	{
 		/*
 		char aError[128] = "";
-		for(CONFIGDOMAIN ConfigDomain = CONFIGDOMAIN::START; ConfigDomain < CONFIGDOMAIN::NUM; ++ConfigDomain)
+		for(ConfigDomain ConfigDomain = ConfigDomain::START; ConfigDomain < ConfigDomain::NUM; ++ConfigDomain)
 		{
 			if(DIDNTFAIL)
 				continue
@@ -5040,7 +5040,7 @@ int main(int argc, const char **argv)
 
 	// execute config file
 	pConsole->SetUnknownCommandCallback(SaveUnknownCommandCallback, pClient);
-	for(CONFIGDOMAIN ConfigDomain = CONFIGDOMAIN::START; ConfigDomain < CONFIGDOMAIN::NUM; ++ConfigDomain)
+	for(ConfigDomain ConfigDomain = ConfigDomain::START; ConfigDomain < ConfigDomain::NUM; ++ConfigDomain)
 	{
 		if(!pStorage->FileExists(s_aConfigDomains[ConfigDomain].m_aConfigPath, IStorage::TYPE_ALL))
 			continue;

@@ -154,7 +154,7 @@ void CBindChat::OnConsoleInit()
 {
 	IConfigManager *pConfigManager = Kernel()->RequestInterface<IConfigManager>();
 	if(pConfigManager)
-		pConfigManager->RegisterCallback(ConfigSaveCallback, this, CONFIGDOMAIN::TATERCHATBINDS);
+		pConfigManager->RegisterCallback(ConfigSaveCallback, this, ConfigDomain::TCLIENTCHATBINDS);
 
 	Console()->Register("bindchat", "s[name] r[command]", CFGFLAG_CLIENT, ConAddBindchat, this, "Add a chat bind");
 	Console()->Register("bindchats", "?s[name]", CFGFLAG_CLIENT, ConBindchats, this, "Print command executed by this name or all chat binds");
@@ -295,7 +295,7 @@ bool CBindChat::ChatDoAutocomplete(bool ShiftPressed)
 void CBindChat::ConfigSaveCallback(IConfigManager *pConfigManager, void *pUserData)
 {
 	CBindChat *pThis = (CBindChat *)pUserData;
-	pConfigManager->WriteLine("unbindchatall", CONFIGDOMAIN::TATERCHATBINDS);
+	pConfigManager->WriteLine("unbindchatall", ConfigDomain::TCLIENTCHATBINDS);
 	for(CBind &Bind : pThis->m_vBinds)
 	{
 		char aBuf[BINDCHAT_MAX_CMD * 2] = "";
@@ -310,6 +310,6 @@ void CBindChat::ConfigSaveCallback(IConfigManager *pConfigManager, void *pUserDa
 		pDst = aBuf + str_length(aBuf);
 		str_escape(&pDst, Bind.m_aCommand, pEnd);
 		str_append(aBuf, "\"");
-		pConfigManager->WriteLine(aBuf, CONFIGDOMAIN::TATERCHATBINDS);
+		pConfigManager->WriteLine(aBuf, ConfigDomain::TCLIENTCHATBINDS);
 	}
 }

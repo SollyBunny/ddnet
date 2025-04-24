@@ -6,7 +6,7 @@
 #include <engine/shared/console.h>
 #include <engine/shared/http.h>
 
-class CTater : public CComponent
+class CTClient : public CComponent
 {
 	static void ConRandomTee(IConsole::IResult *pResult, void *pUserData);
 	static void ConchainRandomColor(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
@@ -22,7 +22,7 @@ class CTater : public CComponent
 	bool SendNonDuplicateMessage(int Team, const char *pLine);
 
 public:
-	CTater();
+	CTClient();
 	int Sizeof() const override { return sizeof(*this); }
 	void OnInit() override;
 	void OnMessage(int MsgType, void *pRawMsg) override;

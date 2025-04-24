@@ -6,7 +6,7 @@
 #include "kernel.h"
 
 #define CONFIG_DOMAIN(Name, ConfigPath, HasVars) Name,
-enum CONFIGDOMAIN // NOLINT(readability-enum-initial-value)
+enum ConfigDomain // NOLINT(readability-enum-initial-value)
 {
 #include "shared/config_domains.h"
 	NUM,
@@ -14,9 +14,9 @@ enum CONFIGDOMAIN // NOLINT(readability-enum-initial-value)
 };
 #undef CONFIG_DOMAIN
 
-static inline CONFIGDOMAIN &operator++(CONFIGDOMAIN &Domain)
+static inline ConfigDomain &operator++(ConfigDomain &Domain)
 {
-	return Domain = static_cast<CONFIGDOMAIN>(static_cast<int>(Domain) + 1);
+	return Domain = static_cast<ConfigDomain>(static_cast<int>(Domain) + 1);
 }
 
 class CConfigDomain
@@ -26,7 +26,7 @@ public:
 	bool m_HasVars;
 }
 #define CONFIG_DOMAIN(Name, ConfigPath, HasVars) {ConfigPath, HasVars},
-static const s_aConfigDomains[CONFIGDOMAIN::NUM] = {
+static const s_aConfigDomains[ConfigDomain::NUM] = {
 #include "shared/config_domains.h"
 };
 #undef CONFIG_DOMAIN
@@ -45,9 +45,9 @@ public:
 	virtual bool Save() = 0;
 	virtual class CConfig *Values() = 0;
 
-	virtual void RegisterCallback(SAVECALLBACKFUNC pfnFunc, void *pUserData, CONFIGDOMAIN ConfigDomain = CONFIGDOMAIN::DDNET) = 0;
+	virtual void RegisterCallback(SAVECALLBACKFUNC pfnFunc, void *pUserData, ConfigDomain ConfigDomain = ConfigDomain::DDNET) = 0;
 
-	virtual void WriteLine(const char *pLine, CONFIGDOMAIN ConfigDomain = CONFIGDOMAIN::DDNET) = 0;
+	virtual void WriteLine(const char *pLine, ConfigDomain ConfigDomain = ConfigDomain::DDNET) = 0;
 
 	virtual void StoreUnknownCommand(const char *pCommand) = 0;
 

@@ -2,27 +2,24 @@
 #include <engine/shared/config.h>
 
 #include <game/client/animstate.h>
+#include <game/client/gameclient.h>
 #include <game/client/render.h>
 #include <game/generated/client_data.h>
 #include <game/generated/protocol.h>
-
-#include <game/client/gameclient.h>
+#include <game/localization.h>
 
 #include <algorithm>
-#include <execution>
 #include <deque>
 #include <vector>
 
 #include <game/client/components/tclient/bg_draw_file.h>
 
 #include "bg_draw.h"
-#include "base/system.h"
-#include "base/vmath.h"
-#include "game/localization.h"
 
 #define MAX_ITEMS_TO_LOAD 65536
 
-static float cross(vec2 A, vec2 B) {
+static float cross(vec2 A, vec2 B)
+{
 	return A.x * B.y - A.y * B.x;
 }
 
@@ -34,7 +31,7 @@ static bool line_intersects(vec2 A, vec2 B, vec2 C, vec2 D)
 	const float Denom = cross(R, S);
 	const float Num1 = cross(Ac, S);
 	const float Num2 = cross(Ac, R);
-	if (Denom == 0.0f)
+	if(Denom == 0.0f)
 		return false;
 	float T = Num1 / Denom;
 	float U = Num2 / Denom;
@@ -121,7 +118,7 @@ public:
 		if(!m_Drawing)
 			return false;
 		m_Drawing = false;
-		const vec2 LastPos = m_Data.size() < 1 ? Point.Pos() : m_Data.back().Pos();
+		const vec2 LastPos = m_Data.empty() ? Point.Pos() : m_Data.back().Pos();
 		const float Distance = distance(LastPos, Point.Pos());
 		if(Distance < Point.w / 2.0f)
 		{
@@ -163,7 +160,7 @@ public:
 			return false;
 		if(m_Data.size() > BG_DRAW_MAX_POINTS_PER_ITEM)
 			return PenUp(Point.Pos());
-		const vec2 LastPos = m_Data.size() < 1 ? Point.Pos() : m_Data.back().Pos();
+		const vec2 LastPos = m_Data.empty() ? Point.Pos() : m_Data.back().Pos();
 		const float Distance = distance(LastPos, Point.Pos());
 		// Don't draw short segments
 		if(Distance < Point.w * 2.0f)
@@ -191,12 +188,12 @@ public:
 	}
 	bool PointIntersect(const vec2 Pos, const float Radius) const
 	{
-		if(m_Data.size() == 0)
+		if(m_Data.empty())
 			return true;
 		if(m_Data.size() == 1)
 			return distance(m_Data[0].Pos(), Pos) < m_Data[0].w + Radius;
 		vec2 C, D = m_Data[0].Pos();
-		for (auto It = std::next(m_Data.begin()); It != m_Data.end(); ++It)
+		for(auto It = std::next(m_Data.begin()); It != m_Data.end(); ++It)
 		{
 			const CBgDrawItemDataPoint &Point = *It;
 			C = D;
@@ -211,7 +208,7 @@ public:
 	}
 	bool LineIntersect(const vec2 A, const vec2 B) const
 	{
-		if(m_Data.size() == 0)
+		if(m_Data.empty())
 			return true;
 		if(m_Data.size() == 1)
 		{
@@ -222,7 +219,7 @@ public:
 			return distance(Closest, P) < m_Data[0].w;
 		}
 		vec2 C, D = m_Data[0].Pos();
-		for (auto It = std::next(m_Data.begin()); It != m_Data.end(); ++It)
+		for(auto It = std::next(m_Data.begin()); It != m_Data.end(); ++It)
 		{
 			const CBgDrawItemDataPoint &Point = *It;
 			C = D;
@@ -351,22 +348,23 @@ bool CBgDraw::Save(const char *pFilename)
 	if(!Handle)
 		return false;
 	size_t Written = 0;
-	bool Ret = std::all_of(std::execution::seq, m_pvItems->begin(), m_pvItems->end(), [this, Handle, &Written](const CBgDrawItem &Item) {
+	bool Success = true;
+	for(const CBgDrawItem &Item : *m_pvItems) {
 		char aMsg[256];
 		if(!BgDrawFile::Write(Handle, Item.Data()))
 		{
 			str_format(aMsg, sizeof(aMsg), TCLocalize("Writing item %zu failed", "bgdraw"), Written);
 			GameClient()->Echo(aMsg);
-			return false;
+			Success = false;
+			break;
 		}
 		Written += 1;
-		return true;
-	});
+	}
 	char aMsg[256];
 	str_format(aMsg, sizeof(aMsg), TCLocalize("Written %zu items", "bgdraw"), Written);
 	GameClient()->Echo(aMsg);
 	io_close(Handle);
-	return Ret;
+	return Success;
 }
 
 bool CBgDraw::Load(const char *pFilename)
@@ -406,7 +404,7 @@ bool CBgDraw::Load(const char *pFilename)
 }
 
 template<typename... Args>
-CBgDrawItem *CBgDraw::AddItem(Args&&... args)
+CBgDrawItem *CBgDraw::AddItem(Args &&... args)
 {
 	MakeSpaceFor(1);
 	if(g_Config.m_ClBgDrawMaxItems == 0)

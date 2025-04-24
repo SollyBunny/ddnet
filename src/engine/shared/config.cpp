@@ -276,7 +276,7 @@ CConfigManager::CConfigManager()
 {
 	m_pConsole = nullptr;
 	m_pStorage = nullptr;
-	for(CONFIGDOMAIN ConfigDomain = CONFIGDOMAIN::START; ConfigDomain < CONFIGDOMAIN::NUM; ++ConfigDomain)
+	for(ConfigDomain ConfigDomain = ConfigDomain::START; ConfigDomain < ConfigDomain::NUM; ++ConfigDomain)
 	{
 		m_aConfigFile[ConfigDomain] = nullptr;
 		m_aFailed[ConfigDomain] = false;
@@ -288,7 +288,7 @@ void CConfigManager::Init()
 	m_pConsole = Kernel()->RequestInterface<IConsole>();
 	m_pStorage = Kernel()->RequestInterface<IStorage>();
 
-	CONFIGDOMAIN ConfigDomain;
+	ConfigDomain ConfigDomain;
 	const auto &&AddVariable = [this, &ConfigDomain](SConfigVariable *pVariable) {
 		pVariable->m_ConfigDomain = ConfigDomain;
 		m_vpAllVariables.push_back(pVariable);
@@ -373,12 +373,12 @@ bool CConfigManager::Save()
 	if(!m_pStorage || !g_Config.m_ClSaveSettings)
 		return true;
 
-	bool aFailedError[CONFIGDOMAIN::NUM] = {};
-	for(CONFIGDOMAIN ConfigDomain = CONFIGDOMAIN::START; ConfigDomain < CONFIGDOMAIN::NUM; ++ConfigDomain)
+	bool aFailedError[ConfigDomain::NUM] = {};
+	for(ConfigDomain ConfigDomain = ConfigDomain::START; ConfigDomain < ConfigDomain::NUM; ++ConfigDomain)
 		m_aFailed[ConfigDomain] = false;
 
-	char aaConfigFileTmp[CONFIGDOMAIN::NUM][IO_MAX_PATH_LENGTH];
-	for(CONFIGDOMAIN ConfigDomain = CONFIGDOMAIN::START; ConfigDomain < CONFIGDOMAIN::NUM; ++ConfigDomain)
+	char aaConfigFileTmp[ConfigDomain::NUM][IO_MAX_PATH_LENGTH];
+	for(ConfigDomain ConfigDomain = ConfigDomain::START; ConfigDomain < ConfigDomain::NUM; ++ConfigDomain)
 	{
 		if(s_aConfigDomains[ConfigDomain].m_aConfigPath == nullptr)
 		{
@@ -396,7 +396,7 @@ bool CConfigManager::Save()
 		}
 	}
 
-	for(CONFIGDOMAIN ConfigDomain = CONFIGDOMAIN::START; ConfigDomain < CONFIGDOMAIN::NUM; ++ConfigDomain)
+	for(ConfigDomain ConfigDomain = ConfigDomain::START; ConfigDomain < ConfigDomain::NUM; ++ConfigDomain)
 	{
 		if(!s_aConfigDomains[ConfigDomain].m_HasVars)
 			continue;
@@ -413,7 +413,7 @@ bool CConfigManager::Save()
 		}
 	}
 
-	for(CONFIGDOMAIN ConfigDomain = CONFIGDOMAIN::START; ConfigDomain < CONFIGDOMAIN::NUM; ++ConfigDomain)
+	for(ConfigDomain ConfigDomain = ConfigDomain::START; ConfigDomain < ConfigDomain::NUM; ++ConfigDomain)
 	{
 		if(m_aFailed[ConfigDomain])
 			continue;
@@ -423,11 +423,11 @@ bool CConfigManager::Save()
 			Callback.m_pfnFunc(this, Callback.m_pUserData);
 	}
 
-	if(!m_aFailed[CONFIGDOMAIN::DDNET] && m_aConfigFile[CONFIGDOMAIN::DDNET])
+	if(!m_aFailed[ConfigDomain::DDNET] && m_aConfigFile[ConfigDomain::DDNET])
 		for(const char *pCommand : m_vpUnknownCommands)
 			WriteLine(pCommand);
 
-	for(CONFIGDOMAIN ConfigDomain = CONFIGDOMAIN::START; ConfigDomain < CONFIGDOMAIN::NUM; ++ConfigDomain)
+	for(ConfigDomain ConfigDomain = ConfigDomain::START; ConfigDomain < ConfigDomain::NUM; ++ConfigDomain)
 	{
 		if(!m_aConfigFile[ConfigDomain])
 			continue;
@@ -459,22 +459,22 @@ bool CConfigManager::Save()
 		}
 	}
 
-	for(CONFIGDOMAIN ConfigDomain = CONFIGDOMAIN::START; ConfigDomain < CONFIGDOMAIN::NUM; ++ConfigDomain)
+	for(ConfigDomain ConfigDomain = ConfigDomain::START; ConfigDomain < ConfigDomain::NUM; ++ConfigDomain)
 		m_aConfigFile[ConfigDomain] = nullptr;
 
-	for(CONFIGDOMAIN ConfigDomain = CONFIGDOMAIN::START; ConfigDomain < CONFIGDOMAIN::NUM; ++ConfigDomain)
+	for(ConfigDomain ConfigDomain = ConfigDomain::START; ConfigDomain < ConfigDomain::NUM; ++ConfigDomain)
 		if(m_aFailed[ConfigDomain])
 			return false;
 
 	return true;
 }
 
-void CConfigManager::RegisterCallback(SAVECALLBACKFUNC pfnFunc, void *pUserData, CONFIGDOMAIN ConfigDomain)
+void CConfigManager::RegisterCallback(SAVECALLBACKFUNC pfnFunc, void *pUserData, ConfigDomain ConfigDomain)
 {
 	m_avCallbacks[ConfigDomain].emplace_back(pfnFunc, pUserData);
 }
 
-void CConfigManager::WriteLine(const char *pLine, CONFIGDOMAIN ConfigDomain)
+void CConfigManager::WriteLine(const char *pLine, ConfigDomain ConfigDomain)
 {
 	if(!m_aConfigFile[ConfigDomain] ||
 		io_write(m_aConfigFile[ConfigDomain], pLine, str_length(pLine)) != static_cast<unsigned>(str_length(pLine)) ||

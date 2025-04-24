@@ -26,7 +26,7 @@ void CSkinProfiles::OnConsoleInit()
 {
 	IConfigManager *pConfigManager = Kernel()->RequestInterface<IConfigManager>();
 	if(pConfigManager)
-		pConfigManager->RegisterCallback(ConfigSaveCallback, this, CONFIGDOMAIN::TATERPROFILES);
+		pConfigManager->RegisterCallback(ConfigSaveCallback, this, ConfigDomain::TCLIENTPROFILES);
 
 	Console()->Register("add_profile", "i[body] i[feet] i[flag] i[emote] s[skin] s[name] s[clan]", CFGFLAG_CLIENT, ConAddProfile, this, "Add a profile");
 }
@@ -77,6 +77,6 @@ void CSkinProfiles::ConfigSaveCallback(IConfigManager *pConfigManager, void *pUs
 		str_format(aBufTemp, sizeof(aBufTemp), "\"%s\"", aEscapeBuf);
 		str_append(aBuf, aBufTemp, sizeof(aBuf));
 
-		pConfigManager->WriteLine(aBuf, CONFIGDOMAIN::TATERPROFILES);
+		pConfigManager->WriteLine(aBuf, ConfigDomain::TCLIENTPROFILES);
 	}
 }

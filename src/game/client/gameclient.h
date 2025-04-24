@@ -67,7 +67,7 @@
 #include "components/tclient/rainbow.h"
 #include "components/tclient/skinprofiles.h"
 #include "components/tclient/statusbar.h"
-#include "components/tclient/tater.h"
+#include "components/tclient/tclient.h"
 #include "components/tclient/trails.h"
 #include "components/tclient/translate.h"
 #include "components/tclient/verify.h"
@@ -204,7 +204,7 @@ public:
 	CBindChat m_BindChat;
 	CBindWheel m_BindWheel;
 	CBgDraw m_BgDraw;
-	CTater m_Tater;
+	CTClient m_TClient;
 	CTrails m_Trails;
 	CTranslate m_Translate;
 	CPlayerIndicator m_PlayerIndicator;
