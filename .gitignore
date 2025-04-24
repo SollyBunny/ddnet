@@ -142,3 +142,4 @@ tags
 *.user
 *.vcxproj
 *.zip
+/win-build/
