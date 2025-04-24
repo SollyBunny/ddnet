@@ -36,45 +36,14 @@
 #include <string>
 #include <vector>
 
-#include <engine/client/pulse/websocket.h>
-
+#include <sio_client.h>
 using namespace FontIcons;
 using namespace std::chrono_literals;
 
-static std::unique_ptr<DDNetPulse::WebSocket> s_pWebSocket;
 static bool s_IsConnected = false;
 
-// Function to disconnect WebSocket
-void DisconnectWebSocket()
-{
-	if (s_pWebSocket)
-	{
-		s_pWebSocket->Disconnect();
-		s_pWebSocket.reset();
-		s_IsConnected = false;
-	}
-}
 
-// Function to initialize WebSocket
-void InitWebSocket()
-{
-	if (!s_pWebSocket)
-	{
-		s_pWebSocket = DDNetPulse::WebSocket::Create();
-		s_pWebSocket->SetOnConnect([]() {
-			s_IsConnected = true;
-			dbg_msg("websocket", "Connected to Socket.IO server");
-		});
-		s_pWebSocket->SetOnDisconnect([]() {
-			s_IsConnected = false;
-			dbg_msg("websocket", "Disconnected from Socket.IO server");
-		});
-		s_pWebSocket->SetOnError([](const std::string& error) {
-			dbg_msg("websocket", "Socket.IO error: %s", error.c_str());
-		});
-		s_pWebSocket->Connect("http://localhost:3000"); // Replace with your Socket.IO server URL
-	}
-}
+
 
 const float FontSize = 14.0f;
 const float Margin = 10.0f;
@@ -260,10 +229,13 @@ void CMenus::RenderSettingsPulse(CUIRect MainView)
 
 	if(s_CurTab == PULSE_TAB_GLOBAL)
 	{
-		// Send Socket.IO message when entering Pulse tab
-		if(s_pWebSocket && s_pWebSocket->IsConnected())
+
+		if(GameClient()->IsSocketConnected())
 		{
-			s_pWebSocket->Emit("statistic.jump", "statistic.jump");
+			sio::message::list msg;
+			msg.push(sio::string_message::create(""));
+			GameClient()->SendSocketMessage("statistic.jump", msg);
+			dbg_msg("websocket.io", "Sending Pulse");
 		}
 
 		MainView.HSplitTop(10.0f, nullptr, &MainView);

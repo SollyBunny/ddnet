@@ -2164,10 +2164,6 @@ if(CLIENT)
           video.cpp
           video.h
           warning.cpp
-
-          #pulse
-          pulse/websocket.cpp
-          pulse/websocket.h
   )
   set_src(GAME_CLIENT GLOB_RECURSE src/game/client
           animstate.cpp

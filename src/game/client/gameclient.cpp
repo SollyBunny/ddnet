@@ -4817,3 +4817,11 @@ bool CGameClient::CheckNewInput()
 {
 	return m_Controls.CheckNewInput();
 }
+
+void CGameClient::SendSocketMessage(const char *pEvent, const sio::message::list pData)
+{
+	if(!m_SocketIOConnected || !m_SocketIO.socket())
+		return;
+
+	m_SocketIO.socket()->emit(pEvent, pData);
+}

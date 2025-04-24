@@ -925,9 +925,11 @@ private:
 	sio::client m_SocketIO;
 	bool m_SocketIOConnected;
 
-	// Socket.IO functions
-	void SendSocketMessage(const char* pEvent, const char* pData);
+
+public:
+	void SendSocketMessage(const char *pEvent, sio::message::list pData);
 	bool IsSocketConnected() const { return m_SocketIOConnected; }
+	void SendSocketEvent(const char* pEvent, const char* pData) { SendSocketMessage(pEvent, sio::message::list(pData)); }
 };
 
 ColorRGBA CalculateNameColor(ColorHSLA TextColorHSL);
