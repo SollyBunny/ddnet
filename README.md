@@ -1,16 +1,107 @@
-[![DDraceNetwork](https://ddnet.org/ddnet-small.png)](https://ddnet.org) [![](https://github.com/ddnet/ddnet/workflows/Build/badge.svg)](https://github.com/ddnet/ddnet/actions?query=workflow%3ABuild+event%3Apush+branch%3Amaster) [![](https://codecov.io/gh/ddnet/ddnet/branch/master/graph/badge.svg)](https://codecov.io/gh/ddnet/ddnet/branch/master)
+[![DDNetPulse](https://ddnet.org/ddnet-small.png)](https://ddnet.org) [![](https://github.com/ddnet/ddnet/workflows/Build/badge.svg)](https://github.com/ddnet/ddnet/actions?query=workflow%3ABuild+event%3Apush+branch%3Amaster) [![](https://codecov.io/gh/ddnet/ddnet/branch/master/graph/badge.svg)](https://codecov.io/gh/ddnet/ddnet/branch/master)
 
-Our own flavor of DDRace, a Teeworlds mod. See the [website](https://ddnet.org) for more information.
+DDNetPulse is an enhanced version of DDraceNetwork, a Teeworlds mod, with additional features for real-time communication and monitoring. See the [DDNet website](https://ddnet.org) for more information about the base game.
 
 Development discussions happen on #ddnet on Quakenet ([Webchat](http://webchat.quakenet.org/?channels=ddnet&uio=d4)) or on [Discord in the developer channel](https://discord.gg/xsEd9xu).
 
 You can get binary releases on the [DDNet website](https://ddnet.org/downloads/), find it on [Steam](https://store.steampowered.com/app/412220/DDraceNetwork/) or [install from repository](#installation-from-repository).
 
-- [Code Browser](https://ddnet.org/codebrowser/DDNet/)
-- [Source Code Documentation](https://codedoc.ddnet.org/) (very incomplete, only a few items are documented)
-- [Contributing Guide](CONTRIBUTING.md)
+## Features
+DDNetPulse extends DDNet with the following features:
 
-If you want to learn about the source code, you can check the [Development](https://wiki.ddnet.org/wiki/Development) article on the wiki.
+- Real-time server monitoring and statistics
+- WebSocket support for live server data
+- Enhanced server-client communication
+- Improved performance monitoring
+- Additional server tools and utilities
+
+## Dependencies
+
+DDNetPulse requires all the standard DDNet dependencies plus:
+
+- ASIO (Asynchronous I/O Library)
+- WebSocket support (optional, enabled with `-DWEBSOCKETS=ON`)
+- MySQL/MariaDB support (optional, enabled with `-DMYSQL=ON`)
+
+## Building
+
+### Linux / macOS
+
+You can install the required libraries on your system, `touch CMakeLists.txt` and CMake will use the system-wide libraries by default. You can install all required dependencies and CMake on Debian or Ubuntu like this:
+
+```bash
+sudo apt install build-essential cargo cmake git glslang-tools google-mock libavcodec-extra libavdevice-dev libavfilter-dev libavformat-dev libavutil-dev libcurl4-openssl-dev libfreetype6-dev libglew-dev libnotify-dev libogg-dev libopus-dev libopusfile-dev libpng-dev libsdl2-dev libsqlite3-dev libssl-dev libvulkan-dev libwavpack-dev libx264-dev python3 rustc spirv-tools libasio-dev
+```
+
+For Arch Linux:
+
+```bash
+sudo pacman -S --needed base-devel cmake curl ffmpeg freetype2 git glew glslang gmock libnotify libpng opusfile python rust sdl2 spirv-tools sqlite vulkan-headers vulkan-icd-loader wavpack x264 asio
+```
+
+### Building the Project
+
+To compile DDNetPulse yourself, execute the following commands in the source root:
+
+```bash
+cmake -Bbuild
+cmake --build build
+```
+
+### Build Options
+
+The following is a non-exhaustive list of build arguments that can be passed to the `cmake` command-line tool:
+
+* **-DWEBSOCKETS=[ON|OFF]** <br>
+  Whether to enable WebSocket support for server. Setting to ON requires the `libwebsockets-dev` library installed. Default value is OFF.
+
+* **-DMYSQL=[ON|OFF]** <br>
+  Whether to enable MySQL/MariaDB support for server. Requires at least MySQL 8.0 or MariaDB 10.2. Setting to ON requires the `libmariadbclient-dev` library installed. Default value is OFF.
+
+* **-DCLIENT=[ON|OFF]** <br>
+  Whether to enable client compilation. If set to OFF, DDNetPulse will not depend on Curl, Freetype, Ogg, Opus, Opusfile, and SDL2. Default value is ON.
+
+* **-DSERVER=[ON|OFF]** <br>
+  Whether to enable server compilation. Default value is OFF.
+
+* **-DTOOLS=[ON|OFF]** <br>
+  Whether to enable tools compilation. Default value is OFF.
+
+* **-DVULKAN=[ON|OFF]** <br>
+  Whether to enable the vulkan backend. Default value is ON for Windows x86_64 and Linux, and OFF for Windows x86 and macOS.
+
+## Running
+
+### Server
+
+To run the server with WebSocket support:
+
+```bash
+./DDNet-Server -f server.cfg
+```
+
+
+### Client
+
+The client can be run normally:
+
+```bash
+./DDNet
+```
+
+## Contributing
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+
+## License
+
+This project is licensed under the BSD 2-clause license - see the [license.txt](license.txt) file for details.
+
+## Acknowledgments
+
+- DDNet team for the base game
+- All contributors who have helped with the project
+- The Teeworlds community for their support
 
 Cloning
 -------

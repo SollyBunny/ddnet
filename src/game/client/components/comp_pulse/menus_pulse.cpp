@@ -43,7 +43,7 @@ using namespace std::chrono_literals;
 
 static std::unique_ptr<sio::client> s_pSocketClient;
 static bool s_IsConnected = false;
-
+/*
 // Function to handle WebSocket connection
 void ConnectWebSocket()
 {
@@ -82,7 +82,7 @@ void DisconnectWebSocket()
 		s_IsConnected = false;
 	}
 }
-
+*/
 const float FontSize = 14.0f;
 const float Margin = 10.0f;
 const float HeaderHeight = FontSize + 5.0f + Margin;
@@ -245,7 +245,7 @@ enum
 void CMenus::RenderSettingsPulse(CUIRect MainView)
 {
 	// Connect to WebSocket when menu is opened
-	ConnectWebSocket();
+	//ConnectWebSocket();
 	
 	static int s_CurTab = 0;
 	CUIRect TabBar, Button;
