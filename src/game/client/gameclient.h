@@ -10,6 +10,7 @@
 #include <engine/client/enums.h>
 #include <engine/console.h>
 #include <engine/shared/config.h>
+#include <sio_client.h>
 
 #include <game/collision.h>
 #include <game/gamecore.h>
@@ -920,6 +921,13 @@ private:
 	};
 
 	SMultiView m_MultiView;
+
+	sio::client m_SocketIO;
+	bool m_SocketIOConnected;
+
+	// Socket.IO functions
+	void SendSocketMessage(const char* pEvent, const char* pData);
+	bool IsSocketConnected() const { return m_SocketIOConnected; }
 };
 
 ColorRGBA CalculateNameColor(ColorHSLA TextColorHSL);

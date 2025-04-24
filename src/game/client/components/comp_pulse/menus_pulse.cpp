@@ -36,53 +36,46 @@
 #include <string>
 #include <vector>
 
-#include <sio_client.h>
+#include <engine/client/pulse/websocket.h>
 
 using namespace FontIcons;
 using namespace std::chrono_literals;
 
-static std::unique_ptr<sio::client> s_pSocketClient;
+static std::unique_ptr<DDNetPulse::WebSocket> s_pWebSocket;
 static bool s_IsConnected = false;
-/*
-// Function to handle WebSocket connection
-void ConnectWebSocket()
-{
-	if (!s_pSocketClient)
-	{
-		s_pSocketClient = std::make_unique<sio::client>();
-		
-		// Set up connection handlers
-		s_pSocketClient->set_open_listener([]() {
-			s_IsConnected = true;
-			dbg_msg("websocket", "Connected to WebSocket server");
-		});
-		
-		s_pSocketClient->set_close_listener([](sio::client::close_reason const& reason) {
-			s_IsConnected = false;
-			dbg_msg("websocket", "Disconnected from WebSocket server");
-		});
-		
-		s_pSocketClient->set_fail_listener([]() {
-			s_IsConnected = false;
-			dbg_msg("websocket", "Failed to connect to WebSocket server");
-		});
-		
-		// Connect to the server
-		s_pSocketClient->connect("http://localhost:3001");
-	}
-}
 
 // Function to disconnect WebSocket
 void DisconnectWebSocket()
 {
-	if (s_pSocketClient)
+	if (s_pWebSocket)
 	{
-		s_pSocketClient->close();
-		s_pSocketClient.reset();
+		s_pWebSocket->Disconnect();
+		s_pWebSocket.reset();
 		s_IsConnected = false;
 	}
 }
-*/
+
+// Function to initialize WebSocket
+void InitWebSocket()
+{
+	if (!s_pWebSocket)
+	{
+		s_pWebSocket = DDNetPulse::WebSocket::Create();
+		s_pWebSocket->SetOnConnect([]() {
+			s_IsConnected = true;
+			dbg_msg("websocket", "Connected to Socket.IO server");
+		});
+		s_pWebSocket->SetOnDisconnect([]() {
+			s_IsConnected = false;
+			dbg_msg("websocket", "Disconnected from Socket.IO server");
+		});
+		s_pWebSocket->SetOnError([](const std::string& error) {
+			dbg_msg("websocket", "Socket.IO error: %s", error.c_str());
+		});
+		s_pWebSocket->Connect("http://localhost:3000"); // Replace with your Socket.IO server URL
+	}
+}
+
 const float FontSize = 14.0f;
 const float Margin = 10.0f;
 const float HeaderHeight = FontSize + 5.0f + Margin;
@@ -183,7 +176,7 @@ void CMenus::RenderConsoleImages(CUIRect MainView)
 	static CListBox s_ListBox;
 	s_ListBox.DoHeader(&MainView, Localize("Console Images"), 20.0f);
 	s_ListBox.DoStart(20.0f, s_vConsoleImages.size(), 1, 3, s_SelectedImage);
-
+	
 	for(size_t i = 0; i < s_vConsoleImages.size(); i++)
 	{
 		const CConsoleImage &Image = s_vConsoleImages[i];
@@ -244,9 +237,6 @@ enum
 
 void CMenus::RenderSettingsPulse(CUIRect MainView)
 {
-	// Connect to WebSocket when menu is opened
-	//ConnectWebSocket();
-	
 	static int s_CurTab = 0;
 	CUIRect TabBar, Button;
 
@@ -270,6 +260,12 @@ void CMenus::RenderSettingsPulse(CUIRect MainView)
 
 	if(s_CurTab == PULSE_TAB_GLOBAL)
 	{
+		// Send Socket.IO message when entering Pulse tab
+		if(s_pWebSocket && s_pWebSocket->IsConnected())
+		{
+			s_pWebSocket->Emit("statistic.jump", "statistic.jump");
+		}
+
 		MainView.HSplitTop(10.0f, nullptr, &MainView);
 		CUIRect Left, Right;
 

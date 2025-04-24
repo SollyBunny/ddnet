@@ -439,6 +439,26 @@ void CGameClient::OnInit()
 
 	m_Menus.FinishLoading();
 	log_trace("gameclient", "initialization finished after %.2fms", (time_get() - OnInitStart) * 1000.0f / (float)time_freq());
+
+	// websocket init here
+	m_SocketIOConnected = false;
+	m_SocketIO.set_open_listener([this]() {
+		m_SocketIOConnected = true;
+		dbg_msg("socket.io", "Connected to server");
+	});
+
+	m_SocketIO.set_close_listener([this](sio::client::close_reason const& reason) {
+		m_SocketIOConnected = false;
+		dbg_msg("socket.io", "Disconnected from server");
+	});
+
+	m_SocketIO.set_fail_listener([this]() {
+		m_SocketIOConnected = false;
+		dbg_msg("socket.io", "Connection failed");
+	});
+
+	// Connect
+	m_SocketIO.connect("http://localhost:3001"); //TODO: change to actuall API server
 }
 
 void CGameClient::OnUpdate()
@@ -1203,6 +1223,12 @@ void CGameClient::OnStateChange(int NewState, int OldState)
 
 void CGameClient::OnShutdown()
 {
+	// kill socketio
+	if(m_SocketIOConnected) {
+		m_SocketIO.close();
+		m_SocketIOConnected = false;
+	}
+
 	for(auto &pComponent : m_vpAll)
 		pComponent->OnShutdown();
 }
