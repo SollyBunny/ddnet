@@ -1160,7 +1160,9 @@ void CMapLayers::OnRender()
 					InfclassMenu = true;
 				}
 			}
-			if(!InfclassMenu) {
+
+			if(!InfclassMenu)
+			{
 				// stop rendering if we render background but reach the foreground
 				if(PassedGameLayer && (m_Type == TYPE_BACKGROUND || m_Type == TYPE_BACKGROUND_FORCE))
 					return;
@@ -1237,9 +1239,9 @@ void CMapLayers::OnRender()
 					Graphics()->TextureClear();
 
 				CQuad *pQuads = (CQuad *)m_pLayers->Map()->GetDataSwapped(pLayerQuads->m_Data);
-				if(m_Type == TYPE_BACKGROUND_FORCE || m_Type == TYPE_FULL_DESIGN)
+				if(m_Type == TYPE_BACKGROUND_FORCE || m_Type == TYPE_FULL_DESIGN || InfclassMenu)
 				{
-					if(g_Config.m_ClShowQuads || m_Type == TYPE_FULL_DESIGN)
+					if(g_Config.m_ClShowQuads || m_Type == TYPE_FULL_DESIGN || InfclassMenu)
 					{
 						if(!Graphics()->IsQuadBufferingEnabled())
 						{
