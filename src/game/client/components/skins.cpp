@@ -539,6 +539,9 @@ void CSkins::OnUpdate()
 		// This will update the loaded state of the container
 		dbg_assert(FindContainerOrNullptr(pSkinName) != nullptr, "No skin container found for managed tee render info: %s", pSkinName);
 	});
+	// Keep player and dummy skin loaded
+	FindContainerOrNullptr(g_Config.m_ClPlayerSkin);
+	FindContainerOrNullptr(g_Config.m_ClDummySkin);
 
 	CSkinLoadingStats Stats = LoadingStats();
 	UpdateUnloadSkins(Stats);
@@ -691,9 +694,6 @@ void CSkins::Refresh(TSkinLoadedCallback &&SkinLoadedCallback)
 	LoadSkinDirect("default");
 	SkinLoadedCallback();
 
-	LoadSkinDirect("default");
-	SkinLoadedCallback();
-
 	CSkinScanUser SkinScanUser;
 	SkinScanUser.m_pThis = this;
 	SkinScanUser.m_SkinLoadedCallback = SkinLoadedCallback;
@@ -739,6 +739,13 @@ CSkins::CSkinList &CSkins::SkinList()
 
 	m_SkinList.m_vSkins.clear();
 	m_SkinList.m_UnfilteredCount = 0;
+
+	// Ensure all favorite skins are present as skin containers so they are included in the next loop.
+	for(const auto &FavoriteSkin : m_Favorites)
+	{
+		FindContainerOrNullptr(FavoriteSkin.c_str());
+	}
+
 	for(const auto &[_, pSkinContainer] : m_Skins)
 	{
 		if(pSkinContainer->IsSpecial())

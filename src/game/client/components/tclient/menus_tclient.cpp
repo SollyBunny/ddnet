@@ -614,13 +614,28 @@ void CMenus::RenderSettingsTClientSettngs(CUIRect MainView)
 	}
 
 	Column.HSplitTop(MarginExtraSmall, nullptr, &Column);
+
+	{
+		Column.HSplitTop(MarginExtraSmall, nullptr, &Column);
+		static std::vector<const char *> s_DropDownNames;
+		s_DropDownNames = {TCLocalize("Normal", "Hammer Mode"), TCLocalize("Rotate with cursor", "Hammer Mode"), TCLocalize("Rotate with cursor like gun", "Hammer Mode")};
+		static CUi::SDropDownState s_DropDownState;
+		static CScrollRegion s_DropDownScrollRegion;
+		s_DropDownState.m_SelectionPopupContext.m_pScrollRegion = &s_DropDownScrollRegion;
+		CUIRect DropDownRect;
+		Column.HSplitTop(LineSize, &DropDownRect, &Column);
+		DropDownRect.VSplitLeft(120.0f, &Label, &DropDownRect);
+		Ui()->DoLabel(&Label, TCLocalize("Hammer Mode: "), FontSize, TEXTALIGN_ML);
+		g_Config.m_ClHammerRotatesWithCursor = Ui()->DoDropDown(&DropDownRect, g_Config.m_ClHammerRotatesWithCursor, s_DropDownNames.data(), s_DropDownNames.size(), s_DropDownState);
+		Column.HSplitTop(MarginExtraSmall, nullptr, &Column);
+	}
+
 	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClFreezeUpdateFix, TCLocalize("Update tee skin faster after being frozen"), &g_Config.m_ClFreezeUpdateFix, &Column, LineSize);
 	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClPingNameCircle, TCLocalize("Show ping colored circle before names"), &g_Config.m_ClPingNameCircle, &Column, LineSize);
 	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClRenderNameplateSpec, TCLocalize("Hide nameplates in spec"), &g_Config.m_ClRenderNameplateSpec, &Column, LineSize);
 	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClShowSkinName, TCLocalize("Show skin names in nameplate"), &g_Config.m_ClShowSkinName, &Column, LineSize);
 	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClFreezeStars, TCLocalize("Freeze stars"), &g_Config.m_ClFreezeStars, &Column, LineSize);
 	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClColorFreeze, TCLocalize("Color frozen tee skins"), &g_Config.m_ClColorFreeze, &Column, LineSize);
-	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClHammerRotatesWithCursor, TCLocalize("Make hammer rotate with cursor"), &g_Config.m_ClHammerRotatesWithCursor, &Column, LineSize);
 	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClTinyTees, TCLocalize("Tiny tees"), &g_Config.m_ClTinyTees, &Column, LineSize);
 	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClTinyTeesOthers, TCLocalize("Tiny tees others"), &g_Config.m_ClTinyTeesOthers, &Column, LineSize);
 	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClWhiteFeet, TCLocalize("Render all custom colored feet as white feet skin"), &g_Config.m_ClWhiteFeet, &Column, LineSize);

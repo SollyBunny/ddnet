@@ -82,8 +82,8 @@
 
 using namespace std::chrono_literals;
 
-static const ColorRGBA gs_ClientNetworkPrintColor{0.7f, 1, 0.7f, 1.0f};
-static const ColorRGBA gs_ClientNetworkErrPrintColor{1.0f, 0.25f, 0.25f, 1.0f};
+static constexpr ColorRGBA gs_ClientNetworkPrintColor{0.7f, 1, 0.7f, 1.0f};
+static constexpr ColorRGBA gs_ClientNetworkErrPrintColor{1.0f, 0.25f, 0.25f, 1.0f};
 
 CClient::CClient() :
 	m_DemoPlayer(&m_SnapshotDelta, true, [&]() { UpdateDemoIntraTimers(); }),
@@ -133,10 +133,6 @@ static inline bool RepackMsg(const CMsgPacker *pMsg, CPacker &Packer, bool Sixup
 				MsgId = protocol7::NETMSG_INPUT;
 			else if(MsgId == NETMSG_RCON_AUTH)
 				MsgId = protocol7::NETMSG_RCON_AUTH;
-			else if(MsgId == NETMSGTYPE_CL_SETTEAM)
-				MsgId = protocol7::NETMSGTYPE_CL_SETTEAM;
-			else if(MsgId == NETMSGTYPE_CL_VOTE)
-				MsgId = protocol7::NETMSGTYPE_CL_VOTE;
 			else if(MsgId == NETMSG_PING)
 				MsgId = protocol7::NETMSG_PING;
 			else
@@ -4947,7 +4943,7 @@ int main(int argc, const char **argv)
 	});
 
 	// create the components
-	IEngine *pEngine = CreateEngine(GAME_NAME, pFutureConsoleLogger, 2 * std::thread::hardware_concurrency() + 2);
+	IEngine *pEngine = CreateEngine(GAME_NAME, pFutureConsoleLogger);
 	pKernel->RegisterInterface(pEngine, false);
 	CleanerFunctions.emplace([pEngine]() {
 		// Engine has to be destroyed before the graphics so that skin download thread can finish
