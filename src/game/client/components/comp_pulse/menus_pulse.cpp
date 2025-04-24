@@ -36,8 +36,52 @@
 #include <string>
 #include <vector>
 
+#include <sio_client.h>
+
 using namespace FontIcons;
 using namespace std::chrono_literals;
+
+static std::unique_ptr<sio::client> s_pSocketClient;
+static bool s_IsConnected = false;
+
+// Function to handle WebSocket connection
+void ConnectWebSocket()
+{
+	if (!s_pSocketClient)
+	{
+		s_pSocketClient = std::make_unique<sio::client>();
+		
+		// Set up connection handlers
+		s_pSocketClient->set_open_listener([]() {
+			s_IsConnected = true;
+			dbg_msg("websocket", "Connected to WebSocket server");
+		});
+		
+		s_pSocketClient->set_close_listener([](sio::client::close_reason const& reason) {
+			s_IsConnected = false;
+			dbg_msg("websocket", "Disconnected from WebSocket server");
+		});
+		
+		s_pSocketClient->set_fail_listener([]() {
+			s_IsConnected = false;
+			dbg_msg("websocket", "Failed to connect to WebSocket server");
+		});
+		
+		// Connect to the server
+		s_pSocketClient->connect("http://localhost:3001");
+	}
+}
+
+// Function to disconnect WebSocket
+void DisconnectWebSocket()
+{
+	if (s_pSocketClient)
+	{
+		s_pSocketClient->close();
+		s_pSocketClient.reset();
+		s_IsConnected = false;
+	}
+}
 
 const float FontSize = 14.0f;
 const float Margin = 10.0f;
@@ -200,6 +244,9 @@ enum
 
 void CMenus::RenderSettingsPulse(CUIRect MainView)
 {
+	// Connect to WebSocket when menu is opened
+	ConnectWebSocket();
+	
 	static int s_CurTab = 0;
 	CUIRect TabBar, Button;
 

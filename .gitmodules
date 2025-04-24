@@ -2,3 +2,6 @@
 	path = ddnet-libs
 	url = https://github.com/ddnet/ddnet-libs
 	shallow = true
+[submodule "socket.io-client-cpp"]
+	path = socket.io-client-cpp
+	url = https://github.com/socketio/socket.io-client-cpp.git

@@ -28,6 +28,21 @@ else()
   project(DDNet VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 endif()
 
+# Find and configure ASIO
+find_path(ASIO_INCLUDE_DIR asio.hpp
+    PATHS
+    /usr/include
+    /usr/local/include
+    /opt/local/include
+)
+
+if(NOT ASIO_INCLUDE_DIR)
+    message(FATAL_ERROR "ASIO not found. Please install ASIO development package.")
+endif()
+
+# Add socket.io-client-cpp
+add_subdirectory(socket.io-client-cpp)
+
 set(ORIGINAL_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
 set(ORIGINAL_CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES})
 set(ORIGINAL_CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES})
@@ -316,7 +331,7 @@ if(NOT MSVC AND NOT HAIKU)
 
   add_cxx_compiler_flag_if_supported(OUR_FLAGS_OWN -Wall)
   add_cxx_compiler_flag_if_supported(OUR_FLAGS_OWN -Wextra)
-  add_cxx_compiler_flag_if_supported(OUR_FLAGS_OWN -Wno-psabi) # parameter passing for argument of type ‘__gnu_cxx::__normal_iterator<CCommandProcessorFragment_Vulkan::SMemoryBlock<1>*, std::vector<CCommandProcessorFragment_Vulkan::SMemoryBlock<1>, std::allocator<CCommandProcessorFragment_Vulkan::SMemoryBlock<1> > > >’ changed in GCC 7.1
+  add_cxx_compiler_flag_if_supported(OUR_FLAGS_OWN -Wno-psabi) # parameter passing for argument of type 'CCommandProcessorFragment_Vulkan::SMemoryBlock<1>*, std::vector<CCommandProcessorFragment_Vulkan::SMemoryBlock<1>, std::allocator<CCommandProcessorFragment_Vulkan::SMemoryBlock<1> > >' changed in GCC 7.1
   add_cxx_compiler_flag_if_supported(OUR_FLAGS_OWN -Wno-unused-parameter)
   add_cxx_compiler_flag_if_supported(OUR_FLAGS_OWN -Wno-missing-field-initializers)
   if(CMAKE_BUILD_TYPE STREQUAL DEBUG)
@@ -2432,7 +2447,7 @@ if(CLIENT)
   set_property(TARGET game-client
           PROPERTY OUTPUT_NAME ${CLIENT_EXECUTABLE}
   )
-  target_link_libraries(game-client ${LIBS_CLIENT})
+  target_link_libraries(game-client ${LIBS_CLIENT} sioclient)
 
   if(MSVC)
     target_link_options(game-client PRIVATE /ENTRY:mainCRTStartup)
@@ -2633,7 +2648,7 @@ if(SERVER)
   set_property(TARGET game-server
           PROPERTY OUTPUT_NAME ${SERVER_EXECUTABLE}
   )
-  target_link_libraries(game-server ${LIBS_SERVER})
+  target_link_libraries(game-server ${LIBS_SERVER} sioclient)
   target_include_directories(game-server PRIVATE ${PNG_INCLUDE_DIRS})
   list(APPEND TARGETS_OWN game-server)
   list(APPEND TARGETS_LINK game-server)
