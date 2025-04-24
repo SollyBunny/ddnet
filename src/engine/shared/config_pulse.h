@@ -26,4 +26,4 @@ MACRO_CONFIG_INT(ClCustomConsoleFading, p_custom_console_fading, 75, 0, 100, CFG
 MACRO_CONFIG_INT(ClCustomConsoleAlpha, p_custom_console_alpha, 100, 0, 100, CFGFLAG_CLIENT | CFGFLAG_SAVE, "")
 
 MACRO_CONFIG_INT(ClFastInp, p_fast_input, 1, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "")
-
+MACRO_CONFIG_INT(ClToggleTrail, p_toggle_trails, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "")
