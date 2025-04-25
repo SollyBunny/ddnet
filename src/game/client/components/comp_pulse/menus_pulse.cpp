@@ -230,13 +230,12 @@ void CMenus::RenderSettingsPulse(CUIRect MainView)
 	if(s_CurTab == PULSE_TAB_GLOBAL)
 	{
 
-		if(GameClient()->IsSocketConnected())
-		{
-			sio::message::list msg;
-			msg.push(sio::string_message::create(""));
-			GameClient()->SendSocketMessage("statistic.jump", msg);
-			dbg_msg("websocket.io", "Sending Pulse");
-		}
+		// if(GameClient()->IsSocketConnected())
+		// {
+		// 	sio::message::list msg;
+		// 	msg.push(sio::string_message::create(""));
+		// 	GameClient()->SendSocketMessage("statistic.jump", msg);
+		// }
 
 		MainView.HSplitTop(10.0f, nullptr, &MainView);
 		CUIRect Left, Right;
