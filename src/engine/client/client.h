@@ -389,7 +389,6 @@ public:
 
 	void RequestInfclassInfo() override;
 	void ResetInfclassInfoTask();
-	void FinishInfclassInfo();
 	void LoadInfclassInfo();
 
 	bool IsSixup() const override { return m_Sixup; }

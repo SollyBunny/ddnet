@@ -947,7 +947,7 @@ void CLayerTiles::FillGameTiles(EGameTileOp Fill)
 
 bool CLayerTiles::CanFillGameTiles() const
 {
-	const bool EntitiesLayer = IsEntitiesLayer();
+	const bool EntitiesLayer = IsEntitiesLayer() || m_pPtumZoneType;
 	if(EntitiesLayer)
 		return false;
 

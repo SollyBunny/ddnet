@@ -2940,9 +2940,15 @@ void CGameClient::CClientData::UpdateSkinInfo()
 	}
 
 	const auto &&ApplySkinProperties = [&]() {
+		bool UseCustomColor = m_UseCustomColor;
+		if(SkinDescriptor.m_Flags & CSkinDescriptor::FLAG_IC_CUSTOM)
+		{
+			UseCustomColor = m_InfClassPlayerFlags & INFCLASS_PLAYER_FLAG_INFECTED;
+		}
+
 		if(SkinDescriptor.m_Flags & CSkinDescriptor::FLAG_SIX)
 		{
-			m_pSkinInfo->TeeRenderInfo().ApplyColors(m_UseCustomColor, m_ColorBody, m_ColorFeet);
+			m_pSkinInfo->TeeRenderInfo().ApplyColors(UseCustomColor, m_ColorBody, m_ColorFeet);
 		}
 		if(SkinDescriptor.m_Flags & CSkinDescriptor::FLAG_SEVEN)
 		{
@@ -2984,9 +2990,6 @@ void CGameClient::CClientData::UpdateSkinInfo()
 
 void CGameClient::CClientData::UpdateRenderInfo()
 {
-	// infclass
-	m_RenderInfo = m_InfClassCustomSkin ? m_InfClassSkinInfo : m_pSkinInfo->TeeRenderInfo();
-
 	// force team colors
 	if(m_pGameClient->IsTeamPlay())
 	{
@@ -3055,7 +3058,6 @@ void CGameClient::CClientData::Reset()
 
 	m_InfClassPlayerFlags = 0;
 	m_InfClassPlayerClass = -1;
-	m_InfClassCustomSkin = false;
 
 	m_InfClassClassFlags = 0;
 	m_InfClassClassData1 = 0;
@@ -3130,7 +3132,25 @@ CSkinDescriptor CGameClient::CClientData::ToSkinDescriptor() const
 	if(m_Active)
 	{
 		SkinDescriptor.m_Flags |= CSkinDescriptor::FLAG_SIX;
-		str_copy(SkinDescriptor.m_aSkinName, m_aSkinName);
+
+		switch(m_InfClassPlayerClass)
+		{
+		case PLAYERCLASS_NINJA:
+			str_copy(SkinDescriptor.m_aSkinName, "inf_ninja");
+			SkinDescriptor.m_Flags |= CSkinDescriptor::FLAG_IC_CUSTOM;
+			break;
+		case PLAYERCLASS_GHOST:
+			str_copy(SkinDescriptor.m_aSkinName, "ghost");
+			SkinDescriptor.m_Flags |= CSkinDescriptor::FLAG_IC_CUSTOM;
+			break;
+		case PLAYERCLASS_TANK:
+			str_copy(SkinDescriptor.m_aSkinName, "zombie");
+			SkinDescriptor.m_Flags |= CSkinDescriptor::FLAG_IC_CUSTOM;
+			break;
+		default:
+			str_copy(SkinDescriptor.m_aSkinName, m_aSkinName);
+			break;
+		}
 	}
 
 	CTranslationContext::CClientData &TranslatedClient = m_pGameClient->m_pClient->m_TranslationContext.m_aClients[ClientId()];
@@ -4052,59 +4072,13 @@ vec2 CGameClient::GetFreezePos(int ClientId)
 void CGameClient::ProcessInfClassPlayerInfo(int ClientId, const CNetObj_InfClassPlayer *pPlayerData)
 {
 	CClientData *pClient = &m_aClients[ClientId];
-
 	pClient->m_InfClassPlayerFlags = pPlayerData->m_Flags;
+	pClient->m_InfClassPlayerClass = pPlayerData->m_Class;
 
 	bool Infected = pClient->m_InfClassPlayerFlags & INFCLASS_PLAYER_FLAG_INFECTED;
 	bool Protected = !(pClient->m_InfClassPlayerFlags & INFCLASS_PLAYER_FLAG_HOOK_PROTECTION_OFF);
 	m_Teams.SetInfected(ClientId, Infected);
 	m_Teams.SetProtected(ClientId, Protected);
-
-	if(pClient->m_InfClassPlayerClass == pPlayerData->m_Class)
-		return;
-
-	pClient->m_InfClassPlayerClass = pPlayerData->m_Class;
-
-	const CSkin *pSkin = nullptr;
-	switch(pClient->m_InfClassPlayerClass)
-	{
-	case PLAYERCLASS_NINJA:
-		pSkin = m_Skins.Find("inf_ninja");
-		break;
-	case PLAYERCLASS_GHOST:
-		pSkin = m_Skins.Find("ghost");
-		break;
-	case PLAYERCLASS_TANK:
-		pSkin = m_Skins.Find("zombie");
-		break;
-	default:
-		break;
-	}
-
-	pClient->m_InfClassCustomSkin = pSkin;
-
-	if(pSkin)
-	{
-		pClient->m_InfClassSkinInfo.m_OriginalRenderSkin = pSkin->m_OriginalSkin;
-		pClient->m_InfClassSkinInfo.m_ColorableRenderSkin = pSkin->m_ColorableSkin;
-		pClient->m_InfClassSkinInfo.m_BloodColor = pSkin->m_BloodColor;
-		pClient->m_InfClassSkinInfo.m_SkinMetrics = pSkin->m_Metrics;
-		pClient->m_InfClassSkinInfo.m_Size = 64;
-
-		if(pClient->m_InfClassPlayerFlags & INFCLASS_PLAYER_FLAG_INFECTED)
-		{
-			pClient->m_InfClassSkinInfo.m_CustomColoredSkin = true;
-			pClient->m_InfClassSkinInfo.m_ColorBody = pClient->m_pSkinInfo->m_TeeRenderInfo.m_ColorBody;
-			pClient->m_InfClassSkinInfo.m_ColorFeet = pClient->m_pSkinInfo->m_TeeRenderInfo.m_ColorFeet;
-		}
-		else
-		{
-			pClient->m_InfClassSkinInfo.m_CustomColoredSkin = false;
-			pClient->m_InfClassSkinInfo.m_ColorBody = ColorRGBA(1, 1, 1);
-			pClient->m_InfClassSkinInfo.m_ColorFeet = ColorRGBA(1, 1, 1);
-		}
-		pClient->UpdateRenderInfo();
-	}
 }
 
 void CGameClient::ProcessInfClassClassInfo(int ClientId, const CNetObj_InfClassClassInfo *pClassInfo)
@@ -4971,13 +4945,12 @@ IGraphics::CTextureHandle *CGameClient::GetInfclassTexturePtrForDamageType(EDama
 {
 	switch(DamageType)
 	{
-		//	case EDamageType::SNIPER_RIFLE:
-		//		return &m_InfclassSkin.m_SpriteSniperRifle;
-		//	case EDamageType::SCIENTIST_LASER:
-		//		return &m_InfclassSkin.m_SpriteScientistLaser;
-		//	case EDamageType::MEDIC_SHOTGUN:
-		//		return &m_InfclassSkin.m_SpriteMedicShotgun;
-
+	// case EDamageType::SNIPER_RIFLE:
+	// 	return &m_InfclassSkin.m_SpriteSniperRifle;
+	// case EDamageType::SCIENTIST_LASER:
+	// 	return &m_InfclassSkin.m_SpriteScientistLaser;
+	// case EDamageType::MEDIC_SHOTGUN:
+	// 	return &m_InfclassSkin.m_SpriteMedicShotgun;
 	case EDamageType::LASER_WALL:
 		return &m_InfclassSkin.m_SpriteLaserWall;
 	case EDamageType::SOLDIER_BOMB:
@@ -4988,8 +4961,8 @@ IGraphics::CTextureHandle *CGameClient::GetInfclassTexturePtrForDamageType(EDama
 		return &m_InfclassSkin.m_SpriteBiologistMine;
 	case EDamageType::MERCENARY_BOMB:
 		return &m_InfclassSkin.m_SpriteMercenaryBomb;
-		//	case EDamageType::WHITE_HOLE:
-		//		return &m_InfclassSkin.m_SpriteWhiteHole;
+	// case EDamageType::WHITE_HOLE:
+	// 	return &m_InfclassSkin.m_SpriteWhiteHole;
 	case EDamageType::TURRET_DESTRUCTION:
 		return &m_InfclassSkin.m_SpriteTurretDestruction;
 	case EDamageType::TURRET_LASER:

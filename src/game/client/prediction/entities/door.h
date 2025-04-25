@@ -19,7 +19,7 @@ public:
 	bool Match(const CDoor *pDoor) const;
 	void Read(const CLaserData *pData);
 
-	void Destroy() override;
+	void Destroy();
 };
 
 #endif // GAME_CLIENT_PREDICTION_ENTITIES_DOOR_H

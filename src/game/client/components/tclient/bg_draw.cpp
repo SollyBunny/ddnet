@@ -349,7 +349,8 @@ bool CBgDraw::Save(const char *pFilename)
 		return false;
 	size_t Written = 0;
 	bool Success = true;
-	for(const CBgDrawItem &Item : *m_pvItems) {
+	for(const CBgDrawItem &Item : *m_pvItems)
+	{
 		char aMsg[256];
 		if(!BgDrawFile::Write(Handle, Item.Data()))
 		{

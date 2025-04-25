@@ -1943,6 +1943,9 @@ void CHud::RenderObjectOwnerIcons(int ClientId)
 
 void CHud::RenderClassExtraHud(int ClientId)
 {
+	if(ClientId < 0)
+		return;
+
 	const CGameClient::CClientData *pClientData = &m_pClient->m_aClients[ClientId];
 	if(!pClientData || !m_pClient->m_GameInfo.m_InfClass)
 		return;
@@ -2069,7 +2072,7 @@ void CHud::RenderClassExtraHud(int ClientId)
 			Graphics()->TextureSet(aParticles[SPRITE_PART_BALL]);
 			Graphics()->SetColor(1.f, 1.f, 1.f, 1.f);
 
-			static int64_t LastTime = 0;
+			static int64_t s_LastTime = 0; // TODO: don't be lazy
 			int64_t t = time();
 
 			float TimePassed = 0;
@@ -2078,22 +2081,22 @@ void CHud::RenderClassExtraHud(int ClientId)
 			{
 				const IDemoPlayer::CInfo *pInfo = DemoPlayer()->BaseInfo();
 				if(!pInfo->m_Paused)
-					TimePassed = (float)((t - LastTime) / (double)time_freq()) * pInfo->m_Speed;
+					TimePassed = (float)((t - s_LastTime) / (double)time_freq()) * pInfo->m_Speed;
 			}
 			else
 			{
 				if(m_pClient->m_Snap.m_pGameInfoObj && !(m_pClient->m_Snap.m_pGameInfoObj->m_GameStateFlags & GAMESTATEFLAG_PAUSED))
-					TimePassed = (float)((t - LastTime) / (double)time_freq());
+					TimePassed = (float)((t - s_LastTime) / (double)time_freq());
 			}
-			LastTime = t;
+			s_LastTime = t;
 
 			constexpr float ScaleFrom = 3.f;
 			constexpr float Duration = 0.75f;
 
-			float HammerAreaWidth = 5;
-			float HammerAreHeight = LaserVerticalSize;
+			constexpr float HammerAreaWidth = 5;
+			constexpr float HammerAreHeight = LaserVerticalSize;
 
-			static IGraphics::SRenderSpriteInfo aHammerDots[] = {
+			static IGraphics::SRenderSpriteInfo s_aHammerDots[] = {
 				{vec2(From.x + 0.52f * HammerAreaWidth, From.y + 0.1f * HammerAreHeight), ScaleFrom * 0.78f, 0.0f},
 				{vec2(From.x + 0.8f * HammerAreaWidth, From.y + 0.11f * HammerAreHeight), ScaleFrom * 0.10f, 0.0f},
 				{vec2(From.x + 0.24f * HammerAreaWidth, From.y + 0.15f * HammerAreHeight), ScaleFrom * 0.71f, 0.0f},
@@ -2110,7 +2113,7 @@ void CHud::RenderClassExtraHud(int ClientId)
 
 			constexpr bool UseRandom = true;
 
-			for(auto &SpriteInfo : aHammerDots)
+			for(auto &SpriteInfo : s_aHammerDots)
 			{
 				float ProgressRemaining = SpriteInfo.m_Scale / ScaleFrom;
 				float PassedProgress = TimePassed / Duration;
@@ -2127,7 +2130,7 @@ void CHud::RenderClassExtraHud(int ClientId)
 				SpriteInfo.m_Scale = ScaleFrom * NewProgressRemaining;
 			}
 
-			Graphics()->RenderQuadContainerAsSpriteMultiple(m_HudQuadContainerIndex, m_IcParticleIconOffset, std::size(aHammerDots), aHammerDots);
+			Graphics()->RenderQuadContainerAsSpriteMultiple(m_HudQuadContainerIndex, m_IcParticleIconOffset, std::size(s_aHammerDots), s_aHammerDots);
 
 			RenderLaser(From, To, OutlineColorRGB, InnerColorRGB);
 			From.x += HammerAreaWidth;
@@ -2391,6 +2394,7 @@ void CHud::OnRender()
 				RenderPlayerState(SpectatorId);
 			}
 			RenderMovementInformation();
+			RenderClassExtraHud(SpectatorId);
 			RenderSpectatorHud();
 			if(SpectatorId != SPEC_FREEVIEW && GameClient()->m_GameInfo.m_InfClass)
 				RenderClassExtraHud(SpectatorId);

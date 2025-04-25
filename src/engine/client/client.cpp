@@ -2477,53 +2477,8 @@ void CClient::ResetInfclassInfoTask()
 	if(m_pInfClassInfoTask)
 	{
 		m_pInfClassInfoTask->Abort();
-		m_pInfClassInfoTask = NULL;
+		m_pInfClassInfoTask = nullptr;
 	}
-}
-
-void CClient::FinishInfclassInfo()
-{
-	if(m_ServerBrowser.InfclassInfoSha256() == m_pInfClassInfoTask->ResultSha256())
-	{
-		log_debug("client/info", "DDNet info already up-to-date");
-		return;
-	}
-
-	char aTempFilename[IO_MAX_PATH_LENGTH];
-	IStorage::FormatTmpPath(aTempFilename, sizeof(aTempFilename), INFCLASS_INFO_FILE);
-	IOHANDLE File = Storage()->OpenFile(aTempFilename, IOFLAG_WRITE, IStorage::TYPE_SAVE);
-	if(!File)
-	{
-		log_error("client/info", "Failed to open temporary Infclass info '%s' for writing", aTempFilename);
-		return;
-	}
-
-	unsigned char *pResult;
-	size_t ResultLength;
-	m_pInfClassInfoTask->Result(&pResult, &ResultLength);
-	bool Error = io_write(File, pResult, ResultLength) != ResultLength;
-	Error |= io_close(File) != 0;
-	if(Error)
-	{
-		log_error("client/info", "Error writing temporary Infclass info to file '%s'", aTempFilename);
-		return;
-	}
-
-	if(Storage()->FileExists(INFCLASS_INFO_FILE, IStorage::TYPE_SAVE) && !Storage()->RemoveFile(INFCLASS_INFO_FILE, IStorage::TYPE_SAVE))
-	{
-		log_error("client/info", "Failed to remove old DDNet info '%s'", INFCLASS_INFO_FILE);
-		Storage()->RemoveFile(aTempFilename, IStorage::TYPE_SAVE);
-		return;
-	}
-	if(!Storage()->RenameFile(aTempFilename, INFCLASS_INFO_FILE, IStorage::TYPE_SAVE))
-	{
-		log_error("client/info", "Failed to rename temporary DDNet info '%s' to '%s'", aTempFilename, INFCLASS_INFO_FILE);
-		Storage()->RemoveFile(aTempFilename, IStorage::TYPE_SAVE);
-		return;
-	}
-
-	log_debug("client/info", "Loading new Infclass info");
-	LoadInfclassInfo();
 }
 
 typedef std::tuple<int, int, int> TVersion;
@@ -3081,7 +3036,15 @@ void CClient::Update()
 	{
 		if(m_pInfClassInfoTask->State() == EHttpState::DONE)
 		{
-			FinishInfclassInfo();
+			if(m_ServerBrowser.InfclassInfoSha256() == m_pInfClassInfoTask->ResultSha256())
+			{
+				log_debug("client/info", "DDNet info already up-to-date");
+			}
+			else
+			{
+				log_debug("client/info", "Loading new Infclass info");
+				LoadInfclassInfo();
+			}
 			ResetInfclassInfoTask();
 		}
 		else if(m_pInfClassInfoTask->State() == EHttpState::ERROR || m_pInfClassInfoTask->State() == EHttpState::ABORTED)
@@ -5278,7 +5241,8 @@ void CClient::RequestInfclassInfo()
 	str_format(aUrl, sizeof(aUrl), "%s/info.json", g_Config.m_InfcUpdatesUrl);
 
 	// Use ipv4 so we can know the ingame ip addresses of players before they join game servers
-	m_pInfClassInfoTask = HttpGet(aUrl);
+	m_pInfClassInfoTask = HttpGetFile(aUrl, Storage(), INFCLASS_INFO_FILE, IStorage::TYPE_SAVE);
+	m_pInfClassInfoTask->SkipByFileTime(false); // Always re-download.
 	m_pInfClassInfoTask->Timeout(CTimeout{10000, 0, 500, 10});
 	m_pInfClassInfoTask->IpResolve(IPRESOLVE::V4);
 	Http()->Run(m_pInfClassInfoTask);

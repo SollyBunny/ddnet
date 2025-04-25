@@ -10,8 +10,7 @@ class CInfoMessages : public CComponent
 {
 	int m_SpriteQuadContainerIndex = -1;
 	int m_QuadOffsetRaceFlag = -1;
-
-	int m_InfWeaponOffset = 0;
+	int m_InfWeaponOffset = -1;
 
 	enum
 	{
@@ -44,11 +43,11 @@ class CInfoMessages : public CComponent
 		int m_InfDamageType = -1;
 		int m_Weapon;
 
-		int m_AssistantID = -1;
+		int m_AssistantId = -1;
 		char m_aAssistantName[64];
 		STextContainerIndex m_AssistantPlusContainerIndex;
 		STextContainerIndex m_AssistantTextContainerIndex;
-		CTeeRenderInfo m_AssistantRenderInfo;
+		std::shared_ptr<CManagedTeeRenderInfo> m_pAssistantManagedTeeRenderInfo;
 
 		int m_ModeSpecial; // for CTF, if the guy is carrying a flag for example
 		int m_FlagCarrierBlue;

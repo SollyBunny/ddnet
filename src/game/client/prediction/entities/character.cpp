@@ -374,7 +374,7 @@ void CCharacter::FireWeapon()
 		// if we Hit anything, we have to wait for the reload
 		if(Hits)
 		{
-			float FireDelay = GetTuning(GetOverriddenTuneZone())->m_HammerHitFireDelay;
+			const float FireDelay = GetTuning(GetOverriddenTuneZone())->m_HammerHitFireDelay;
 			m_ReloadTimer = FireDelay * GameWorld()->GameTickSpeed() / 1000;
 		}
 
@@ -394,7 +394,7 @@ void CCharacter::FireWeapon()
 
 	case WEAPON_GUN:
 	{
-		if(!m_Core.m_Jetpack)
+		if(!m_Core.m_Jetpack || GameWorld()->m_WorldConfig.m_IsInfClass)
 		{
 			int Lifetime = (int)(GameWorld()->GameTickSpeed() * GetTuning(GetOverriddenTuneZone())->m_GunLifetime);
 
@@ -419,7 +419,6 @@ void CCharacter::FireWeapon()
 				vec2 Recoil = Direction * (-MaxSpeed / 5.0f);
 				SaturateVelocity(Recoil, MaxSpeed);
 			}
-
 			float FireDelay = m_Core.m_Jetpack ? 50 : 125;
 			m_ReloadTimer = FireDelay * GameWorld()->GameTickSpeed() / 1000;
 		}
@@ -495,7 +494,7 @@ void CCharacter::FireWeapon()
 	case WEAPON_GRENADE:
 	{
 		int Lifetime = (int)(GameWorld()->GameTickSpeed() * GetTuning(GetOverriddenTuneZone())->m_GrenadeLifetime);
-
+		bool CreateProjectile = true;
 		bool Explosive = true;
 		if(GameWorld()->m_WorldConfig.m_IsInfClass)
 		{
@@ -506,8 +505,12 @@ void CCharacter::FireWeapon()
 				m_ReloadTimer = 250 * GameWorld()->GameTickSpeed() / 1000;
 				break;
 			case PLAYERCLASS_MEDIC:
-			case PLAYERCLASS_NINJA:
 			case PLAYERCLASS_SCIENTIST:
+				CreateProjectile = false;
+				Explosive = false;
+				m_ReloadTimer = 500 * GameWorld()->GameTickSpeed() / 1000;
+				break;
+			case PLAYERCLASS_NINJA:
 				Explosive = false;
 				m_ReloadTimer = 500 * GameWorld()->GameTickSpeed() / 1000;
 				break;
@@ -516,17 +519,20 @@ void CCharacter::FireWeapon()
 			}
 		}
 
-		new CProjectile(
-			GameWorld(),
-			WEAPON_GRENADE, //Type
-			GetCid(), //Owner
-			ProjStartPos, //Pos
-			Direction, //Dir
-			Lifetime, //Span
-			false, //Freeze
-			Explosive, // Explosive
-			SOUND_GRENADE_EXPLODE //SoundImpact
-		); //SoundImpact
+		if(CreateProjectile)
+		{
+			new CProjectile(
+				GameWorld(),
+				WEAPON_GRENADE, // Type
+				GetCid(), // Owner
+				ProjStartPos, // Pos
+				Direction, // Dir
+				Lifetime, // Span
+				false, // Freeze
+				Explosive, // Explosive
+				SOUND_GRENADE_EXPLODE // SoundImpact
+			);
+		}
 	}
 	break;
 
@@ -537,13 +543,18 @@ void CCharacter::FireWeapon()
 		if(GameWorld()->m_WorldConfig.m_IsInfClass)
 		{
 			float FireDelay = 800;
+			int Bounces = GetTuning(m_TuneZone)->m_LaserBounceNum;
+			bool Explosive = false;
 			switch(GetPlayerClass())
 			{
 			case PLAYERCLASS_MERCENARY:
 				FireDelay = 200;
+				Bounces = 0;
 				break;
 			case PLAYERCLASS_SCIENTIST:
 				LaserReach = LaserReach * 0.6f;
+				Bounces = 0;
+				Explosive = true;
 				break;
 			case PLAYERCLASS_BIOLOGIST:
 			{
@@ -566,13 +577,9 @@ void CCharacter::FireWeapon()
 				break;
 			}
 			m_ReloadTimer = FireDelay * GameWorld()->GameTickSpeed() / 1000;
-
 			CLaser *pLaser = new CLaser(GameWorld(), m_Pos, Direction, LaserReach, GetCid(), WEAPON_LASER, CLaser::NoBounce);
-			if(GetPlayerClass() == PLAYERCLASS_SCIENTIST)
-			{
-				pLaser->SetBouncing(0);
-				pLaser->SetExplosive(true);
-			}
+			pLaser->SetBouncing(Bounces);
+			pLaser->SetExplosive(Explosive);
 			pLaser->EnableBounce();
 		}
 		else
@@ -1542,7 +1549,7 @@ void CCharacter::Read(CNetObj_Character *pChar, CNetObj_DDNetCharacter *pExtende
 			m_Core.m_aWeapons[WEAPON_LASER].m_Got = true;
 			break;
 		case PLAYERCLASS_HERO:
-			m_Core.m_aWeapons[WEAPON_HAMMER].m_Got = false; // Pessimistic for MercBombsEnabled
+			m_Core.m_aWeapons[WEAPON_HAMMER].m_Got = false; // Pessimistic for TurretsEnabled
 			m_Core.m_aWeapons[WEAPON_GUN].m_Got = true;
 			m_Core.m_aWeapons[WEAPON_SHOTGUN].m_Got = true;
 			m_Core.m_aWeapons[WEAPON_GRENADE].m_Got = true;

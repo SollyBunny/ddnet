@@ -51,6 +51,7 @@ void CInfoMessages::ResetMessage(CInfoMsg &InfoMsg)
 	InfoMsg.m_Tick = -1;
 	std::fill(std::begin(InfoMsg.m_apVictimManagedTeeRenderInfos), std::end(InfoMsg.m_apVictimManagedTeeRenderInfos), nullptr);
 	InfoMsg.m_pKillerManagedTeeRenderInfo = nullptr;
+	InfoMsg.m_pAssistantManagedTeeRenderInfo = nullptr;
 	DeleteTextContainers(InfoMsg);
 }
 
@@ -98,6 +99,23 @@ void CInfoMessages::OnInit()
 		RenderTools()->QuadContainerAddSprite(m_SpriteQuadContainerIndex, 96.f * ScaleX, 96.f * ScaleY);
 	}
 
+	m_InfWeaponOffset = m_QuadOffsetRaceFlag + 1;
+	for(int i = 0; i < static_cast<int>(EDamageType::COUNT); ++i)
+	{
+		EDamageType DamageType = static_cast<EDamageType>(i);
+		float ScaleX = 0;
+		float ScaleY = 0;
+		Graphics()->QuadsSetSubset(0, 0, 1, 1);
+
+		int SpriteIndex = GameClient()->GetInfclassSpriteForDamageType(DamageType);
+		if(SpriteIndex >= 0)
+		{
+			RenderTools()->GetSpriteScale(&g_pData->m_aSprites[SpriteIndex], ScaleX, ScaleY);
+		}
+
+		RenderTools()->QuadContainerAddSprite(m_SpriteQuadContainerIndex, 96.f * ScaleX, 96.f * ScaleY);
+	}
+
 	Graphics()->QuadContainerUpload(m_SpriteQuadContainerIndex);
 }
 
@@ -121,6 +139,13 @@ CInfoMessages::CInfoMsg CInfoMessages::CreateInfoMsg(EType Type)
 	InfoMsg.m_KillerTextContainerIndex.Reset();
 	InfoMsg.m_pKillerManagedTeeRenderInfo = nullptr;
 
+	InfoMsg.m_AssistantId = -1;
+	InfoMsg.m_aAssistantName[0] = '\0';
+	InfoMsg.m_AssistantPlusContainerIndex.Reset();
+	InfoMsg.m_AssistantTextContainerIndex.Reset();
+	InfoMsg.m_pAssistantManagedTeeRenderInfo = nullptr;
+
+	InfoMsg.m_InfDamageType = -1;
 	InfoMsg.m_Weapon = -1;
 	InfoMsg.m_ModeSpecial = 0;
 	InfoMsg.m_FlagCarrierBlue = -1;
@@ -143,6 +168,7 @@ void CInfoMessages::AddInfoMsg(const CInfoMsg &InfoMsg)
 	{
 		dbg_assert(InfoMsg.m_aVictimIds[i] >= 0 && InfoMsg.m_apVictimManagedTeeRenderInfos[i] != nullptr, "Info message victim invalid");
 	}
+	dbg_assert(InfoMsg.m_AssistantId < 0 || InfoMsg.m_pAssistantManagedTeeRenderInfo != nullptr, "Info message assistant invalid");
 
 	const float Height = 1.5f * 400.0f * 3.0f;
 	const float Width = Height * Graphics()->ScreenAspect();
@@ -194,7 +220,7 @@ void CInfoMessages::CreateTextContainersIfNotCreated(CInfoMsg &InfoMsg)
 		{
 			CTextCursor Cursor;
 			TextRender()->SetCursor(&Cursor, 0, 0, FONT_SIZE, TEXTFLAG_RENDER);
-			TextRender()->TextColor(NameColor(InfoMsg.m_AssistantID));
+			TextRender()->TextColor(NameColor(InfoMsg.m_AssistantId));
 			TextRender()->CreateTextContainer(InfoMsg.m_AssistantTextContainerIndex, &Cursor, InfoMsg.m_aAssistantName);
 		}
 
@@ -332,23 +358,18 @@ void CInfoMessages::OnInfcKillMessage(const CNetMsg_Inf_KillMsg *pMsg)
 	Kill.m_aVictimIds[0] = pMsg->m_Victim;
 	Kill.m_VictimDDTeam = m_pClient->m_Teams.Team(Kill.m_aVictimIds[0]);
 	str_copy(Kill.m_aVictimName, m_pClient->m_aClients[Kill.m_aVictimIds[0]].m_aName);
-	Kill.m_apVictimManagedTeeRenderInfos[0] = std::make_shared<CManagedTeeRenderInfo>(
-		m_pClient->m_aClients[Kill.m_aVictimIds[0]].m_RenderInfo, m_pClient->m_aClients[Kill.m_aVictimIds[0]].ToSkinDescriptor());
+	Kill.m_apVictimManagedTeeRenderInfos[0] = m_pClient->CreateManagedTeeRenderInfo(m_pClient->m_aClients[Kill.m_aVictimIds[0]]);
 
 	Kill.m_KillerId = pMsg->m_Killer;
 	str_copy(Kill.m_aKillerName, m_pClient->m_aClients[Kill.m_KillerId].m_aName);
-	Kill.m_pKillerManagedTeeRenderInfo = std::make_shared<CManagedTeeRenderInfo>(
-		m_pClient->m_aClients[Kill.m_KillerId].m_RenderInfo, m_pClient->m_aClients[Kill.m_KillerId].ToSkinDescriptor());
-	Kill.m_AssistantID = pMsg->m_Assistant;
-	if(Kill.m_AssistantID >= 0 && Kill.m_AssistantID < MAX_CLIENTS && m_pClient->m_aClients[Kill.m_AssistantID].m_Active)
+	Kill.m_pKillerManagedTeeRenderInfo = m_pClient->CreateManagedTeeRenderInfo(m_pClient->m_aClients[Kill.m_KillerId]);
+
+	int AssistantId = pMsg->m_Assistant;
+	if(AssistantId >= 0 && AssistantId < MAX_CLIENTS && m_pClient->m_aClients[AssistantId].m_Active)
 	{
-		str_copy(Kill.m_aAssistantName, m_pClient->m_aClients[Kill.m_AssistantID].m_aName);
-		Kill.m_AssistantRenderInfo = m_pClient->m_aClients[Kill.m_AssistantID].m_RenderInfo;
-	}
-	else
-	{
-		Kill.m_aAssistantName[0] = '\0';
-		Kill.m_AssistantRenderInfo.Reset();
+		Kill.m_AssistantId = AssistantId;
+		str_copy(Kill.m_aAssistantName, m_pClient->m_aClients[Kill.m_AssistantId].m_aName);
+		Kill.m_pAssistantManagedTeeRenderInfo = m_pClient->CreateManagedTeeRenderInfo(m_pClient->m_aClients[Kill.m_AssistantId]);
 	}
 
 	Kill.m_InfDamageType = pMsg->m_InfDamageType;
@@ -484,15 +505,15 @@ void CInfoMessages::RenderKillMsg(const CInfoMsg &InfoMsg, float x, float y)
 			Graphics()->RenderQuadContainerAsSprite(m_SpriteQuadContainerIndex, QuadOffset, x - 56, y - 16);
 		}
 
-		if(InfoMsg.m_AssistantID >= 0)
+		if(InfoMsg.m_pAssistantManagedTeeRenderInfo != nullptr)
 		{
 			// render assistant tee
 			x -= 24.0f;
 
 			vec2 OffsetToMid;
-			RenderTools()->GetRenderTeeOffsetToRenderedTee(CAnimState::GetIdle(), &InfoMsg.m_AssistantRenderInfo, OffsetToMid);
+			RenderTools()->GetRenderTeeOffsetToRenderedTee(CAnimState::GetIdle(), &InfoMsg.m_pAssistantManagedTeeRenderInfo->TeeRenderInfo(), OffsetToMid);
 			const vec2 TeeRenderPos = vec2(x, y + ROW_HEIGHT / 2.0f + OffsetToMid.y);
-			RenderTools()->RenderTee(CAnimState::GetIdle(), &InfoMsg.m_AssistantRenderInfo, EMOTE_ANGRY, vec2(1, 0), TeeRenderPos);
+			RenderTools()->RenderTee(CAnimState::GetIdle(), &InfoMsg.m_pAssistantManagedTeeRenderInfo->TeeRenderInfo(), EMOTE_ANGRY, vec2(1, 0), TeeRenderPos);
 		}
 
 		// render killer tee
@@ -505,20 +526,15 @@ void CInfoMessages::RenderKillMsg(const CInfoMsg &InfoMsg, float x, float y)
 			RenderTools()->RenderTee(CAnimState::GetIdle(), &InfoMsg.m_pKillerManagedTeeRenderInfo->TeeRenderInfo(), EMOTE_ANGRY, vec2(1, 0), TeeRenderPos);
 		}
 		x -= 32.0f;
-		if(InfoMsg.m_AssistantID >= 0)
+		if(InfoMsg.m_AssistantTextContainerIndex.Valid() && InfoMsg.m_AssistantPlusContainerIndex.Valid())
 		{
 			// render assistant name
 			x -= TextRender()->GetBoundingBoxTextContainer(InfoMsg.m_AssistantTextContainerIndex).m_W;
+			TextRender()->RenderTextContainer(InfoMsg.m_AssistantTextContainerIndex, TextColor, TextRender()->DefaultTextOutlineColor(), x, y + (46.f - 36.f) / 2.f);
 
-			if(InfoMsg.m_AssistantTextContainerIndex.Valid())
-			{
-				TextRender()->RenderTextContainer(InfoMsg.m_AssistantTextContainerIndex, TextColor, TextRender()->DefaultTextOutlineColor(), x, y + (46.f - 36.f) / 2.f);
-
-				ColorRGBA Color = color_cast<ColorRGBA>(ColorHSLA(g_Config.m_ClKillMessageHighlightColor));
-
-				x -= TextRender()->GetBoundingBoxTextContainer(InfoMsg.m_AssistantPlusContainerIndex).m_W;
-				TextRender()->RenderTextContainer(InfoMsg.m_AssistantPlusContainerIndex, Color, TextRender()->DefaultTextOutlineColor(), x, y + (46.f - 36.f) / 2.f);
-			}
+			ColorRGBA Color = color_cast<ColorRGBA>(ColorHSLA(g_Config.m_ClKillMessageHighlightColor));
+			x -= TextRender()->GetBoundingBoxTextContainer(InfoMsg.m_AssistantPlusContainerIndex).m_W;
+			TextRender()->RenderTextContainer(InfoMsg.m_AssistantPlusContainerIndex, Color, TextRender()->DefaultTextOutlineColor(), x, y + (46.f - 36.f) / 2.f);
 		}
 
 		// render killer name

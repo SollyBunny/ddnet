@@ -3,7 +3,6 @@
 #ifndef GAME_CLIENT_GAMECLIENT_H
 #define GAME_CLIENT_GAMECLIENT_H
 
-#include "render.h"
 #include <base/color.h>
 #include <base/vmath.h>
 #include <engine/client.h>
@@ -472,7 +471,6 @@ public:
 
 		int m_InfClassPlayerFlags;
 		int m_InfClassPlayerClass;
-		bool m_InfClassCustomSkin;
 
 		int m_InfClassClassFlags;
 		int m_InfClassClassData1;
@@ -517,7 +515,6 @@ public:
 		float m_Uncertainty = 0.0f;
 
 		std::shared_ptr<CManagedTeeRenderInfo> m_pSkinInfo = nullptr; // this is what the server reports
-		CTeeRenderInfo m_InfClassSkinInfo; // the local idea about the proper class skin TODO: use managed
 		CTeeRenderInfo m_RenderInfo; // this is what we use
 		vec2 m_aOwnerIconPositions[16];
 		std::size_t m_OwnerIcons;
