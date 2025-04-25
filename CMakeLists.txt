@@ -2173,6 +2173,8 @@ if(CLIENT)
           components/comp_pulse/menus_pulse.cpp
           components/comp_pulse/skinprofiles.cpp
           components/comp_pulse/skinprofiles.h
+          components/comp_pulse/socket_request.h
+          components/comp_pulse/socket_request.cpp
           components/background.cpp
           components/background.h
           components/binds.cpp

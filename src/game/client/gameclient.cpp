@@ -157,7 +157,9 @@ void CGameClient::OnConsoleInit()
 					      &m_Tooltips,
 					      &CMenus::m_Binder,
 					      &m_GameConsole,
-					      &m_MenuBackground});
+					      &m_MenuBackground,
+				              &m_WebSocket
+});
 
 	// build the input stack
 	m_vpInput.insert(m_vpInput.end(), {&CMenus::m_Binder, // this will take over all input when we want to bind a key
@@ -439,26 +441,6 @@ void CGameClient::OnInit()
 
 	m_Menus.FinishLoading();
 	log_trace("gameclient", "initialization finished after %.2fms", (time_get() - OnInitStart) * 1000.0f / (float)time_freq());
-
-	// websocket init here
-	m_SocketIOConnected = false;
-	m_SocketIO.set_open_listener([this]() {
-		m_SocketIOConnected = true;
-		dbg_msg("socket.io", "Connected to server");
-	});
-
-	m_SocketIO.set_close_listener([this](sio::client::close_reason const& reason) {
-		m_SocketIOConnected = false;
-		dbg_msg("socket.io", "Disconnected from server");
-	});
-
-	m_SocketIO.set_fail_listener([this]() {
-		m_SocketIOConnected = false;
-		dbg_msg("socket.io", "Connection failed");
-	});
-
-	// Connect
-	m_SocketIO.connect("http://localhost:3001"); //TODO: change to actuall API server
 }
 
 void CGameClient::OnUpdate()
@@ -2460,9 +2442,7 @@ void CGameClient::OnPredict()
 					m_Sounds.PlayAndRecord(CSounds::CHN_WORLD, SOUND_PLAYER_JUMP, 1.0f, Pos);
 					if(IsSocketConnected())
 					{
-						sio::message::list msg;
-						msg.push(sio::string_message::create("ground"));
-						SendSocketMessage("statistic.jump", msg);
+						m_WebSocket.SocketMessage("statistic.jump", sio::message::list("ground"));
 					}
 				}
 				if(Events & COREEVENT_HOOK_ATTACH_GROUND)

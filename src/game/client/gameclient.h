@@ -32,6 +32,7 @@
 #include "components/chat.h"
 //#include "components/comp_pulse/colormode.h" TODO: ADD
 #include "components/comp_pulse/skinprofiles.h"
+#include "components/comp_pulse/socket_request.h"
 #include "components/console.h"
 #include "components/controls.h"
 #include "components/countryflags.h"
@@ -134,6 +135,7 @@ class CGameClient : public IGameClient
 public:
 	//Pulse
 	//    CRainbow m_Rainbow;
+	CWebSocket m_WebSocket;
 	// all components
 	CInfoMessages m_InfoMessages;
 	CCamera m_Camera;
@@ -922,11 +924,12 @@ private:
 
 	SMultiView m_MultiView;
 
-	sio::client m_SocketIO;
-	bool m_SocketIOConnected;
 
 
 public:
+	sio::client m_SocketIO;
+	bool m_SocketIOConnected;
+
 	void SendSocketMessage(const char *pEvent, sio::message::list pData);
 	bool IsSocketConnected() const { return m_SocketIOConnected; }
 	void SendSocketEvent(const char* pEvent, const char* pData) { SendSocketMessage(pEvent, sio::message::list(pData)); }
