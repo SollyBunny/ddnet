@@ -1088,11 +1088,10 @@ void CGameConsole::OnRender()
     const ColorRGBA aBackgroundColors[NUM_CONSOLETYPES] = {ColorRGBA(0.2f, 0.2f, 0.2f, 0.9f), ColorRGBA(0.4f, 0.2f, 0.2f, 0.9f)};
     const ColorRGBA aBorderColors[NUM_CONSOLETYPES] = {ColorRGBA(0.1f, 0.1f, 0.1f, 0.9f), ColorRGBA(0.2f, 0.1f, 0.1f, 0.9f)};
 
-	float FadingFactor = 1.0f - g_Config.m_ClCustomConsoleFading / 100.0f;
-	float AlphaFactor = g_Config.m_ClCustomConsoleAlpha / 100.0f;
+	float FadingFactor = 1.0f - Client()->m_ConsoleSkin.m_Fading / 100.0f;
+	float AlphaFactor = Client()->m_ConsoleSkin.m_Alpha / 100.0f;
 
 	ColorRGBA Fading = ColorRGBA(FadingFactor, FadingFactor, FadingFactor, AlphaFactor);
-
 
 	if (Client()->m_ConsoleHeight < 770 && g_Config.m_ClCustomConsole == 1)
 	{
@@ -1106,53 +1105,67 @@ void CGameConsole::OnRender()
 	    Graphics()->QuadsDrawTL(&QuadItemBackground, 1);
 	    Graphics()->QuadsEnd();
 	}
-	else if (g_Config.m_ClCustomConsole && Client()->m_ConsoleSkin.m_ConsoleTexture.IsValid() && !Client()->m_ConsoleSkin.m_ConsoleTexture.IsNullTexture())
+	else if (g_Config.m_ClCustomConsole)
 	{
-	    Graphics()->TextureSet(Client()->m_ConsoleSkin.m_ConsoleTexture);
-	    Graphics()->QuadsBegin();
+		const char *pBackgroundPath = m_ConsoleType == CONSOLETYPE_LOCAL ? g_Config.m_ClCustomConsoleDefault : g_Config.m_ClCustomConsoleRcon;
+		if(pBackgroundPath[0] != '\0' && Client()->m_ConsoleSkin.m_ConsoleTexture.IsValid() && !Client()->m_ConsoleSkin.m_ConsoleTexture.IsNullTexture())
+		{
+			Graphics()->TextureSet(Client()->m_ConsoleSkin.m_ConsoleTexture);
+			Graphics()->QuadsBegin();
 
-	    Graphics()->SetColor(Fading.r, Fading.g, Fading.b, Fading.a);
+			Graphics()->SetColor(Fading.r, Fading.g, Fading.b, Fading.a);
 
-	    float ImageWidth = Client()->m_ConsoleWidth;
-	    float ImageHeight = Client()->m_ConsoleHeight;
+			float ImageWidth = Client()->m_ConsoleWidth;
+			float ImageHeight = Client()->m_ConsoleHeight;
 
-	   // dbg_msg("system", "%i", Client()->m_ConsoleHeight);
+			float ScaleWidth = Screen.w / ImageWidth;
+			float ScaleHeight = ScaleWidth;
 
-	    float ScaleWidth = Screen.w / ImageWidth;
-	    float ScaleHeight = ScaleWidth;
+			float FinalWidth = ImageWidth * ScaleWidth;
+			float FinalHeight = ImageHeight * ScaleHeight;
 
-	    float FinalWidth = ImageWidth * ScaleWidth;
-	    float FinalHeight = ImageHeight * ScaleHeight;
+			if (FinalHeight > ConsoleHeight)
+			{
+				float YPosition = -FinalHeight + ConsoleHeight;
 
-	    if (FinalHeight > ConsoleHeight)
-	    {
-	        float YPosition = -FinalHeight + ConsoleHeight;
+				Graphics()->QuadsSetSubset(0.0f, 0.0f, 1.0f, 1.0f);
+				IGraphics::CQuadItem QuadItemBackground(0.0f, YPosition, FinalWidth, FinalHeight);
+				Graphics()->QuadsDrawTL(&QuadItemBackground, 1);
+			}
+			else
+			{
+				float YPosition = 0.0f;
+				Graphics()->QuadsSetSubset(0.0f, 0.0f, 1.0f, 1.0f);
+				IGraphics::CQuadItem QuadItemBackground(0.0f, YPosition, FinalWidth, FinalHeight);
+				Graphics()->QuadsDrawTL(&QuadItemBackground, 1);
+			}
 
-	        Graphics()->QuadsSetSubset(0.0f, 0.0f, 1.0f, 1.0f);
-	        IGraphics::CQuadItem QuadItemBackground(0.0f, YPosition, FinalWidth, FinalHeight);
-	        Graphics()->QuadsDrawTL(&QuadItemBackground, 1);
-	    }
-	    else
-	    {
-	        float YPosition = 0.0f;
-	        Graphics()->QuadsSetSubset(0.0f, 0.0f, 1.0f, 1.0f);
-	        IGraphics::CQuadItem QuadItemBackground(0.0f, YPosition, FinalWidth, FinalHeight);
-	        Graphics()->QuadsDrawTL(&QuadItemBackground, 1);
-	    }
+			Graphics()->QuadsEnd();
+		}
+		else
+		{
+			// Default rendering if custom console is not enabled or valid
+			Graphics()->TextureSet(g_pData->m_aImages[IMAGE_BACKGROUND_NOISE].m_Id);
+			Graphics()->QuadsBegin();
+			Graphics()->SetColor(aBackgroundColors[m_ConsoleType]);
+			Graphics()->QuadsSetSubset(0, 0, Screen.w / 80.0f, ConsoleHeight / 80.0f);
 
-	    Graphics()->QuadsEnd();
+			IGraphics::CQuadItem QuadItemBackground(0.0f, 0.0f, Screen.w, ConsoleHeight);
+			Graphics()->QuadsDrawTL(&QuadItemBackground, 1);
+			Graphics()->QuadsEnd();
+		}
 	}
 	else
 	{
-	    // Default rendering if custom console is not enabled or valid
-	    Graphics()->TextureSet(g_pData->m_aImages[IMAGE_BACKGROUND_NOISE].m_Id);
-	    Graphics()->QuadsBegin();
-	    Graphics()->SetColor(aBackgroundColors[m_ConsoleType]);
-	    Graphics()->QuadsSetSubset(0, 0, Screen.w / 80.0f, ConsoleHeight / 80.0f);
+		// Default rendering if custom console is not enabled or valid
+		Graphics()->TextureSet(g_pData->m_aImages[IMAGE_BACKGROUND_NOISE].m_Id);
+		Graphics()->QuadsBegin();
+		Graphics()->SetColor(aBackgroundColors[m_ConsoleType]);
+		Graphics()->QuadsSetSubset(0, 0, Screen.w / 80.0f, ConsoleHeight / 80.0f);
 
-	    IGraphics::CQuadItem QuadItemBackground(0.0f, 0.0f, Screen.w, ConsoleHeight);
-	    Graphics()->QuadsDrawTL(&QuadItemBackground, 1);
-	    Graphics()->QuadsEnd();
+		IGraphics::CQuadItem QuadItemBackground(0.0f, 0.0f, Screen.w, ConsoleHeight);
+		Graphics()->QuadsDrawTL(&QuadItemBackground, 1);
+		Graphics()->QuadsEnd();
 	}
 
 	// bottom border
@@ -1563,39 +1576,28 @@ bool CGameConsole::OnInput(const IInput::CEvent &Event)
 
 void CGameConsole::Toggle(int Type)
 {
-	if(m_ConsoleType != Type && (m_ConsoleState == CONSOLE_OPEN || m_ConsoleState == CONSOLE_OPENING))
+	if(m_ConsoleState == CONSOLE_CLOSED)
 	{
-		// don't toggle console, just switch what console to use
+		m_ConsoleState = CONSOLE_OPENING;
+		m_StateChangeEnd = Client()->GlobalTime() + m_StateChangeDuration;
+		m_ConsoleType = Type;
+		Input()->MouseModeAbsolute();
+		Client()->LoadConsoleBackground(Type);
 	}
-	else
+	else if(m_ConsoleState == CONSOLE_OPEN)
 	{
-		if(m_ConsoleState == CONSOLE_CLOSED || m_ConsoleState == CONSOLE_OPEN)
+		if(m_ConsoleType == Type)
 		{
-			m_StateChangeEnd = Client()->GlobalTime() + m_StateChangeDuration;
-		}
-		else
-		{
-			float Progress = m_StateChangeEnd - Client()->GlobalTime();
-			float ReversedProgress = m_StateChangeDuration - Progress;
-
-			m_StateChangeEnd = Client()->GlobalTime() + ReversedProgress;
-		}
-
-		if(m_ConsoleState == CONSOLE_CLOSED || m_ConsoleState == CONSOLE_CLOSING)
-		{
-			Ui()->SetEnabled(false);
-			m_ConsoleState = CONSOLE_OPENING;
-		}
-		else
-		{
-			ConsoleForType(Type)->m_Input.Deactivate();
-			Input()->MouseModeRelative();
-			Ui()->SetEnabled(true);
-			m_pClient->OnRelease();
 			m_ConsoleState = CONSOLE_CLOSING;
+			m_StateChangeEnd = Client()->GlobalTime() + m_StateChangeDuration;
+			Input()->MouseModeRelative();
+		}
+		else
+		{
+			m_ConsoleType = Type;
+			Client()->LoadConsoleBackground(Type);
 		}
 	}
-	m_ConsoleType = Type;
 }
 
 void CGameConsole::ConToggleLocalConsole(IConsole::IResult *pResult, void *pUserData)

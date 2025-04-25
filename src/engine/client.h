@@ -111,6 +111,8 @@ public:
 	struct SClientConsoleSkin
 	{
 		IGraphics::CTextureHandle m_ConsoleTexture;
+		int m_Alpha = 100;
+		int m_Fading = 0;
 	};
 	SClientConsoleSkin m_ConsoleSkin = {};
 	bool m_ConsoleSkinLoaded = false;
@@ -359,6 +361,8 @@ public:
 	};
 	virtual void ShowMessageBox(const char *pTitle, const char *pMessage, EMessageBoxType Type = MESSAGE_BOX_TYPE_ERROR) = 0;
 	virtual void GetGpuInfoString(char (&aGpuInfo)[256]) = 0;
+
+	virtual void LoadConsoleBackground(int ConsoleType) = 0;
 };
 
 class IGameClient : public IInterface

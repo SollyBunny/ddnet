@@ -72,6 +72,7 @@
 #endif
 
 #include "engine/shared/console.h"
+#include "game/client/components/console.h"
 
 #include <chrono>
 #include <limits>
@@ -3794,7 +3795,7 @@ void CClient::Con_SaveReplay(IConsole::IResult *pResult, void *pUserData)
 void CClient::PulseSetAssets(IConsole::IResult *pResult, void *pUserData)
 {
 	CClient *pSelf = (CClient *)pUserData;
-	pSelf->LoadCustomConsole(g_Config.m_ClAssetConsole);
+	pSelf->LoadCustomConsole(g_Config.m_ClCustomConsoleDefault);
 }
 
 void CClient::LoadCustomConsole(const char *pPath)
@@ -5351,4 +5352,31 @@ void CClient::SetLoggers(std::shared_ptr<ILogger> &&pFileLogger, std::shared_ptr
 {
 	m_pFileLogger = pFileLogger;
 	m_pStdoutLogger = pStdoutLogger;
+}
+
+void CClient::LoadConsoleBackground(int ConsoleType)
+{
+	const char *pPath = nullptr;
+	int Alpha = 100;
+	int Fading = 0;
+
+	if(ConsoleType == CGameConsole::CONSOLETYPE_LOCAL)
+	{
+		pPath = g_Config.m_ClCustomConsoleDefault;
+		Alpha = g_Config.m_ClCustomConsoleAlpha;
+		Fading = g_Config.m_ClCustomConsoleFading;
+	}
+	else if(ConsoleType == CGameConsole::CONSOLETYPE_REMOTE)
+	{
+		pPath = g_Config.m_ClCustomConsoleRcon;
+		Alpha = g_Config.m_ClCustomConsoleRconAlpha;
+		Fading = g_Config.m_ClCustomConsoleRconFading;
+	}
+
+	if(pPath && pPath[0])
+	{
+		LoadCustomConsole(pPath);
+		m_ConsoleSkin.m_Alpha = Alpha;
+		m_ConsoleSkin.m_Fading = Fading;
+	}
 }

@@ -87,6 +87,7 @@ void CMenus::RenderConsoleImages(CUIRect MainView)
 	static std::vector<CConsoleImage> s_vConsoleImages;
 	static bool s_ImagesLoaded = false;
 	static int s_SelectedImage = -1;
+	static int s_SelectedConsoleType = 0; // 0 = default, 1 = RCON
 
 	if(!s_ImagesLoaded)
 	{
@@ -141,6 +142,21 @@ void CMenus::RenderConsoleImages(CUIRect MainView)
 		s_ImagesLoaded = true;
 	}
 
+	// Display console type selector
+	CUIRect ConsoleTypeSelector;
+	MainView.HSplitTop(20.0f, &ConsoleTypeSelector, &MainView);
+	
+	static CButtonContainer s_DefaultConsoleBtn;
+	static CButtonContainer s_RconConsoleBtn;
+	
+	CUIRect DefaultBtn, RconBtn;
+	ConsoleTypeSelector.VSplitMid(&DefaultBtn, &RconBtn);
+	
+	if(DoButton_CheckBox(&s_DefaultConsoleBtn, Localize("Default Console"), s_SelectedConsoleType == 0, &DefaultBtn))
+		s_SelectedConsoleType = 0;
+	if(DoButton_CheckBox(&s_RconConsoleBtn, Localize("RCON Console"), s_SelectedConsoleType == 1, &RconBtn))
+		s_SelectedConsoleType = 1;
+
 	// Display images in list
 	static CListBox s_ListBox;
 	s_ListBox.DoHeader(&MainView, Localize("Console Images"), 20.0f);
@@ -180,7 +196,6 @@ void CMenus::RenderConsoleImages(CUIRect MainView)
 		{
 			const CConsoleImage &SelectedImage = s_vConsoleImages[s_SelectedImage];
 
-			//gg
 			char a_cleanName[64];
 			str_copy(a_cleanName, SelectedImage.m_aName, sizeof(a_cleanName));
 			int len = str_length(a_cleanName);
@@ -192,7 +207,13 @@ void CMenus::RenderConsoleImages(CUIRect MainView)
 			Console()->ExecuteLine(a_buf);
 			Console()->ExecuteLine("p_console_reload");
 
-			dbg_msg("console_images", "Selected image: %s", a_cleanName);
+			// Set the selected background for the appropriate console type
+			if(s_SelectedConsoleType == 0)
+				str_copy(g_Config.m_ClCustomConsoleDefault, a_cleanName, sizeof(g_Config.m_ClCustomConsoleDefault));
+			else
+				str_copy(g_Config.m_ClCustomConsoleRcon, a_cleanName, sizeof(g_Config.m_ClCustomConsoleRcon));
+
+			dbg_msg("console_images", "Selected image: %s for %s console", a_cleanName, s_SelectedConsoleType == 0 ? "default" : "RCON");
 		}
 	}
 }
@@ -278,6 +299,15 @@ void CMenus::RenderSettingsPulse(CUIRect MainView)
 
 			Left.HSplitTop(20.0f, &Button, &Left);
 			Ui()->DoScrollbarOption(&g_Config.m_ClCustomConsoleFading, &g_Config.m_ClCustomConsoleFading, &Button, Localize("Console Brightness"), 100, 0);
+
+			Left.HSplitTop(20.0f, &Button, &Left);
+			Ui()->DoLabel(&Button, Localize("RCON Console"), 14.0f, TEXTALIGN_ML);
+
+			Left.HSplitTop(20.0f, &Button, &Left);
+			Ui()->DoScrollbarOption(&g_Config.m_ClCustomConsoleRconAlpha, &g_Config.m_ClCustomConsoleRconAlpha, &Button, Localize("RCON Console Alpha"), 0, 100);
+
+			Left.HSplitTop(20.0f, &Button, &Left);
+			Ui()->DoScrollbarOption(&g_Config.m_ClCustomConsoleRconFading, &g_Config.m_ClCustomConsoleRconFading, &Button, Localize("RCON Console Brightness"), 100, 0);
 		}
 	}
 }
