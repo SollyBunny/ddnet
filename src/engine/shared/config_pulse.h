@@ -32,4 +32,5 @@ MACRO_CONFIG_INT(ClCustomConsoleRconFading, p_custom_console_rcon_fading, 0, 0, 
 
 MACRO_CONFIG_INT(ClFastInp, p_fast_input, 1, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "")
 MACRO_CONFIG_INT(ClToggleTrail, p_toggle_trails, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "")
-MACRO_CONFIG_INT(ClLaserGlowIntensity, p_test_glow, 0, 0, 100, CFGFLAG_CLIENT | CFGFLAG_SAVE, "")
+MACRO_CONFIG_INT(ClLaserGlowIntensity, p_laser_ench, 0, 0, 100, CFGFLAG_CLIENT | CFGFLAG_SAVE, "")
+MACRO_CONFIG_INT(ClBetterLasers, p_better_laser, 1, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "")
