@@ -311,8 +311,8 @@ void CMenus::DoLaserPreview(const CUIRect *pRect, const ColorHSLA LaserOutlineCo
 	const ColorRGBA InnerColor = color_cast<ColorRGBA>(ColorHSLA(LaserInnerColor));
 	const float TicksHead = Client()->GlobalTime() * Client()->GameTickSpeed();
 
-	// TicksBody = 4.0 for less laser width for weapon alignment
-	GameClient()->m_Items.RenderLaser(From, Pos, OuterColor, InnerColor, 4.0f, TicksHead, LaserType);
+	// Use better laser rendering with glow intensity
+	GameClient()->m_Items.RenderLaser(From, Pos, OuterColor, InnerColor, 4.0f, TicksHead, LaserType, g_Config.m_ClLaserGlowIntensity);
 
 	switch(LaserType)
 	{
@@ -333,7 +333,7 @@ void CMenus::DoLaserPreview(const CUIRect *pRect, const ColorHSLA LaserOutlineCo
 		Graphics()->QuadsEnd();
 		break;
 	default:
-		GameClient()->m_Items.RenderLaser(From, From, OuterColor, InnerColor, 4.0f, TicksHead, LaserType);
+		GameClient()->m_Items.RenderLaser(From, From, OuterColor, InnerColor, 4.0f, TicksHead, LaserType, 100.0f);
 	}
 }
 
