@@ -2453,18 +2453,6 @@ void CGameClient::OnPredict()
 			m_NewPredictedTick = true;
 			vec2 Pos = pLocalChar->Core()->m_Pos;
 			int Events = pLocalChar->Core()->m_TriggeredEvents;
-			if(g_Config.m_ClPredict && !m_SuppressEvents)
-				//PULSE +JUMP to stats
-				if(Events & COREEVENT_AIR_JUMP)
-				{
-					m_Effects.AirJump(Pos, 1.0f);
-					if(IsSocketConnected())
-					{
-						sio::message::list msg;
-						msg.push(sio::string_message::create("air"));
-						SendSocketMessage("statistic.jump", msg);
-					}
-				}
 			if(g_Config.m_SndGame && !m_SuppressEvents)
 			{
 				if(Events & COREEVENT_GROUND_JUMP)

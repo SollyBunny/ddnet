@@ -302,10 +302,10 @@ void CItems::RenderLaser(const CLaserData *pCurrent, bool IsPredicted)
 		Ticks = (float)(Client()->GameTick(g_Config.m_ClDummy) - pCurrent->m_StartTick) + Client()->IntraGameTick(g_Config.m_ClDummy);
 
 	float TicksHead = Client()->GameTick(g_Config.m_ClDummy);
-	RenderLaser(pCurrent->m_From, pCurrent->m_To, OuterColor, InnerColor, Ticks, TicksHead, Type);
+	RenderLaser(pCurrent->m_From, pCurrent->m_To, OuterColor, InnerColor, Ticks, TicksHead, Type, g_Config.m_ClLaserGlowIntensity);
 }
 
-void CItems::RenderLaser(vec2 From, vec2 Pos, ColorRGBA OuterColor, ColorRGBA InnerColor, float TicksBody, float TicksHead, int Type) const
+void CItems::RenderLaser(vec2 From, vec2 Pos, ColorRGBA OuterColor, ColorRGBA InnerColor, float TicksBody, float TicksHead, int Type, float GlowIntensity) const
 {
 	int TuneZone = (Client()->State() == IClient::STATE_ONLINE && GameClient()->m_GameWorld.m_WorldConfig.m_UseTuneZones) ? Collision()->IsTune(Collision()->GetMapIndex(From)) : 0;
 	float Len = distance(Pos, From);
@@ -322,10 +322,10 @@ void CItems::RenderLaser(vec2 From, vec2 Pos, ColorRGBA OuterColor, ColorRGBA In
 		Graphics()->TextureClear();
 		Graphics()->QuadsBegin();
 
-		// do outline
-		Graphics()->SetColor(OuterColor);
-		vec2 Out = vec2(Dir.y, -Dir.x) * (7.0f * Ia);
-
+		// Outer glow layers
+		// Layer 6 (outermost, very faint)
+		Graphics()->SetColor(OuterColor.WithMultipliedAlpha(0.10f));
+		vec2 Out = vec2(Dir.y, -Dir.x) * (24.0f * Ia);
 		IGraphics::CFreeformItem Freeform(
 			From.x - Out.x, From.y - Out.y,
 			From.x + Out.x, From.y + Out.y,
@@ -333,10 +333,59 @@ void CItems::RenderLaser(vec2 From, vec2 Pos, ColorRGBA OuterColor, ColorRGBA In
 			Pos.x + Out.x, Pos.y + Out.y);
 		Graphics()->QuadsDrawFreeform(&Freeform, 1);
 
-		// do inner
-		Out = vec2(Dir.y, -Dir.x) * (5.0f * Ia);
-		Graphics()->SetColor(InnerColor); // center
+		// Layer 5
+		Graphics()->SetColor(OuterColor.WithMultipliedAlpha(0.15f));
+		Out = vec2(Dir.y, -Dir.x) * (20.0f * Ia);
+		Freeform = IGraphics::CFreeformItem(
+			From.x - Out.x, From.y - Out.y,
+			From.x + Out.x, From.y + Out.y,
+			Pos.x - Out.x, Pos.y - Out.y,
+			Pos.x + Out.x, Pos.y + Out.y);
+		Graphics()->QuadsDrawFreeform(&Freeform, 1);
 
+		// Layer 4
+		Graphics()->SetColor(OuterColor.WithMultipliedAlpha(0.25f));
+		Out = vec2(Dir.y, -Dir.x) * (16.0f * Ia);
+		Freeform = IGraphics::CFreeformItem(
+			From.x - Out.x, From.y - Out.y,
+			From.x + Out.x, From.y + Out.y,
+			Pos.x - Out.x, Pos.y - Out.y,
+			Pos.x + Out.x, Pos.y + Out.y);
+		Graphics()->QuadsDrawFreeform(&Freeform, 1);
+
+		// Layer 3
+		Graphics()->SetColor(OuterColor.WithMultipliedAlpha(0.45f));
+		Out = vec2(Dir.y, -Dir.x) * (12.0f * Ia);
+		Freeform = IGraphics::CFreeformItem(
+			From.x - Out.x, From.y - Out.y,
+			From.x + Out.x, From.y + Out.y,
+			Pos.x - Out.x, Pos.y - Out.y,
+			Pos.x + Out.x, Pos.y + Out.y);
+		Graphics()->QuadsDrawFreeform(&Freeform, 1);
+
+		// Layer 2
+		Graphics()->SetColor(OuterColor.WithMultipliedAlpha(0.65f));
+		Out = vec2(Dir.y, -Dir.x) * (8.0f * Ia);
+		Freeform = IGraphics::CFreeformItem(
+			From.x - Out.x, From.y - Out.y,
+			From.x + Out.x, From.y + Out.y,
+			Pos.x - Out.x, Pos.y - Out.y,
+			Pos.x + Out.x, Pos.y + Out.y);
+		Graphics()->QuadsDrawFreeform(&Freeform, 1);
+
+		// Layer 1 (inner glow)
+		Graphics()->SetColor(InnerColor.WithMultipliedAlpha(0.85f));
+		Out = vec2(Dir.y, -Dir.x) * (6.0f * Ia);
+		Freeform = IGraphics::CFreeformItem(
+			From.x - Out.x, From.y - Out.y,
+			From.x + Out.x, From.y + Out.y,
+			Pos.x - Out.x, Pos.y - Out.y,
+			Pos.x + Out.x, Pos.y + Out.y);
+		Graphics()->QuadsDrawFreeform(&Freeform, 1);
+		//TODO: InnerSILLYNESS HITS ME HARD ASF SOMEONE CHOKE ME
+		// Core (bright white)
+		Graphics()->SetColor(ColorRGBA(1.0f, 1.0f, 1.0f, 1.0f));
+		Out = vec2(Dir.y, -Dir.x) * (2.5f * Ia);
 		Freeform = IGraphics::CFreeformItem(
 			From.x - Out.x, From.y - Out.y,
 			From.x + Out.x, From.y + Out.y,
@@ -352,10 +401,27 @@ void CItems::RenderLaser(vec2 From, vec2 Pos, ColorRGBA OuterColor, ColorRGBA In
 		int CurParticle = (int)TicksHead % 3;
 		Graphics()->TextureSet(GameClient()->m_ParticlesSkin.m_aSpriteParticleSplat[CurParticle]);
 		Graphics()->QuadsSetRotation((int)TicksHead);
-		Graphics()->SetColor(OuterColor);
-		Graphics()->RenderQuadContainerAsSprite(m_ItemsQuadContainerIndex, m_aParticleSplatOffset[CurParticle], Pos.x, Pos.y);
-		Graphics()->SetColor(InnerColor);
-		Graphics()->RenderQuadContainerAsSprite(m_ItemsQuadContainerIndex, m_aParticleSplatOffset[CurParticle], Pos.x, Pos.y, 20.f / 24.f, 20.f / 24.f);
+
+		// Enhanced head glow with more layers
+		float Scale = 1.5f;
+		Graphics()->SetColor(OuterColor.WithMultipliedAlpha(0.15f));
+		Graphics()->RenderQuadContainerAsSprite(m_ItemsQuadContainerIndex, m_aParticleSplatOffset[CurParticle], Pos.x, Pos.y, Scale, Scale);
+
+		Scale = 1.3f;
+		Graphics()->SetColor(OuterColor.WithMultipliedAlpha(0.25f));
+		Graphics()->RenderQuadContainerAsSprite(m_ItemsQuadContainerIndex, m_aParticleSplatOffset[CurParticle], Pos.x, Pos.y, Scale, Scale);
+
+		Scale = 1.1f;
+		Graphics()->SetColor(OuterColor.WithMultipliedAlpha(0.45f));
+		Graphics()->RenderQuadContainerAsSprite(m_ItemsQuadContainerIndex, m_aParticleSplatOffset[CurParticle], Pos.x, Pos.y, Scale, Scale);
+
+		Scale = 0.9f;
+		Graphics()->SetColor(InnerColor.WithMultipliedAlpha(0.65f));
+		Graphics()->RenderQuadContainerAsSprite(m_ItemsQuadContainerIndex, m_aParticleSplatOffset[CurParticle], Pos.x, Pos.y, Scale, Scale);
+
+		Scale = 0.7f;
+		Graphics()->SetColor(ColorRGBA(1.0f, 1.0f, 1.0f, 1.0f));
+		Graphics()->RenderQuadContainerAsSprite(m_ItemsQuadContainerIndex, m_aParticleSplatOffset[CurParticle], Pos.x, Pos.y, Scale, Scale);
 	}
 }
 
