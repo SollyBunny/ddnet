@@ -1693,7 +1693,7 @@ set(EXPECTED_DATA
         themes/winter_night.map
         touch_controls.json
         wordlist.txt
-
+        mapres/generic_shadows_0.7.png
 )
 
 set_glob(DATA GLOB_RECURSE "cfg;frag;json;map;otf;png;rules;ttc;ttf;txt;vert;wv" data ${EXPECTED_DATA})
@@ -1903,8 +1903,8 @@ set_src(ENGINE_SHARED GLOB_RECURSE src/engine/shared
         compression.h
         config.cpp
         config.h
-        config_variables.h
         config_pulse.h
+        config_variables.h
         console.cpp
         console.h
         csv.cpp
@@ -2170,11 +2170,6 @@ if(CLIENT)
           animstate.h
           component.cpp
           component.h
-          components/comp_pulse/menus_pulse.cpp
-          components/comp_pulse/skinprofiles.cpp
-          components/comp_pulse/skinprofiles.h
-          components/comp_pulse/socket_request.h
-          components/comp_pulse/socket_request.cpp
           components/background.cpp
           components/background.h
           components/binds.cpp
@@ -2185,6 +2180,11 @@ if(CLIENT)
           components/camera.h
           components/chat.cpp
           components/chat.h
+          components/comp_pulse/menus_pulse.cpp
+          components/comp_pulse/skinprofiles.cpp
+          components/comp_pulse/skinprofiles.h
+          components/comp_pulse/socket_request.cpp
+          components/comp_pulse/socket_request.h
           components/console.cpp
           components/console.h
           components/controls.cpp
@@ -2285,8 +2285,8 @@ if(CLIENT)
           render.cpp
           render.h
           render_map.cpp
-          sixup_translate_game.cpp
           sixup_translate_connless.cpp
+          sixup_translate_game.cpp
           sixup_translate_snapshot.cpp
           skin.cpp
           skin.h
