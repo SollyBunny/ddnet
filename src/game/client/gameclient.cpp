@@ -159,7 +159,8 @@ void CGameClient::OnConsoleInit()
 					      &CMenus::m_Binder,
 					      &m_GameConsole,
 					      &m_MenuBackground,
-				              &m_WebSocket
+				              &m_WebSocket,
+					      &m_HoverNotification
 });
 
 	// build the input stack

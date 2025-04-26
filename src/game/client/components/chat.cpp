@@ -637,14 +637,26 @@ void CChat::StoreSave(const char *pText)
 
 void CChat::AddLine(int ClientId, int Team, const char *pLine)
 {
-	if(*pLine == 0 ||
-		(ClientId == SERVER_MSG && !g_Config.m_ClShowChatSystem) ||
-		(ClientId >= 0 && (m_pClient->m_aClients[ClientId].m_aName[0] == '\0' || // unknown client
-					  m_pClient->m_aClients[ClientId].m_ChatIgnore ||
-					  (m_pClient->m_Snap.m_LocalClientId != ClientId && g_Config.m_ClShowChatFriends && !m_pClient->m_aClients[ClientId].m_Friend) ||
-					  (m_pClient->m_Snap.m_LocalClientId != ClientId && g_Config.m_ClShowChatTeamMembersOnly && m_pClient->IsOtherTeam(ClientId) && m_pClient->m_Teams.Team(m_pClient->m_Snap.m_LocalClientId) != TEAM_FLOCK) ||
-					  (m_pClient->m_Snap.m_LocalClientId != ClientId && m_pClient->m_aClients[ClientId].m_Foe))))
+	//================================
+	if(*pLine == 0)
 		return;
+
+	if(ClientId == SERVER_MSG)
+	{
+		m_pClient->m_HoverNotification.Start(pLine);
+		
+		if(!g_Config.m_ClShowChatSystem)
+			return;
+	}
+
+	// TODO:Optimize
+	if(ClientId >= 0 && (m_pClient->m_aClients[ClientId].m_aName[0] == '\0' ||
+				  m_pClient->m_aClients[ClientId].m_ChatIgnore ||
+				  (m_pClient->m_Snap.m_LocalClientId != ClientId && g_Config.m_ClShowChatFriends && !m_pClient->m_aClients[ClientId].m_Friend) ||
+				  (m_pClient->m_Snap.m_LocalClientId != ClientId && g_Config.m_ClShowChatTeamMembersOnly && m_pClient->IsOtherTeam(ClientId) && m_pClient->m_Teams.Team(m_pClient->m_Snap.m_LocalClientId) != TEAM_FLOCK) ||
+				  (m_pClient->m_Snap.m_LocalClientId != ClientId && m_pClient->m_aClients[ClientId].m_Foe)))
+		return;
+	//================================
 
 	// trim right and set maximum length to 256 utf8-characters
 	int Length = 0;
@@ -855,6 +867,8 @@ void CChat::AddLine(int ClientId, int Team, const char *pLine)
 	int64_t Now = time();
 	if(ClientId == SERVER_MSG)
 	{
+		m_pClient->m_HoverNotification.Start(pLine); //PULSE
+		
 		if(Now - m_aLastSoundPlayed[CHAT_SERVER] >= time_freq() * 3 / 10)
 		{
 			if(g_Config.m_SndServerMessage)

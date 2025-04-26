@@ -24,15 +24,18 @@
 #include <game/generated/protocol7.h>
 #include <game/generated/protocolglue.h>
 
+//PULSE
+//#include "components/comp_pulse/colormode.h" TODO: ADD
+#include "components/comp_pulse/skinprofiles.h"
+#include "components/comp_pulse/hover_notification.h"
+#include "components/comp_pulse/socket_request.h"
+
 // components
 #include "components/background.h"
 #include "components/binds.h"
 #include "components/broadcast.h"
 #include "components/camera.h"
 #include "components/chat.h"
-//#include "components/comp_pulse/colormode.h" TODO: ADD
-#include "components/comp_pulse/skinprofiles.h"
-#include "components/comp_pulse/socket_request.h"
 #include "components/console.h"
 #include "components/controls.h"
 #include "components/countryflags.h"
@@ -178,6 +181,7 @@ public:
 	CTouchControls m_TouchControls;
 	CVoting m_Voting;
 	CSpectator m_Spectator;
+	CHoverNotification m_HoverNotification;
 
 	CPlayers m_Players;
 	CNamePlates m_NamePlates;
