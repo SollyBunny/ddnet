@@ -88,6 +88,7 @@ int CGameClient::DDNetVersion() const { return DDNET_VERSION_NUMBER; }
 const char *CGameClient::DDNetVersionStr() const { return m_aDDNetVersionStr; }
 int CGameClient::ClientVersion7() const { return CLIENT_VERSION7; }
 const char *CGameClient::GetItemName(int Type) const { return m_NetObjHandler.GetObjName(Type); }
+static bool Debug = g_Config.m_ClDebug;
 
 void CGameClient::OnConsoleInit()
 {
@@ -4856,15 +4857,16 @@ void CGameClient::LoadCustomConsole(const char *pPath)
 	{
 		str_format(aPath, sizeof(aPath), "pulse/assets/console/%s.png", pPath);
 	}
-
-	dbg_msg("CustomConsole", "Loading image from path: %s", aPath);
+	if(Debug)
+		dbg_msg("CustomConsole", "Loading image from path: %s", aPath);
 
 	CImageInfo ImgInfo;
 	bool PngLoaded = Graphics()->LoadPng(ImgInfo, aPath, IStorage::TYPE_ALL);
 
 	if (!PngLoaded || ImgInfo.m_Width == 0 || ImgInfo.m_Height == 0)
 	{
-		dbg_msg("CustomConsole", "Failed to load image info for: %s", aPath);
+		if(Debug)
+			dbg_msg("CustomConsole", "Failed to load image info for: %s", aPath);
 		return;
 	}
 

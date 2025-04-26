@@ -11,6 +11,10 @@
 #endif
 
 
+MACRO_CONFIG_INT(ClDebug, p_debug, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Apply skin in profiles")
+
+
+
 MACRO_CONFIG_INT(ClApplyProfileSkin, p_profile_skin, 1, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Apply skin in profiles")
 MACRO_CONFIG_INT(ClApplyProfileName, p_profile_name, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Apply name in profiles")
 MACRO_CONFIG_INT(ClApplyProfileClan, p_profile_clan, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Apply clan in profiles")

@@ -86,6 +86,8 @@ using namespace std::chrono_literals;
 static const ColorRGBA gs_ClientNetworkPrintColor{0.7f, 1, 0.7f, 1.0f};
 static const ColorRGBA gs_ClientNetworkErrPrintColor{1.0f, 0.25f, 0.25f, 1.0f};
 
+static bool Debug = g_Config.m_ClDebug;
+
 CClient::CClient() :
 	m_DemoPlayer(&m_SnapshotDelta, true, [&]() { UpdateDemoIntraTimers(); }),
 	m_InputtimeMarginGraph(128),
@@ -3815,15 +3817,16 @@ void CClient::LoadCustomConsole(const char *pPath)
 	{
 		str_format(aPath, sizeof(aPath), "pulse/assets/console/%s.png", pPath);
 	}
-
-	dbg_msg("CustomConsole", "Loading image from path: %s", aPath);
+	if(Debug)
+		dbg_msg("CustomConsole", "Loading image from path: %s", aPath);
 
 	CImageInfo ImgInfo;
 	bool PngLoaded = Graphics()->LoadPng(ImgInfo, aPath, IStorage::TYPE_ALL);
 
 	if (!PngLoaded || ImgInfo.m_Width == 0 || ImgInfo.m_Height == 0)
 	{
-		dbg_msg("CustomConsole", "Failed to load image info for: %s", aPath);
+		if(Debug)
+			dbg_msg("CustomConsole", "Failed to load image info for: %s", aPath);
 		return;
 	}
 

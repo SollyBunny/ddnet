@@ -33,6 +33,7 @@
 static constexpr float FONT_SIZE = 10.0f;
 static constexpr float LINE_SPACING = 1.0f;
 
+static bool Debug = g_Config.m_ClDebug;
 class CConsoleLogger : public ILogger
 {
 	CGameConsole *m_pConsole;
@@ -1095,7 +1096,9 @@ void CGameConsole::OnRender()
 
 	if (Client()->m_ConsoleHeight < 770 && g_Config.m_ClCustomConsole == 1)
 	{
-		//dbg_msg("Custom Console", "Calling loading image with wrong resolution. Minimal Height is 770 pixels");
+	    if(Debug)
+		dbg_msg("Custom Console", "Calling loading image with wrong resolution. Minimal Height is 770 pixels");
+
 	    Graphics()->TextureSet(g_pData->m_aImages[IMAGE_BACKGROUND_NOISE].m_Id);
 	    Graphics()->QuadsBegin();
 	    Graphics()->SetColor(aBackgroundColors[m_ConsoleType]);
