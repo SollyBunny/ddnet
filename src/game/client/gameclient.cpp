@@ -1205,6 +1205,17 @@ void CGameClient::OnStateChange(int NewState, int OldState)
 
 void CGameClient::OnShutdown()
 {
+	//console image cache
+	for(auto &CachedImage : m_vConsoleImageCache)
+	{
+		if(CachedImage.m_IsLoaded)
+		{
+			Graphics()->UnloadTexture(&CachedImage.m_Texture);
+			CachedImage.m_IsLoaded = false;
+		}
+	}
+	m_vConsoleImageCache.clear();
+
 	// kill socketio
 	if(m_SocketIOConnected) {
 		m_SocketIO.close();
@@ -4813,4 +4824,69 @@ void CGameClient::SendSocketMessage(const char *pEvent, const sio::message::list
 		return;
 
 	m_SocketIO.socket()->emit(pEvent, pData);
+}
+
+void CGameClient::LoadCustomConsole(const char *pPath)
+{
+	if(m_ConsoleSkinLoaded)
+	{
+		Graphics()->UnloadTexture(&m_ConsoleSkin.m_ConsoleTexture);
+		m_ConsoleSkinLoaded = false;
+	}
+
+	// Check if image is already in cache
+	for(const auto &CachedImage : m_vConsoleImageCache)
+	{
+		if(str_comp(CachedImage.m_aName, pPath) == 0 && CachedImage.m_IsLoaded)
+		{
+			m_ConsoleSkin.m_ConsoleTexture = CachedImage.m_Texture;
+			m_ConsoleWidth = CachedImage.m_Width;
+			m_ConsoleHeight = CachedImage.m_Height;
+			m_ConsoleSkinLoaded = true;
+			return;
+		}
+	}
+
+	char aPath[IO_MAX_PATH_LENGTH];
+	if(str_comp(pPath, "default") == 0)
+	{
+		str_copy(aPath, g_pData->m_aImages[IMAGE_DEFAULTCON].m_pFilename);
+	}
+	else
+	{
+		str_format(aPath, sizeof(aPath), "pulse/assets/console/%s.png", pPath);
+	}
+
+	dbg_msg("CustomConsole", "Loading image from path: %s", aPath);
+
+	CImageInfo ImgInfo;
+	bool PngLoaded = Graphics()->LoadPng(ImgInfo, aPath, IStorage::TYPE_ALL);
+
+	if (!PngLoaded || ImgInfo.m_Width == 0 || ImgInfo.m_Height == 0)
+	{
+		dbg_msg("CustomConsole", "Failed to load image info for: %s", aPath);
+		return;
+	}
+
+	m_ConsoleWidth = ImgInfo.m_Width;
+	m_ConsoleHeight = ImgInfo.m_Height;
+
+	auto TextureHandle = Graphics()->LoadTexture(aPath, IStorage::TYPE_ALL);
+	if(TextureHandle.IsNullTexture() || !TextureHandle.IsValid())
+	{
+		Graphics()->UnloadTexture(&TextureHandle);
+		return;
+	}
+
+	// -> cache
+	SConsoleImageCache NewCache;
+	str_copy(NewCache.m_aName, pPath, sizeof(NewCache.m_aName));
+	NewCache.m_Texture = TextureHandle;
+	NewCache.m_Width = m_ConsoleWidth;
+	NewCache.m_Height = m_ConsoleHeight;
+	NewCache.m_IsLoaded = true;
+	m_vConsoleImageCache.push_back(NewCache);
+
+	m_ConsoleSkin.m_ConsoleTexture = TextureHandle;
+	m_ConsoleSkinLoaded = true;
 }

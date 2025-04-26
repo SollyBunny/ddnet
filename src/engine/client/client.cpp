@@ -5375,7 +5375,25 @@ void CClient::LoadConsoleBackground(int ConsoleType)
 
 	if(pPath && pPath[0])
 	{
-		LoadCustomConsole(pPath);
+		bool FoundInCache = false;
+		//this kinda slow but whatever
+		for(auto &CachedImage : m_vConsoleImageCache)
+		{
+			if(str_comp(CachedImage.m_aName, pPath) == 0 && CachedImage.m_IsLoaded)
+			{
+				m_ConsoleSkin.m_ConsoleTexture = CachedImage.m_Texture;
+				m_ConsoleWidth = CachedImage.m_Width;
+				m_ConsoleHeight = CachedImage.m_Height;
+				FoundInCache = true;
+				break;
+			}
+		}
+
+		// finded?
+		if(!FoundInCache)
+		{
+			LoadCustomConsole(pPath);
+		}
 		m_ConsoleSkin.m_Alpha = Alpha;
 		m_ConsoleSkin.m_Fading = Fading;
 	}

@@ -255,6 +255,17 @@ class CClient : public IClient, public CDemoPlayer::IListener
 	int m_FavoritesGroupNum = 0;
 	NETADDR m_aFavoritesGroupAddresses[MAX_SERVER_ADDRESSES];
 
+	// console cache
+	struct SConsoleImageCache
+	{
+		char m_aName[IO_MAX_PATH_LENGTH];
+		IGraphics::CTextureHandle m_Texture;
+		int m_Width;
+		int m_Height;
+		bool m_IsLoaded;
+	};
+	std::vector<SConsoleImageCache> m_vConsoleImageCache;
+
 	void UpdateDemoIntraTimers();
 	int MaxLatencyTicks() const;
 	int PredictionMargin() const;

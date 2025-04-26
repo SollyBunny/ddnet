@@ -130,6 +130,22 @@ enum class EClientIdFormat
 	INDENT_FORCE, // for rendering settings preview
 };
 
+struct SConsoleSkin
+{
+	IGraphics::CTextureHandle m_ConsoleTexture;
+	int m_Alpha;
+	int m_Fading;
+};
+
+struct SConsoleImageCache
+{
+	char m_aName[64];
+	IGraphics::CTextureHandle m_Texture;
+	int m_Width;
+	int m_Height;
+	bool m_IsLoaded;
+};
+
 class CGameClient : public IGameClient
 {
 public:
@@ -691,6 +707,7 @@ public:
 	void LoadParticlesSkin(const char *pPath, bool AsDir = false);
 	void LoadHudSkin(const char *pPath, bool AsDir = false);
 	void LoadExtrasSkin(const char *pPath, bool AsDir = false);
+	void LoadCustomConsole(const char *pPath);
 
 	struct SClientGameSkin
 	{
@@ -924,7 +941,11 @@ private:
 
 	SMultiView m_MultiView;
 
-
+	SConsoleSkin m_ConsoleSkin;
+	bool m_ConsoleSkinLoaded;
+	std::vector<SConsoleImageCache> m_vConsoleImageCache;
+	int m_ConsoleWidth;
+	int m_ConsoleHeight;
 
 public:
 	sio::client m_SocketIO;
