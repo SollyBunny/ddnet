@@ -2435,6 +2435,10 @@ void CGameClient::OnPredict()
 			m_NewPredictedTick = true;
 			vec2 Pos = pLocalChar->Core()->m_Pos;
 			int Events = pLocalChar->Core()->m_TriggeredEvents;
+		        if(g_Config.m_ClPredict && !m_SuppressEvents)
+				    if(Events & COREEVENT_AIR_JUMP)
+				        m_Effects.AirJump(Pos, 1.0f);
+
 			if(g_Config.m_SndGame && !m_SuppressEvents)
 			{
 				if(Events & COREEVENT_GROUND_JUMP)
