@@ -1,5 +1,5 @@
-[submodule "socket.io-client-cpp"]
-	path = socket.io-client-cpp
+[submodule "src/engine/external/socket.io-client-cpp"]
+	path = src/engine/external/socket.io-client-cpp
 	url = https://github.com/socketio/socket.io-client-cpp.git
 [submodule "ddnet-libs"]
 	path = ddnet-libs
