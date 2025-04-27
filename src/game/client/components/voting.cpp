@@ -398,6 +398,24 @@ void CVoting::Render()
 	TextRender()->TextColor(TakenChoice() == -1 ? ColorRGBA(0.95f, 0.25f, 0.25f, 0.85f) : TextRender()->DefaultTextColor());
 	Ui()->DoLabel(&RightColumn, aBuf, 6.0f, TEXTALIGN_MR);
 
+	{
+		// Check for server /specvoted
+		const auto &vServerCommands = m_pClient->m_Chat.ServerCommands(false);
+		bool HasSpecVoted = std::find_if(vServerCommands.begin(), vServerCommands.end(), [](const char* pCommand)
+		{
+			return str_comp(pCommand, "/specvoted") == 0;
+		}) != vServerCommands.end();
+		// Check if has bind
+		m_pClient->m_Binds.GetKey("say /specvoted", aKey, sizeof(aKey));
+
+		if(HasSpecVoted && aKey[0] != '\0')
+		{
+			str_format(aBuf, sizeof(aBuf), "%s - %s", Localize("Spectate Voted"), aKey);
+			TextRender()->TextColor(TakenChoice() == -1 ? ColorRGBA(0.95f, 0.25f, 0.25f, 0.85f) : TextRender()->DefaultTextColor());
+			Ui()->DoLabel(&RightColumn, aBuf, 6.0f, TEXTALIGN_MR);
+		}
+	}
+
 	TextRender()->TextColor(TextRender()->DefaultTextColor());
 }
 
