@@ -4,7 +4,7 @@
 #include <game/client/component.h>
 
 // Maximum number of notifications that can be shown at once
-#define MAX_NOTIFICATIONS 5
+#define MAX_NOTIFICATIONS 10
 
 struct SNotification
 {

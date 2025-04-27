@@ -41,7 +41,7 @@ if(NOT ASIO_INCLUDE_DIR)
 endif()
 
 # Add socket.io-client-cpp
-add_subdirectory(socket.io-client-cpp)
+add_subdirectory(src/engine/external/socket.io-client-cpp)
 
 set(ORIGINAL_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
 set(ORIGINAL_CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES})
