@@ -579,12 +579,9 @@ float CHud::FormatTimerText(char *pDest, int DestSize, int Ticks, bool ForceLong
 void CHud::RenderLaser(vec2 From, vec2 To, const ColorRGBA &LaserOutlineColor, const ColorRGBA &LaserInnerColor)
 {
 	float Len = distance(To, From);
-
-	vec2 Dir;
-	if(Len > 0)
-	{
-		Dir = normalize_pre_length(To - From, Len);
-	}
+	if(Len <= 0.0f)
+		return;
+	vec2 Dir = normalize_pre_length(To - From, Len);
 
 	Graphics()->TextureClear();
 	Graphics()->QuadsBegin();
