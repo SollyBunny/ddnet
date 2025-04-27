@@ -576,7 +576,7 @@ float CHud::FormatTimerText(char *pDest, int DestSize, int Ticks, bool ForceLong
 	return ResultTime;
 }
 
-void CHud::RenderLaser(vec2 From, vec2 To, const ColorRGBA OuterColor, const ColorRGBA InnerColor)
+void CHud::RenderLaser(vec2 From, vec2 To, const ColorRGBA &LaserOutlineColor, const ColorRGBA &LaserInnerColor)
 {
 	float Len = distance(To, From);
 
@@ -589,7 +589,7 @@ void CHud::RenderLaser(vec2 From, vec2 To, const ColorRGBA OuterColor, const Col
 	Graphics()->TextureClear();
 	Graphics()->QuadsBegin();
 
-	Graphics()->SetColor(OuterColor);
+	Graphics()->SetColor(LaserOutlineColor);
 
 	constexpr double LaserHeadScale = 0.25;
 
@@ -601,7 +601,7 @@ void CHud::RenderLaser(vec2 From, vec2 To, const ColorRGBA OuterColor, const Col
 	Graphics()->QuadsDrawFreeform(&Freeform, 1);
 
 	// do inner
-	Graphics()->SetColor(InnerColor);
+	Graphics()->SetColor(LaserInnerColor);
 	Out = vec2(Dir.y, -Dir.x) * 4.0f * LaserHeadScale;
 
 	Freeform = IGraphics::CFreeformItem(From.x - Out.x, From.y - Out.y, From.x + Out.x, From.y + Out.y, To.x - Out.x, To.y - Out.y, To.x + Out.x, To.y + Out.y);
@@ -613,7 +613,7 @@ void CHud::RenderLaser(vec2 From, vec2 To, const ColorRGBA OuterColor, const Col
 	Graphics()->QuadsBegin();
 	Graphics()->QuadsSetRotation(time_get());
 	{
-		Graphics()->SetColor(OuterColor.r, OuterColor.g, OuterColor.b, 1.0f);
+		Graphics()->SetColor(LaserOutlineColor.r, LaserOutlineColor.g, LaserOutlineColor.b, 1.0f);
 		IGraphics::CQuadItem QuadItem[2] = {
 			{From.x, From.y, 24 * LaserHeadScale, 24 * LaserHeadScale},
 			{To.x, To.y, 24 * LaserHeadScale, 24 * LaserHeadScale},
@@ -621,7 +621,7 @@ void CHud::RenderLaser(vec2 From, vec2 To, const ColorRGBA OuterColor, const Col
 		Graphics()->QuadsDraw(&QuadItem[0], 2);
 	}
 	{
-		Graphics()->SetColor(InnerColor.r, InnerColor.g, InnerColor.b, 1.0f);
+		Graphics()->SetColor(LaserInnerColor.r, LaserInnerColor.g, LaserInnerColor.b, 1.0f);
 		IGraphics::CQuadItem QuadItem[2] = {
 			{From.x, From.y, 20 * LaserHeadScale, 20 * LaserHeadScale},
 			{To.x, To.y, 20 * LaserHeadScale, 20 * LaserHeadScale},
@@ -2069,7 +2069,7 @@ void CHud::RenderClassExtraHud(int ClientId)
 			Graphics()->TextureSet(aParticles[SPRITE_PART_BALL]);
 			Graphics()->SetColor(1.f, 1.f, 1.f, 1.f);
 
-			static int64_t LastTime = 0;
+			static int64_t s_LastTime = 0;
 			int64_t t = time();
 
 			float TimePassed = 0;
@@ -2078,14 +2078,14 @@ void CHud::RenderClassExtraHud(int ClientId)
 			{
 				const IDemoPlayer::CInfo *pInfo = DemoPlayer()->BaseInfo();
 				if(!pInfo->m_Paused)
-					TimePassed = (float)((t - LastTime) / (double)time_freq()) * pInfo->m_Speed;
+					TimePassed = (float)((t - s_LastTime) / (double)time_freq()) * pInfo->m_Speed;
 			}
 			else
 			{
 				if(m_pClient->m_Snap.m_pGameInfoObj && !(m_pClient->m_Snap.m_pGameInfoObj->m_GameStateFlags & GAMESTATEFLAG_PAUSED))
-					TimePassed = (float)((t - LastTime) / (double)time_freq());
+					TimePassed = (float)((t - s_LastTime) / (double)time_freq());
 			}
-			LastTime = t;
+			s_LastTime = t;
 
 			constexpr float ScaleFrom = 3.f;
 			constexpr float Duration = 0.75f;
@@ -2093,7 +2093,7 @@ void CHud::RenderClassExtraHud(int ClientId)
 			float HammerAreaWidth = 5;
 			float HammerAreHeight = LaserVerticalSize;
 
-			static IGraphics::SRenderSpriteInfo aHammerDots[] = {
+			static IGraphics::SRenderSpriteInfo s_aHammerDots[] = {
 				{vec2(From.x + 0.52f * HammerAreaWidth, From.y + 0.1f * HammerAreHeight), ScaleFrom * 0.78f, 0.0f},
 				{vec2(From.x + 0.8f * HammerAreaWidth, From.y + 0.11f * HammerAreHeight), ScaleFrom * 0.10f, 0.0f},
 				{vec2(From.x + 0.24f * HammerAreaWidth, From.y + 0.15f * HammerAreHeight), ScaleFrom * 0.71f, 0.0f},
@@ -2110,7 +2110,7 @@ void CHud::RenderClassExtraHud(int ClientId)
 
 			constexpr bool UseRandom = true;
 
-			for(auto &SpriteInfo : aHammerDots)
+			for(auto &SpriteInfo : s_aHammerDots)
 			{
 				float ProgressRemaining = SpriteInfo.m_Scale / ScaleFrom;
 				float PassedProgress = TimePassed / Duration;
@@ -2127,7 +2127,7 @@ void CHud::RenderClassExtraHud(int ClientId)
 				SpriteInfo.m_Scale = ScaleFrom * NewProgressRemaining;
 			}
 
-			Graphics()->RenderQuadContainerAsSpriteMultiple(m_HudQuadContainerIndex, m_IcParticleIconOffset, std::size(aHammerDots), aHammerDots);
+			Graphics()->RenderQuadContainerAsSpriteMultiple(m_HudQuadContainerIndex, m_IcParticleIconOffset, std::size(s_aHammerDots), s_aHammerDots);
 
 			RenderLaser(From, To, OutlineColorRGB, InnerColorRGB);
 			From.x += HammerAreaWidth;

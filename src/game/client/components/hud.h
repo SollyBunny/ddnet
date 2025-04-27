@@ -100,7 +100,7 @@ class CHud : public CComponent
 	void RenderLocalTime(float x);
 
 	float FormatTimerText(char *pDest, int DestSize, int Ticks, bool ForceLongFormat = true, float ShowFractionIfLessThan = 0);
-	void RenderLaser(vec2 From, vec2 To, const ColorRGBA LaserOutlineColor, const ColorRGBA LaserInnerColor);
+	void RenderLaser(vec2 From, vec2 To, const ColorRGBA &LaserOutlineColor, const ColorRGBA &LaserInnerColor);
 
 	static constexpr float MOVEMENT_INFORMATION_LINE_HEIGHT = 8.0f;
 
