@@ -10,10 +10,7 @@
 #define MACRO_CONFIG_STR(Name, ScriptName, Len, Def, Save, Desc) ;
 #endif
 
-
 MACRO_CONFIG_INT(ClDebug, p_debug, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Apply skin in profiles")
-
-
 
 MACRO_CONFIG_INT(ClApplyProfileSkin, p_profile_skin, 1, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Apply skin in profiles")
 MACRO_CONFIG_INT(ClApplyProfileName, p_profile_name, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Apply name in profiles")
@@ -22,13 +19,11 @@ MACRO_CONFIG_INT(ClApplyProfileFlag, p_profile_flag, 0, 0, 1, CFGFLAG_CLIENT | C
 MACRO_CONFIG_INT(ClApplyProfileColors, p_profile_colors, 1, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Apply colors in profiles")
 MACRO_CONFIG_INT(ClApplyProfileEmote, p_profile_emote, 1, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Apply emote in profiles")
 
-
-
 MACRO_CONFIG_STR(ClCustomConsoleDefault, p_console_asset_default, 50, "default", CFGFLAG_CLIENT | CFGFLAG_SAVE, "Default console background image")
 MACRO_CONFIG_STR(ClCustomConsoleRcon, p_console_asset_rcon, 50, "default", CFGFLAG_CLIENT | CFGFLAG_SAVE, "RCON console background image")
 
 MACRO_CONFIG_INT(ClCustomConsole, p_custom_console, 1, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "")
-MACRO_CONFIG_STR(ClAssetConsole, p_console_asset, 50, "default", CFGFLAG_SAVE | CFGFLAG_CLIENT,"")
+MACRO_CONFIG_STR(ClAssetConsole, p_console_asset, 50, "default", CFGFLAG_SAVE | CFGFLAG_CLIENT, "")
 MACRO_CONFIG_INT(ClCustomConsoleFading, p_custom_console_fading, 75, 0, 100, CFGFLAG_CLIENT | CFGFLAG_SAVE, "")
 MACRO_CONFIG_INT(ClCustomConsoleAlpha, p_custom_console_alpha, 100, 0, 100, CFGFLAG_CLIENT | CFGFLAG_SAVE, "")
 MACRO_CONFIG_INT(ClCustomConsoleRconAlpha, p_custom_console_rcon_alpha, 100, 0, 100, CFGFLAG_CLIENT | CFGFLAG_SAVE, "RCON console background alpha")

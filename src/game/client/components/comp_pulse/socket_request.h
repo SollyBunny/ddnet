@@ -4,14 +4,12 @@
 #include <game/client/component.h>
 #include <sio_client.h>
 
-
 class CWebSocket : public CComponent
 {
 private:
 	virtual void SocketConnect();
 
 public:
-
 	virtual void SocketDisconnect();
 	virtual void SocketMessage(const char *pEvent, const sio::message::list pData);
 	virtual int Sizeof() const override { return sizeof(*this); }

@@ -23,11 +23,11 @@
 #include <game/client/ui_scrollregion.h>
 #include <game/localization.h>
 
-#include "skinprofiles.h"
 #include "../binds.h"
 #include "../countryflags.h"
 #include "../menus.h"
 #include "../skins.h"
+#include "skinprofiles.h"
 
 #include <array>
 #include <chrono>
@@ -41,9 +41,6 @@ using namespace FontIcons;
 using namespace std::chrono_literals;
 
 static bool s_IsConnected = false;
-
-
-
 
 const float FontSize = 14.0f;
 const float Margin = 10.0f;
@@ -93,8 +90,7 @@ void CMenus::RenderConsoleImages(CUIRect MainView)
 	{
 		const char *apPaths[] = {
 			"pulse/assets/console",
-			"ddnet/pulse/assets/console"
-		};
+			"ddnet/pulse/assets/console"};
 
 		for(const char *pBasePath : apPaths)
 		{
@@ -145,13 +141,13 @@ void CMenus::RenderConsoleImages(CUIRect MainView)
 	// Display console type selector
 	CUIRect ConsoleTypeSelector;
 	MainView.HSplitTop(20.0f, &ConsoleTypeSelector, &MainView);
-	
+
 	static CButtonContainer s_DefaultConsoleBtn;
 	static CButtonContainer s_RconConsoleBtn;
-	
+
 	CUIRect DefaultBtn, RconBtn;
 	ConsoleTypeSelector.VSplitMid(&DefaultBtn, &RconBtn);
-	
+
 	if(DoButton_CheckBox(&s_DefaultConsoleBtn, Localize("Default Console"), s_SelectedConsoleType == 0, &DefaultBtn))
 		s_SelectedConsoleType = 0;
 	if(DoButton_CheckBox(&s_RconConsoleBtn, Localize("RCON Console"), s_SelectedConsoleType == 1, &RconBtn))
@@ -161,7 +157,7 @@ void CMenus::RenderConsoleImages(CUIRect MainView)
 	static CListBox s_ListBox;
 	s_ListBox.DoHeader(&MainView, Localize("Console Images"), 20.0f);
 	s_ListBox.DoStart(20.0f, s_vConsoleImages.size(), 1, 3, s_SelectedImage);
-	
+
 	for(size_t i = 0; i < s_vConsoleImages.size(); i++)
 	{
 		const CConsoleImage &Image = s_vConsoleImages[i];
@@ -266,14 +262,12 @@ void CMenus::RenderSettingsPulse(CUIRect MainView)
 		Left.HSplitTop(40.0f, &Label, &Left);
 		Ui()->DoLabel(&Label, Localize("Input"), 20.0f, TEXTALIGN_MC);
 
-
 		Left.HSplitTop(20.0f, &Button, &Left);
 		if(DoButton_CheckBox(&g_Config.m_ClFastInp, Localize("Fast Input"), g_Config.m_ClFastInp, &Button))
 			g_Config.m_ClFastInp ^= 1;
 
 		Left.HSplitTop(40.0f, &Label, &Left);
 		Ui()->DoLabel(&Label, Localize("Laser"), 20.0f, TEXTALIGN_MC);
-
 
 		Left.HSplitTop(20.0f, &Button, &Left);
 		if(DoButton_CheckBox(&g_Config.m_ClBetterLasers, Localize("RTX laser"), g_Config.m_ClBetterLasers, &Button))
@@ -289,19 +283,15 @@ void CMenus::RenderSettingsPulse(CUIRect MainView)
 				TEXTALIGN_ML, &Left, HeadlineHeight);
 			Left.HSplitTop(MarginSmall, nullptr, &Left);
 
-
-
 			const float LaserPreviewHeight = 50.0f;
 			CUIRect LaserPreview;
 			Left.HSplitTop(LaserPreviewHeight, &LaserPreview, &Left);
 			Left.HSplitTop(2 * MarginSmall, nullptr, &Left);
 			DoLaserPreview(&LaserPreview, g_Config.m_ClLaserRifleInnerColor, g_Config.m_ClLaserRifleOutlineColor, LASERTYPE_RIFLE);
 
-
-
 			Left.HSplitTop(LaserPreviewHeight, &LaserPreview, &Left);
 			Left.HSplitTop(2 * MarginSmall, nullptr, &Left);
-			DoLaserPreview(&LaserPreview, g_Config.m_ClLaserShotgunInnerColor, 	g_Config.m_ClLaserShotgunOutlineColor, LASERTYPE_SHOTGUN);
+			DoLaserPreview(&LaserPreview, g_Config.m_ClLaserShotgunInnerColor, g_Config.m_ClLaserShotgunOutlineColor, LASERTYPE_SHOTGUN);
 		}
 
 		Right.HSplitTop(20.0f, &Label, &Right);
@@ -312,7 +302,6 @@ void CMenus::RenderSettingsPulse(CUIRect MainView)
 		CUIRect Left, Right;
 		MainView.VSplitMid(&Left, &Right);
 		Left.HSplitTop(20.0f, &Button, &Left);
-
 
 		if(DoButton_CheckBox(&g_Config.m_ClCustomConsole, Localize("Toggle Custom Console"), g_Config.m_ClCustomConsole, &Button))
 			g_Config.m_ClCustomConsole ^= 1;
@@ -751,6 +740,5 @@ void CMenus::RenderSettingsProfs(CUIRect MainView)
 		Client()->ViewFile(aTempBuf);
 	}
 }
-
 
 //TODO: Add everything to here

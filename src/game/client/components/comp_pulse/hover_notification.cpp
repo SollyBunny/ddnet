@@ -76,7 +76,7 @@ void CHoverNotification::Start(const char *pText, float Duration)
 		m_aNotifications[SlotIndex].m_StartTime = time_get();
 		m_aNotifications[SlotIndex].m_Active = true;
 		m_NumActiveNotifications = std::min(m_NumActiveNotifications + 1, MAX_NOTIFICATIONS);
-		
+
 		UpdatePositions();
 	}
 }
@@ -126,32 +126,32 @@ void CHoverNotification::OnRender()
 		// Background with slight gradient
 		Graphics()->TextureClear();
 		Graphics()->QuadsBegin();
-		
+
 		// Main background
 		Graphics()->SetColor(0.0f, 0.0f, 0.0f, 0.7f * Progress);
-		IGraphics::CQuadItem QuadItem(m_aNotifications[i].m_Position.x - 15.0f, 
-									 m_aNotifications[i].m_Position.y - 5.0f,
-									 BoxWidth, BoxHeight);
+		IGraphics::CQuadItem QuadItem(m_aNotifications[i].m_Position.x - 15.0f,
+			m_aNotifications[i].m_Position.y - 5.0f,
+			BoxWidth, BoxHeight);
 		Graphics()->QuadsDrawTL(&QuadItem, 1);
-		
+
 		// Left border accent
 		Graphics()->SetColor(0.8f, 0.0f, 0.0f, 0.3f * Progress);
 		IGraphics::CQuadItem BorderQuad(m_aNotifications[i].m_Position.x - 15.0f,
-									   m_aNotifications[i].m_Position.y - 5.0f,
-									   2.0f, BoxHeight);
+			m_aNotifications[i].m_Position.y - 5.0f,
+			2.0f, BoxHeight);
 		Graphics()->QuadsDrawTL(&BorderQuad, 1);
 		Graphics()->QuadsEnd();
 
 		// Text with slight shadow effect
 		TextRender()->TextColor(0.0f, 0.0f, 0.0f, 0.3f * Progress); // Shadow
-		TextRender()->Text(m_aNotifications[i].m_Position.x + 1.0f, 
-						  m_aNotifications[i].m_Position.y + 1.0f,
-						  14.0f, m_aNotifications[i].m_aText, -1);
-		
+		TextRender()->Text(m_aNotifications[i].m_Position.x + 1.0f,
+			m_aNotifications[i].m_Position.y + 1.0f,
+			14.0f, m_aNotifications[i].m_aText, -1);
+
 		TextRender()->TextColor(1.0f, 1.0f, 1.0f, Progress); // Main text
-		TextRender()->Text(m_aNotifications[i].m_Position.x, 
-						  m_aNotifications[i].m_Position.y,
-						  14.0f, m_aNotifications[i].m_aText, -1);
+		TextRender()->Text(m_aNotifications[i].m_Position.x,
+			m_aNotifications[i].m_Position.y,
+			14.0f, m_aNotifications[i].m_aText, -1);
 		TextRender()->TextColor(TextRender()->DefaultTextColor());
 	}
-} 
+}
