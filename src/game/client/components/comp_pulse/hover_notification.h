@@ -13,6 +13,7 @@ struct SNotification
 	float m_Duration;
 	bool m_Active;
 	vec2 m_Position;
+	float m_CacheState;
 };
 
 class CHoverNotification : public CComponent

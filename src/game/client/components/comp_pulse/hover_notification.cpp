@@ -36,15 +36,14 @@ void CHoverNotification::OnShutdown()
 
 void CHoverNotification::UpdatePositions()
 {
-	float CurrentY = 10.0f; // Start from top
+	float CurrentY = 80.0f;
 	float Spacing = 35.0f; // Space between notifications
 
 	for(int i = 0; i < MAX_NOTIFICATIONS; i++)
 	{
 		if(m_aNotifications[i].m_Active)
 		{
-			float TextWidth = TextRender()->TextWidth(14.0f, m_aNotifications[i].m_aText, -1);
-			m_aNotifications[i].m_Position = vec2(Graphics()->ScreenWidth() - TextWidth - 20.0f, CurrentY);
+			m_aNotifications[i].m_Position = vec2(Graphics()->ScreenWidth() - m_aNotifications[i].m_CacheState - 20.0f, CurrentY);
 			CurrentY += Spacing;
 		}
 	}
@@ -75,6 +74,7 @@ void CHoverNotification::Start(const char *pText, float Duration)
 		m_aNotifications[SlotIndex].m_Duration = Duration;
 		m_aNotifications[SlotIndex].m_StartTime = time_get();
 		m_aNotifications[SlotIndex].m_Active = true;
+		m_aNotifications[SlotIndex].m_CacheState = TextRender()->TextWidth(14.0f, m_aNotifications[SlotIndex].m_aText, -1);
 		m_NumActiveNotifications = std::min(m_NumActiveNotifications + 1, MAX_NOTIFICATIONS);
 
 		UpdatePositions();
