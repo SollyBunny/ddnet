@@ -2187,6 +2187,8 @@ if(CLIENT)
           components/comp_pulse/socket_request.h
           components/comp_pulse/hover_notification.cpp
           components/comp_pulse/hover_notification.h
+          components/comp_pulse/http_request.cpp
+          components/comp_pulse/http_request.h
           components/console.cpp
           components/console.h
           components/controls.cpp
