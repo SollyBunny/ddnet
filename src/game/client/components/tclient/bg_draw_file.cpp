@@ -28,7 +28,7 @@ bool BgDrawFile::Read(const std::function<bool(char *pBuf, int Length)> &ReadLin
 		if(!ReadLine(aBuf, sizeof(aBuf)))
 			return false;
 		if(aBuf[0] == '\0' || aBuf[0] == EOF || aBuf[0] == ',')
-			return Data.size() > 0;
+			return !Data.empty();
 		if(aBuf[0] == '#')
 			continue;
 		float x, y;
