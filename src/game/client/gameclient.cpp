@@ -119,7 +119,7 @@ void CGameClient::OnConsoleInit()
 					      &m_CountryFlags,
 					      &m_MapImages,
 					      &m_Effects, // doesn't render anything, just updates effects
-		                              &m_SkinProfiles,
+					      &m_SkinProfiles,
 					      &m_Binds,
 					      &m_Binds.m_SpecialBinds,
 					      &m_Controls,
@@ -159,9 +159,8 @@ void CGameClient::OnConsoleInit()
 					      &CMenus::m_Binder,
 					      &m_GameConsole,
 					      &m_MenuBackground,
-				              &m_WebSocket,
-					      &m_HoverNotification
-});
+					      &m_WebSocket,
+					      &m_HoverNotification});
 
 	// build the input stack
 	m_vpInput.insert(m_vpInput.end(), {&CMenus::m_Binder, // this will take over all input when we want to bind a key
@@ -1219,7 +1218,8 @@ void CGameClient::OnShutdown()
 	m_vConsoleImageCache.clear();
 
 	// kill socketio
-	if(m_SocketIOConnected) {
+	if(m_SocketIOConnected)
+	{
 		m_SocketIO.close();
 		m_SocketIOConnected = false;
 	}
@@ -2448,9 +2448,9 @@ void CGameClient::OnPredict()
 			m_NewPredictedTick = true;
 			vec2 Pos = pLocalChar->Core()->m_Pos;
 			int Events = pLocalChar->Core()->m_TriggeredEvents;
-		        if(g_Config.m_ClPredict && !m_SuppressEvents)
-				    if(Events & COREEVENT_AIR_JUMP)
-				        m_Effects.AirJump(Pos, 1.0f);
+			if(g_Config.m_ClPredict && !m_SuppressEvents)
+				if(Events & COREEVENT_AIR_JUMP)
+					m_Effects.AirJump(Pos, 1.0f);
 
 			if(g_Config.m_SndGame && !m_SuppressEvents)
 			{
@@ -4864,7 +4864,7 @@ void CGameClient::LoadCustomConsole(const char *pPath)
 	CImageInfo ImgInfo;
 	bool PngLoaded = Graphics()->LoadPng(ImgInfo, aPath, IStorage::TYPE_ALL);
 
-	if (!PngLoaded || ImgInfo.m_Width == 0 || ImgInfo.m_Height == 0)
+	if(!PngLoaded || ImgInfo.m_Width == 0 || ImgInfo.m_Height == 0)
 	{
 		if(Debug)
 			dbg_msg("CustomConsole", "Failed to load image info for: %s", aPath);

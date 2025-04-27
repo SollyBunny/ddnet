@@ -24,7 +24,6 @@ private:
 public:
 	CHoverNotification();
 
-
 	void Start(const char *pText, float Duration = 3.0f);
 	void Stop();
 	void OnRender() override;
@@ -35,10 +34,10 @@ public:
 	void OnWindowResize() override;
 	void OnShutdown() override;
 
-
 	virtual int Sizeof() const override { return sizeof(*this); }
+
 private:
 	void UpdatePositions();
 };
 
-#endif 
+#endif

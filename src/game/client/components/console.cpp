@@ -1036,79 +1036,78 @@ void CGameConsole::Prompt(char (&aPrompt)[32])
 
 void CGameConsole::OnRender()
 {
-
 	//TODO: comp for updating background
 	static bool IsLoaded = false;
 	if(!IsLoaded)
 		m_pConsole->ExecuteLine("p_console_reload");
 	IsLoaded = true;
 
-       CUIRect Screen = *Ui()->Screen();
-    CInstance *pConsole = CurrentConsole();
+	CUIRect Screen = *Ui()->Screen();
+	CInstance *pConsole = CurrentConsole();
 
-    const float MaxConsoleHeight = Screen.h * 3.5 / 5.0f;
-    float Progress = clamp((Client()->GlobalTime() - (m_StateChangeEnd - m_StateChangeDuration)) / m_StateChangeDuration, 0.0f, 1.0f);
+	const float MaxConsoleHeight = Screen.h * 3.5 / 5.0f;
+	float Progress = clamp((Client()->GlobalTime() - (m_StateChangeEnd - m_StateChangeDuration)) / m_StateChangeDuration, 0.0f, 1.0f);
 
-    if (Progress >= 1.0f)
-    {
-        if (m_ConsoleState == CONSOLE_CLOSING)
-        {
-            m_ConsoleState = CONSOLE_CLOSED;
-            pConsole->m_BacklogLastActiveLine = -1;
-        }
-        else if (m_ConsoleState == CONSOLE_OPENING)
-        {
-            m_ConsoleState = CONSOLE_OPEN;
-            pConsole->m_Input.Activate(EInputPriority::CONSOLE);
-        }
-    }
+	if(Progress >= 1.0f)
+	{
+		if(m_ConsoleState == CONSOLE_CLOSING)
+		{
+			m_ConsoleState = CONSOLE_CLOSED;
+			pConsole->m_BacklogLastActiveLine = -1;
+		}
+		else if(m_ConsoleState == CONSOLE_OPENING)
+		{
+			m_ConsoleState = CONSOLE_OPEN;
+			pConsole->m_Input.Activate(EInputPriority::CONSOLE);
+		}
+	}
 
-    if (m_ConsoleState == CONSOLE_OPEN && g_Config.m_ClEditor)
-        Toggle(CONSOLETYPE_LOCAL);
+	if(m_ConsoleState == CONSOLE_OPEN && g_Config.m_ClEditor)
+		Toggle(CONSOLETYPE_LOCAL);
 
-    if (m_ConsoleState == CONSOLE_CLOSED)
-        return;
+	if(m_ConsoleState == CONSOLE_CLOSED)
+		return;
 
-    if (m_ConsoleState == CONSOLE_OPEN)
-        Input()->MouseModeAbsolute();
+	if(m_ConsoleState == CONSOLE_OPEN)
+		Input()->MouseModeAbsolute();
 
-    float ConsoleHeightScale;
-    if (m_ConsoleState == CONSOLE_OPENING)
-        ConsoleHeightScale = ConsoleScaleFunc(Progress);
-    else if (m_ConsoleState == CONSOLE_CLOSING)
-        ConsoleHeightScale = ConsoleScaleFunc(1.0f - Progress);
-    else // CONSOLE_OPEN
-        ConsoleHeightScale = ConsoleScaleFunc(1.0f);
+	float ConsoleHeightScale;
+	if(m_ConsoleState == CONSOLE_OPENING)
+		ConsoleHeightScale = ConsoleScaleFunc(Progress);
+	else if(m_ConsoleState == CONSOLE_CLOSING)
+		ConsoleHeightScale = ConsoleScaleFunc(1.0f - Progress);
+	else // CONSOLE_OPEN
+		ConsoleHeightScale = ConsoleScaleFunc(1.0f);
 
-    const float ConsoleHeight = ConsoleHeightScale * MaxConsoleHeight;
+	const float ConsoleHeight = ConsoleHeightScale * MaxConsoleHeight;
 
-    Ui()->MapScreen();
+	Ui()->MapScreen();
 
-    const ColorRGBA ShadowColor = ColorRGBA(0.0f, 0.0f, 0.0f, 0.4f);
-    const ColorRGBA TransparentColor = ColorRGBA(0.0f, 0.0f, 0.0f, 0.0f);
-    const ColorRGBA aBackgroundColors[NUM_CONSOLETYPES] = {ColorRGBA(0.2f, 0.2f, 0.2f, 0.9f), ColorRGBA(0.4f, 0.2f, 0.2f, 0.9f)};
-    const ColorRGBA aBorderColors[NUM_CONSOLETYPES] = {ColorRGBA(0.1f, 0.1f, 0.1f, 0.9f), ColorRGBA(0.2f, 0.1f, 0.1f, 0.9f)};
+	const ColorRGBA ShadowColor = ColorRGBA(0.0f, 0.0f, 0.0f, 0.4f);
+	const ColorRGBA TransparentColor = ColorRGBA(0.0f, 0.0f, 0.0f, 0.0f);
+	const ColorRGBA aBackgroundColors[NUM_CONSOLETYPES] = {ColorRGBA(0.2f, 0.2f, 0.2f, 0.9f), ColorRGBA(0.4f, 0.2f, 0.2f, 0.9f)};
+	const ColorRGBA aBorderColors[NUM_CONSOLETYPES] = {ColorRGBA(0.1f, 0.1f, 0.1f, 0.9f), ColorRGBA(0.2f, 0.1f, 0.1f, 0.9f)};
 
 	float FadingFactor = 1.0f - Client()->m_ConsoleSkin.m_Fading / 100.0f;
 	float AlphaFactor = Client()->m_ConsoleSkin.m_Alpha / 100.0f;
 
 	ColorRGBA Fading = ColorRGBA(FadingFactor, FadingFactor, FadingFactor, AlphaFactor);
 
-	if (Client()->m_ConsoleHeight < 770 && g_Config.m_ClCustomConsole == 1)
+	if(Client()->m_ConsoleHeight < 770 && g_Config.m_ClCustomConsole == 1)
 	{
-	    if(Debug)
-		dbg_msg("Custom Console", "Calling loading image with wrong resolution. Minimal Height is 770 pixels");
+		if(Debug)
+			dbg_msg("Custom Console", "Calling loading image with wrong resolution. Minimal Height is 770 pixels");
 
-	    Graphics()->TextureSet(g_pData->m_aImages[IMAGE_BACKGROUND_NOISE].m_Id);
-	    Graphics()->QuadsBegin();
-	    Graphics()->SetColor(aBackgroundColors[m_ConsoleType]);
-	    Graphics()->QuadsSetSubset(0, 0, Screen.w / 80.0f, ConsoleHeight / 80.0f);
+		Graphics()->TextureSet(g_pData->m_aImages[IMAGE_BACKGROUND_NOISE].m_Id);
+		Graphics()->QuadsBegin();
+		Graphics()->SetColor(aBackgroundColors[m_ConsoleType]);
+		Graphics()->QuadsSetSubset(0, 0, Screen.w / 80.0f, ConsoleHeight / 80.0f);
 
-	    IGraphics::CQuadItem QuadItemBackground(0.0f, 0.0f, Screen.w, ConsoleHeight);
-	    Graphics()->QuadsDrawTL(&QuadItemBackground, 1);
-	    Graphics()->QuadsEnd();
+		IGraphics::CQuadItem QuadItemBackground(0.0f, 0.0f, Screen.w, ConsoleHeight);
+		Graphics()->QuadsDrawTL(&QuadItemBackground, 1);
+		Graphics()->QuadsEnd();
 	}
-	else if (g_Config.m_ClCustomConsole)
+	else if(g_Config.m_ClCustomConsole)
 	{
 		const char *pBackgroundPath = m_ConsoleType == CONSOLETYPE_LOCAL ? g_Config.m_ClCustomConsoleDefault : g_Config.m_ClCustomConsoleRcon;
 		if(pBackgroundPath[0] != '\0' && Client()->m_ConsoleSkin.m_ConsoleTexture.IsValid() && !Client()->m_ConsoleSkin.m_ConsoleTexture.IsNullTexture())
@@ -1127,7 +1126,7 @@ void CGameConsole::OnRender()
 			float FinalWidth = ImageWidth * ScaleWidth;
 			float FinalHeight = ImageHeight * ScaleHeight;
 
-			if (FinalHeight > ConsoleHeight)
+			if(FinalHeight > ConsoleHeight)
 			{
 				float YPosition = -FinalHeight + ConsoleHeight;
 
