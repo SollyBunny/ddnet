@@ -6,7 +6,9 @@
 extern const char *GIT_SHORTREV_HASH;
 #define BUILD_DATE __DATE__ ", " __TIME__
 
+#ifndef GAME_RELEASE_VERSION
 #define GAME_RELEASE_VERSION "19.2"
+#endif
 
 // teeworlds
 #define CLIENT_VERSION7 0x0705
