@@ -5,8 +5,10 @@
 #include <game/client/ui.h>
 
 #include <game/generated/protocol.h>
+#include <game/localization.h>
 #include <game/version.h>
 
+#include <engine/client/enums.h>
 #include <engine/graphics.h>
 #include <engine/shared/config.h>
 #include <engine/shared/json.h>
@@ -288,6 +290,68 @@ void CTClient::RandomFlag(void *pUserData)
 	g_Config.m_PlayerCountry = pFlag->m_CountryCode;
 }
 
+void CTClient::DoFinishCheck()
+{
+	if(Client()->State() != IClient::STATE_ONLINE && Client()->State() != IClient::STATE_DEMOPLAYBACK)
+		return;
+	if(g_Config.m_ClChangeNameNearFinish <= 0)
+		return;
+	m_FinishTextTimeout -= Client()->RenderFrameTime();
+	if(m_FinishTextTimeout > 0.0f)
+		return;
+	m_FinishTextTimeout = 1.0f;
+	// Check for finish tile
+	const auto &NearTile = [this](vec2 Pos, int RadiusInTiles, int Tile) -> bool
+	{
+		const CCollision *pCollision = GameClient()->Collision();
+		for(int i = 0; i <= RadiusInTiles * 2; ++i)
+		{
+			const float h = std::ceil(std::pow(std::sin((float)i * pi / 2.0f / (float)RadiusInTiles), 0.5f) * pi / 2.0f * (float)RadiusInTiles);
+			const vec2 Pos1 = vec2(Pos.x + (float)(i - RadiusInTiles) * 32.0f, Pos.y - h);
+			const vec2 Pos2 = vec2(Pos.x + (float)(i - RadiusInTiles) * 32.0f, Pos.y + h);
+			std::vector<int> vIndices = pCollision->GetMapIndices(Pos1, Pos2);
+			if(vIndices.empty())
+				vIndices.push_back(pCollision->GetPureMapIndex(Pos1));
+			for(int &Index : vIndices)
+			{
+				if(pCollision->GetTileIndex(Index) == Tile)
+					return true;
+				if(pCollision->GetFrontTileIndex(Index) == Tile)
+					return true;
+			}
+		}
+		return false;
+	};
+	const auto &SendUrgentRename = [this](int Conn, const char *pNewName)
+	{
+		CNetMsg_Cl_ChangeInfo Msg;
+		Msg.m_pName = pNewName;
+		Msg.m_pClan = Conn == 0 ? g_Config.m_PlayerClan : g_Config.m_ClDummyClan;
+		Msg.m_Country = Conn == 0 ? g_Config.m_PlayerCountry : g_Config.m_ClDummyCountry;
+		Msg.m_pSkin = Conn == 0 ? g_Config.m_ClPlayerSkin : g_Config.m_ClDummySkin;
+		Msg.m_UseCustomColor = Conn == 0 ? g_Config.m_ClPlayerUseCustomColor : g_Config.m_ClDummyUseCustomColor;
+		Msg.m_ColorBody = Conn == 0 ? g_Config.m_ClPlayerColorBody : g_Config.m_ClDummyColorBody;
+		Msg.m_ColorFeet = Conn == 0 ? g_Config.m_ClPlayerColorFeet : g_Config.m_ClDummyColorFeet;
+		CMsgPacker Packer(&Msg);
+		Msg.Pack(&Packer);
+		Client()->SendMsg(Conn, &Packer, MSGFLAG_VITAL);
+		GameClient()->m_aCheckInfo[Conn] = Client()->GameTickSpeed(); // 1 second
+	};
+	int Dummy = g_Config.m_ClDummy;
+	const auto &Player = GameClient()->m_aClients[GameClient()->m_aLocalIds[Dummy]];
+	if(!Player.m_Active)
+		return;
+	const char *NewName = g_Config.m_ClFinishName;
+	if(str_comp(Player.m_aName, NewName) == 0)
+		return;
+	if(!NearTile(Player.m_RenderPos, 10, TILE_FINISH))
+		return;
+	char aBuf[64];
+	str_format(aBuf, sizeof(aBuf), TCLocalize("Changing name to %s near finish"), NewName);
+	GameClient()->Echo(aBuf);
+	SendUrgentRename(Dummy, NewName);
+}
+
 void CTClient::OnRender()
 {
 	if(m_pTClientInfoTask)
@@ -298,6 +362,8 @@ void CTClient::OnRender()
 			ResetTClientInfoTask();
 		}
 	}
+
+	DoFinishCheck();
 }
 
 bool CTClient::NeedUpdate()

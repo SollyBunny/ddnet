@@ -21,6 +21,9 @@ class CTClient : public CComponent
 
 	bool SendNonDuplicateMessage(int Team, const char *pLine);
 
+	float m_FinishTextTimeout = 0.0f;
+	void DoFinishCheck();
+
 public:
 	CTClient();
 	int Sizeof() const override { return sizeof(*this); }

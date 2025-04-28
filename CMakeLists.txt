@@ -2478,6 +2478,8 @@ if(CLIENT)
     components/tclient/menus_tclient.cpp
     components/tclient/outlines.cpp
     components/tclient/outlines.h
+    components/tclient/pet.cpp
+    components/tclient/pet.h
     components/tclient/player_indicator.cpp
     components/tclient/player_indicator.h
     components/tclient/rainbow.cpp

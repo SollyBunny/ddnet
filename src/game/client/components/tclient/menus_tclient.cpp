@@ -748,10 +748,10 @@ void CMenus::RenderSettingsTClientSettngs(CUIRect MainView)
 	Column.HSplitTop(LineSize + MarginExtraSmall, &VoteMessage, &Column);
 	VoteMessage.HSplitTop(MarginExtraSmall, nullptr, &VoteMessage);
 	VoteMessage.VSplitMid(&Label, &VoteMessage);
+	Ui()->DoLabel(&Label, TCLocalize("Message to send in chat:"), FontSize, TEXTALIGN_ML);
 	static CLineInput s_VoteMessage(g_Config.m_ClAutoVoteWhenFarMessage, sizeof(g_Config.m_ClAutoVoteWhenFarMessage));
 	s_VoteMessage.SetEmptyText(TCLocalize("Leave empty to disable"));
 	Ui()->DoEditBox(&s_VoteMessage, &VoteMessage, EditBoxFontSize);
-	Ui()->DoLabel(&Label, TCLocalize("Message to send in chat:"), FontSize, TEXTALIGN_ML);
 
 	Column.HSplitTop(MarginExtraSmall, nullptr, &Column);
 
@@ -840,6 +840,24 @@ void CMenus::RenderSettingsTClientSettngs(CUIRect MainView)
 		DoLine_ColorPicker(&s_IndicatorSavedColorId, ColorPickerLineSize, ColorPickerLabelSize, ColorPickerLineSpacing, &Column, TCLocalize("Indicator safe color"), &g_Config.m_ClIndicatorSaved, ColorRGBA(0.0f, 0.0f, 0.0f), false);
 	}
 	s_SectionBoxes.back().h = Column.y - s_SectionBoxes.back().y;
+
+	// ***** Pet ***** //
+	Column.HSplitTop(MarginBetweenSections, nullptr, &Column);
+	s_SectionBoxes.push_back(Column);
+	Column.HSplitTop(HeadlineHeight, &Label, &Column);
+	Ui()->DoLabel(&Label, TCLocalize("Pet"), HeadlineFontSize, TEXTALIGN_ML);
+	Column.HSplitTop(MarginSmall, nullptr, &Column);
+
+	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClPetShow, TCLocalize("Show the pet"), &g_Config.m_ClPetShow, &Column, LineSize);
+	Column.HSplitTop(LineSize, &Button, &Column);
+	Ui()->DoScrollbarOption(&g_Config.m_ClPetSize, &g_Config.m_ClPetSize, &Button, TCLocalize("Pet size"), 10, 500, &CUi::ms_LinearScrollbarScale, 0, "%");
+	Column.HSplitTop(LineSize + MarginExtraSmall, &Button, &Column);
+	Button.VSplitMid(&Label, &Button);
+	Ui()->DoLabel(&Label, TCLocalize("Pet Skin:"), FontSize, TEXTALIGN_ML);
+	static CLineInput s_PetSkin(g_Config.m_ClPetSkin, sizeof(g_Config.m_ClPetSkin));
+	Ui()->DoEditBox(&s_PetSkin, &Button, EditBoxFontSize);
+	s_SectionBoxes.back().h = Column.y - s_SectionBoxes.back().y;
+	// TODO: add preview
 
 	// ***** RightView ***** //
 	LeftView = Column;
@@ -1127,9 +1145,25 @@ void CMenus::RenderSettingsTClientSettngs(CUIRect MainView)
 		}
 		Column.HSplitTop(MarginExtraSmall, nullptr, &Column);
 	}
-
 	s_SectionBoxes.back().h = Column.y - s_SectionBoxes.back().y;
 	Column.HSplitTop(MarginSmall, nullptr, &Column);
+
+	// ***** Pet ***** //
+	Column.HSplitTop(MarginBetweenSections, nullptr, &Column);
+	s_SectionBoxes.push_back(Column);
+	Column.HSplitTop(HeadlineHeight, &Label, &Column);
+	Ui()->DoLabel(&Label, TCLocalize("Finish Name"), HeadlineFontSize, TEXTALIGN_ML);
+	Column.HSplitTop(MarginSmall, nullptr, &Column);
+
+	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClChangeNameNearFinish, TCLocalize("Attempt to change your name when near finish"), &g_Config.m_ClChangeNameNearFinish, &Column, LineSize);
+	// Column.HSplitTop(LineSize, &Button, &Column); // TODO finish scan radius
+	// Ui()->DoScrollbarOption(&g_Config.m_ClPetSize, &g_Config.m_ClPetSize, &Button, TCLocalize("Pet size"), 10, 500, &CUi::ms_LinearScrollbarScale, 0, "%");
+	Column.HSplitTop(LineSize + MarginExtraSmall, &Button, &Column);
+	Button.VSplitMid(&Label, &Button);
+	Ui()->DoLabel(&Label, TCLocalize("Finish Name:"), FontSize, TEXTALIGN_ML);
+	static CLineInput s_FinishName(g_Config.m_ClFinishName, sizeof(g_Config.m_ClFinishName));
+	Ui()->DoEditBox(&s_FinishName, &Button, EditBoxFontSize);
+	s_SectionBoxes.back().h = Column.y - s_SectionBoxes.back().y;
 
 	// ***** END OF PAGE 1 SETTINGS ***** //
 	RightView = Column;

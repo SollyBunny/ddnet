@@ -187,7 +187,7 @@ public:
 		Json.EndObject();
 		std::string &&JsonString = Json.GetOutputString();
 
-		auto pGet = std::make_shared<CHttpRequest>(g_Config.m_ClTranslateEndpoint[0] == '\0' ? "localhost:5000" : g_Config.m_ClTranslateEndpoint);
+		auto pGet = std::make_shared<CHttpRequest>(g_Config.m_ClTranslateEndpoint[0] == '\0' ? "localhost:5000/translate" : g_Config.m_ClTranslateEndpoint);
 		pGet->LogProgress(HTTPLOG::NONE);
 		pGet->FailOnErrorStatus(false);
 		pGet->HeaderString("Content-Type", "application/json");
