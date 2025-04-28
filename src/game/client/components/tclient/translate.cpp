@@ -179,12 +179,15 @@ public:
 		Json.WriteStrValue(ParseTarget(g_Config.m_ClTranslateTarget));
 		Json.WriteAttribute("format");
 		Json.WriteStrValue("text");
-		Json.WriteAttribute("api_key");
-		Json.WriteStrValue(g_Config.m_ClTranslateKey);
+		if(g_Config.m_ClTranslateKey[0] != '\0')
+		{
+			Json.WriteAttribute("api_key");
+			Json.WriteStrValue(g_Config.m_ClTranslateKey);
+		}
 		Json.EndObject();
 		std::string &&JsonString = Json.GetOutputString();
 
-		auto pGet = std::make_shared<CHttpRequest>(g_Config.m_ClTranslateEndpoint);
+		auto pGet = std::make_shared<CHttpRequest>(g_Config.m_ClTranslateEndpoint[0] == '\0' ? "localhost:5000" : g_Config.m_ClTranslateEndpoint);
 		pGet->LogProgress(HTTPLOG::NONE);
 		pGet->FailOnErrorStatus(false);
 		pGet->HeaderString("Content-Type", "application/json");
