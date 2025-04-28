@@ -310,7 +310,7 @@ void CMenus::RenderSettingsPulse(CUIRect MainView)
 		{
 			Right.Draw(ColorRGBA(0.0f, 0.0f, 0.0f, 0.3f), IGraphics::CORNER_ALL, 5.0f);
 			RenderConsoleImages(Right);
-			CUIRect Title;
+			CUIRect Title, OpenFolderButton;
 			Left.HSplitTop(40.0f, &Title, &Left);
 			Ui()->DoLabel(&Title, Localize("Console Settings"), 20.0f, TEXTALIGN_BC);
 
@@ -328,6 +328,16 @@ void CMenus::RenderSettingsPulse(CUIRect MainView)
 
 			Left.HSplitTop(20.0f, &Button, &Left);
 			Ui()->DoScrollbarOption(&g_Config.m_ClCustomConsoleRconFading, &g_Config.m_ClCustomConsoleRconFading, &Button, Localize("RCON Console Brightness"), 100, 0);
+
+			//** Open Console Assets Folder **//
+			Left.HSplitTop(20.0f, &OpenFolderButton, &Left);
+			static CButtonContainer s_OpenFolderButton;
+			if(DoButton_Menu(&s_OpenFolderButton, Localize("Open Console Assets Folder"), 0, &OpenFolderButton))
+			{
+				char aPath[IO_MAX_PATH_LENGTH];
+				Storage()->GetCompletePath(IStorage::TYPE_SAVE, "pulse/assets/console", aPath, sizeof(aPath));
+				Client()->ViewFile(aPath);
+			}
 		}
 	}
 }
