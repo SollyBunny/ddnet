@@ -22,6 +22,9 @@ extern const char *GIT_SHORTREV_HASH;
 #define SOLLY_VERSION "0.0.0"
 #define TCLIENT_VERSION "10.1.2"
 #define INF_VERSION "0.2"
+
+// client
+#define CLIENT_VERSION "0.0.0"
 #define CLIENT_NAME "Solly"
 #define CLIENT_NAME_FULL "Solly: " SOLLY_VERSION " TClient: " TCLIENT_VERSION " Inf: " INF_VERSION " DDNet: " GAME_RELEASE_VERSION " Built: " BUILD_DATE " Commit: %s"
 
