@@ -320,41 +320,46 @@ void CEffects::PlayerTrail(vec2 Pos, float Alpha)
 {
 	if(!m_Add100hz)
 		return;
+	int Style = g_Config.m_ClTrailStyle;
 
-	CParticle p;
-	p.SetDefault();
-	p.m_Spr = SPRITE_PART_SPARKLE;
-	p.m_Pos = Pos + random_direction() * random_float(0.0f, 20.0f);
-	p.m_Vel = vec2(0, 0);
-	p.m_LifeSpan = 1.5f;
-	p.m_StartSize = random_float(42.0f, 35.0f);
-	p.m_EndSize = 0;
-	p.m_UseAlphaFading = true;
-	p.m_StartAlpha = Alpha;
-	p.m_EndAlpha = 0.0f;
-	p.m_Color = ColorRGBA(0.0f, 0.8f, 1.0f, Alpha);
-	m_pClient->m_Particles.Add(CParticles::GROUP_TRAIL_EXTRA, &p);
+	if(Style == 1)
+	{
+		CParticle p;
+		p.SetDefault();
+		p.m_Spr = SPRITE_PART_SPARKLE;
+		p.m_Pos = Pos + random_direction() * random_float(0.0f, 20.0f);
+		p.m_Vel = vec2(0, 0);
+		p.m_LifeSpan = 1.5f;
+		p.m_StartSize = random_float(42.0f, 35.0f);
+		p.m_EndSize = 0;
+		p.m_UseAlphaFading = true;
+		p.m_StartAlpha = Alpha;
+		p.m_EndAlpha = 0.0f;
+		p.m_Color = ColorRGBA(0.0f, 0.8f, 1.0f, Alpha);
+		m_pClient->m_Particles.Add(CParticles::GROUP_TRAIL_EXTRA, &p);
+	}
+	else if(Style == 2)
+	{
+		for(int i = 0; i < 12; i++)
+		{
+			CParticle p;
+			p.SetDefault();
+			p.m_Spr = SPRITE_PART_SPARKLE;
+			float Angle = (i / 12.0f) * 2 * pi;
+			vec2 Offset = vec2(std::cos(Angle), std::sin(Angle)) * 32.0f;
+			p.m_Pos = Pos + Offset;
+			p.m_Vel = vec2(0, 0);
+			p.m_LifeSpan = 0.1f;
+			p.m_StartSize = random_float(8.0f, 12.0f);
+			p.m_EndSize = p.m_StartSize;
+			p.m_UseAlphaFading = false;
+			p.m_StartAlpha = Alpha;
+			p.m_EndAlpha = Alpha;
+			p.m_Color = ColorRGBA(1.0f, 0.8f, 0.0f, Alpha);
+			m_pClient->m_Particles.Add(CParticles::GROUP_TRAIL_EXTRA, &p);
+		}
+	}
 }
-/*
-void CEffects::PlayerAura(vec2 Pos, float Alpha)
-{
-	if(!m_Add100hz)
-		return;
-	CParticle p;
-	p.SetDefault();
-	p.m_Spr = SPRITE_PART_SPARKLE;
-	p.m_Pos = Pos + random_direction() * random_float(0.0f, 20.0f);
-	p.m_Vel = vec2(0, 0);
-	p.m_LifeSpan = 1.5f;
-	p.m_StartSize = random_float(42.0f, 35.0f);
-	p.m_EndSize = 0;
-	p.m_UseAlphaFading = true;
-	p.m_StartAlpha = Alpha;
-	p.m_EndAlpha = 0.0f;
-	p.m_Color = ColorRGBA(0.0f, 0.8f, 1.0f, Alpha);
-	m_pClient->m_Particles.Add(CParticles::GROUP_TRAIL_EXTRA, &p);
-}
-*/
 
 void CEffects::Explosion(vec2 Pos, float Alpha)
 {

@@ -69,6 +69,8 @@
 #include "components/touch_controls.h"
 #include "components/voting.h"
 
+#include "components/comp_pulse/players_extended.h"
+
 #include <vector>
 
 class CGameInfo
@@ -183,7 +185,6 @@ public:
 	CSpectator m_Spectator;
 	CHoverNotification m_HoverNotification;
 
-	CPlayers m_Players;
 	CNamePlates m_NamePlates;
 	CFreezeBars m_FreezeBars;
 	CItems m_Items;
@@ -202,6 +203,7 @@ public:
 	CTooltips m_Tooltips;
 	// Pulse Components
 	CSkinProfiles m_SkinProfiles;
+	CPlayerExtended m_Players; // <- **EXTEND CPlayers**
 
 private:
 	std::vector<class CComponent *> m_vpAll;
