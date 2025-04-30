@@ -32,6 +32,9 @@ MACRO_CONFIG_INT(ClCustomConsoleRconFading, p_custom_console_rcon_fading, 0, 0, 
 MACRO_CONFIG_INT(ClFastInp, p_fast_input, 1, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "")
 
 MACRO_CONFIG_INT(ClHoverMessages, p_hover_message, 1, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "")
+MACRO_CONFIG_INT(ClHoverMessagesHistory, p_hover_messages_history, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "")
+MACRO_CONFIG_INT(ClHoverMessagesMaxHistory, p_hover_message_max_history, 15, 1, 40, CFGFLAG_CLIENT | CFGFLAG_SAVE, "")
+MACRO_CONFIG_INT(ClHoverMessagesMaxNotifications, p_hover_message_max_notifications, 10, 1, 40, CFGFLAG_CLIENT | CFGFLAG_SAVE, "")
 
 MACRO_CONFIG_INT(ClTrailStyle, p_toggle_trails, 0, 0, 2, CFGFLAG_CLIENT | CFGFLAG_SAVE, "")
 MACRO_CONFIG_INT(ClPlayerIdleAura, p_idle_aura, 1, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "")
