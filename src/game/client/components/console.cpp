@@ -1036,12 +1036,6 @@ void CGameConsole::Prompt(char (&aPrompt)[32])
 
 void CGameConsole::OnRender()
 {
-	//TODO: comp for updating background
-	static bool IsLoaded = false;
-	if(!IsLoaded)
-		m_pConsole->ExecuteLine("p_console_reload");
-	IsLoaded = true;
-
 	CUIRect Screen = *Ui()->Screen();
 	CInstance *pConsole = CurrentConsole();
 
@@ -1093,80 +1087,47 @@ void CGameConsole::OnRender()
 
 	ColorRGBA Fading = ColorRGBA(FadingFactor, FadingFactor, FadingFactor, AlphaFactor);
 
-	if(Client()->m_ConsoleHeight < 770 && g_Config.m_ClCustomConsole == 1)
+	// Use default background if custom console is disabled or not properly loaded
+	if(!g_Config.m_ClCustomConsole || !Client()->m_ConsoleSkin.m_ConsoleTexture.IsValid() || Client()->m_ConsoleSkin.m_ConsoleTexture.IsNullTexture())
 	{
-		if(Debug)
-			dbg_msg("Custom Console", "Calling loading image with wrong resolution. Minimal Height is 770 pixels");
-
 		Graphics()->TextureSet(g_pData->m_aImages[IMAGE_BACKGROUND_NOISE].m_Id);
 		Graphics()->QuadsBegin();
 		Graphics()->SetColor(aBackgroundColors[m_ConsoleType]);
 		Graphics()->QuadsSetSubset(0, 0, Screen.w / 80.0f, ConsoleHeight / 80.0f);
 
 		IGraphics::CQuadItem QuadItemBackground(0.0f, 0.0f, Screen.w, ConsoleHeight);
-		Graphics()->QuadsDrawTL(&QuadItemBackground, 1);
-		Graphics()->QuadsEnd();
-	}
-	else if(g_Config.m_ClCustomConsole)
-	{
-		const char *pBackgroundPath = m_ConsoleType == CONSOLETYPE_LOCAL ? g_Config.m_ClCustomConsoleDefault : g_Config.m_ClCustomConsoleRcon;
-		if(pBackgroundPath[0] != '\0' && Client()->m_ConsoleSkin.m_ConsoleTexture.IsValid() && !Client()->m_ConsoleSkin.m_ConsoleTexture.IsNullTexture())
-		{
-			Graphics()->TextureSet(Client()->m_ConsoleSkin.m_ConsoleTexture);
-			Graphics()->QuadsBegin();
-
-			Graphics()->SetColor(Fading.r, Fading.g, Fading.b, Fading.a);
-
-			float ImageWidth = Client()->m_ConsoleWidth;
-			float ImageHeight = Client()->m_ConsoleHeight;
-
-			float ScaleWidth = Screen.w / ImageWidth;
-			float ScaleHeight = ScaleWidth;
-
-			float FinalWidth = ImageWidth * ScaleWidth;
-			float FinalHeight = ImageHeight * ScaleHeight;
-
-			if(FinalHeight > ConsoleHeight)
-			{
-				float YPosition = -FinalHeight + ConsoleHeight;
-
-				Graphics()->QuadsSetSubset(0.0f, 0.0f, 1.0f, 1.0f);
-				IGraphics::CQuadItem QuadItemBackground(0.0f, YPosition, FinalWidth, FinalHeight);
-				Graphics()->QuadsDrawTL(&QuadItemBackground, 1);
-			}
-			else
-			{
-				float YPosition = 0.0f;
-				Graphics()->QuadsSetSubset(0.0f, 0.0f, 1.0f, 1.0f);
-				IGraphics::CQuadItem QuadItemBackground(0.0f, YPosition, FinalWidth, FinalHeight);
-				Graphics()->QuadsDrawTL(&QuadItemBackground, 1);
-			}
-
-			Graphics()->QuadsEnd();
-		}
-		else
-		{
-			// Default rendering if custom console is not enabled or valid
-			Graphics()->TextureSet(g_pData->m_aImages[IMAGE_BACKGROUND_NOISE].m_Id);
-			Graphics()->QuadsBegin();
-			Graphics()->SetColor(aBackgroundColors[m_ConsoleType]);
-			Graphics()->QuadsSetSubset(0, 0, Screen.w / 80.0f, ConsoleHeight / 80.0f);
-
-			IGraphics::CQuadItem QuadItemBackground(0.0f, 0.0f, Screen.w, ConsoleHeight);
 			Graphics()->QuadsDrawTL(&QuadItemBackground, 1);
-			Graphics()->QuadsEnd();
-		}
+		Graphics()->QuadsEnd();
 	}
 	else
 	{
-		// Default rendering if custom console is not enabled or valid
-		Graphics()->TextureSet(g_pData->m_aImages[IMAGE_BACKGROUND_NOISE].m_Id);
+		Graphics()->TextureSet(Client()->m_ConsoleSkin.m_ConsoleTexture);
 		Graphics()->QuadsBegin();
-		Graphics()->SetColor(aBackgroundColors[m_ConsoleType]);
-		Graphics()->QuadsSetSubset(0, 0, Screen.w / 80.0f, ConsoleHeight / 80.0f);
+		Graphics()->SetColor(Fading.r, Fading.g, Fading.b, Fading.a);
 
-		IGraphics::CQuadItem QuadItemBackground(0.0f, 0.0f, Screen.w, ConsoleHeight);
-		Graphics()->QuadsDrawTL(&QuadItemBackground, 1);
+		float ImageWidth = Client()->m_ConsoleWidth;
+		float ImageHeight = Client()->m_ConsoleHeight;
+
+		float ScaleWidth = Screen.w / ImageWidth;
+		float ScaleHeight = ScaleWidth;
+
+		float FinalWidth = ImageWidth * ScaleWidth;
+		float FinalHeight = ImageHeight * ScaleHeight;
+
+		if(FinalHeight > ConsoleHeight)
+		{
+			float YPosition = -FinalHeight + ConsoleHeight;
+			Graphics()->QuadsSetSubset(0.0f, 0.0f, 1.0f, 1.0f);
+			IGraphics::CQuadItem QuadItemBackground(0.0f, YPosition, FinalWidth, FinalHeight);
+			Graphics()->QuadsDrawTL(&QuadItemBackground, 1);
+		}
+		else
+		{
+			Graphics()->QuadsSetSubset(0.0f, 0.0f, 1.0f, 1.0f);
+			IGraphics::CQuadItem QuadItemBackground(0.0f, 0.0f, FinalWidth, FinalHeight);
+			Graphics()->QuadsDrawTL(&QuadItemBackground, 1);
+		}
+
 		Graphics()->QuadsEnd();
 	}
 
