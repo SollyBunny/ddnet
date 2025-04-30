@@ -246,56 +246,101 @@ void CMenus::RenderSettingsPulse(CUIRect MainView)
 
 	if(s_CurTab == PULSE_TAB_GLOBAL)
 	{
-		// if(GameClient()->IsSocketConnected())
-		// {
-		// 	sio::message::list msg;
-		// 	msg.push(sio::string_message::create(""));
-		// 	GameClient()->SendSocketMessage("statistic.jump", msg);
-		// }
-
+		// Add some spacing at the top
 		MainView.HSplitTop(10.0f, nullptr, &MainView);
-		CUIRect Left, Right;
 
+		// Split into two columns
+		CUIRect Left, Right;
 		MainView.VSplitMid(&Left, &Right, 10.0f);
 
-		CUIRect Label;
-		Left.HSplitTop(40.0f, &Label, &Left);
-		Ui()->DoLabel(&Label, Localize("Input"), 20.0f, TEXTALIGN_MC);
-
-		Left.HSplitTop(20.0f, &Button, &Left);
-		if(DoButton_CheckBox(&g_Config.m_ClFastInp, Localize("Fast Input"), g_Config.m_ClFastInp, &Button))
-			g_Config.m_ClFastInp ^= 1;
-
-		Left.HSplitTop(40.0f, &Label, &Left);
-		Ui()->DoLabel(&Label, Localize("Laser"), 20.0f, TEXTALIGN_MC);
-
-		Left.HSplitTop(20.0f, &Button, &Left);
-		if(DoButton_CheckBox(&g_Config.m_ClBetterLasers, Localize("RTX laser"), g_Config.m_ClBetterLasers, &Button))
-			g_Config.m_ClBetterLasers ^= 1;
-
-		if(g_Config.m_ClBetterLasers)
+		// Left Column - Gameplay Settings
 		{
+			CUIRect Section, Label;
+			Left.HSplitTop(40.0f, &Section, &Left);
+			Ui()->DoLabel(&Section, Localize("Gameplay Settings"), 20.0f, TEXTALIGN_MC);
+			Left.HSplitTop(10.0f, nullptr, &Left);
+
+			// Fast Input
 			Left.HSplitTop(20.0f, &Button, &Left);
-			Ui()->DoScrollbarOption(&g_Config.m_ClLaserGlowIntensity, &g_Config.m_ClLaserGlowIntensity, &Button, Localize("Laser Shrink"), 30, 100);
+			if(DoButton_CheckBox(&g_Config.m_ClFastInp, Localize("Fast Input"), g_Config.m_ClFastInp, &Button))
+				g_Config.m_ClFastInp ^= 1;
 
-			// ***** Laser Preview ***** //
-			Ui()->DoLabel_AutoLineSize(Localize("Preview:"), HeadlineFontSize,
-				TEXTALIGN_ML, &Left, HeadlineHeight);
-			Left.HSplitTop(MarginSmall, nullptr, &Left);
+			// Add spacing
+			Left.HSplitTop(20.0f, nullptr, &Left);
 
-			const float LaserPreviewHeight = 50.0f;
-			CUIRect LaserPreview;
-			Left.HSplitTop(LaserPreviewHeight, &LaserPreview, &Left);
-			Left.HSplitTop(2 * MarginSmall, nullptr, &Left);
-			DoLaserPreview(&LaserPreview, g_Config.m_ClLaserRifleInnerColor, g_Config.m_ClLaserRifleOutlineColor, LASERTYPE_RIFLE);
+			// Laser Settings
+			Left.HSplitTop(40.0f, &Section, &Left);
+			Ui()->DoLabel(&Section, Localize("Laser Settings"), 20.0f, TEXTALIGN_MC);
+			Left.HSplitTop(10.0f, nullptr, &Left);
 
-			Left.HSplitTop(LaserPreviewHeight, &LaserPreview, &Left);
-			Left.HSplitTop(2 * MarginSmall, nullptr, &Left);
-			DoLaserPreview(&LaserPreview, g_Config.m_ClLaserShotgunInnerColor, g_Config.m_ClLaserShotgunOutlineColor, LASERTYPE_SHOTGUN);
+			// RTX Laser
+			Left.HSplitTop(20.0f, &Button, &Left);
+			if(DoButton_CheckBox(&g_Config.m_ClBetterLasers, Localize("Enhanced Laser Effects"), g_Config.m_ClBetterLasers, &Button))
+				g_Config.m_ClBetterLasers ^= 1;
+
+			if(g_Config.m_ClBetterLasers)
+			{
+				// Laser Glow Intensity
+				Left.HSplitTop(20.0f, &Button, &Left);
+				Ui()->DoScrollbarOption(&g_Config.m_ClLaserGlowIntensity, &g_Config.m_ClLaserGlowIntensity, &Button, Localize("Laser Glow Intensity"), 30, 100);
+
+				// Laser Preview
+				Left.HSplitTop(20.0f, &Label, &Left);
+				Ui()->DoLabel(&Label, Localize("Laser Preview"), 16.0f, TEXTALIGN_ML);
+				Left.HSplitTop(10.0f, nullptr, &Left);
+
+				const float LaserPreviewHeight = 50.0f;
+				CUIRect LaserPreview;
+				Left.HSplitTop(LaserPreviewHeight, &LaserPreview, &Left);
+				Left.HSplitTop(2 * MarginSmall, nullptr, &Left);
+				DoLaserPreview(&LaserPreview, g_Config.m_ClLaserRifleInnerColor, g_Config.m_ClLaserRifleOutlineColor, LASERTYPE_RIFLE);
+
+				Left.HSplitTop(LaserPreviewHeight, &LaserPreview, &Left);
+				Left.HSplitTop(2 * MarginSmall, nullptr, &Left);
+				DoLaserPreview(&LaserPreview, g_Config.m_ClLaserShotgunInnerColor, g_Config.m_ClLaserShotgunOutlineColor, LASERTYPE_SHOTGUN);
+			}
 		}
 
-		Right.HSplitTop(20.0f, &Label, &Right);
-		Ui()->DoLabel(&Label, Localize("Right Section"), 14.0f, TEXTALIGN_ML);
+		// Right Column - Visual Effects
+		{
+			CUIRect Section, Label;
+			Right.HSplitTop(40.0f, &Section, &Right);
+			Ui()->DoLabel(&Section, Localize("Visual Effects"), 20.0f, TEXTALIGN_MC);
+			Right.HSplitTop(10.0f, nullptr, &Right);
+
+			// Player Effects
+			Right.HSplitTop(20.0f, &Button, &Right);
+			if(DoButton_CheckBox(&g_Config.m_ClPlayerIdleAura, Localize("Idle Player Aura"), g_Config.m_ClPlayerIdleAura, &Button))
+				g_Config.m_ClPlayerIdleAura ^= 1;
+
+			if(g_Config.m_ClPlayerIdleAura)
+			{
+				Right.HSplitTop(20.0f, &Button, &Right);
+				Ui()->DoScrollbarOption(&g_Config.m_ClPlayerIdleAuraTimer, &g_Config.m_ClPlayerIdleAuraTimer, &Button, Localize("Aura Timer"), 2, 30);
+			}
+
+			/* Trail Style
+			Right.HSplitTop(20.0f, &Button, &Right);
+			Ui()->DoScrollbarOption(&g_Config.m_ClTrailStyle, &g_Config.m_ClTrailStyle, &Button, Localize("Trail Style"), 0, 2);
+			*/
+			// Hover Messages
+			Right.HSplitTop(20.0f, &Button, &Right);
+			if(DoButton_CheckBox(&g_Config.m_ClHoverMessages, Localize("Hover Messages"), g_Config.m_ClHoverMessages, &Button))
+				g_Config.m_ClHoverMessages ^= 1;
+
+			if(g_Config.m_ClHoverMessages)
+			{
+				Right.HSplitTop(20.0f, &Button, &Right);
+				if(DoButton_CheckBox(&g_Config.m_ClHoverMessagesHistory, Localize("Message History"), g_Config.m_ClHoverMessagesHistory, &Button))
+					g_Config.m_ClHoverMessagesHistory ^= 1;
+
+				Right.HSplitTop(20.0f, &Button, &Right);
+				Ui()->DoScrollbarOption(&g_Config.m_ClHoverMessagesMaxHistory, &g_Config.m_ClHoverMessagesMaxHistory, &Button, Localize("Max History"), 1, 40);
+
+				Right.HSplitTop(20.0f, &Button, &Right);
+				Ui()->DoScrollbarOption(&g_Config.m_ClHoverMessagesMaxNotifications, &g_Config.m_ClHoverMessagesMaxNotifications, &Button, Localize("Max Notifications"), 1, 40);
+			}
+		}
 	}
 	else if(s_CurTab == PULSE_TAB_CONSOLE)
 	{
