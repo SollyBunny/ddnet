@@ -23,36 +23,58 @@ void CHoverNotification::ResizeArrays()
 	int NewMaxNotifications = g_Config.m_ClHoverMessagesMaxNotifications;
 	int NewMaxHistory = g_Config.m_ClHoverMessagesMaxHistory;
 
-	// Only resize if the size has changed
 	if(NewMaxNotifications != m_MaxNotifications)
 	{
-		delete[] m_aNotifications;
-		m_aNotifications = new SNotification[NewMaxNotifications];
-		m_MaxNotifications = NewMaxNotifications;
+		SNotification *pNewNotifications = new SNotification[NewMaxNotifications];
+		int NewNumActive = 0;
 		
-		// Initialize new array
-		for(int i = 0; i < m_MaxNotifications; i++)
+		for(int i = 0; i < m_MaxNotifications && NewNumActive < NewMaxNotifications; i++)
 		{
-			m_aNotifications[i].m_Active = false;
-			m_aNotifications[i].m_StartTime = 0;
-			m_aNotifications[i].m_Duration = 0;
-			m_aNotifications[i].m_aText[0] = '\0';
-			m_aNotifications[i].m_Position = vec2(0, 0);
+			if(m_aNotifications[i].m_Active)
+			{
+				pNewNotifications[NewNumActive] = m_aNotifications[i];
+				NewNumActive++;
+			}
 		}
+		
+		for(int i = NewNumActive; i < NewMaxNotifications; i++)
+		{
+			pNewNotifications[i].m_Active = false;
+			pNewNotifications[i].m_StartTime = 0;
+			pNewNotifications[i].m_Duration = 0;
+			pNewNotifications[i].m_aText[0] = '\0';
+			pNewNotifications[i].m_Position = vec2(0, 0);
+		}
+		
+		delete[] m_aNotifications;
+		m_aNotifications = pNewNotifications;
+		m_MaxNotifications = NewMaxNotifications;
+		m_NumActiveNotifications = NewNumActive;
 	}
 
 	if(NewMaxHistory != m_MaxHistory)
 	{
-		delete[] m_aHistory;
-		m_aHistory = new SNotification[NewMaxHistory];
-		m_MaxHistory = NewMaxHistory;
+		SNotification *pNewHistory = new SNotification[NewMaxHistory];
+		int NewHistoryCount = 0;
 		
-		// Initialize new array
-		for(int i = 0; i < m_MaxHistory; i++)
+		for(int i = 0; i < m_HistoryCount && NewHistoryCount < NewMaxHistory; i++)
 		{
-			m_aHistory[i].m_aText[0] = '\0';
-			m_aHistory[i].m_StartTime = 0;
+			int OldIndex = (m_HistoryIndex - 1 - i + m_MaxHistory) % m_MaxHistory;
+			pNewHistory[NewHistoryCount] = m_aHistory[OldIndex];
+			NewHistoryCount++;
 		}
+		
+		for(int i = NewHistoryCount; i < NewMaxHistory; i++)
+		{
+			pNewHistory[i].m_aText[0] = '\0';
+			pNewHistory[i].m_StartTime = 0;
+		}
+		
+		delete[] m_aHistory;
+		m_aHistory = pNewHistory;
+		m_MaxHistory = NewMaxHistory;
+		m_HistoryCount = NewHistoryCount;
+		m_HistoryIndex = NewHistoryCount % NewMaxHistory;
 	}
 }
 
@@ -78,13 +100,8 @@ void CHoverNotification::OnShutdown()
 
 void CHoverNotification::UpdatePositions()
 {
-	float CurrentY;
-	if(g_Config.m_ClShowKillMessages || g_Config.m_ClShowFinishMessages)
-		CurrentY = 220.0f;
-	else
-		CurrentY = 100.0f;
-	
-	float Spacing = 35.0f; // Space between notifications
+	float CurrentY = g_Config.m_ClShowKillMessages || g_Config.m_ClShowFinishMessages ? 220.0f : 100.0f;
+	float Spacing = 35.0f;
 
 	for(int i = 0; i < m_MaxNotifications; i++)
 	{
@@ -148,14 +165,28 @@ void CHoverNotification::Start(const char *pText, float Duration)
 void CHoverNotification::Stop()
 {
 	for(int i = 0; i < m_MaxNotifications; i++)
-	{
 		m_aNotifications[i].m_Active = false;
-	}
 	m_NumActiveNotifications = 0;
+}
+
+void CHoverNotification::CheckConfigChanges()
+{
+	static int LastMaxNotifications = g_Config.m_ClHoverMessagesMaxNotifications;
+	static int LastMaxHistory = g_Config.m_ClHoverMessagesMaxHistory;
+
+	if(LastMaxNotifications != g_Config.m_ClHoverMessagesMaxNotifications ||
+		LastMaxHistory != g_Config.m_ClHoverMessagesMaxHistory)
+	{
+		ResizeArrays();
+		LastMaxNotifications = g_Config.m_ClHoverMessagesMaxNotifications;
+		LastMaxHistory = g_Config.m_ClHoverMessagesMaxHistory;
+	}
 }
 
 void CHoverNotification::OnRender()
 {
+	CheckConfigChanges();
+
 	if(m_NumActiveNotifications == 0 && !m_pClient->m_Chat.IsActive())
 		return;
 
@@ -172,42 +203,27 @@ void CHoverNotification::OnRender()
 			if(m_aHistory[HistoryIndex].m_aText[0] == '\0')
 				continue;
 
-			// text width for proper sizing
 			float TextWidth = TextRender()->TextWidth(14.0f, m_aHistory[HistoryIndex].m_aText, -1);
 			float BoxWidth = TextWidth + 30.0f;
 			float BoxHeight = 30.0f;
-
 			vec2 Position = vec2(Graphics()->ScreenWidth() - TextWidth - 20.0f, CurrentY);
 
-			// background
 			Graphics()->TextureClear();
 			Graphics()->QuadsBegin();
-
-			// Main
 			Graphics()->SetColor(0.0f, 0.0f, 0.0f, 0.7f);
-			IGraphics::CQuadItem QuadItem(Position.x - 15.0f,
-				Position.y - 5.0f,
-				BoxWidth, BoxHeight);
+			IGraphics::CQuadItem QuadItem(Position.x - 15.0f, Position.y - 5.0f, BoxWidth, BoxHeight);
 			Graphics()->QuadsDrawTL(&QuadItem, 1);
 
-			// left border
 			Graphics()->SetColor(0.8f, 0.0f, 0.0f, 0.3f);
-			IGraphics::CQuadItem BorderQuad(Position.x - 15.0f,
-				Position.y - 5.0f,
-				2.0f, BoxHeight);
+			IGraphics::CQuadItem BorderQuad(Position.x - 15.0f, Position.y - 5.0f, 2.0f, BoxHeight);
 			Graphics()->QuadsDrawTL(&BorderQuad, 1);
 			Graphics()->QuadsEnd();
 
-			// Text with slight shadow effect
-			TextRender()->TextColor(0.0f, 0.0f, 0.0f, 0.1f); // Shadow
-			TextRender()->Text(Position.x + 1.0f,
-				Position.y + 1.0f,
-				14.0f, m_aHistory[HistoryIndex].m_aText, -1);
+			TextRender()->TextColor(0.0f, 0.0f, 0.0f, 0.1f);
+			TextRender()->Text(Position.x + 1.0f, Position.y + 1.0f, 14.0f, m_aHistory[HistoryIndex].m_aText, -1);
 
-			TextRender()->TextColor(1.0f, 1.0f, 1.0f, 1.0f); // Main text
-			TextRender()->Text(Position.x,
-				Position.y,
-				14.0f, m_aHistory[HistoryIndex].m_aText, -1);
+			TextRender()->TextColor(1.0f, 1.0f, 1.0f, 1.0f);
+			TextRender()->Text(Position.x, Position.y, 14.0f, m_aHistory[HistoryIndex].m_aText, -1);
 			TextRender()->TextColor(TextRender()->DefaultTextColor());
 
 			CurrentY += Spacing;
@@ -229,30 +245,24 @@ void CHoverNotification::OnRender()
 				continue;
 			}
 
-			// Calculate animation progress
 			float Progress = 1.0f;
-			if(TimePassed < 0.3f) // Fade in
+			if(TimePassed < 0.3f)
 				Progress = TimePassed / 0.3f;
-			else if(TimePassed > m_aNotifications[i].m_Duration - 0.3f) // Fade out
+			else if(TimePassed > m_aNotifications[i].m_Duration - 0.3f)
 				Progress = (m_aNotifications[i].m_Duration - TimePassed) / 0.3f;
 
-			// Calculate text width for proper sizing
 			float TextWidth = TextRender()->TextWidth(14.0f, m_aNotifications[i].m_aText, -1);
 			float BoxWidth = TextWidth + 30.0f;
 			float BoxHeight = 30.0f;
 
-			// Background with slight gradient
 			Graphics()->TextureClear();
 			Graphics()->QuadsBegin();
-
-			// Main background
 			Graphics()->SetColor(0.0f, 0.0f, 0.0f, 0.7f * Progress);
 			IGraphics::CQuadItem QuadItem(m_aNotifications[i].m_Position.x - 15.0f,
 				m_aNotifications[i].m_Position.y - 5.0f,
 				BoxWidth, BoxHeight);
 			Graphics()->QuadsDrawTL(&QuadItem, 1);
 
-			// Left border accent
 			Graphics()->SetColor(0.8f, 0.0f, 0.0f, 0.3f * Progress);
 			IGraphics::CQuadItem BorderQuad(m_aNotifications[i].m_Position.x - 15.0f,
 				m_aNotifications[i].m_Position.y - 5.0f,
@@ -260,13 +270,12 @@ void CHoverNotification::OnRender()
 			Graphics()->QuadsDrawTL(&BorderQuad, 1);
 			Graphics()->QuadsEnd();
 
-			// Text with slight shadow effect
-			TextRender()->TextColor(0.0f, 0.0f, 0.0f, 0.3f * Progress); // Shadow
+			TextRender()->TextColor(0.0f, 0.0f, 0.0f, 0.3f * Progress);
 			TextRender()->Text(m_aNotifications[i].m_Position.x + 1.0f,
 				m_aNotifications[i].m_Position.y + 1.0f,
 				14.0f, m_aNotifications[i].m_aText, -1);
 
-			TextRender()->TextColor(1.0f, 1.0f, 1.0f, Progress); // Main text
+			TextRender()->TextColor(1.0f, 1.0f, 1.0f, Progress);
 			TextRender()->Text(m_aNotifications[i].m_Position.x,
 				m_aNotifications[i].m_Position.y,
 				14.0f, m_aNotifications[i].m_aText, -1);

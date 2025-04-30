@@ -4,10 +4,6 @@
 #include <game/client/component.h>
 #include <engine/shared/config.h>
 
-// Maximum number of notifications that can be shown at once
-#define MAX_NOTIFICATIONS g_Config.m_ClHoverMessagesMaxNotifications
-#define MAX_HISTORY g_Config.m_ClHoverMessagesMaxHistory
-
 struct SNotification
 {
 	char m_aText[256];
@@ -29,6 +25,11 @@ private:
 	int m_MaxNotifications;
 	int m_MaxHistory;
 
+	void UpdatePositions();
+	void AddToHistory(const char *pText);
+	void ResizeArrays();
+	void CheckConfigChanges();
+
 public:
 	CHoverNotification();
 	~CHoverNotification();
@@ -42,11 +43,6 @@ public:
 	void OnShutdown() override;
 
 	virtual int Sizeof() const override { return sizeof(*this); }
-
-private:
-	void UpdatePositions();
-	void AddToHistory(const char *pText);
-	void ResizeArrays();
 };
 
 #endif
