@@ -36,7 +36,12 @@ void CHoverNotification::OnShutdown()
 
 void CHoverNotification::UpdatePositions()
 {
-	float CurrentY = 80.0f;
+	float CurrentY;
+	if(g_Config.m_ClShowKillMessages || g_Config.m_ClShowFinishMessages)
+		CurrentY = 220.0f;
+	else
+		CurrentY = 100.0f;
+
 	float Spacing = 35.0f; // Space between notifications
 
 	for(int i = 0; i < MAX_NOTIFICATIONS; i++)

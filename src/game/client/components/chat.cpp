@@ -641,7 +641,7 @@ void CChat::AddLine(int ClientId, int Team, const char *pLine)
 	if(*pLine == 0)
 		return;
 
-	if(ClientId == SERVER_MSG)
+	if(ClientId == SERVER_MSG && g_Config.m_ClHoverMessages)
 	{
 		m_pClient->m_HoverNotification.Start(pLine);
 
@@ -867,8 +867,6 @@ void CChat::AddLine(int ClientId, int Team, const char *pLine)
 	int64_t Now = time();
 	if(ClientId == SERVER_MSG)
 	{
-		m_pClient->m_HoverNotification.Start(pLine); //PULSE
-
 		if(Now - m_aLastSoundPlayed[CHAT_SERVER] >= time_freq() * 3 / 10)
 		{
 			if(g_Config.m_SndServerMessage)
