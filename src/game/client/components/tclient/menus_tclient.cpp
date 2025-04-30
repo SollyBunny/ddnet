@@ -1464,7 +1464,7 @@ void CMenus::RenderSettingsWarList(CUIRect MainView)
 	m_pRemoveWarType = nullptr;
 	int SelectedOldType = -1;
 	static CListBox s_WarTypeListBox;
-	s_WarTypeListBox.DoStart(25.0f, GameClient()->m_WarList.m_WarTypes.size(), 1, 2, SelectedOldType, &WarTypeList);
+	s_WarTypeListBox.DoStart(25.0f, GameClient()->m_WarList.m_WarTypes.size(), 1, 2, SelectedOldType, &WarTypeList, true, IGraphics::CORNER_ALL, true);
 
 	static std::vector<unsigned char> s_vTypeItemIds;
 	static std::vector<CButtonContainer> s_vTypeDeleteButtons;
@@ -1561,7 +1561,7 @@ void CMenus::RenderSettingsWarList(CUIRect MainView)
 	CUIRect PlayerList;
 	Column4.HSplitBottom(0.0f, &PlayerList, &Column4);
 	static CListBox s_PlayerListBox;
-	s_PlayerListBox.DoStart(30.0f, MAX_CLIENTS, 1, 2, -1, &PlayerList);
+	s_PlayerListBox.DoStart(30.0f, MAX_CLIENTS, 1, 2, -1, &PlayerList, true, IGraphics::CORNER_ALL, true);
 
 	static std::vector<unsigned char> s_vPlayerItemIds;
 	static std::vector<CButtonContainer> s_vNameButtons;

@@ -13,6 +13,9 @@ void CPet::OnRender()
 {
 	if(Client()->State() != IClient::STATE_ONLINE && Client()->State() != IClient::STATE_DEMOPLAYBACK)
 		return;
+	if(g_Config.m_ClPetShow <= 0)
+		return;
+
 	const int PlayerId = GameClient()->m_aLocalIds[g_Config.m_ClDummy];
 	if(PlayerId < 0)
 		return;
@@ -44,7 +47,7 @@ void CPet::OnRender()
 		
 		const vec2 DeltaPosition = m_Target - m_Position;
 		const float DeltaLength = length(DeltaPosition);
-		if(DeltaLength > 512)
+		if(DeltaLength > 512.0f)
 			m_Alpha = 0.01f;
 
 		static const float k = 50.0f;
@@ -81,7 +84,6 @@ void CPet::OnRender()
 	TeeRenderInfo.Apply(m_pClient->m_Skins.Find(g_Config.m_ClPetSkin));
 	// TeeRenderInfo.ApplyColors(g_Config.m_ClPlayerUseCustomColor, g_Config.m_ClPlayerColorBody, g_Config.m_ClPlayerColorFeet);
 	TeeRenderInfo.m_Size = 64.0f * Scale;
-	TeeRenderInfo.m_FeetFlipped = m_Velocity.x < 0.0f;
 	TeeRenderInfo.m_GotAirJump = m_Velocity.y > -10.0f;
 	RenderTools()->RenderTee(CAnimState::GetIdle(), &TeeRenderInfo, Character.m_Emote, m_Dir, m_Position, m_Alpha);
 

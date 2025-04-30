@@ -143,7 +143,7 @@ public:
 		}
 		if(m_pHttpRequest->State() != EHttpState::DONE)
 		{
-			str_copy(pOut, "Failed for unknown reason", Length);
+			str_copy(pOut, "Curl error, see console", Length);
 			m_pHttpRequest = nullptr;
 			return false;
 		}
@@ -188,7 +188,7 @@ public:
 		std::string &&JsonString = Json.GetOutputString();
 
 		auto pGet = std::make_shared<CHttpRequest>(g_Config.m_ClTranslateEndpoint[0] == '\0' ? "localhost:5000/translate" : g_Config.m_ClTranslateEndpoint);
-		pGet->LogProgress(HTTPLOG::NONE);
+		pGet->LogProgress(HTTPLOG::FAILURE);
 		pGet->FailOnErrorStatus(false);
 		pGet->HeaderString("Content-Type", "application/json");
 		pGet->Post((const unsigned char *)JsonString.data(), JsonString.size());
@@ -269,7 +269,7 @@ public:
 		}
 		if(m_pHttpRequest->State() != EHttpState::DONE)
 		{
-			str_copy(pOut, "Failed for unknown reason", Length);
+			str_copy(pOut, "Curl error, see console", Length);
 			m_pHttpRequest = nullptr;
 			return false;
 		}
@@ -303,7 +303,7 @@ public:
 		UrlEncode(pText, aBuf + strlen(aBuf), sizeof(aBuf) - strlen(aBuf));
 
 		auto pGet = std::make_shared<CHttpRequest>(aBuf);
-		pGet->LogProgress(HTTPLOG::NONE);
+		pGet->LogProgress(HTTPLOG::FAILURE);
 		pGet->FailOnErrorStatus(false);
 		pGet->Timeout(CTimeout{10000, 0, 500, 10});
 
