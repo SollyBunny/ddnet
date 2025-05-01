@@ -163,7 +163,7 @@ public:
 		const vec2 LastPos = m_Data.empty() ? Point.Pos() : m_Data.back().Pos();
 		const float Distance = distance(LastPos, Point.Pos());
 		// Don't draw short segments
-		if(Distance < Point.w * 2.0f)
+		if(Distance < Point.w * 1.25f)
 			return true;
 		// Draw cap or bevel
 		if(m_Data.size() <= 1)
@@ -462,7 +462,7 @@ void CBgDraw::OnRender()
 		std::optional<CBgDrawItem *> &ActiveItem = m_apActiveItems[Dummy];
 		vec2 Pos;
 		if(GameClient()->m_Snap.m_SpecInfo.m_Active && Dummy == g_Config.m_ClDummy)
-			Pos = GameClient()->m_Snap.m_SpecInfo.m_Position;
+			Pos = GameClient()->m_Camera.m_Center;
 		else
 			Pos = (m_pClient->m_Controls.m_aTargetPos[Dummy] - GameClient()->m_Camera.m_Center) * GameClient()->m_Camera.m_Zoom + GameClient()->m_Camera.m_Center;
 		if(Input == InputMode::DRAW)

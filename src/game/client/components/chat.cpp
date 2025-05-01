@@ -108,8 +108,7 @@ void CChat::ClearLines()
 		Line.m_Friend = false;
 		Line.m_TimesRepeated = 0;
 		Line.m_pManagedTeeRenderInfo = nullptr;
-		Line.m_TranslateId = std::nullopt;
-		Line.m_aTextTranslated[0] = '\0';
+		Line.m_pTranslateResponse = nullptr;
 	}
 	m_PrevScoreBoardShowed = false;
 	m_PrevShowChat = false;
@@ -779,7 +778,7 @@ void CChat::AddLine(int ClientId, int Team, const char *pLine)
 	pCurrentLine->m_Friend = false;
 	pCurrentLine->m_CustomColor = CustomColor;
 	pCurrentLine->m_pManagedTeeRenderInfo = nullptr;
-	pCurrentLine->m_TranslateId = std::nullopt;
+	pCurrentLine->m_pTranslateResponse = nullptr;
 
 	TextRender()->DeleteTextContainer(pCurrentLine->m_TextContainerIndex);
 	Graphics()->DeleteQuadContainer(pCurrentLine->m_QuadContainerIndex);
@@ -1011,10 +1010,22 @@ void CChat::OnPrepareLines(float y)
 			}
 		}
 
-		const char *pTextTranslated = Line.m_TranslateId.has_value() && Line.m_aTextTranslated[0] != '\0' ? Line.m_aTextTranslated : nullptr;
-		// If hidden and there is translated text
-		if(pText != Line.m_aText && pTextTranslated)
-			pTextTranslated = TCLocalize("Translated text hidden due to streamer mode");
+		const char *pTranslatedText = nullptr;
+		const char *pTranslatedLanguage = nullptr;
+		if(Line.m_pTranslateResponse != nullptr && Line.m_pTranslateResponse->m_Text[0])
+		{
+			// If hidden and there is translated text
+			if(pText != Line.m_aText)
+			{
+				pTranslatedText = TCLocalize("Translated text hidden due to streamer mode");
+			}
+			else
+			{
+				pTranslatedText = Line.m_pTranslateResponse->m_Text;
+				if(Line.m_pTranslateResponse->m_Language[0] != '\0')
+					pTranslatedLanguage = Line.m_pTranslateResponse->m_Language;
+			}
+		}
 
 		// get the y offset (calculate it if we haven't done that yet)
 		if(Line.m_aYOffset[OffsetType] < 0.0f)
@@ -1050,9 +1061,15 @@ void CChat::OnPrepareLines(float y)
 				AppendCursor.m_LineWidth -= Cursor.m_LongestLineWidth;
 			}
 
-			if(pTextTranslated)
+			if(pTranslatedText)
 			{
-				TextRender()->TextEx(&AppendCursor, pTextTranslated);
+				TextRender()->TextEx(&AppendCursor, pTranslatedText);
+				if(pTranslatedLanguage)
+				{
+					TextRender()->TextEx(&AppendCursor, " [");
+					TextRender()->TextEx(&AppendCursor, pTranslatedLanguage);
+					TextRender()->TextEx(&AppendCursor, "]");
+				}
 				TextRender()->TextEx(&AppendCursor, "\n");
 				AppendCursor.m_FontSize *= 0.8f;
 				TextRender()->TextEx(&AppendCursor, pText);
@@ -1156,15 +1173,25 @@ void CChat::OnPrepareLines(float y)
 			AppendCursor.m_LineWidth -= Cursor.m_LongestLineWidth;
 		}
 
-		if(pTextTranslated)
+		if(pTranslatedText)
 		{
-			TextRender()->CreateOrAppendTextContainer(Line.m_TextContainerIndex, &AppendCursor, pTextTranslated);
-			// Show old text darker
-			ColorRGBA ColorDarker = Color;
-			ColorDarker.r *= 0.8f;
-			ColorDarker.g *= 0.8f;
-			ColorDarker.b *= 0.8f;
-			TextRender()->TextColor(ColorDarker);
+			TextRender()->CreateOrAppendTextContainer(Line.m_TextContainerIndex, &AppendCursor, pTranslatedText);
+			if(pTranslatedLanguage)
+			{
+				ColorRGBA Color80 = Color;
+				Color80.r *= 0.8f;
+				Color80.g *= 0.8f;
+				Color80.b *= 0.8f;
+				TextRender()->TextColor(Color80);
+				TextRender()->CreateOrAppendTextContainer(Line.m_TextContainerIndex, &AppendCursor, " [");
+				TextRender()->CreateOrAppendTextContainer(Line.m_TextContainerIndex, &AppendCursor, pTranslatedLanguage);
+				TextRender()->CreateOrAppendTextContainer(Line.m_TextContainerIndex, &AppendCursor, "]");
+			}
+			ColorRGBA Color70 = Color;
+			Color70.r *= 0.7f;
+			Color70.g *= 0.7f;
+			Color70.b *= 0.7f;
+			TextRender()->TextColor(Color70);
 			TextRender()->CreateOrAppendTextContainer(Line.m_TextContainerIndex, &AppendCursor, "\n");
 			AppendCursor.m_FontSize *= 0.8f;
 			TextRender()->CreateOrAppendTextContainer(Line.m_TextContainerIndex, &AppendCursor, pText);

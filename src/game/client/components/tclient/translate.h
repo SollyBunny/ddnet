@@ -14,11 +14,11 @@ class ITranslateBackend
 {
 public:
 	virtual ~ITranslateBackend() = default;
-	virtual const char *ParseTarget(const char *pTarget) const;
+	virtual const char *EncodeTarget(const char *pTarget) const;
 	virtual bool CompareTargets(const char *pA, const char *pB) const;
 	virtual const char *Name() const = 0;
 	// "[translated message]\0[guessed language code]"
-	virtual std::optional<bool> Update(char *pOut, size_t Length) = 0;
+	virtual std::optional<bool> Update(CTranslateResponse &Out) = 0;
 };
 
 class CTranslate : public CComponent
@@ -29,7 +29,7 @@ class CTranslate : public CComponent
 		std::unique_ptr<ITranslateBackend> m_pBackend = nullptr;
 		// For chat translations
 		CChat::CLine *m_pLine = nullptr;
-		unsigned int m_pTranslateId;
+		std::shared_ptr<CTranslateResponse> m_pTranslateResponse = nullptr;
 	};
 	std::vector<CTranslateJob> m_vJobs;
 

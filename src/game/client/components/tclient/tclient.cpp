@@ -301,8 +301,7 @@ void CTClient::DoFinishCheck()
 		return;
 	m_FinishTextTimeout = 1.0f;
 	// Check for finish tile
-	const auto &NearTile = [this](vec2 Pos, int RadiusInTiles, int Tile) -> bool
-	{
+	const auto &NearTile = [this](vec2 Pos, int RadiusInTiles, int Tile) -> bool {
 		const CCollision *pCollision = GameClient()->Collision();
 		for(int i = 0; i <= RadiusInTiles * 2; ++i)
 		{
@@ -322,8 +321,7 @@ void CTClient::DoFinishCheck()
 		}
 		return false;
 	};
-	const auto &SendUrgentRename = [this](int Conn, const char *pNewName)
-	{
+	const auto &SendUrgentRename = [this](int Conn, const char *pNewName) {
 		CNetMsg_Cl_ChangeInfo Msg;
 		Msg.m_pName = pNewName;
 		Msg.m_pClan = Conn == 0 ? g_Config.m_PlayerClan : g_Config.m_ClDummyClan;

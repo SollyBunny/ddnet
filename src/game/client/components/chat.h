@@ -15,6 +15,18 @@
 #include <game/client/render.h>
 #include <game/generated/protocol7.h>
 
+class CTranslateResponse
+{
+public:
+	char m_Text[1024];
+	char m_Language[16];
+	CTranslateResponse()
+	{
+		m_Text[0] = '\0';
+		m_Language[0] = '\0';
+	}
+};
+
 constexpr auto SAVES_FILE = "ddnet-saves.txt";
 
 class CChat : public CComponent
@@ -54,8 +66,7 @@ class CChat : public CComponent
 
 		int m_TimesRepeated;
 
-		std::optional<unsigned int> m_TranslateId;
-		char m_aTextTranslated[MAX_LINE_LENGTH];
+		std::shared_ptr<CTranslateResponse> m_pTranslateResponse;
 	};
 
 	bool m_PrevScoreBoardShowed;
