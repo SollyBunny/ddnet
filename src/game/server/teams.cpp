@@ -11,6 +11,23 @@
 
 #include <game/mapitems.h>
 
+static void StrTime(float Seconds, char *pOut, int Length)
+{
+	static constexpr const int MINUTE = 60;
+	static constexpr const int HOUR = MINUTE * 60;
+	static constexpr const int DAY = HOUR * 24;
+	int Days = (int)Seconds / DAY;
+	int Hours = ((int)Seconds % DAY) / HOUR;
+	int Minutes = ((int)Seconds % HOUR) / MINUTE;
+	Seconds = std::fmod(Seconds, MINUTE);
+	if(Days > 0)
+		str_format(pOut, Length, "%d day(s), %d hour(s), %d minute(s), %.2f second(s)", Days, Hours, Minutes, Seconds);
+	else if(Hours > 0)
+		str_format(pOut, Length, "%d hour(s), %d minute(s), %.2f second(s)", Hours, Minutes, Seconds);
+	else
+		str_format(pOut, Length, "%d minute(s), %.2f second(s)", Minutes, Seconds);
+}
+
 CGameTeams::CGameTeams(CGameContext *pGameContext) :
 	m_pGameContext(pGameContext)
 {
@@ -349,13 +366,13 @@ void CGameTeams::CheckTeamFinished(int Team)
 			{
 				ChangeTeamState(Team, TEAMSTATE_FINISHED);
 
-				int min = (int)Time / 60;
-				float sec = Time - (min * 60.0f);
+				char aTime[64];
+				StrTime(Time, aTime, sizeof(aTime));
 
 				char aBuf[256];
 				str_format(aBuf, sizeof(aBuf),
-					"Your team would've finished in: %d minute(s) %5.2f second(s). Since you had practice mode enabled your rank doesn't count.",
-					min, sec);
+					"Your team would've finished in: %s. Since you had practice mode enabled your rank doesn't count.",
+					aTime);
 				GameServer()->SendChatTeam(Team, aBuf);
 
 				for(unsigned int i = 0; i < PlayersCount; ++i)
@@ -709,13 +726,14 @@ void CGameTeams::OnFinish(CPlayer *Player, int TimeTicks, const char *pTimestamp
 	const int ClientId = Player->GetCid();
 	CPlayerData *pData = GameServer()->Score()->PlayerData(ClientId);
 
-	char aBuf[128];
+	char aTime[64];
+	StrTime(Time, aTime, sizeof(aTime));
+
+	char aBuf[256];
 	SetLastTimeCp(Player, -1);
 	// Note that the "finished in" message is parsed by the client
 	str_format(aBuf, sizeof(aBuf),
-		"%s finished in: %d minute(s) %5.2f second(s)",
-		Server()->ClientName(ClientId), (int)Time / 60,
-		Time - ((int)Time / 60 * 60));
+		"%s finished in: %s", Server()->ClientName(ClientId), aTime);
 	if(g_Config.m_SvHideScore || !g_Config.m_SvSaveWorseScores)
 		GameServer()->SendChatTarget(ClientId, aBuf, CGameContext::FLAG_SIX);
 	else
@@ -729,12 +747,9 @@ void CGameTeams::OnFinish(CPlayer *Player, int TimeTicks, const char *pTimestamp
 		pData->m_RecordStopTick = Server()->Tick() + Server()->TickSpeed();
 		pData->m_RecordFinishTime = Time;
 
-		if(Diff >= 60)
-			str_format(aBuf, sizeof(aBuf), "New record: %d minute(s) %5.2f second(s) better.",
-				(int)Diff / 60, Diff - ((int)Diff / 60 * 60));
-		else
-			str_format(aBuf, sizeof(aBuf), "New record: %5.2f second(s) better.",
-				Diff);
+		StrTime(Diff, aTime, sizeof(aTime));
+		str_format(aBuf, sizeof(aBuf), "New record: %s better.", aTime);
+
 		if(g_Config.m_SvHideScore || !g_Config.m_SvSaveWorseScores)
 			GameServer()->SendChatTarget(ClientId, aBuf, CGameContext::FLAG_SIX);
 		else
@@ -751,13 +766,9 @@ void CGameTeams::OnFinish(CPlayer *Player, int TimeTicks, const char *pTimestamp
 		}
 		else
 		{
-			if(Diff >= 60)
-				str_format(aBuf, sizeof(aBuf), "%d minute(s) %5.2f second(s) worse, better luck next time.",
-					(int)Diff / 60, Diff - ((int)Diff / 60 * 60));
-			else
-				str_format(aBuf, sizeof(aBuf),
-					"%5.2f second(s) worse, better luck next time.",
-					Diff);
+			StrTime(Diff, aTime, sizeof(aTime));
+			str_format(aBuf, sizeof(aBuf), "New record: %s better.", aTime);
+
 			GameServer()->SendChatTarget(ClientId, aBuf, CGameContext::FLAG_SIX); // this is private, sent only to the tee
 		}
 	}

@@ -37,44 +37,32 @@ void CRaceHelper::Init(const CGameClient *pGameClient)
 
 int CRaceHelper::TimeFromSecondsStr(const char *pStr)
 {
-	while(*pStr == ' ') // skip leading spaces
-		pStr++;
-	if(!isdigit(*pStr))
+	float Seconds;
+	if(std::scanf(pStr, "%f second(s)", &Seconds) <= 0 || Seconds < 0.0f)
 		return -1;
-	int Time = str_toint(pStr) * 1000;
-	while(isdigit(*pStr))
-		pStr++;
-	if(*pStr == '.' || *pStr == ',')
-	{
-		pStr++;
-		static const int s_aMult[3] = {100, 10, 1};
-		for(size_t i = 0; i < std::size(s_aMult) && isdigit(pStr[i]); i++)
-			Time += (pStr[i] - '0') * s_aMult[i];
-	}
-	return Time;
+	return Seconds * 1000;
 }
 
 int CRaceHelper::TimeFromStr(const char *pStr)
 {
-	static constexpr const char *MINUTES_STR = " minute(s) ";
-	static constexpr const char *SECONDS_STR = " second(s)";
-
-	const char *pSeconds = str_find(pStr, SECONDS_STR);
-	if(!pSeconds)
+	float Seconds;
+	if(std::scanf(pStr, "%f second(s)", &Seconds) <= 0 || Seconds < 0.0f)
 		return -1;
+	int Minutes;
+	if(std::scanf(pStr, "%d minutes(s)", &Minutes) <= 0 || Minutes < 0)
+		Minutes = 0;
+	int Hours;
+	if(std::scanf(pStr, "%d hours(s)", &Hours) <= 0 || Hours < 0)
+		Hours = 0;
+	int Days;
+	if(std::scanf(pStr, "%d days(s)", &Days) <= 0 || Days < 0)
+		Days = 0;
 
-	const char *pMinutes = str_find(pStr, MINUTES_STR);
-	if(pMinutes)
-	{
-		while(*pStr == ' ') // skip leading spaces
-			pStr++;
-		int SecondsTime = TimeFromSecondsStr(pMinutes + str_length(MINUTES_STR));
-		if(SecondsTime == -1 || !isdigit(*pStr))
-			return -1;
-		return str_toint(pStr) * 60 * 1000 + SecondsTime;
-	}
-	else
-		return TimeFromSecondsStr(pStr);
+	static constexpr const int SECOND = 1000;
+	static constexpr const int MINUTE = SECOND * 60;
+	static constexpr const int HOUR = MINUTE * 60;
+	static constexpr const int DAY = HOUR * 24;
+	return Days * DAY + Hours * HOUR + Minutes * MINUTE + (int)(Seconds * SECOND);
 }
 
 int CRaceHelper::TimeFromFinishMessage(const char *pStr, char *pNameBuf, int NameBufSize)
