@@ -2,6 +2,18 @@
 
 #include <game/client/race.h>
 
+TEST(RaceHelper, TimeFromSecondsStr)
+{
+	// x.xxx second(s)
+	EXPECT_EQ(CRaceHelper::TimeFromSecondsStr("invalid"), -1);
+	EXPECT_EQ(CRaceHelper::TimeFromSecondsStr("-1"), 0);
+	EXPECT_EQ(CRaceHelper::TimeFromSecondsStr(" 10"), 10 * 1000);
+	EXPECT_EQ(CRaceHelper::TimeFromSecondsStr("1.234"), 1234);
+	EXPECT_EQ(CRaceHelper::TimeFromSecondsStr("1.2349"), 1235);
+	EXPECT_EQ(CRaceHelper::TimeFromSecondsStr("1.2341"), 1234);
+	EXPECT_EQ(CRaceHelper::TimeFromSecondsStr("999999.2341"), 10 * 999999 + 234);
+}
+
 TEST(RaceHelper, TimeFromStr)
 {
 	// x days(s) x hour(s) x minute(s) x.xxx second(s)
