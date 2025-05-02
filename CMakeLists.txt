@@ -125,12 +125,12 @@ option(FUSE_LD "Linker to use" OFF)
 option(SECURITY_COMPILER_FLAGS "Whether to set security-relevant compiler flags like -D_FORTIFY_SOURCE=2 and -fstack-protector-strong" ON)
 
 if(TARGET_OS STREQUAL "mac")
-    set(TOOLS ON)
+  set(TOOLS ON)
 endif()
 
 if(TARGET_OS STREQUAL "android")
-    set(DISCORD OFF)
-    set(STEAM OFF)
+  set(DISCORD OFF)
+  set(STEAM OFF)
 endif()
 
 if(TARGET_OS STREQUAL "emscripten")
@@ -3748,13 +3748,13 @@ foreach(target ${TARGETS_DEP})
 endforeach()
 
 if(TARGET_OS STREQUAL "windows" AND STEAM AND NOT CMAKE_BUILD_TYPE STREQUAL Debug)
-    add_custom_command(
-        TARGET game-client POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${CMAKE_SOURCE_DIR}/steam_api.dll"
-            "$<TARGET_FILE_DIR:game-client>"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${CMAKE_SOURCE_DIR}/steam_appid.txt"
-            "$<TARGET_FILE_DIR:game-client>"
-    )
+  add_custom_command(
+    TARGET game-client POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+      "${CMAKE_SOURCE_DIR}/steam_api.dll"
+      "$<TARGET_FILE_DIR:game-client>"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+      "${CMAKE_SOURCE_DIR}/steam_appid.txt"
+      "$<TARGET_FILE_DIR:game-client>"
+  )
 endif()
