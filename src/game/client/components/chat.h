@@ -29,12 +29,8 @@ class CChat : public CComponent
 	};
 
 	CLineInputBuffered<MAX_LINE_LENGTH> m_Input;
-	class CLine
+	struct CLine
 	{
-	public:
-		CLine();
-		void Reset(CChat &This);
-
 		int64_t m_Time;
 		float m_aYOffset[2];
 		int m_ClientId;
