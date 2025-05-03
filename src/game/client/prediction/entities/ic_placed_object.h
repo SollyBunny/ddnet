@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GAME_CLIENT_PREDICTION_ENTITIES_IC_PLACED_OBJECT_H
+#define GAME_CLIENT_PREDICTION_ENTITIES_IC_PLACED_OBJECT_H
 
 #include <game/client/prediction/entities/ic_entity.h>
 
@@ -38,3 +39,5 @@ protected:
 	EIcObjectType m_IcObjectType{};
 	int m_InfClassObjectFlags = 0;
 };
+
+#endif

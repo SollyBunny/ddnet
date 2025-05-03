@@ -1,5 +1,5 @@
-#ifndef GAME_CLIENT_ENTITIES_IC_ENTITY_H
-#define GAME_CLIENT_ENTITIES_IC_ENTITY_H
+#ifndef GAME_CLIENT_PREDICTION_ENTITIES_IC_ENTITY_H
+#define GAME_CLIENT_PREDICTION_ENTITIES_IC_ENTITY_H
 
 #include <game/client/prediction/entity.h>
 
@@ -52,4 +52,4 @@ protected:
 	int m_SnapData1{};
 };
 
-#endif // GAME_CLIENT_ENTITIES_IC_ENTITY_H
+#endif

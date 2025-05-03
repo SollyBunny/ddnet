@@ -1,5 +1,5 @@
-#ifndef INFCLASS_DAMAGE_TYPE_H
-#define INFCLASS_DAMAGE_TYPE_H
+#ifndef GAME_DAMAGE_TYPE_H
+#define GAME_DAMAGE_TYPE_H
 
 // Everything that can kill should be listed here
 enum class EDamageType
