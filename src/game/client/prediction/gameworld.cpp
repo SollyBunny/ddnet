@@ -572,7 +572,7 @@ void CGameWorld::NetObjAdd(int ObjId, int ObjType, const void *pObjData, const C
 		NetObject.SetSnapData1(pObject->m_Data1);
 
 		CIcPlacedObject *pExisting = static_cast<CIcPlacedObject *>(GetEntity(ObjId, ENTTYPE_IC_PLACED_OBJECT));
-		if (pExisting && pExisting->Match(&NetObject))
+		if(pExisting && pExisting->Match(&NetObject))
 		{
 			pExisting->Keep();
 			pExisting->Read(NetObject);

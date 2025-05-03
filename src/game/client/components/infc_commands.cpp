@@ -86,7 +86,7 @@ static const char *gs_apInfoMessageTextStyle1[InfoMessagesCount] = {
 	"Who needs healing?",
 };
 
-template <typename TEnum>
+template<typename TEnum>
 TEnum GetKeyByName(const char *pName)
 {
 	for(int i = 0; i < static_cast<int>(TEnum::Count); ++i)
@@ -101,7 +101,7 @@ TEnum GetKeyByName(const char *pName)
 	return TEnum::Invalid;
 }
 
-template <typename TEnum>
+template<typename TEnum>
 void SaveCustomizedText(IConfigManager *pConfigManager, char **apCustomText)
 {
 	char aBuffer[256];
@@ -176,7 +176,7 @@ void CInfCCommands::OnConsoleInit()
 
 void CInfCCommands::ConSayTeamLocation(IConsole::IResult *pResult, void *pUserData)
 {
-	CInfCCommands *pThis = static_cast<CInfCCommands*>(pUserData);
+	CInfCCommands *pThis = static_cast<CInfCCommands *>(pUserData);
 	if(pResult->NumArguments() < 1)
 	{
 		dbg_msg("infc/commands", "ConSayTeamLocation: No args given");
@@ -223,7 +223,7 @@ void CInfCCommands::ConSayTeamLocation(ELocation Location, const char *pExtraArg
 
 void CInfCCommands::ConSayInfoMessage(IConsole::IResult *pResult, void *pUserData)
 {
-	CInfCCommands *pThis = static_cast<CInfCCommands*>(pUserData);
+	CInfCCommands *pThis = static_cast<CInfCCommands *>(pUserData);
 	if(pResult->NumArguments() < 1)
 	{
 		dbg_msg("infc/commands", "ConSayTeamInfoMessage: No args given");
@@ -260,7 +260,7 @@ void CInfCCommands::ConSayInfoMessage(EInfoMessage Message)
 
 void CInfCCommands::ConSetMessageText(IConsole::IResult *pResult, void *pUserData)
 {
-	CInfCCommands *pThis = static_cast<CInfCCommands*>(pUserData);
+	CInfCCommands *pThis = static_cast<CInfCCommands *>(pUserData);
 	if(pResult->NumArguments() < 1)
 	{
 		dbg_msg("infc/commands", "ConSetMessageText: No args given");
@@ -317,7 +317,7 @@ void CInfCCommands::ConSetMessageText(const char *pMessageType, const char *pMes
 
 void CInfCCommands::ConCallWitch(IConsole::IResult *pResult, void *pUserData)
 {
-	CInfCCommands *pThis = static_cast<CInfCCommands*>(pUserData);
+	CInfCCommands *pThis = static_cast<CInfCCommands *>(pUserData);
 	pThis->ConCallWitch();
 }
 

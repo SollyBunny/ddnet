@@ -13,7 +13,7 @@ class CIcEntity : public CEntity
 public:
 	CIcEntity(CGameWorld *pGameWorld, int Id, int ObjectType, vec2 Pos = vec2(), std::optional<int> Owner = std::nullopt,
 		int ProximityRadius = 0);
-	
+
 	using CEntity::GameWorld;
 	const CGameWorld *GameWorld() const { return m_pGameWorld; }
 

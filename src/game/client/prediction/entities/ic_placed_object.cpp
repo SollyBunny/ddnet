@@ -2,9 +2,9 @@
 
 EIcObjectType GetIcObjectTypeFromInt(int Value)
 {
-	if (Value < 0 || Value > static_cast<int>(EIcObjectType::TURRET))
+	if(Value < 0 || Value > static_cast<int>(EIcObjectType::TURRET))
 		return EIcObjectType::CUSTOM;
-	
+
 	return static_cast<EIcObjectType>(Value);
 }
 
@@ -16,10 +16,10 @@ CIcPlacedObject::CIcPlacedObject(CGameWorld *pGameWorld, int Id, EIcObjectType O
 
 bool CIcPlacedObject::Match(const CIcPlacedObject *pEntity) const
 {
-	if (!CIcEntity::Match(pEntity))
+	if(!CIcEntity::Match(pEntity))
 		return false;
-	
-	if (m_IcObjectType != pEntity->m_IcObjectType)
+
+	if(m_IcObjectType != pEntity->m_IcObjectType)
 		return false;
 
 	return true;

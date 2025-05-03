@@ -2521,7 +2521,7 @@ void CClient::LoadInfclassInfo()
 
 	if(!pInfclassInfo)
 		return;
-	
+
 	const json_value &InfclassInfo = *pInfclassInfo;
 	const json_value &CurrentVersion = InfclassInfo["version"];
 	if(CurrentVersion.type == json_string)

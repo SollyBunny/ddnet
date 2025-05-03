@@ -2633,7 +2633,8 @@ void CGameClient::CClientData::UpdateSkinInfo()
 		bool UseCustomColor = m_UseCustomColor;
 		if(SkinDescriptor.m_Flags & CSkinDescriptor::FLAG_IC_CUSTOM)
 		{
-			UseCustomColor = m_InfClassPlayerFlags & INFCLASS_PLAYER_FLAG_INFECTED;;
+			UseCustomColor = m_InfClassPlayerFlags & INFCLASS_PLAYER_FLAG_INFECTED;
+			;
 		}
 
 		if(SkinDescriptor.m_Flags & CSkinDescriptor::FLAG_SIX)
@@ -2825,7 +2826,7 @@ CSkinDescriptor CGameClient::CClientData::ToSkinDescriptor() const
 	if(m_Active)
 	{
 		SkinDescriptor.m_Flags |= CSkinDescriptor::FLAG_SIX;
-		
+
 		switch(m_InfClassPlayerClass)
 		{
 		case PLAYERCLASS_NINJA:
@@ -4527,7 +4528,8 @@ float CGameClient::GetAspectTextureRatio(EDamageType DamageType)
 
 	float H = g_pData->m_aSprites[SpriteIndex].m_H;
 	float W = g_pData->m_aSprites[SpriteIndex].m_W;
-	if (W <= 0) {
+	if(W <= 0)
+	{
 		return 0;
 	}
 	return W / H;
@@ -4537,12 +4539,12 @@ IGraphics::CTextureHandle *CGameClient::GetInfclassTexturePtrForDamageType(EDama
 {
 	switch(DamageType)
 	{
-//	case EDamageType::SNIPER_RIFLE:
-//		return &m_InfclassSkin.m_SpriteSniperRifle;
-//	case EDamageType::SCIENTIST_LASER:
-//		return &m_InfclassSkin.m_SpriteScientistLaser;
-//	case EDamageType::MEDIC_SHOTGUN:
-//		return &m_InfclassSkin.m_SpriteMedicShotgun;
+		//	case EDamageType::SNIPER_RIFLE:
+		//		return &m_InfclassSkin.m_SpriteSniperRifle;
+		//	case EDamageType::SCIENTIST_LASER:
+		//		return &m_InfclassSkin.m_SpriteScientistLaser;
+		//	case EDamageType::MEDIC_SHOTGUN:
+		//		return &m_InfclassSkin.m_SpriteMedicShotgun;
 
 	case EDamageType::LASER_WALL:
 		return &m_InfclassSkin.m_SpriteLaserWall;
@@ -4554,8 +4556,8 @@ IGraphics::CTextureHandle *CGameClient::GetInfclassTexturePtrForDamageType(EDama
 		return &m_InfclassSkin.m_SpriteBiologistMine;
 	case EDamageType::MERCENARY_BOMB:
 		return &m_InfclassSkin.m_SpriteMercenaryBomb;
-//	case EDamageType::WHITE_HOLE:
-//		return &m_InfclassSkin.m_SpriteWhiteHole;
+		//	case EDamageType::WHITE_HOLE:
+		//		return &m_InfclassSkin.m_SpriteWhiteHole;
 	case EDamageType::TURRET_DESTRUCTION:
 		return &m_InfclassSkin.m_SpriteTurretDestruction;
 	case EDamageType::TURRET_LASER:

@@ -758,7 +758,7 @@ void CMenus::RenderMenubar(CUIRect Box, IClient::EClientState ClientState)
 				Box.VSplitLeft(BrowserButtonWidth, &Button, &Box);
 				const int Page = PAGE_FAVORITE_COMMUNITY_1 + FavoriteCommunityIndex;
 				const char *pName = pCommunity->Name();
-				
+
 				if(g_Config.m_ClEnableCommunities == 0)
 				{
 					if(str_comp(pCommunity->Id(), IServerBrowser::COMMUNITY_DDNET) == 0)
@@ -770,13 +770,13 @@ void CMenus::RenderMenubar(CUIRect Box, IClient::EClientState ClientState)
 						pName = "KoG";
 					}
 				}
-				
+
 				if(DoButton_MenuTab(&s_aFavoriteCommunityButtons[FavoriteCommunityIndex], pName, ActivePage == Page, &Button, IGraphics::CORNER_T, &m_aAnimatorsBigPage[BIT_TAB_FAVORITE_COMMUNITY_1 + FavoriteCommunityIndex], nullptr, nullptr, nullptr, 10.0f, FindCommunityIcon(pCommunity->Id())))
 				{
 					NewPage = Page;
 				}
 				GameClient()->m_Tooltips.DoToolTip(&s_aFavoriteCommunityButtons[FavoriteCommunityIndex], &Button, pCommunity->Name());
-				
+
 				++FavoriteCommunityIndex;
 				if(FavoriteCommunityIndex >= std::size(s_aFavoriteCommunityButtons))
 					break;

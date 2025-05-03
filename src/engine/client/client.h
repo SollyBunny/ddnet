@@ -384,7 +384,7 @@ public:
 	void RequestInfclassInfo() override;
 	void ResetInfclassInfoTask();
 	void LoadInfclassInfo();
-	
+
 	bool IsSixup() const override { return m_Sixup; }
 
 	const NETADDR &ServerAddress() const override { return *m_aNetClient[CONN_MAIN].ServerAddress(); }

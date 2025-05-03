@@ -20,12 +20,10 @@ void CIcEntity::Read(const CIcEntity &Source)
 
 void CIcEntity::SetStartTick(int Tick)
 {
-	
 }
 
 void CIcEntity::SetEndTick(int Tick)
 {
-	
 }
 
 void CIcEntity::SetOwner(int ClientId)
@@ -68,7 +66,7 @@ void CIcEntity::SetPos(const vec2 &Position)
 
 float CIcEntity::GetLifespan() const
 {
-	if (!m_EndTick.has_value())
+	if(!m_EndTick.has_value())
 		return -1;
 
 	int RemainingTicks = m_EndTick.value_or(0) - GameWorld()->GameTick();

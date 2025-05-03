@@ -50,7 +50,7 @@ void CInfCBinds::ConfigSaveCallback(IConfigManager *pConfigManager, void *pUserD
 			char *pDst = pBuffer + str_length(pBuffer);
 			str_escape(&pDst, pSelf->m_aapKeyBindings[Modifier][Key], pEnd);
 			str_append(pBuffer, "\"", Size);
-			
+
 			pConfigManager->WriteLine(pBuffer, InfclassConfigDomainId());
 			free(pBuffer);
 		}

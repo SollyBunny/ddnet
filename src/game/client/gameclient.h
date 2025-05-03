@@ -312,7 +312,7 @@ public:
 	};
 	int m_ServerMode;
 	CGameInfo m_GameInfo;
-	
+
 	char m_aSavedLocalRconPassword[sizeof(g_Config.m_SvRconPassword)]{};
 	int m_TimeLimitInSeconds;
 	int m_InfClassHeroGiftTick;

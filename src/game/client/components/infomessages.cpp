@@ -120,7 +120,7 @@ CInfoMessages::CInfoMsg CInfoMessages::CreateInfoMsg(EType Type)
 	InfoMsg.m_aKillerName[0] = '\0';
 	InfoMsg.m_KillerTextContainerIndex.Reset();
 	InfoMsg.m_pKillerManagedTeeRenderInfo = nullptr;
-	
+
 	InfoMsg.m_AssistantId = -1;
 	InfoMsg.m_aAssistantName[0] = '\0';
 	InfoMsg.m_AssistantPlusContainerIndex.Reset();
@@ -345,7 +345,7 @@ void CInfoMessages::OnInfcKillMessage(const CNetMsg_Inf_KillMsg *pMsg)
 	Kill.m_KillerId = pMsg->m_Killer;
 	str_copy(Kill.m_aKillerName, m_pClient->m_aClients[Kill.m_KillerId].m_aName);
 	Kill.m_pKillerManagedTeeRenderInfo = m_pClient->CreateManagedTeeRenderInfo(m_pClient->m_aClients[Kill.m_KillerId]);
-	
+
 	int AssistantId = pMsg->m_Assistant;
 	if(AssistantId >= 0 && AssistantId < MAX_CLIENTS && m_pClient->m_aClients[AssistantId].m_Active)
 	{
