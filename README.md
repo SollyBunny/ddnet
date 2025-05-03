@@ -14,7 +14,7 @@ Also some random other things
 
 These are just taken from the GH actions for your convenience
 
-To download them you may need a github account
+To download them you will need to be [logged into a Github account](https://github.com/login)
 
 You can get more up to date ones [here](https://github.com/SollyBunny/ddnet/actions/workflows/fast-build.yml?query=branch%3Amaster)
 
