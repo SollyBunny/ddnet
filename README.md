@@ -16,7 +16,7 @@ These are just taken from the GH actions for your convenience
 
 To download them you may need a github account
 
-You can get more up to date ones [here](https://github.com/SollyBunny/ddnet/actions)
+You can get more up to date ones [here](https://github.com/SollyBunny/ddnet/actions/workflows/fast-build.yml?query=branch%3Amaster)
 
 * [ubuntu-20.04](https://github.com/SollyBunny/ddnet/actions/runs/14021679605/artifacts/2803754636)
 * [windows-latest](https://github.com/SollyBunny/ddnet/actions/runs/14021679605/artifacts/2803757276)
