@@ -18,10 +18,10 @@ To download them you will need to be [logged into a Github account](https://gith
 
 You can get more up to date ones [here](https://github.com/SollyBunny/ddnet/actions/workflows/fast-build.yml?query=branch%3Amaster)
 
-* [ubuntu-20.04](https://github.com/SollyBunny/ddnet/actions/runs/14021679605/artifacts/2803754636)
-* [windows-latest](https://github.com/SollyBunny/ddnet/actions/runs/14021679605/artifacts/2803757276)
-* [macOs-latest](https://github.com/SollyBunny/ddnet/actions/runs/14021679605/artifacts/2803756874)
-* [android](https://github.com/SollyBunny/ddnet/actions/runs/14021679605/artifacts/2803778021)
+* [Ubuntu](https://github.com/SollyBunny/ddnet/actions/runs/14793975707/artifacts/3050143093)
+* [Windows](https://github.com/SollyBunny/ddnet/actions/runs/14793975707/artifacts/3050152363)
+* [MacOS](https://github.com/SollyBunny/ddnet/actions/runs/14793975707/artifacts/3050157683)
+* [Android](https://github.com/SollyBunny/ddnet/actions/runs/14793975707/artifacts/3050203872)
 
 If you need 32bit, or something for a similarly archaic or weird system, compile it yourself by following the [guide](https://github.com/ddnet/ddnet/?tab=readme-ov-file#cloning)
 
