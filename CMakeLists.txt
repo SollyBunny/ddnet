@@ -2189,6 +2189,8 @@ if(CLIENT)
           components/comp_pulse/hover_notification.h
           components/comp_pulse/players_extended.h
           components/comp_pulse/players_extended.cpp
+          components/comp_pulse/nameplates_extended.h
+          components/comp_pulse/nameplates_extended.cpp
           components/comp_pulse/http_request.cpp
           components/comp_pulse/http_request.h
           components/console.cpp

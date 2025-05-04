@@ -24,12 +24,6 @@
 #include <game/generated/protocol7.h>
 #include <game/generated/protocolglue.h>
 
-//PULSE
-//#include "components/comp_pulse/colormode.h" TODO: ADD
-#include "components/comp_pulse/hover_notification.h"
-#include "components/comp_pulse/skinprofiles.h"
-#include "components/comp_pulse/socket_request.h"
-
 // components
 #include "components/background.h"
 #include "components/binds.h"
@@ -69,7 +63,13 @@
 #include "components/touch_controls.h"
 #include "components/voting.h"
 
+//PULSE
+//#include "components/comp_pulse/colormode.h" TODO: ADD
+#include "components/comp_pulse/hover_notification.h"
+#include "components/comp_pulse/nameplates_extended.h"
 #include "components/comp_pulse/players_extended.h"
+#include "components/comp_pulse/skinprofiles.h"
+#include "components/comp_pulse/socket_request.h"
 
 #include <vector>
 
@@ -185,7 +185,7 @@ public:
 	CSpectator m_Spectator;
 	CHoverNotification m_HoverNotification;
 
-	CNamePlates m_NamePlates;
+	//CNamePlates m_NamePlates;
 	CFreezeBars m_FreezeBars;
 	CItems m_Items;
 	CMapImages m_MapImages;
@@ -204,6 +204,7 @@ public:
 	// Pulse Components
 	CSkinProfiles m_SkinProfiles;
 	CPlayerExtended m_Players; // <- **EXTEND CPlayers**
+	CNamePlatesExtended m_NamePlates; // <- **EXTEND CNamePlates**
 
 private:
 	std::vector<class CComponent *> m_vpAll;
