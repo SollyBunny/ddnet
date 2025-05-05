@@ -7,7 +7,7 @@ extern const char *GIT_SHORTREV_HASH;
 #define BUILD_DATE __DATE__ ", " __TIME__
 
 #ifndef GAME_RELEASE_VERSION
-#define GAME_RELEASE_VERSION "19.2"
+#define GAME_RELEASE_VERSION "19.3"
 #endif
 
 // teeworlds
@@ -17,7 +17,7 @@ extern const char *GIT_SHORTREV_HASH;
 #define GAME_NETVERSION7 "0.7 802f1be60a05665f"
 
 // ddnet
-#define DDNET_VERSION_NUMBER 19020
+#define DDNET_VERSION_NUMBER 19030
 #define GAME_NAME "DDNet"
 
 // mods

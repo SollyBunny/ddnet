@@ -30,6 +30,11 @@ jobs:
           cmake-init-env: CXXFLAGS= LDFLAGS=
           package-file: "*-win64.zip"
           fancy: false
+        - os: windows-latest
+          cmake-args: -A Win32 -DDISCORD=ON
+          cmake-init-env: CXXFLAGS= LDFLAGS=
+          package-file: "*-win32.zip"
+          fancy: false
     steps:
     - uses: actions/checkout@v4
       with:
@@ -58,6 +63,12 @@ jobs:
         rustup default stable
         rustup update
         rustup target add x86_64-apple-darwin aarch64-apple-darwin
+
+    - name: Add rust for Windows 32
+      if: contains(matrix.cmake-args, '-A Win32')
+      run: |
+        rustup default stable
+        rustup target add i686-pc-windows-msvc
 
     - name: Cache Rust dependencies
       uses: Swatinem/rust-cache@v2
