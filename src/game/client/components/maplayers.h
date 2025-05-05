@@ -20,6 +20,7 @@ class CLayers;
 class CMapImages;
 class ColorRGBA;
 class CMapItemGroup;
+class CMapItemLayer;
 class CMapItemLayerTilemap;
 class CMapItemLayerQuads;
 
@@ -124,11 +125,11 @@ class CMapLayers : public CComponent
 		bool m_IsTextured;
 	};
 	std::vector<SQuadLayerVisuals *> m_vpQuadLayerVisuals;
+	std::vector<std::vector<int>> m_vvLayerCount;
+	int m_GameGroup;
 
 	virtual CCamera *GetCurCamera();
 	virtual const char *LoadingTitle() const;
-
-	void LayersOfGroupCount(CMapItemGroup *pGroup, int &TileLayerCount, int &QuadLayerCount, bool &PassedGameLayer);
 
 public:
 	enum
@@ -154,6 +155,13 @@ private:
 	void RenderTileBorder(int LayerIndex, const ColorRGBA &Color, int BorderX0, int BorderY0, int BorderX1, int BorderY1);
 	void RenderKillTileBorder(int LayerIndex, const ColorRGBA &Color);
 	void RenderQuadLayer(int LayerIndex, CMapItemLayerQuads *pQuadLayer, bool ForceRender = false);
+
+	int GetLayerType(const CMapItemLayer *pLayer) const;
+	int GetTileLayerAndOverlayCount(const CMapItemLayerTilemap *pLayerTilemap, int LayerType, void **ppTiles = nullptr) const;
+
+	void RenderTilelayerNoTileBuffer(int ImageIndex, int LayerType, void *pTilesData, CMapItemLayerTilemap *pLayerTilemap, const ColorRGBA &Color);
+	void RenderTilelayerWithTileBuffer(int ImageIndex, int LayerType, int TileLayerCounter, const ColorRGBA &Color);
+	ColorRGBA GetDeathBorderColor() const;
 };
 
 #endif

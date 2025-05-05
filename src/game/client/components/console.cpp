@@ -181,9 +181,6 @@ static int PossibleKeys(const char *pStr, IInput *pInput, IConsole::FPossibleCal
 	return Index;
 }
 
-const ColorRGBA CGameConsole::ms_SearchHighlightColor = ColorRGBA(1.0f, 0.0f, 0.0f, 1.0f);
-const ColorRGBA CGameConsole::ms_SearchSelectedColor = ColorRGBA(1.0f, 1.0f, 0.0f, 1.0f);
-
 CGameConsole::CInstance::CInstance(int Type)
 {
 	m_pHistoryEntry = nullptr;
@@ -1609,6 +1606,20 @@ void CGameConsole::ConConsolePageDown(IConsole::IResult *pResult, void *pUserDat
 		pConsole->m_BacklogCurLine = 0;
 }
 
+void CGameConsole::ConConsolePageTop(IConsole::IResult *pResult, void *pUserData)
+{
+	CInstance *pConsole = ((CGameConsole *)pUserData)->CurrentConsole();
+	pConsole->m_BacklogCurLine += pConsole->GetLinesToScroll(-1, pConsole->m_LinesRendered);
+	pConsole->m_HasSelection = false;
+}
+
+void CGameConsole::ConConsolePageBottom(IConsole::IResult *pResult, void *pUserData)
+{
+	CInstance *pConsole = ((CGameConsole *)pUserData)->CurrentConsole();
+	pConsole->m_BacklogCurLine = 0;
+	pConsole->m_HasSelection = false;
+}
+
 void CGameConsole::ConchainConsoleOutputLevel(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
 {
 	CGameConsole *pSelf = (CGameConsole *)pUserData;
@@ -1653,6 +1664,8 @@ void CGameConsole::OnConsoleInit()
 
 	Console()->Register("console_page_up", "", CFGFLAG_CLIENT, ConConsolePageUp, this, "Previous page in console");
 	Console()->Register("console_page_down", "", CFGFLAG_CLIENT, ConConsolePageDown, this, "Next page in console");
+	Console()->Register("console_page_top", "", CFGFLAG_CLIENT, ConConsolePageTop, this, "Last page in console");
+	Console()->Register("console_page_bottom", "", CFGFLAG_CLIENT, ConConsolePageBottom, this, "First page in console");
 	Console()->Chain("console_output_level", ConchainConsoleOutputLevel, this);
 }
 

@@ -3,8 +3,6 @@ set(WASM_ENGINE_FLAGS "")
 set(WASM_ENGINE_FLAGS "-s LLD_REPORT_UNDEFINED -s USE_PTHREADS=1")
 # needed for loading files in a c-like style
 set(WASM_ENGINE_FLAGS "${WASM_ENGINE_FLAGS} -s FILESYSTEM=1 -s FORCE_FILESYSTEM=1")
-# load data directory to the filesystem
-set(WASM_ENGINE_FLAGS "${WASM_ENGINE_FLAGS} --preload-file data")
 # remove some annoyance for now, TODO
 set(WASM_ENGINE_FLAGS "${WASM_ENGINE_FLAGS} --allow-multiple-definition -Wl,--shared-memory,--no-check-features")
 # TODO
@@ -13,7 +11,7 @@ set(WASM_ENGINE_FLAGS "${WASM_ENGINE_FLAGS} --allow-multiple-definition -Wl,--sh
 set(WASM_ENGINE_FLAGS "${WASM_ENGINE_FLAGS} -s WASM=1")
 set(WASM_ENGINE_FLAGS "${WASM_ENGINE_FLAGS} -s USE_WEBGL2=1")
 set(WASM_ENGINE_FLAGS "${WASM_ENGINE_FLAGS} -s FULL_ES3=1")
-set(WASM_ENGINE_FLAGS "${WASM_ENGINE_FLAGS} -s DEFAULT_LIBRARY_FUNCS_TO_INCLUDE=[\"$autoResumeAudioContext, $dynCall\"]")
+set(WASM_ENGINE_FLAGS "${WASM_ENGINE_FLAGS} -s DEFAULT_LIBRARY_FUNCS_TO_INCLUDE=[\\$autoResumeAudioContext,\\$dynCall]")
 # this flag is the most important one. It tells SDL2 to call emscripten functions when polling event
 set(WASM_ENGINE_FLAGS "${WASM_ENGINE_FLAGS} -s ASYNCIFY=1")
 # TODO, has to be fixed in SDL2, can improve responsivness of the site

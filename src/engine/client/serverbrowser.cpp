@@ -6,7 +6,8 @@
 #include "serverbrowser_ping_cache.h"
 
 #include <algorithm>
-#include <unordered_set>
+#include <map>
+#include <set>
 #include <vector>
 
 #include <base/hash_ctxt.h>
@@ -683,40 +684,22 @@ void CServerBrowser::QueueRequest(CServerEntry *pEntry)
 	m_NumRequests++;
 }
 
-void ServerBrowserFormatAddresses(char *pBuffer, int BufferSize, NETADDR *pAddrs, int NumAddrs)
+static void ServerBrowserFormatAddresses(char *pBuffer, int BufferSize, NETADDR *pAddrs, int NumAddrs)
 {
+	pBuffer[0] = '\0';
 	for(int i = 0; i < NumAddrs; i++)
 	{
 		if(i != 0)
 		{
-			if(BufferSize <= 1)
-			{
-				return;
-			}
-			pBuffer[0] = ',';
-			pBuffer[1] = '\0';
-			pBuffer += 1;
-			BufferSize -= 1;
+			str_append(pBuffer, ",", BufferSize);
 		}
-		if(BufferSize <= 1)
-		{
-			return;
-		}
-		char aIpAddr[512];
-		net_addr_str(&pAddrs[i], aIpAddr, sizeof(aIpAddr), true);
 		if(pAddrs[i].type & NETTYPE_TW7)
 		{
-			str_format(
-				pBuffer,
-				BufferSize,
-				"tw-0.7+udp://%s",
-				aIpAddr);
-			return;
+			str_append(pBuffer, "tw-0.7+udp://", BufferSize);
 		}
-		str_copy(pBuffer, aIpAddr, BufferSize);
-		int Length = str_length(pBuffer);
-		pBuffer += Length;
-		BufferSize -= Length;
+		char aIpAddr[NETADDR_MAXSTRSIZE];
+		net_addr_str(&pAddrs[i], aIpAddr, sizeof(aIpAddr), true);
+		str_append(pBuffer, aIpAddr, BufferSize);
 	}
 }
 
@@ -1964,7 +1947,7 @@ const std::vector<CCommunityId> &CFavoriteCommunityFilterList::Entries() const
 }
 
 template<typename TNamedElement, typename TElementName>
-static bool IsSubsetEquals(const std::vector<const TNamedElement *> &vpLeft, const std::unordered_set<TElementName> &Right)
+static bool IsSubsetEquals(const std::vector<const TNamedElement *> &vpLeft, const std::set<TElementName> &Right)
 {
 	return vpLeft.size() <= Right.size() && std::all_of(vpLeft.begin(), vpLeft.end(), [&](const TNamedElement *pElem) {
 		return Right.count(TElementName(pElem->Name())) > 0;
@@ -2158,7 +2141,7 @@ void CExcludedCommunityCountryFilterList::Clean(const std::vector<CCommunity> &v
 			}
 		}
 		// Prevent filter that would exclude all allowed countries
-		std::unordered_set<CCommunityCountryName> UniqueCountries;
+		std::set<CCommunityCountryName> UniqueCountries;
 		for(const CCommunity &AllowedCommunity : vAllowedCommunities)
 		{
 			for(const CCommunityCountry &Country : AllowedCommunity.Countries())

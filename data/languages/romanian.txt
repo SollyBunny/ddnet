@@ -509,10 +509,6 @@ Failed during initialization. Try to change gfx_backend to OpenGL or Vulkan in s
 == Eșuat în timpul inițializării. Încercați să schimbați gfx_backend la OpenGL sau Vulkan în settings_ddnet.cfg din dosarul de configurare și încercați din nou.
 
 [Graphics error]
-Out of VRAM. Try removing custom assets (skins, entities, etc.), especially those with high resolution.
-== Fără memorie video (VRAM). Încercați să eliminați resursele personalizate (costume, entități etc.), în special cele cu rezoluție mare.
-
-[Graphics error]
 An error during command recording occurred. Try to update your GPU drivers.
 == A apărut o eroare în timpul înregistrării comenzii. Încercați să vă actualizați driverele plăcii grafice (GPU).
 
@@ -2121,63 +2117,91 @@ Show spectator cursor
 == Afișează cursor spectator
 
 No demo with this filename exists
-== 
+== Nu există niciun demo cu acest nume de fișier
 
 Map size
-== 
+== Dimensiunea hărții
 
 Show number of spectators
-== 
+== Afișează numărul de spectatori
 
 [Show name plates]
 None
-== 
+== Niciuna
 
 [Show name plates]
 Own
-== 
+== Proprie
 
 [Show name plates]
 Others
-== 
+== Altele
 
 [Show name plates]
 All
-== 
+== Toate
 
 Name plates offset
-== 
+== Offset plăcuțe de nume
 
 Show friend icon in name plates
-== 
+== Afișați indicatorul de prieten în plăcuțele de nume
 
 Show client IDs on a seperate line
-== 
+== Arată ID-urile de client pe o linie separată
 
 Client IDs size
-== 
+== Dimensiunea ID-urilor de client
 
 Show players' key presses
-== 
+== Afișați tastele apăsate de jucători
 
 [Show players' key presses]
 None
-== 
+== Niciuna
 
 [Show players' key presses]
 Own
-== 
+== Proprie
 
 [Show players' key presses]
 Others
-== 
+== Altele
 
 [Show players' key presses]
 All
-== 
+== Toate
 
 Preview dummy's name plate
-== 
+== Previzualizați plăcuța de nume a manechinului
 
 AntiPing: prediction margin
+== AntiPing: marja de predicție
+
+[Graphics error]
+Out of VRAM. Try setting 'cl_skins_loaded_max' to a lower value or remove custom assets (skins, entities, etc.), especially those with high resolution.
+== 
+
+This name cannot be used for files and folders
+== 
+
+This skin name cannot be used.
+== 
+
+Skin could not be loaded due to an error. Check the local console for details.
+== 
+
+Skin could not be found.
+== 
+
+No skins match your filter criteria
+== 
+
+Preview player's name plate
+== 
+
+Dragger Outline Color
+== 
+
+Dragger Inner Color
 == 
