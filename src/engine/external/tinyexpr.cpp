@@ -89,7 +89,6 @@ typedef struct state {
 #define IS_FUNCTION(TYPE) (((TYPE) & TE_FUNCTION0) != 0)
 #define IS_CLOSURE(TYPE) (((TYPE) & TE_CLOSURE0) != 0)
 #define ARITY(TYPE) ( ((TYPE) & (TE_FUNCTION0 | TE_CLOSURE0)) ? ((TYPE) & 0x00000007) : 0 )
-#define NEW_EXPR(type, ...) new_expr((type), (const te_expr*[]){__VA_ARGS__})
 
 static te_expr *new_expr(const int type, const te_expr *parameters[]) {
     const size_t arity = ARITY(type);
@@ -105,6 +104,16 @@ static te_expr *new_expr(const int type, const te_expr *parameters[]) {
     ret->type = type;
     ret->v.bound = NULL;
     return ret;
+}
+
+static te_expr *new_expr_1p(const int type, const te_expr *p1) {
+    const te_expr *parameters[] = {p1};
+    return new_expr(type, parameters);
+}
+
+static te_expr *new_expr_2p(const int type, const te_expr *p1, const te_expr *p2) {
+    const te_expr *parameters[] = {p1, p2};
+    return new_expr(type, parameters);
 }
 
 static void te_free_parameters(te_expr *n) {
@@ -127,63 +136,77 @@ void te_free(te_expr *n) {
     free(n);
 }
 
-static double pi(void) {
+static double fn_pi(void) {
     return 3.14159265358979323846;
 }
-static double e(void) {
+static double fn_e(void) {
     return 2.71828182845904523536;
 }
-static double fac(double a) {
+static double fn_fac(double a) {
     if (a == 0.0)
         return 1.0;
     if (a == -1.0)
         return NAN;
     return tgamma(a + 1.0);
 }
-static double ncr(double n, double r) {
+static double fn_ncr(double n, double r) {
     if (r < 0 || n < 0 || r > n) return NAN;
     if (r > n / 2) r = n - r; // symmetry for better numerical stability
     return round(exp(lgamma(n + 1.0) - lgamma(r + 1.0) - lgamma(n - r + 1.0)));
 }
-static double npr(double n, double r) {
-    return ncr(n, r) * tgamma(r + 1.0);
+static double fn_npr(double n, double r) {
+    return fn_ncr(n, r) * tgamma(r + 1.0);
 }
-
-/* Workaround for a VC 2017 problem */
-static double ceil_(double x) { return ceil(x); }
-static double floor_(double x) { return floor(x); }
+static double fn_abs(double a) { return fabs(a); }
+static double fn_acos(double a) { return acos(a); }
+static double fn_asin(double a) { return asin(a); }
+static double fn_atan(double a) { return atan(a); }
+static double fn_atan2(double a, double b) { return atan2(a, b); }
+static double fn_ceil(double a) { return ceil(a); }
+static double fn_cos(double a) { return cos(a); }
+static double fn_cosh(double a) { return cosh(a); }
+static double fn_exp(double a) { return exp(a); }
+static double fn_floor(double a) { return floor(a); }
+static double fn_log(double a) { return log(a); }
+static double fn_log10(double a) { return log10(a); }
+static double fn_pow(double a, double b) { return pow(a, b); }
+static double fn_sin(double a) { return sin(a); }
+static double fn_sinh(double a) { return sinh(a); }
+static double fn_sqrt(double a) { return sqrt(a); }
+static double fn_tan(double a) { return tan(a); }
+static double fn_tanh(double a) { return tanh(a); }
 
 static const te_variable functions[] = {
     /* must be in alphabetical order */
-    {"abs", {.f1=fabs}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
-    {"acos", {.f1=acos}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
-    {"asin", {.f1=asin}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
-    {"atan", {.f1=atan}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
-    {"atan2", {.f2=atan2}, TE_FUNCTION2 | TE_FLAG_PURE, 0},
-    {"ceil", {.f1=ceil_}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
-    {"cos", {.f1=cos}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
-    {"cosh", {.f1=cosh}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
-    {"e", {.f0=e}, TE_FUNCTION0 | TE_FLAG_PURE, 0},
-    {"exp", {.f1=exp}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
-    {"fac", {.f1=fac}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
-    {"floor", {.f1=floor_}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
-    {"ln", {.f1=log}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"abs", {(void*)fn_abs}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"acos", {(void*)fn_acos}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"asin", {(void*)fn_asin}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"atan", {(void*)fn_atan}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"atan2", {(void*)fn_atan2}, TE_FUNCTION2 | TE_FLAG_PURE, 0},
+    {"ceil", {(void*)fn_ceil}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"cos", {(void*)fn_cos}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"cosh", {(void*)fn_cosh}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"e", {(void*)fn_e}, TE_FUNCTION0 | TE_FLAG_PURE, 0},
+    {"exp", {(void*)fn_exp}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"fac", {(void*)fn_fac}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"floor", {(void*)fn_floor}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"ln", {(void*)fn_log}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
 #ifdef TE_NAT_LOG
-    {"log", {.f1=log}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"log", {(void*)fn_log}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
 #else
-    {"log", {.f1=log10}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"log", {(void*)fn_log10}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
 #endif
-    {"log10", {.f1=log10}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
-    {"ncr", {.f2=ncr}, TE_FUNCTION2 | TE_FLAG_PURE, 0},
-    {"npr", {.f2=npr}, TE_FUNCTION2 | TE_FLAG_PURE, 0},
-    {"pi", {.f0=pi}, TE_FUNCTION0 | TE_FLAG_PURE, 0},
-    {"pow", {.f2=pow}, TE_FUNCTION2 | TE_FLAG_PURE, 0},
-    {"sin", {.f1=sin}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
-    {"sinh", {.f1=sinh}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
-    {"sqrt", {.f1=sqrt}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
-    {"tan", {.f1=tan}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
-    {"tanh", {.f1=tanh}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
-    {0, {0}, 0, 0}
+    {"log10", {(void*)fn_log10}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"ncr", {(void*)fn_ncr}, TE_FUNCTION2 | TE_FLAG_PURE, 0},
+    {"npr", {(void*)fn_npr}, TE_FUNCTION2 | TE_FLAG_PURE, 0},
+    {"pi", {(void*)fn_pi}, TE_FUNCTION0 | TE_FLAG_PURE, 0},
+    {"pow", {(void*)fn_pow}, TE_FUNCTION2 | TE_FLAG_PURE, 0},
+    {"sin", {(void*)fn_sin}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"sinh", {(void*)fn_sinh}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"sqrt", {(void*)fn_sqrt}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"tan", {(void*)fn_tan}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {"tanh", {(void*)fn_tanh}, TE_FUNCTION1 | TE_FLAG_PURE, 0},
+    {0, {NULL}, 0, 0}
 };
 
 static const te_variable *find_builtin(const char *name, size_t len) {
@@ -422,7 +445,7 @@ static te_expr *power(state *s) {
         te_expr *b = base(s);
         if (!b) return NULL;
 
-        ret = NEW_EXPR(TE_FUNCTION1 | TE_FLAG_PURE, b);
+        ret = new_expr_1p(TE_FUNCTION1 | TE_FLAG_PURE, b);
         if (!ret) { te_free(b); return NULL; }
 
         ret->v.f.f1 = op_negate;
@@ -457,7 +480,7 @@ static te_expr *factor(state *s) {
             te_expr *p = power(s);
             if (!p) { te_free(ret); return NULL; }
 
-            te_expr *insert = NEW_EXPR(TE_FUNCTION2 | TE_FLAG_PURE, insertion->parameters[1], p);
+            te_expr *insert = new_expr_2p(TE_FUNCTION2 | TE_FLAG_PURE, insertion->parameters[1], p);
             if (!insert) { te_free(p), te_free(ret); return NULL; }
 
             insert->v.f.f2 = t;
@@ -468,7 +491,7 @@ static te_expr *factor(state *s) {
             if (!p) { te_free(ret); return NULL; }
 
             te_expr *prev = ret;
-            ret = NEW_EXPR(TE_FUNCTION2 | TE_FLAG_PURE, ret, p);
+            ret = new_expr_2p(TE_FUNCTION2 | TE_FLAG_PURE, ret, p);
             if (!ret) { te_free(p), te_free(prev); return NULL; }
 
             ret->v.f.f2 = t;
@@ -478,7 +501,7 @@ static te_expr *factor(state *s) {
 
     if (neg) {
         te_expr *prev = ret;
-        ret = NEW_EXPR(TE_FUNCTION1 | TE_FLAG_PURE, ret);
+        ret = new_expr_1p(TE_FUNCTION1 | TE_FLAG_PURE, ret);
         if (!ret) { te_free(prev); return NULL; }
         ret->v.f.f1 = op_negate;
     }
@@ -498,7 +521,7 @@ static te_expr *factor(state *s) {
         if (!p) { te_free(ret); return NULL; }
 
         te_expr *prev = ret;
-        ret = NEW_EXPR(TE_FUNCTION2 | TE_FLAG_PURE, ret, p);
+        ret = new_expr_2p(TE_FUNCTION2 | TE_FLAG_PURE, ret, p);
         if (!ret) { te_free(p), te_free(prev); return NULL; }
 
         ret->v.f.f2 = t;
@@ -520,7 +543,7 @@ static te_expr *term(state *s) {
         if (!f) { te_free(ret); return NULL; }
 
         te_expr *prev = ret;
-        ret = NEW_EXPR(TE_FUNCTION2 | TE_FLAG_PURE, ret, f);
+        ret = new_expr_2p(TE_FUNCTION2 | TE_FLAG_PURE, ret, f);
         if (!ret) { te_free(f), te_free(prev); return NULL; }
 
         ret->v.f.f2 = t;
@@ -541,7 +564,7 @@ static te_expr *expr(state *s) {
         if (!te) { te_free(ret); return NULL; }
 
         te_expr *prev = ret;
-        ret = NEW_EXPR(TE_FUNCTION2 | TE_FLAG_PURE, ret, te);
+        ret = new_expr_2p(TE_FUNCTION2 | TE_FLAG_PURE, ret, te);
         if (!ret) { te_free(te), te_free(prev); return NULL; }
 
         ret->v.f.f2 = t;
@@ -561,7 +584,7 @@ static te_expr *list(state *s) {
         if (!e) { te_free(ret); return NULL; }
 
         te_expr *prev = ret;
-        ret = NEW_EXPR(TE_FUNCTION2 | TE_FLAG_PURE, ret, e);
+        ret = new_expr_2p(TE_FUNCTION2 | TE_FLAG_PURE, ret, e);
         if (!ret) { te_free(e), te_free(prev); return NULL; }
 
         ret->v.f.f2 = op_comma;

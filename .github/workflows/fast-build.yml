@@ -30,11 +30,11 @@ jobs:
           cmake-init-env: CXXFLAGS= LDFLAGS=
           package-file: "*-win64.zip"
           fancy: false
-        - os: windows-latest
-          cmake-args: -A Win32 -DDISCORD=ON
-          cmake-init-env: CXXFLAGS= LDFLAGS=
-          package-file: "*-win32.zip"
-          fancy: false
+        # - os: windows-latest
+        #   cmake-args: -A Win32 -DDISCORD=ON
+        #   cmake-init-env: CXXFLAGS= LDFLAGS=
+        #   package-file: "*-win32.zip"
+        #   fancy: false
     steps:
     - uses: actions/checkout@v4
       with:
