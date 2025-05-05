@@ -66,7 +66,6 @@
 //PULSE
 //#include "components/comp_pulse/colormode.h" TODO: ADD
 #include "components/comp_pulse/hover_notification.h"
-#include "components/comp_pulse/nameplates_extended.h"
 #include "components/comp_pulse/players_extended.h"
 #include "components/comp_pulse/skinprofiles.h"
 #include "components/comp_pulse/socket_request.h"
@@ -172,6 +171,7 @@ public:
 	CCountryFlags m_CountryFlags;
 	CFlow m_Flow;
 	CHud m_Hud;
+	CNamePlates m_NamePlates;
 	CDebugHud m_DebugHud;
 	CControls m_Controls;
 	CEffects m_Effects;
@@ -204,7 +204,6 @@ public:
 	// Pulse Components
 	CSkinProfiles m_SkinProfiles;
 	CPlayerExtended m_Players; // <- **EXTEND CPlayers**
-	CNamePlatesExtended m_NamePlates; // <- **EXTEND CNamePlates**
 
 private:
 	std::vector<class CComponent *> m_vpAll;
