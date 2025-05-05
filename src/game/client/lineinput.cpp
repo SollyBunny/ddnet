@@ -1,8 +1,8 @@
 /* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
+#include <engine/external/tinyexpr.h>
 #include <engine/keys.h>
 #include <engine/shared/config.h>
-#include <engine/external/tinyexpr.h>
 
 #include "lineinput.h"
 #include "ui.h"
@@ -691,8 +691,9 @@ int CLineInputNumber::GetInteger(int Base) const
 {
 	if(Base == 10)
 	{
-		double Result = te_interp(GetString(), nullptr);;
-		if (std::isfinite(Result))
+		double Result = te_interp(GetString(), nullptr);
+		;
+		if(std::isfinite(Result))
 			return (int)std::round(Result);
 	}
 	return str_toint_base(GetString(), Base);
@@ -721,8 +722,8 @@ int64_t CLineInputNumber::GetInteger64(int Base) const
 {
 	if(Base == 10)
 	{
-		double Result = te_interp(GetString(), nullptr);;
-		if (std::isfinite(Result))
+		double Result = te_interp(GetString(), nullptr);
+		if(std::isfinite(Result))
 			return (int64_t)std::round(Result);
 	}
 	return str_toint64_base(GetString(), Base);
