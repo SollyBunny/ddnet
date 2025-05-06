@@ -500,7 +500,7 @@ public:
 	}
 };
 
-class CNamePlatePartJumps : public CNamePlatePart
+class CNamePlatePartJumpsLeft : public CNamePlatePart
 {
 private:
 	int m_JumpsLeft;
@@ -552,7 +552,7 @@ protected:
 	}
 
 public:
-	CNamePlatePartJumps(CGameClient &This) :
+	CNamePlatePartJumpsLeft(CGameClient &This) :
 		CNamePlatePart(This)
 	{
 		m_Padding = vec2();
@@ -613,7 +613,7 @@ private:
 		AddPart<CNamePlatePartClientId>(This, true);
 		AddPart<CNamePlatePartNewLine>(This);
 		//====
-		AddPart<CNamePlatePartJumps>(This);
+		AddPart<CNamePlatePartJumpsLeft>(This);
 		AddPart<CNamePlatePartNewLine>(This);
 
 		AddPart<CNamePlatePartFlags>(This);
@@ -965,7 +965,6 @@ void CNamePlates::RenderNamePlatePreview(vec2 Position, int Dummy)
 		TeeRenderInfo.ApplyColors(g_Config.m_ClDummyUseCustomColor, g_Config.m_ClDummyColorBody, g_Config.m_ClDummyColorFeet);
 	}
 	TeeRenderInfo.m_Size = 64.0f;
-
 	//Tag
 	Data.m_ShowFlags = true;
 	Data.m_TrackedFlags = CHARACTERFLAG_JETPACK | CHARACTERFLAG_ENDLESS_JUMP;
