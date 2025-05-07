@@ -215,7 +215,7 @@ struct SLabelProperties
 	bool m_StopAtEnd = false;
 	bool m_EllipsisAtEnd = false;
 	bool m_EnableWidthCheck = true;
-	std::vector<STextColorSplit> m_vColorSplits = {};
+	std::vector<STextColorSplit> m_vColorSplits;
 };
 
 enum EButtonFlags : unsigned
