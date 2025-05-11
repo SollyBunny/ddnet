@@ -4066,7 +4066,7 @@ public:
 		VkExtent2D AutoViewportExtent = RetSize;
 		bool UsesForcedViewport = false;
 		// keep this in sync with graphics_threaded AdjustViewport's check
-		if(AutoViewportExtent.height > 4 * AutoViewportExtent.width / 5)
+		if(AutoViewportExtent.height > 4 * AutoViewportExtent.width / 5 && g_GraphicsForcedAspect)
 		{
 			AutoViewportExtent.height = 4 * AutoViewportExtent.width / 5;
 			UsesForcedViewport = true;

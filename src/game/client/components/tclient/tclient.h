@@ -32,6 +32,10 @@ public:
 	void OnConsoleInit() override;
 	void OnRender() override;
 
+	void OnStateChange(int OldState, int NewState) override;
+	void OnNewSnapshot() override;
+	void SetForcedAspect();
+
 	std::shared_ptr<CHttpRequest> m_pTClientInfoTask = nullptr;
 	void FetchTClientInfo();
 	void LoadTClientInfoJson();

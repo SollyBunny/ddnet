@@ -440,3 +440,29 @@ void CTClient::FinishTClientInfo()
 
 	json_value_free(pJson);
 }
+
+void CTClient::SetForcedAspect()
+{
+	int State = Client()->State();
+	bool Force = true;
+	if(State == CClient::EClientState::STATE_DEMOPLAYBACK)
+	{
+		Force = false;
+	}
+	else if(State == CClient::EClientState::STATE_ONLINE)
+	{
+		if(GameClient()->m_GameInfo.m_AllowZoom && !GameClient()->m_Menus.IsActive())
+			Force = false;
+	}
+	Graphics()->SetForcedAspect(Force);
+}
+
+void CTClient::OnStateChange(int OldState, int NewState)
+{
+	SetForcedAspect();
+}
+
+void CTClient::OnNewSnapshot()
+{
+	SetForcedAspect();
+}

@@ -232,6 +232,7 @@ public:
 	virtual void ResizeToScreen() = 0;
 	virtual void GotResized(int w, int h, int RefreshRate) = 0;
 	virtual void UpdateViewport(int X, int Y, int W, int H, bool ByResize) = 0;
+	virtual bool IsScreenKeyboardShown() = 0;
 
 	/**
 	* Listens to a resize event of the canvas, which is usually caused by a window resize.
@@ -481,6 +482,10 @@ protected:
 		Tex.m_Id = Index;
 		return Tex;
 	}
+
+public:
+	// TClient
+	virtual void SetForcedAspect(bool Force) = 0;
 };
 
 class IEngineGraphics : public IGraphics

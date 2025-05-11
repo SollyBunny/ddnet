@@ -2191,11 +2191,22 @@ int CGraphics_Threaded::IssueInit()
 	return r;
 }
 
+// TClient
+bool g_GraphicsForcedAspect = true;
+void CGraphics_Threaded::SetForcedAspect(bool Force)
+{
+	if(g_GraphicsForcedAspect == Force)
+		return;
+	g_GraphicsForcedAspect = Force;
+	printf("got forced %d\n", Force);
+	GotResized(g_Config.m_GfxScreenWidth, g_Config.m_GfxScreenHeight, g_Config.m_GfxScreenRefreshRate);
+}
+
 void CGraphics_Threaded::AdjustViewport(bool SendViewportChangeToBackend)
 {
 	// adjust the viewport to only allow certain aspect ratios
 	// keep this in sync with backend_vulkan GetSwapImageSize's check
-	if(m_ScreenHeight > 4 * m_ScreenWidth / 5)
+	if(m_ScreenHeight > 4 * m_ScreenWidth / 5 && g_GraphicsForcedAspect)
 	{
 		m_IsForcedViewport = true;
 		m_ScreenHeight = 4 * m_ScreenWidth / 5;
@@ -2613,6 +2624,11 @@ void CGraphics_Threaded::GotResized(int w, int h, int RefreshRate)
 		for(auto &ResizeListener : m_vResizeListeners)
 			ResizeListener();
 	}
+}
+
+bool CGraphics_Threaded::IsScreenKeyboardShown()
+{
+	return m_pBackend->IsScreenKeyboardShown();
 }
 
 void CGraphics_Threaded::AddWindowResizeListener(WINDOW_RESIZE_FUNC pFunc)
