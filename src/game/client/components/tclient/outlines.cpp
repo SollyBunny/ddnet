@@ -16,42 +16,18 @@ void COutlines::OnRender()
 		return;
 	if(!g_Config.m_ClOverlayEntities && g_Config.m_ClOutlineEntities)
 		return;
-	for(int g = 0; g < GameClient()->Layers()->NumGroups(); g++)
+	if(!g_Config.m_ClOutline)
+		return;
+	if(g_Config.m_ClOutlineFreeze || g_Config.m_ClOutlineSolid || g_Config.m_ClOutlineUnFreeze || g_Config.m_ClOutlineKill)
 	{
-		CMapItemGroup *pGroup = GameClient()->Layers()->GetGroup(g);
-
-		if(!pGroup)
-
-			continue;
-
-		CTile *pGameTiles = NULL;
-
-		for(int l = 0; l < pGroup->m_NumLayers; l++)
+		CMapItemLayerTilemap *pTMap = GameClient()->Layers()->GameLayer();
+		if(pTMap)
 		{
-			CMapItemLayer *pLayer = GameClient()->Layers()->GetLayer(pGroup->m_StartLayer + l);
-			if(!pLayer)
-				return;
-			bool IsGameLayer = false;
-			bool IsTeleLayer = false;
-
-			if(pLayer == (CMapItemLayer *)GameClient()->Layers()->TeleLayer())
-				IsTeleLayer = true;
-			if(pLayer == (CMapItemLayer *)GameClient()->Layers()->GameLayer())
+			CTile *pTiles = (CTile *)GameClient()->Layers()->Map()->GetData(pTMap->m_Data);
+			if(pTiles)
 			{
-				IsGameLayer = true;
-			}
-
-			if(g_Config.m_ClOutline && IsGameLayer)
-			{
-				CMapItemLayerTilemap *pTMap = (CMapItemLayerTilemap *)pLayer;
-				if(!pTMap)
-					return;
-				CTile *pTiles = (CTile *)GameClient()->Layers()->Map()->GetData(pTMap->m_Data);
-				if(!pTiles)
-					return;
 				unsigned int Size = GameClient()->Layers()->Map()->GetDataSize(pTMap->m_Data);
-				pGameTiles = pTiles;
-				if((g_Config.m_ClOutlineFreeze || g_Config.m_ClOutlineSolid || g_Config.m_ClOutlineUnFreeze || g_Config.m_ClOutlineKill) && IsGameLayer && Size >= (size_t)pTMap->m_Width * pTMap->m_Height * sizeof(CTile))
+				if(Size >= (size_t)pTMap->m_Width * pTMap->m_Height * sizeof(CTile))
 				{
 					if(g_Config.m_ClOutlineUnFreeze)
 						RenderTools()->RenderGameTileOutlines(pTiles, pTMap->m_Width, pTMap->m_Height, 32.0f, TILE_UNFREEZE, (float)g_Config.m_ClOutlineAlpha / 100.0f);
@@ -63,25 +39,22 @@ void COutlines::OnRender()
 						RenderTools()->RenderGameTileOutlines(pTiles, pTMap->m_Width, pTMap->m_Height, 32.0f, TILE_DEATH, (float)g_Config.m_ClOutlineAlpha / 100.0f);
 				}
 			}
-			if(g_Config.m_ClOutline && IsTeleLayer)
+		}
+	}
+	if(g_Config.m_ClOutlineTele)
+	{
+		CMapItemLayerTilemap *pTMap = GameClient()->Layers()->TeleLayer();
+		if(pTMap)
+		{
+			CTile *pTiles = (CTile *)GameClient()->Layers()->Map()->GetData(pTMap->m_Data);
+			if(pTiles)
 			{
-				CMapItemLayerTilemap *pTMap = (CMapItemLayerTilemap *)pLayer;
-				if(!pTMap)
-					return;
-				CTile *pTiles = (CTile *)GameClient()->Layers()->Map()->GetData(pTMap->m_Data);
-				if(!pTiles)
-					return;
-				if(IsGameLayer)
-					pGameTiles = pTiles;
-				if(g_Config.m_ClOutlineTele)
+				unsigned int Size = GameClient()->Layers()->Map()->GetDataSize(pTMap->m_Tele);
+				if(Size >= (size_t)pTMap->m_Width * pTMap->m_Height * sizeof(CTeleTile))
 				{
 					CTeleTile *pTeleTiles = (CTeleTile *)GameClient()->Layers()->Map()->GetData(pTMap->m_Tele);
-					unsigned int TeleSize = GameClient()->Layers()->Map()->GetDataSize(pTMap->m_Tele);
-					if(TeleSize >= (size_t)pTMap->m_Width * pTMap->m_Height * sizeof(CTeleTile))
-					{
-						if(pGameTiles != NULL)
-							RenderTools()->RenderTeleOutlines(pGameTiles, pTeleTiles, pTMap->m_Width, pTMap->m_Height, 32.0f, (float)g_Config.m_ClOutlineAlpha / 100.0f);
-					}
+					CTile *pGameTiles = pTiles;
+					RenderTools()->RenderTeleOutlines(pGameTiles, pTeleTiles, pTMap->m_Width, pTMap->m_Height, 32.0f, (float)g_Config.m_ClOutlineAlpha / 100.0f);
 				}
 			}
 		}

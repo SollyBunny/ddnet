@@ -685,7 +685,7 @@ void CRenderTools::RenderTilemap(CTile *pTiles, int w, int h, float Scale, Color
 	Graphics()->MapScreen(ScreenX0, ScreenY0, ScreenX1, ScreenY1);
 }
 
-int ClampedIndex(int x, int y, int w, int h)
+static int ClampedIndex(int x, int y, int w, int h)
 {
 	x = std::clamp(x, 0, w - 1);
 	y = std::clamp(y, 0, h - 1);
@@ -940,11 +940,11 @@ void CRenderTools::RenderTeleOutlines(CTile *pTiles, CTeleTile *pTele, int w, in
 			if(mx < 1)
 				continue; // mx = 0;
 			if(mx >= w - 1)
-				continue; // mx = w-1;
+				continue; // mx = w - 1;
 			if(my < 1)
 				continue; // my = 0;
 			if(my >= h - 1)
-				continue; // my = h-1;
+				continue; // my = h - 1;
 
 			int c = mx + my * w;
 
