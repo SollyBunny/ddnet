@@ -1816,8 +1816,8 @@ Some fonts could not be loaded. Check the local console for details.
 == Certaines polices n'ont pas pu être chargées. Consultez la console locale pour plus de détails.
 
 [Spectating]
-Following %s
-== Suivi de %s
+Following
+== Suivi de
 
 Save skin
 == Enregistrer le skin

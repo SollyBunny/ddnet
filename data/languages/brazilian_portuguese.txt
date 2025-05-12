@@ -1802,8 +1802,8 @@ Show only chat messages from team members
 == Mostrar apenas mensagens de chat de membros do time
 
 [Spectating]
-Following %s
-== Seguindo %s
+Following
+== Seguindo
 
 Example of usage
 == Exemplo de uso

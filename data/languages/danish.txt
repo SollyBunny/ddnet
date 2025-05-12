@@ -1215,8 +1215,8 @@ Multi-View
 == Multi-visning
 
 [Spectating]
-Following %s
-== Følger %s
+Following
+== Følger
 
 [Spectating Camera Mode Icon]
 AUTO

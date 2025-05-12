@@ -1804,8 +1804,8 @@ Show only chat messages from team members
 == Mostrar solo los mensajes de miembros del equipo
 
 [Spectating]
-Following %s
-== Viendo a %s
+Following
+== Viendo a
 
 Example of usage
 == Ejemplo de uso

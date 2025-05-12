@@ -666,8 +666,8 @@ Multi-View
 == Multi-vedere
 
 [Spectating]
-Following %s
-== Urmărind %s
+Following
+== Urmărind
 
 Server best:
 == Record server:

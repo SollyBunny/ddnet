@@ -1802,8 +1802,8 @@ Show only chat messages from team members
 == Visa bara chattmeddelanden från lagkamrater
 
 [Spectating]
-Following %s
-== Följer %s
+Following
+== Följer
 
 Example of usage
 == Exempel på användning

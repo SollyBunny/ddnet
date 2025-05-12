@@ -991,8 +991,8 @@ Multi-View
 == Vista múltipla
 
 [Spectating]
-Following %s
-== A seguir %s
+Following
+== A seguir
 
 [Spectating Camera Mode Icon]
 AUTO

@@ -1813,8 +1813,8 @@ Could not connect dummy
 == Nepodarilo sa pripojiť dummyho
 
 [Spectating]
-Following %s
-== Sledujete %s
+Following
+== Sledujete
 
 Example of usage
 == Príklad použitia

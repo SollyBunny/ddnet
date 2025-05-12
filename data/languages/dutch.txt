@@ -1312,8 +1312,8 @@ Multi-View
 == Multi-View
 
 [Spectating]
-Following %s
-== Volgt %s
+Following
+== Volgt
 
 [Spectating Camera Mode Icon]
 AUTO

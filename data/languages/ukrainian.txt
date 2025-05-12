@@ -766,8 +766,8 @@ Following
 == Слідування
 
 [Spectating]
-Following %s
-== Cпостерігання за %s
+Following
+== Cпостерігання за
 
 Force vote
 == Форсувати

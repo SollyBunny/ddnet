@@ -1776,8 +1776,8 @@ Multi-View
 == Widok wieloosobowy
 
 [Spectating]
-Following %s
-== Obserwowanie %s
+Following
+== Obserwowanie
 
 Save skin
 == Zapisz skina

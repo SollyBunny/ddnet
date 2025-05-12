@@ -1802,8 +1802,8 @@ Show only chat messages from team members
 == Sadece takım üyelerinin mesajlarını göster
 
 [Spectating]
-Following %s
-== İzleniyor %s
+Following
+== İzleniyor
 
 Example of usage
 == Kullanım örneği

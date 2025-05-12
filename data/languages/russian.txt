@@ -1802,8 +1802,8 @@ Always show other players' hook collision lines
 == Всегда показывать линию крюка других игроков
 
 [Spectating]
-Following %s
-== Наблюдение за %s
+Following
+== Наблюдение за
 
 Example of usage
 == Пример использования
