@@ -217,12 +217,6 @@ void CBindWheel::OnRender()
 		m_WasActive = true;
 	}
 
-	if(m_pClient->m_Snap.m_SpecInfo.m_Active)
-	{
-		m_Active = false;
-		m_WasActive = false;
-	}
-
 	const CUIRect Screen = *Ui()->Screen();
 
 	const bool WasTouchPressed = GameClient()->m_Emoticon.m_TouchState.m_AnyPressed;
