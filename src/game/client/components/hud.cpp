@@ -2249,9 +2249,9 @@ void CHud::RenderSpectatorHud()
 	{
 		const auto &Player = m_pClient->m_aClients[m_pClient->m_Snap.m_SpecInfo.m_SpectatorId];
 		if(g_Config.m_ClShowIds)
-			str_format(aBuf, sizeof(aBuf), Localize("Following %d: %s", "Spectating"), Player.ClientId(), Player.m_aName);
+			str_format(aBuf, sizeof(aBuf), "%s %d: %s", Localize("Following", "Spectating"), Player.ClientId(), Player.m_aName);
 		else
-			str_format(aBuf, sizeof(aBuf), Localize("Following %s", "Spectating"), Player.m_aName);
+			str_format(aBuf, sizeof(aBuf), "%s %s", Localize("Following", "Spectating"), Player.m_aName);
 	}
 	else
 	{
