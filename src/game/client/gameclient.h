@@ -55,7 +55,6 @@
 #include "components/scoreboard.h"
 #include "components/skins.h"
 #include "components/skins7.h"
-#include "components/solly/conditional.h"
 #include "components/sounds.h"
 #include "components/spectator.h"
 #include "components/statboard.h"
@@ -66,6 +65,7 @@
 #include "components/tclient/pet.h"
 #include "components/tclient/player_indicator.h"
 #include "components/tclient/rainbow.h"
+#include "components/tclient/conditional.h"
 #include "components/tclient/skinprofiles.h"
 #include "components/tclient/statusbar.h"
 #include "components/tclient/tclient.h"
@@ -198,9 +198,6 @@ public:
 
 	CTooltips m_Tooltips;
 
-	// Solly Components
-	CConditional m_Conditional;
-
 	// TClient Components
 	CSkinProfiles m_SkinProfiles;
 	CStatusBar m_StatusBar;
@@ -215,6 +212,7 @@ public:
 	COutlines m_Outlines;
 	CRainbow m_Rainbow;
 	CWarList m_WarList;
+	CConditional m_Conditional;
 
 private:
 	std::vector<class CComponent *> m_vpAll;

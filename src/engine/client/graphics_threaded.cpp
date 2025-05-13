@@ -2195,10 +2195,21 @@ int CGraphics_Threaded::IssueInit()
 bool g_GraphicsForcedAspect = true;
 void CGraphics_Threaded::SetForcedAspect(bool Force)
 {
+	if(!IsBackendInitialized())
+		return;
 	if(g_GraphicsForcedAspect == Force)
 		return;
 	g_GraphicsForcedAspect = Force;
-	GotResized(g_Config.m_GfxScreenWidth, g_Config.m_GfxScreenHeight, g_Config.m_GfxScreenRefreshRate);
+	m_pBackend->GetViewportSize(m_ScreenWidth, m_ScreenHeight);
+	AdjustViewport(false);
+	UpdateViewport(0, 0, m_ScreenWidth, m_ScreenHeight, false);
+
+	// kick the command buffer and wait
+	KickCommandBuffer();
+	WaitForIdle();
+
+	for(auto &ResizeListener : m_vResizeListeners)
+		ResizeListener();
 }
 
 void CGraphics_Threaded::AdjustViewport(bool SendViewportChangeToBackend)

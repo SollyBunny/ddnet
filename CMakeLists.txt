@@ -2461,8 +2461,6 @@ if(CLIENT)
     components/skins.h
     components/skins7.cpp
     components/skins7.h
-    components/solly/conditional.cpp
-    components/solly/conditional.h
     components/sounds.cpp
     components/sounds.h
     components/spectator.cpp
@@ -2477,6 +2475,8 @@ if(CLIENT)
     components/tclient/bindchat.h
     components/tclient/bindwheel.cpp
     components/tclient/bindwheel.h
+    components/tclient/conditional.cpp
+    components/tclient/conditional.h
     components/tclient/menus_tclient.cpp
     components/tclient/outlines.cpp
     components/tclient/outlines.h

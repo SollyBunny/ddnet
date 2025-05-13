@@ -1257,7 +1257,9 @@ void CChat::OnRender()
 		// render chat input
 		CTextCursor Cursor;
 		TextRender()->SetCursor(&Cursor, x, y, ScaledFontSize, TEXTFLAG_RENDER);
-		Cursor.m_LineWidth = Width - 190.0f;
+		// TClient
+		Cursor.m_LineWidth = std::max(Width - 190.0f, 190.0f);
+		// Cursor.m_LineWidth = Width - 190.0f;
 
 		if(m_Mode == MODE_ALL)
 			TextRender()->TextEx(&Cursor, Localize("All"));
