@@ -63,6 +63,8 @@ public:
 	const char *VoteDescription() const { return m_aDescription; }
 	const char *VoteReason() const { return m_aReason; }
 	bool IsReceivingOptions() const { return m_ReceivingOptions; }
+
+	friend class CTClient;
 };
 
 #endif
