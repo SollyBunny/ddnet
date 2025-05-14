@@ -102,7 +102,7 @@ public:
 	void Update(CGameClient &This, const CNamePlateData &Data) override
 	{
 		// Update if the text container is invalid or update is requested
-		if(!m_TextContainerIndex.Valid() && !UpdateNeeded(This, Data))
+		if(m_TextContainerIndex.Valid() && !UpdateNeeded(This, Data))
 			return;
 
 		// Set flags
