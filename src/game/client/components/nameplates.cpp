@@ -101,12 +101,7 @@ protected:
 public:
 	void Update(CGameClient &This, const CNamePlateData &Data) override
 	{
-		if(m_IsTag && m_QuadContainer == -1)
-			m_QuadContainer = This.Graphics()->CreateQuadContainer();
-		else if(!m_IsTag && m_QuadContainer != -1)
-			This.Graphics()->DeleteQuadContainer(m_QuadContainer);
-
-		if(!UpdateNeeded(This, Data) && m_TextContainerIndex.Valid())
+		if(!UpdateNeeded(This, Data))
 			return;
 
 		// Set flags
@@ -125,23 +120,27 @@ public:
 		}
 
 		UpdateText(This, Data);
-		if(m_TextContainerIndex.Valid())
-		{
-			const STextBoundingBox Container = This.TextRender()->GetBoundingBoxTextContainer(m_TextContainerIndex);
-			m_Size = vec2(Container.m_W, Container.m_H);
-			if(m_IsTag)
-				m_Size += vec2(m_Size.y * 0.8f, 0.0f); // Extra padding
-		}
-		else
+		if(!m_TextContainerIndex.Valid())
 		{
 			m_Visible = false;
 			m_Size = vec2(0.0f, 0.0f);
+			return;
 		}
 
-		if(m_IsTag && m_Visible)
+		const STextBoundingBox Container = This.TextRender()->GetBoundingBoxTextContainer(m_TextContainerIndex);
+		m_Size = vec2(Container.m_W, Container.m_H);
+		if(m_IsTag)
+			m_Size += vec2(m_Size.y * 0.8f, 0.0f); // Extra padding
+
+		if(m_IsTag && m_QuadContainer == -1)
+			m_QuadContainer = This.Graphics()->CreateQuadContainer();
+		else if(!m_IsTag && m_QuadContainer != -1)
+			This.Graphics()->DeleteQuadContainer(m_QuadContainer);
+
+		if(m_IsTag)
 		{
-			This.Graphics()->QuadContainerReset(m_QuadContainer);
 			This.Graphics()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+			This.Graphics()->QuadContainerReset(m_QuadContainer);
 			const float x = 0.0f; // NOLINT(readability-identifier-naming)
 			const float y = -1.0f; // NOLINT(readability-identifier-naming)
 			const float r = 5.0f; // NOLINT(readability-identifier-naming)
