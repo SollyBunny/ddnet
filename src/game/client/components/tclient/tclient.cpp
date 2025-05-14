@@ -466,3 +466,104 @@ void CTClient::OnNewSnapshot()
 {
 	SetForcedAspect();
 }
+
+constexpr const char STRIP_CHARS[] = {'-', '=', '+', '_', ' '};
+static bool IsStripChar(char c)
+{
+	return std::any_of(std::begin(STRIP_CHARS), std::end(STRIP_CHARS), [c](char s) {
+		return s == c;
+	});
+}
+
+static void StripStr(const char *pIn, char *pOut, const char *pEnd)
+{
+	if(!pIn)
+	{
+		*pOut = '\0';
+		return;
+	}
+
+	while(*pIn && IsStripChar(*pIn))
+		pIn++;
+
+	// Special behaviour for empty checkbox
+	if((unsigned char)*pIn == 0xE2 && (unsigned char)(*(pIn + 1)) == 0x98 && (unsigned char)(*(pIn + 2)) == 0x90)
+	{
+		pIn += 3;
+		while(*pIn && IsStripChar(*pIn))
+			pIn++;
+	}
+
+	char *pLastValid = nullptr;
+	while(*pIn && pOut < pEnd - 1)
+	{
+		*pOut = *pIn;
+		if(!IsStripChar(*pIn))
+			pLastValid = pOut;
+		pIn++;
+		pOut++;
+	}
+
+	if(pLastValid)
+		*(pLastValid + 1) = '\0';
+	else
+		*pOut = '\0';
+}
+
+void CTClient::RenderMiniVoteHud()
+{
+	CUIRect View = {0.0f, 60.0f, 70.0f, 35.0f};
+	View.Draw(ColorRGBA(0.0f, 0.0f, 0.0f, 0.4f), IGraphics::CORNER_R, 3.0f);
+	View.Margin(3.0f, &View);
+
+	SLabelProperties Props;
+	Props.m_EllipsisAtEnd = true;
+
+	CUIRect Row, LeftColumn, RightColumn, ProgressSpinner;
+	char aBuf[256];
+	
+	// Vote description
+	View.HSplitTop(6.0f, &Row, &View);
+	StripStr(GameClient()->m_Voting.VoteDescription(), aBuf, aBuf + sizeof(aBuf));
+	Ui()->DoLabel(&Row, aBuf, 6.0f, TEXTALIGN_ML, Props);
+
+	// Vote reason
+	View.HSplitTop(3.0f, nullptr, &View);
+	View.HSplitTop(4.0f, &Row, &View);
+	Ui()->DoLabel(&Row, GameClient()->m_Voting.VoteReason(), 4.0f, TEXTALIGN_ML, Props);
+
+	// Time left
+	str_format(aBuf, sizeof(aBuf), Localize("%ds left"), GameClient()->m_Voting.SecondsLeft());
+	View.HSplitTop(3.0f, nullptr, &View);
+	View.HSplitTop(3.0f, &Row, &View);
+	Row.VSplitLeft(2.0f, nullptr, &Row);
+	Row.VSplitLeft(3.0f, &ProgressSpinner, &Row);
+	Row.VSplitLeft(2.0f, nullptr, &Row);
+
+	SProgressSpinnerProperties ProgressProps;
+	ProgressProps.m_Progress = clamp((time() - GameClient()->m_Voting.m_Opentime) / (float)(GameClient()->m_Voting.m_Closetime - GameClient()->m_Voting.m_Opentime), 0.0f, 1.0f);
+	Ui()->RenderProgressSpinner(ProgressSpinner.Center(), ProgressSpinner.h / 2.0f, ProgressProps);
+
+	Ui()->DoLabel(&Row, aBuf, 3.0f, TEXTALIGN_ML);
+
+	// Bars
+	View.HSplitTop(3.0f, nullptr, &View);
+	View.HSplitTop(3.0f, &Row, &View);
+	GameClient()->m_Voting.RenderBars(Row);
+
+	// F3 / F4
+	View.HSplitTop(3.0f, nullptr, &View);
+	View.HSplitTop(0.5f, &Row, &View);
+	Row.VSplitMid(&LeftColumn, &RightColumn, 4.0f);
+
+	char aKey[64];
+	m_pClient->m_Binds.GetKey("vote yes", aKey, sizeof(aKey));
+	TextRender()->TextColor(GameClient()->m_Voting.TakenChoice() == 1 ? ColorRGBA(0.2f, 0.9f, 0.2f, 0.85f) : TextRender()->DefaultTextColor());
+	Ui()->DoLabel(&LeftColumn, aKey[0] == '\0' ? "yes" : aKey, 0.5f, TEXTALIGN_ML);
+
+	m_pClient->m_Binds.GetKey("vote no", aKey, sizeof(aKey));
+	TextRender()->TextColor(GameClient()->m_Voting.TakenChoice() == -1 ? ColorRGBA(0.95f, 0.25f, 0.25f, 0.85f) : TextRender()->DefaultTextColor());
+	Ui()->DoLabel(&RightColumn, aKey[0] == '\0' ? "no" : aKey, 0.5f, TEXTALIGN_MR);
+
+	TextRender()->TextColor(TextRender()->DefaultTextColor());
+}

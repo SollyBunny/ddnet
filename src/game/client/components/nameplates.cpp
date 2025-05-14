@@ -101,12 +101,8 @@ protected:
 public:
 	void Update(CGameClient &This, const CNamePlateData &Data) override
 	{
-		if(m_IsTag && m_QuadContainer == -1)
-			m_QuadContainer = This.Graphics()->CreateQuadContainer();
-		else if(!m_IsTag && m_QuadContainer != -1)
-			This.Graphics()->DeleteQuadContainer(m_QuadContainer);
-
-		if(!UpdateNeeded(This, Data) && m_TextContainerIndex.Valid())
+		// Update if the text container is invalid or update is requested
+		if(m_TextContainerIndex.Valid() && !UpdateNeeded(This, Data))
 			return;
 
 		// Set flags
@@ -121,27 +117,30 @@ public:
 			// Create stuff at standard zoom
 			This.Graphics()->GetScreen(&ScreenX0, &ScreenY0, &ScreenX1, &ScreenY1);
 			This.RenderTools()->MapScreenToInterface(This.m_Camera.m_Center.x, This.m_Camera.m_Center.y);
-			This.TextRender()->DeleteTextContainer(m_TextContainerIndex);
 		}
 
+		This.TextRender()->DeleteTextContainer(m_TextContainerIndex);
 		UpdateText(This, Data);
-		if(m_TextContainerIndex.Valid())
+		if(!m_TextContainerIndex.Valid())
 		{
-			const STextBoundingBox Container = This.TextRender()->GetBoundingBoxTextContainer(m_TextContainerIndex);
-			m_Size = vec2(Container.m_W, Container.m_H);
-			if(m_IsTag)
-				m_Size += vec2(m_Size.y * 0.8f, 0.0f); // Extra padding
-		}
-		else
-		{
-			m_Visible = false;
 			m_Size = vec2(0.0f, 0.0f);
+			return;
 		}
 
-		if(m_IsTag && m_Visible)
+		const STextBoundingBox Bounding = This.TextRender()->GetBoundingBoxTextContainer(m_TextContainerIndex);
+		m_Size = vec2(Bounding.m_W, Bounding.m_H);
+		if(m_IsTag)
+			m_Size += vec2(m_Size.y * 0.8f, 0.0f); // Extra padding
+
+		if(m_IsTag && m_QuadContainer == -1)
+			m_QuadContainer = This.Graphics()->CreateQuadContainer();
+		else if(!m_IsTag && m_QuadContainer != -1)
+			This.Graphics()->DeleteQuadContainer(m_QuadContainer);
+
+		if(m_IsTag)
 		{
-			This.Graphics()->QuadContainerReset(m_QuadContainer);
 			This.Graphics()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+			This.Graphics()->QuadContainerReset(m_QuadContainer);
 			const float x = 0.0f; // NOLINT(readability-identifier-naming)
 			const float y = -1.0f; // NOLINT(readability-identifier-naming)
 			const float r = 5.0f; // NOLINT(readability-identifier-naming)

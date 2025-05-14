@@ -43,6 +43,8 @@ public:
 	void ResetTClientInfoTask();
 	bool NeedUpdate();
 
+	void RenderMiniVoteHud();
+
 	char m_aVersionStr[10] = "0";
 };
 
