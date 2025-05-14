@@ -101,7 +101,8 @@ protected:
 public:
 	void Update(CGameClient &This, const CNamePlateData &Data) override
 	{
-		if(!UpdateNeeded(This, Data))
+		// Update if the text container is invalid or update is requested
+		if(!m_TextContainerIndex.Valid() && !UpdateNeeded(This, Data))
 			return;
 
 		// Set flags
@@ -116,19 +117,18 @@ public:
 			// Create stuff at standard zoom
 			This.Graphics()->GetScreen(&ScreenX0, &ScreenY0, &ScreenX1, &ScreenY1);
 			This.RenderTools()->MapScreenToInterface(This.m_Camera.m_Center.x, This.m_Camera.m_Center.y);
-			This.TextRender()->DeleteTextContainer(m_TextContainerIndex);
 		}
 
+		This.TextRender()->DeleteTextContainer(m_TextContainerIndex);
 		UpdateText(This, Data);
 		if(!m_TextContainerIndex.Valid())
 		{
-			m_Visible = false;
 			m_Size = vec2(0.0f, 0.0f);
 			return;
 		}
 
-		const STextBoundingBox Container = This.TextRender()->GetBoundingBoxTextContainer(m_TextContainerIndex);
-		m_Size = vec2(Container.m_W, Container.m_H);
+		const STextBoundingBox Bounding = This.TextRender()->GetBoundingBoxTextContainer(m_TextContainerIndex);
+		m_Size = vec2(Bounding.m_W, Bounding.m_H);
 		if(m_IsTag)
 			m_Size += vec2(m_Size.y * 0.8f, 0.0f); // Extra padding
 
