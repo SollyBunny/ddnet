@@ -2934,6 +2934,8 @@ if(SERVER)
     gamemodes/vanilla/fly/fly.h
     gameworld.cpp
     gameworld.h
+    instagib/antibob.cpp
+    instagib/antibob.h
     instagib/chat_commands.cpp
     instagib/chat_commands.h
     instagib/enums.cpp
