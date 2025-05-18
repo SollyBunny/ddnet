@@ -755,10 +755,12 @@ void CHud::RenderTextInfo()
 		{
 			if(NumInTeam > 1 && NumInTeam - NumFrozen == 1)
 			{
-				const float Size = 11.0f;
-				CUIRect BoundingBox{m_Width / 4.0f - m_Width / 8.0f, 2.0f, m_Width / 4.0f, Size};
 				TextRender()->TextColor(color_cast<ColorRGBA>(ColorHSLA(g_Config.m_ClNotifyWhenLastColor)));
-				Ui()->DoLabel(&BoundingBox, g_Config.m_ClNotifyWhenLastText, Size, TEXTALIGN_CENTER);
+				float FontSize = g_Config.m_ClNotifyWhenLastSize;
+				float XPos = std::clamp((g_Config.m_ClNotifyWhenLastX / 100.0f) * m_Width, 1.0f, m_Width - FontSize);
+				float YPos = std::clamp((g_Config.m_ClNotifyWhenLastY / 100.0f) * m_Height, 1.0f, m_Height - FontSize);
+
+				TextRender()->Text(XPos, YPos, FontSize, g_Config.m_ClNotifyWhenLastText, -1.0f);
 				TextRender()->TextColor(TextRender()->DefaultTextColor());
 			}
 		}

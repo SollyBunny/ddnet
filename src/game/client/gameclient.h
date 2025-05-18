@@ -62,6 +62,7 @@
 #include "components/tclient/bindchat.h"
 #include "components/tclient/bindwheel.h"
 #include "components/tclient/conditional.h"
+#include "components/tclient/mod.h"
 #include "components/tclient/outlines.h"
 #include "components/tclient/pet.h"
 #include "components/tclient/player_indicator.h"
@@ -213,6 +214,7 @@ public:
 	CRainbow m_Rainbow;
 	CWarList m_WarList;
 	CConditional m_Conditional;
+	CMod m_Mod;
 
 private:
 	std::vector<class CComponent *> m_vpAll;

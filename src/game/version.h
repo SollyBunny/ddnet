@@ -22,7 +22,7 @@ extern const char *GIT_SHORTREV_HASH;
 
 // mods
 #define SOLLY_VERSION "0.0.0"
-#define TCLIENT_VERSION "10.1.2"
+#define TCLIENT_VERSION "10.3.0"
 #define INF_VERSION "0.2"
 
 // client

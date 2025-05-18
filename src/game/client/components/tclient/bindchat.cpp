@@ -70,6 +70,8 @@ void CBindChat::ConBindchatDefaults(IConsole::IResult *pResult, void *pUserData)
 		pThis->AddBind(BindDefault.m_Bind);
 	for(const CBindDefault &BindDefault : s_aDefaultBindChatOther)
 		pThis->AddBind(BindDefault.m_Bind);
+	for(const CBindDefault &BindDefault : s_aDefaultBindChatMod)
+		pThis->AddBind(BindDefault.m_Bind);
 }
 
 void CBindChat::AddBind(const char *pName, const char *pCommand)
@@ -169,10 +171,13 @@ void CBindChat::ExecuteBind(int Bind, const char *pArgs)
 {
 	char aBuf[BINDCHAT_MAX_CMD] = "";
 	str_append(aBuf, m_vBinds[Bind].m_aCommand);
-	if(pArgs)
+	if(pArgs && pArgs[0] != '\0')
 	{
 		str_append(aBuf, " ");
 		str_append(aBuf, pArgs);
+		// Remove extra space caused by tab
+		if(aBuf[str_length(aBuf) - 1] == ' ')
+			aBuf[str_length(aBuf) - 1] = '\0';
 	}
 	Console()->ExecuteLine(aBuf);
 }

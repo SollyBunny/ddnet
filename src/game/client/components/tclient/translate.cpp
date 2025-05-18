@@ -307,14 +307,6 @@ CChat::CLine *CTranslate::FindMessage(const char *pName)
 	// No messages at all
 	if(GameClient()->m_Chat.m_CurrentLine < 0)
 		return nullptr;
-	if(pName)
-	{
-		// Strip spaces from pName
-		char Name[MAX_NAME_LENGTH];
-		str_copy(Name, pName);
-		str_clean_whitespaces(Name);
-		pName = Name;
-	}
 	CChat::CLine *pLineBest = nullptr;
 	int ScoreBest = -1;
 	for(int i = 0; i < CChat::MAX_LINES; i++)

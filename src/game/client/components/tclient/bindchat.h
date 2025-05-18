@@ -101,6 +101,16 @@ static CBindChat::CBindDefault s_aDefaultBindChatWar[] = {
 	{nullptr, "!delclan", "remove_war_clan"},
 };
 
+static CBindChat::CBindDefault s_aDefaultBindChatMod[] = {
+	{"Mute ID:", "!mmute", "mod_rcon_mute"},
+	{"Mute Name:", "!mmuten", "mod_rcon_mute_name"},
+	{"Kick ID:", "!mkick", "mod_rcon_kick"},
+	{"Kick Name:", "!mkickn", "mod_rcon_kick_name"},
+	{"Ban ID:", "!mban", "mod_rcon_ban"},
+	{"Ban Name:", "!mbann", "mod_rcon_ban_name"},
+	{"Unban Last:", "!munbanlast", "rcon unban 0"},
+};
+
 static CBindChat::CBindDefault s_aDefaultBindChatOther[] = {
 	{"Translate:", "!translate", "translate"},
 	{"Mute:", "!mute", "add_foe"},

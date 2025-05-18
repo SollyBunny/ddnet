@@ -872,6 +872,7 @@ void CMenus::RenderSettingsTClientSettngs(CUIRect MainView)
 	Ui()->DoLabel(&Label, TCLocalize("HUD"), HeadlineFontSize, TEXTALIGN_ML);
 	Column.HSplitTop(MarginSmall, nullptr, &Column);
 
+	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClMiniVoteHud, TCLocalize("Show mini vote HUD"), &g_Config.m_ClMiniVoteHud, &Column, LineSize);
 	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClShowCenterLines, TCLocalize("Show screen center"), &g_Config.m_ClShowCenterLines, &Column, LineSize);
 	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClMiniDebug, TCLocalize("Show position and angle (mini debug)"), &g_Config.m_ClMiniDebug, &Column, LineSize);
 	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClRenderCursorSpec, TCLocalize("Show your cursor when in free spectate"), &g_Config.m_ClRenderCursorSpec, &Column, LineSize);
@@ -894,6 +895,16 @@ void CMenus::RenderSettingsTClientSettngs(CUIRect MainView)
 		Ui()->DoEditBox(&s_LastInput, &Button, EditBoxFontSize);
 		static CButtonContainer s_ClientNotifyWhenLastColor;
 		DoLine_ColorPicker(&s_ClientNotifyWhenLastColor, ColorPickerLineSize, ColorPickerLabelSize, ColorPickerLineSpacing, &NotificationConfig, "", &g_Config.m_ClNotifyWhenLastColor, ColorRGBA(1.0f, 1.0f, 1.0f), false);
+		Column.HSplitTop(LineSize, &Button, &Column);
+		Ui()->DoScrollbarOption(&g_Config.m_ClNotifyWhenLastX, &g_Config.m_ClNotifyWhenLastX, &Button, TCLocalize("Horizontal Position"), 1, 100, &CUi::ms_LinearScrollbarScale, 0, "%");
+		Column.HSplitTop(LineSize, &Button, &Column);
+		Ui()->DoScrollbarOption(&g_Config.m_ClNotifyWhenLastY, &g_Config.m_ClNotifyWhenLastY, &Button, TCLocalize("Vertical Position"), 1, 100, &CUi::ms_LinearScrollbarScale, 0, "%");
+		Column.HSplitTop(LineSize, &Button, &Column);
+		Ui()->DoScrollbarOption(&g_Config.m_ClNotifyWhenLastSize, &g_Config.m_ClNotifyWhenLastSize, &Button, TCLocalize("Font Size"), 1, 50);
+	}
+	else
+	{
+		Column.HSplitTop(LineSize * 3.0f, nullptr, &Column);
 	}
 	Column.HSplitTop(MarginExtraSmall, nullptr, &Column);
 	s_SectionBoxes.back().h = Column.y - s_SectionBoxes.back().y;

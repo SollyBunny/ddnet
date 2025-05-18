@@ -126,6 +126,11 @@ option(IPO "Enable interprocedural optimizations" OFF)
 option(FUSE_LD "Linker to use" OFF)
 option(SECURITY_COMPILER_FLAGS "Whether to set security-relevant compiler flags like -D_FORTIFY_SOURCE=2 and -fstack-protector-strong" ON)
 
+if(TARGET_OS STREQUAL "android")
+  set(DISCORD OFF)
+  set(STEAM OFF)
+endif()
+
 if(TARGET_OS STREQUAL "emscripten")
   include(${PROJECT_SOURCE_DIR}/cmake/toolchains/Emscripten.toolchain)
 endif()
@@ -2478,6 +2483,8 @@ if(CLIENT)
     components/tclient/conditional.cpp
     components/tclient/conditional.h
     components/tclient/menus_tclient.cpp
+    components/tclient/mod.cpp
+    components/tclient/mod.h
     components/tclient/outlines.cpp
     components/tclient/outlines.h
     components/tclient/pet.cpp
@@ -3864,3 +3871,15 @@ foreach(target ${TARGETS_DEP})
     target_compile_options(${target} PRIVATE ${OUR_FLAGS_DEP})
   endif()
 endforeach()
+
+if(TARGET_OS STREQUAL "windows" AND STEAM AND NOT CMAKE_BUILD_TYPE STREQUAL Debug)
+  add_custom_command(
+    TARGET game-client POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+      "${CMAKE_SOURCE_DIR}/steam_api.dll"
+      "$<TARGET_FILE_DIR:game-client>"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+      "${CMAKE_SOURCE_DIR}/steam_appid.txt"
+      "$<TARGET_FILE_DIR:game-client>"
+  )
+endif()

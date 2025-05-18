@@ -443,6 +443,7 @@ void CTClient::FinishTClientInfo()
 
 void CTClient::SetForcedAspect()
 {
+	return; // TODO: fix set forced aspect
 	int State = Client()->State();
 	bool Force = true;
 	if(State == CClient::EClientState::STATE_DEMOPLAYBACK)
@@ -518,10 +519,11 @@ void CTClient::RenderMiniVoteHud()
 
 	SLabelProperties Props;
 	Props.m_EllipsisAtEnd = true;
+	Props.m_MaxWidth = View.w;
 
 	CUIRect Row, LeftColumn, RightColumn, ProgressSpinner;
 	char aBuf[256];
-	
+
 	// Vote description
 	View.HSplitTop(6.0f, &Row, &View);
 	StripStr(GameClient()->m_Voting.VoteDescription(), aBuf, aBuf + sizeof(aBuf));

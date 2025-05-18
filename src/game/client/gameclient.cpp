@@ -174,6 +174,7 @@ void CGameClient::OnConsoleInit()
 					      &m_Menus,
 					      &m_Tooltips,
 					      &m_Conditional,
+					      &m_Mod,
 					      &CMenus::m_Binder,
 					      &m_GameConsole,
 					      &m_MenuBackground});
