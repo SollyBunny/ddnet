@@ -249,12 +249,106 @@ void CTClient::OnMessage(int MsgType, void *pRawMsg)
 			}
 		}
 	}
+
+	auto &vServerCommands = GameClient()->m_Chat.m_vServerCommands;
+	auto HasServerCommand = [&](const char *pNeedle) {
+		for(const auto &Command : vServerCommands)
+			if(str_comp_nocase(pNeedle, Command.m_aName) == 0)
+				return true;
+		return false;
+	};
+	auto AddSpecId = [&](bool Enable) {
+		static const CChat::CCommand SpecId("specid", "v[id]", "Spectate a player");
+		vServerCommands.erase(std::remove_if(vServerCommands.begin(), vServerCommands.end(), [](const CChat::CCommand &Command) { return Command == SpecId; }), vServerCommands.end());
+		if(Enable)
+			vServerCommands.push_back(SpecId);
+		GameClient()->m_Chat.m_ServerCommandsNeedSorting = true;
+	};
+	if(MsgType == NETMSGTYPE_SV_COMMANDINFO)
+	{
+		CNetMsg_Sv_CommandInfo *pMsg = (CNetMsg_Sv_CommandInfo *)pRawMsg;
+		if(str_comp_nocase(pMsg->m_pName, "spec") == 0)
+			AddSpecId(!HasServerCommand("specid"));
+		else if(str_comp_nocase(pMsg->m_pName, "specid") == 0)
+			AddSpecId(false);
+		return;
+	}
+	if(MsgType == NETMSGTYPE_SV_COMMANDINFOREMOVE)
+	{
+		CNetMsg_Sv_CommandInfoRemove *pMsg = (CNetMsg_Sv_CommandInfoRemove *)pRawMsg;
+		if(str_comp_nocase(pMsg->m_pName, "spec") == 0)
+			AddSpecId(false);
+		else if(str_comp_nocase(pMsg->m_pName, "specid") == 0)
+			AddSpecId(HasServerCommand("spec"));
+		return;
+	}
+}
+
+void CTClient::ConSpecId(IConsole::IResult *pResult, void *pUserData)
+{
+	((CTClient *)pUserData)->SpecId(pResult->GetInteger(0));
+}
+
+bool CTClient::ChatDoSpecId(const char *pInput)
+{
+	const char *pNumber = str_startswith_nocase(pInput, "/specid ");
+	if(!pNumber)
+		return false;
+
+	const int Length = str_length(pInput);
+	CChat::CHistoryEntry *pEntry = GameClient()->m_Chat.m_History.Allocate(sizeof(CChat::CHistoryEntry) + Length);
+	pEntry->m_Team = 0;
+	str_copy(pEntry->m_aText, pInput, Length + 1);
+
+	int ClientId = 0;
+	if(!str_toint(pNumber, &ClientId))
+		return true;
+
+	SpecId(ClientId);
+	return true;
+}
+
+void CTClient::SpecId(int ClientId)
+{
+	char aBuf[256];
+	if(ClientId < 0 || ClientId > (int)std::size(GameClient()->m_aClients))
+	{
+		str_format(aBuf, sizeof(aBuf), "Invalid Id '%d'", ClientId);
+		GameClient()->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp", aBuf);
+		return;
+	}
+	const auto &Player = GameClient()->m_aClients[ClientId];
+	if(!Player.m_Active)
+	{
+		str_format(aBuf, sizeof(aBuf), "Id '%d' is not connected", ClientId);
+		GameClient()->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp", aBuf);
+		return;
+	}
+	str_copy(aBuf, "/spec \"");
+	char *pDst = aBuf + strlen(aBuf);
+	str_escape(&pDst, Player.m_aName, aBuf + sizeof(aBuf));
+	str_append(aBuf, "\"");
+	dbg_msg("tclient", "sending '%s'", aBuf);
+	GameClient()->m_Chat.SendChat(0, aBuf);
+}
+
+void CTClient::ConEmoteCycle(IConsole::IResult *pResult, void *pUserData)
+{
+	CTClient &This = *(CTClient *)pUserData;
+	This.m_EmoteCycle += 1;
+	if(This.m_EmoteCycle > 15)
+		This.m_EmoteCycle = 0;
+	This.GameClient()->m_Emoticon.Emote(This.m_EmoteCycle);
 }
 
 void CTClient::OnConsoleInit()
 {
-	Console()->Register("tc_random_player", "s[type]", CFGFLAG_CLIENT, ConRandomTee, this, "Randomize player color (0 = all, 1 = body, 2 = feet, 3 = skin, 4 = flag) example: 0011 = randomize skin and flag [number is position] ");
+	Console()->Register("tc_random_player", "s[type]", CFGFLAG_CLIENT, ConRandomTee, this, "Randomize player color (0 = all, 1 = body, 2 = feet, 3 = skin, 4 = flag) example: 0011 = randomize skin and flag [number is position]");
 	Console()->Chain("tc_random_player", ConchainRandomColor, this);
+
+	Console()->Register("spec_id", "v[id]", CFGFLAG_CLIENT, ConSpecId, this, "Spectate a player by Id");
+
+	Console()->Register("emote_cycle", "", CFGFLAG_CLIENT, ConEmoteCycle, this, "Cycle through emotes");
 }
 
 void CTClient::RandomBodyColor()

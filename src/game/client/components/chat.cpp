@@ -267,6 +267,8 @@ bool CChat::OnInput(const IInput::CEvent &Event)
 
 		if(m_pClient->m_BindChat.ChatDoBinds(m_Input.GetString()))
 			; // Do nothing as bindchat was executed
+		else if(m_pClient->m_TClient.ChatDoSpecId(m_Input.GetString()))
+			; // Do nothing as specid was executed
 		else
 			SendChatQueued(m_Input.GetString());
 		m_pHistoryEntry = nullptr;

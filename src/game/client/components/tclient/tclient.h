@@ -15,6 +15,12 @@ class CTClient : public CComponent
 	static void RandomSkin(void *pUserData);
 	static void RandomFlag(void *pUserData);
 
+	static void ConSpecId(IConsole::IResult *pResult, void *pUserData);
+	void SpecId(int ClientId);
+
+	int m_EmoteCycle = 0;
+	static void ConEmoteCycle(IConsole::IResult *pResult, void *pUserData);
+
 	class IEngineGraphics *m_pGraphics = nullptr;
 
 	char m_PreviousOwnMessage[2048] = {};
@@ -44,6 +50,8 @@ public:
 	bool NeedUpdate();
 
 	void RenderMiniVoteHud();
+
+	bool ChatDoSpecId(const char *pInput);
 
 	char m_aVersionStr[10] = "0";
 };

@@ -104,11 +104,14 @@ static CBindChat::CBindDefault s_aDefaultBindChatWar[] = {
 static CBindChat::CBindDefault s_aDefaultBindChatMod[] = {
 	{"Mute ID:", "!mmute", "mod_rcon_mute"},
 	{"Mute Name:", "!mmuten", "mod_rcon_mute_name"},
+	{"Unmute Last:", "!munmutelast", "rcon unmute 0"},
 	{"Kick ID:", "!mkick", "mod_rcon_kick"},
 	{"Kick Name:", "!mkickn", "mod_rcon_kick_name"},
 	{"Ban ID:", "!mban", "mod_rcon_ban"},
 	{"Ban Name:", "!mbann", "mod_rcon_ban_name"},
 	{"Unban Last:", "!munbanlast", "rcon unban 0"},
+	{"Kill Ids:", "!mkill", "rcon mod_rcon_kill"},
+	{"Kill Names:", "!mkilln", "rcon mod_rcon_kill_name"},
 };
 
 static CBindChat::CBindDefault s_aDefaultBindChatOther[] = {
