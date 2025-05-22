@@ -60,8 +60,7 @@ protected:
 public:
 	void Update(CGameClient &This, const CNamePlateData &Data) override
 	{
-		// Update if the text container is invalid or update is requested
-		if(m_TextContainerIndex.Valid() && !UpdateNeeded(This, Data))
+		if(!UpdateNeeded(This, Data) && m_TextContainerIndex.Valid())
 			return;
 
 		// Set flags
@@ -70,19 +69,26 @@ public:
 			Flags |= ETextRenderFlags::TEXT_RENDER_FLAG_NO_PIXEL_ALIGNMENT; // Prevent jittering from rounding
 		This.TextRender()->SetRenderFlags(Flags);
 
-		float ScreenX0, ScreenY0, ScreenX1, ScreenY1;
 		if(Data.m_InGame)
 		{
-			// Create stuff at standard zoom
+			// Create text at standard zoom
+			float ScreenX0, ScreenY0, ScreenX1, ScreenY1;
 			This.Graphics()->GetScreen(&ScreenX0, &ScreenY0, &ScreenX1, &ScreenY1);
 			This.RenderTools()->MapScreenToInterface(This.m_Camera.m_Center.x, This.m_Camera.m_Center.y);
+			This.TextRender()->DeleteTextContainer(m_TextContainerIndex);
+			UpdateText(This, Data);
+			This.Graphics()->MapScreen(ScreenX0, ScreenY0, ScreenX1, ScreenY1);
+		}
+		else
+		{
+			UpdateText(This, Data);
 		}
 
-		This.TextRender()->DeleteTextContainer(m_TextContainerIndex);
-		UpdateText(This, Data);
+		This.TextRender()->SetRenderFlags(0);
+
 		if(!m_TextContainerIndex.Valid())
 		{
-			m_Size = vec2(0.0f, 0.0f);
+			m_Visible = false;
 			return;
 		}
 
