@@ -1,8 +1,6 @@
 #ifndef GAME_CLIENT_COMPONENTS_TCLIENT_MOD_H
 #define GAME_CLIENT_COMPONENTS_TCLIENT_MOD_H
 
-#include <string>
-
 #include <game/client/component.h>
 
 #include <engine/shared/console.h>
@@ -26,7 +24,8 @@ public:
 	void ConModRConKill(IConsole::IResult *pResult, const char *pCmd, bool IsName, char Unit);
 
 	int Sizeof() const override { return sizeof(*this); }
-	void OnInit() override;
+	void OnConsoleInit() override;
+	void OnRender() override;
 };
 
 #endif

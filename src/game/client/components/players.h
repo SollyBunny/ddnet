@@ -48,8 +48,6 @@ class CPlayers : public CComponent
 	int m_IcContainerIndex;
 	int m_IcStatusIconOffset;
 
-	int64_t m_SkidSoundTime = 0;
-
 public:
 	float GetPlayerTargetAngle(
 		const CNetObj_Character *pPrevChar,

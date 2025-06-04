@@ -189,31 +189,8 @@ void CPlayers::RenderHookCollLine(
 
 	bool Local = m_pClient->m_Snap.m_LocalClientId == ClientId;
 	bool OtherTeam = m_pClient->IsOtherTeam(ClientId);
-
-	bool Aim = (Player.m_PlayerFlags & PLAYERFLAG_AIM);
-	if(!Client()->ServerCapAnyPlayerFlag())
-	{
-		for(int i = 0; i < NUM_DUMMIES; i++)
-		{
-			if(ClientId == m_pClient->m_aLocalIds[i])
-			{
-				Aim = GameClient()->m_Controls.m_aShowHookColl[i];
-				break;
-			}
-		}
-	}
-
-	bool AlwaysRenderHookColl = GameClient()->m_GameInfo.m_AllowHookColl && (Local ? g_Config.m_ClShowHookCollOwn : g_Config.m_ClShowHookCollOther) == 2;
-	bool RenderHookCollPlayer = ClientId >= 0 && Aim && (Local ? g_Config.m_ClShowHookCollOwn : g_Config.m_ClShowHookCollOther) > 0;
-	if(Local && GameClient()->m_GameInfo.m_AllowHookColl && Client()->State() != IClient::STATE_DEMOPLAYBACK)
-		RenderHookCollPlayer = GameClient()->m_Controls.m_aShowHookColl[g_Config.m_ClDummy] && g_Config.m_ClShowHookCollOwn > 0;
-
-	bool RenderHookCollVideo = true;
-#if defined(CONF_VIDEORECORDER)
-	RenderHookCollVideo = !IVideo::Current() || g_Config.m_ClVideoShowHookCollOther || Local;
-#endif
-	if(!((AlwaysRenderHookColl || RenderHookCollPlayer) && RenderHookCollVideo))
-		return;
+	float Alpha = (OtherTeam || ClientId < 0) ? g_Config.m_ClShowOthersAlpha / 100.0f : 1.0f;
+	Alpha *= (float)g_Config.m_ClHookCollAlpha / 100;
 
 	float IntraTick = Intra;
 	if(ClientId >= 0)
@@ -227,116 +204,146 @@ void CPlayers::RenderHookCollLine(
 		Position = m_pClient->m_aClients[ClientId].m_RenderPos;
 	else
 		Position = mix(vec2(Prev.m_X, Prev.m_Y), vec2(Player.m_X, Player.m_Y), IntraTick);
-
-	Graphics()->TextureClear();
-	vec2 InitPos = Position;
-	vec2 FinishPos = InitPos + ExDirection * (m_pClient->m_aTuning[g_Config.m_ClDummy].m_HookLength - 42.0f);
-
-	ColorRGBA HookCollColor = color_cast<ColorRGBA>(ColorHSLA(g_Config.m_ClHookCollColorNoColl));
-
-	vec2 OldPos = InitPos + ExDirection * CCharacterCore::PhysicalSize() * 1.5f;
-	vec2 NewPos = OldPos;
-
-	bool DoBreak = false;
-
-	std::vector<std::pair<vec2, vec2>> vLineSegments;
-
-	do
+	// draw hook collision line
 	{
-		OldPos = NewPos;
-		NewPos = OldPos + ExDirection * m_pClient->m_aTuning[g_Config.m_ClDummy].m_HookFireSpeed;
-
-		if(distance(InitPos, NewPos) > m_pClient->m_aTuning[g_Config.m_ClDummy].m_HookLength)
+		bool Aim = (Player.m_PlayerFlags & PLAYERFLAG_AIM);
+		if(!Client()->ServerCapAnyPlayerFlag())
 		{
-			NewPos = InitPos + normalize(NewPos - InitPos) * m_pClient->m_aTuning[g_Config.m_ClDummy].m_HookLength;
-			DoBreak = true;
+			for(int i = 0; i < NUM_DUMMIES; i++)
+			{
+				if(ClientId == m_pClient->m_aLocalIds[i])
+				{
+					Aim = GameClient()->m_Controls.m_aShowHookColl[i];
+					break;
+				}
+			}
 		}
 
-		int Tele;
-		int Hit = Collision()->IntersectLineTeleHook(OldPos, NewPos, &FinishPos, 0x0, &Tele);
-		if(!DoBreak && Hit == TILE_TELEINHOOK)
+		bool AlwaysRenderHookColl = GameClient()->m_GameInfo.m_AllowHookColl && (Local ? g_Config.m_ClShowHookCollOwn : g_Config.m_ClShowHookCollOther) == 2;
+		bool RenderHookCollPlayer = ClientId >= 0 && Aim && (Local ? g_Config.m_ClShowHookCollOwn : g_Config.m_ClShowHookCollOther) > 0;
+		if(Local && GameClient()->m_GameInfo.m_AllowHookColl && Client()->State() != IClient::STATE_DEMOPLAYBACK)
+			RenderHookCollPlayer = GameClient()->m_Controls.m_aShowHookColl[g_Config.m_ClDummy] && g_Config.m_ClShowHookCollOwn > 0;
+
+		bool RenderHookCollVideo = true;
+#if defined(CONF_VIDEORECORDER)
+		RenderHookCollVideo = !IVideo::Current() || g_Config.m_ClVideoShowHookCollOther || Local;
+#endif
+		if((AlwaysRenderHookColl || RenderHookCollPlayer) && RenderHookCollVideo)
 		{
-			if(Collision()->TeleOuts(Tele - 1).size() != 1)
+			Graphics()->TextureClear();
+			vec2 InitPos = Position;
+			vec2 FinishPos = InitPos + ExDirection * (m_pClient->m_aClients[ClientId].m_Predicted.m_Tuning.m_HookLength - 42.0f);
+
+			const int HookCollSize = Local ? g_Config.m_ClHookCollSize : g_Config.m_ClHookCollSizeOther;
+			if(HookCollSize > 0)
+				Graphics()->QuadsBegin();
+			else
+				Graphics()->LinesBegin();
+
+			ColorRGBA HookCollColor = color_cast<ColorRGBA>(ColorHSLA(g_Config.m_ClHookCollColorNoColl));
+
+			vec2 OldPos = InitPos + ExDirection * CCharacterCore::PhysicalSize() * 1.5f;
+			vec2 NewPos = OldPos;
+
+			bool DoBreak = false;
+
+			std::vector<std::pair<vec2, vec2>> vLineSegments;
+
+			do
 			{
-				Hit = Collision()->IntersectLineTeleHook(OldPos, NewPos, &FinishPos, 0x0);
+				OldPos = NewPos;
+				NewPos = OldPos + ExDirection * m_pClient->m_aClients[ClientId].m_Predicted.m_Tuning.m_HookFireSpeed;
+
+				if(distance(InitPos, NewPos) > m_pClient->m_aClients[ClientId].m_Predicted.m_Tuning.m_HookLength)
+				{
+					NewPos = InitPos + normalize(NewPos - InitPos) * m_pClient->m_aClients[ClientId].m_Predicted.m_Tuning.m_HookLength;
+					DoBreak = true;
+				}
+
+				int Tele;
+				int Hit = Collision()->IntersectLineTeleHook(OldPos, NewPos, &FinishPos, nullptr, &Tele);
+				if(!DoBreak && Hit == TILE_TELEINHOOK)
+				{
+					if(Collision()->TeleOuts(Tele - 1).size() != 1)
+					{
+						Hit = Collision()->IntersectLineTeleHook(OldPos, NewPos, &FinishPos, nullptr);
+					}
+					else
+					{
+						std::pair<vec2, vec2> NewPair = std::make_pair(InitPos, FinishPos);
+						if(std::find(vLineSegments.begin(), vLineSegments.end(), NewPair) != vLineSegments.end())
+							break;
+						vLineSegments.push_back(NewPair);
+						InitPos = NewPos = Collision()->TeleOuts(Tele - 1)[0];
+					}
+				}
+
+				if(!DoBreak && Hit && Hit != TILE_TELEINHOOK)
+				{
+					if(Hit != TILE_NOHOOK)
+					{
+						HookCollColor = color_cast<ColorRGBA>(ColorHSLA(g_Config.m_ClHookCollColorHookableColl));
+					}
+				}
+
+				if(ClientId >= 0 && m_pClient->IntersectCharacter(OldPos, FinishPos, FinishPos, ClientId) != -1)
+				{
+					HookCollColor = color_cast<ColorRGBA>(ColorHSLA(g_Config.m_ClHookCollColorTeeColl));
+					break;
+				}
+
+				if(Hit && Hit != TILE_TELEINHOOK)
+					break;
+
+				NewPos.x = round_to_int(NewPos.x);
+				NewPos.y = round_to_int(NewPos.y);
+
+				if(OldPos == NewPos)
+					break;
+
+				ExDirection.x = round_to_int(ExDirection.x * 256.0f) / 256.0f;
+				ExDirection.y = round_to_int(ExDirection.y * 256.0f) / 256.0f;
+			} while(!DoBreak);
+
+			std::pair<vec2, vec2> NewPair = std::make_pair(InitPos, FinishPos);
+			if(std::find(vLineSegments.begin(), vLineSegments.end(), NewPair) == vLineSegments.end())
+				vLineSegments.push_back(NewPair);
+
+			if(AlwaysRenderHookColl && RenderHookCollPlayer)
+			{
+				// invert the hook coll colors when using cl_show_hook_coll_always and +showhookcoll is pressed
+				HookCollColor = color_invert(HookCollColor);
+			}
+			Graphics()->SetColor(HookCollColor.WithAlpha(Alpha));
+			for(const auto &[DrawInitPos, DrawFinishPos] : vLineSegments)
+			{
+				if(HookCollSize > 0)
+				{
+					float LineWidth = 0.5f + (float)(HookCollSize - 1) * 0.25f;
+					vec2 PerpToAngle = normalize(vec2(ExDirection.y, -ExDirection.x)) * GameClient()->m_Camera.m_Zoom;
+					vec2 Pos0 = DrawFinishPos + PerpToAngle * -LineWidth;
+					vec2 Pos1 = DrawFinishPos + PerpToAngle * LineWidth;
+					vec2 Pos2 = DrawInitPos + PerpToAngle * -LineWidth;
+					vec2 Pos3 = DrawInitPos + PerpToAngle * LineWidth;
+					IGraphics::CFreeformItem FreeformItem(Pos0.x, Pos0.y, Pos1.x, Pos1.y, Pos2.x, Pos2.y, Pos3.x, Pos3.y);
+					Graphics()->QuadsDrawFreeform(&FreeformItem, 1);
+				}
+				else
+				{
+					IGraphics::CLineItem LineItem(DrawInitPos.x, DrawInitPos.y, DrawFinishPos.x, DrawFinishPos.y);
+					Graphics()->LinesDraw(&LineItem, 1);
+				}
+			}
+			if(HookCollSize > 0)
+			{
+				Graphics()->QuadsEnd();
 			}
 			else
 			{
-				std::pair<vec2, vec2> NewPair = std::make_pair(InitPos, FinishPos);
-				if(std::find(vLineSegments.begin(), vLineSegments.end(), NewPair) != vLineSegments.end())
-					break;
-				vLineSegments.push_back(NewPair);
-				InitPos = NewPos = Collision()->TeleOuts(Tele - 1)[0];
+				Graphics()->LinesEnd();
 			}
-		}
-
-		if(!DoBreak && Hit && Hit != TILE_TELEINHOOK)
-		{
-			if(Hit != TILE_NOHOOK)
-			{
-				HookCollColor = color_cast<ColorRGBA>(ColorHSLA(g_Config.m_ClHookCollColorHookableColl));
-			}
-		}
-
-		if(ClientId >= 0 && m_pClient->IntersectCharacter(OldPos, FinishPos, FinishPos, ClientId) != -1)
-		{
-			HookCollColor = color_cast<ColorRGBA>(ColorHSLA(g_Config.m_ClHookCollColorTeeColl));
-			break;
-		}
-
-		if(Hit && Hit != TILE_TELEINHOOK)
-			break;
-
-		NewPos.x = round_to_int(NewPos.x);
-		NewPos.y = round_to_int(NewPos.y);
-
-		if(OldPos == NewPos)
-			break;
-
-		ExDirection.x = round_to_int(ExDirection.x * 256.0f) / 256.0f;
-		ExDirection.y = round_to_int(ExDirection.y * 256.0f) / 256.0f;
-	} while(!DoBreak);
-
-	std::pair<vec2, vec2> NewPair = std::make_pair(InitPos, FinishPos);
-	if(std::find(vLineSegments.begin(), vLineSegments.end(), NewPair) == vLineSegments.end())
-		vLineSegments.push_back(NewPair);
-
-	// invert the hook coll colors when using cl_show_hook_coll_always and +showhookcoll is pressed
-	if(AlwaysRenderHookColl && RenderHookCollPlayer)
-		HookCollColor = color_invert(HookCollColor);
-
-	float Alpha = (OtherTeam || ClientId < 0) ? g_Config.m_ClShowOthersAlpha / 100.0f : 1.0f;
-	Alpha *= (float)g_Config.m_ClHookCollAlpha / 100;
-
-	const int HookCollSize = Local ? g_Config.m_ClHookCollSize : g_Config.m_ClHookCollSizeOther;
-	if(HookCollSize > 0)
-		Graphics()->QuadsBegin();
-	else
-		Graphics()->LinesBegin();
-	Graphics()->SetColor(HookCollColor.WithAlpha(Alpha));
-	for(const auto &[DrawInitPos, DrawFinishPos] : vLineSegments)
-	{
-		if(HookCollSize > 0)
-		{
-			float LineWidth = 0.5f + (float)(HookCollSize - 1) * 0.25f;
-			vec2 PerpToAngle = normalize(vec2(ExDirection.y, -ExDirection.x)) * GameClient()->m_Camera.m_Zoom;
-			vec2 Pos0 = DrawFinishPos + PerpToAngle * -LineWidth;
-			vec2 Pos1 = DrawFinishPos + PerpToAngle * LineWidth;
-			vec2 Pos2 = DrawInitPos + PerpToAngle * -LineWidth;
-			vec2 Pos3 = DrawInitPos + PerpToAngle * LineWidth;
-			IGraphics::CFreeformItem FreeformItem(Pos0.x, Pos0.y, Pos1.x, Pos1.y, Pos2.x, Pos2.y, Pos3.x, Pos3.y);
-			Graphics()->QuadsDrawFreeform(&FreeformItem, 1);
-		}
-		else
-		{
-			IGraphics::CLineItem LineItem(DrawInitPos.x, DrawInitPos.y, DrawFinishPos.x, DrawFinishPos.y);
-			Graphics()->LinesDraw(&LineItem, 1);
 		}
 	}
-	if(HookCollSize > 0)
-		Graphics()->QuadsEnd();
-	else
-		Graphics()->LinesEnd();
 }
 void CPlayers::RenderHook(
 	const CNetObj_Character *pPrevChar,
@@ -481,7 +488,7 @@ void CPlayers::RenderPlayer(
 	else if(g_Config.m_ClShowOthersGhosts && !Local && !Spec)
 		Alpha = g_Config.m_ClPredGhostsAlpha / 100.0f;
 
-	if(!OtherTeam && g_Config.m_ClShowOthersGhosts && !Local && g_Config.m_ClUnpredOthersInFreeze && g_Config.m_ClAmIFrozen && !Spec)
+	if(!OtherTeam && g_Config.m_ClShowOthersGhosts && !Local && g_Config.m_ClUnpredOthersInFreeze && Client()->m_IsLocalFrozen && !Spec)
 		Alpha = 1.0f;
 
 	if(ClientId == -2) // ghost
@@ -624,19 +631,7 @@ void CPlayers::RenderPlayer(
 
 	// do skidding
 	if(!InAir && WantOtherDir && length(Vel * 50) > 500.0f)
-	{
-		if(time() - m_SkidSoundTime > time_freq() / 10)
-		{
-			if(g_Config.m_SndGame)
-				m_pClient->m_Sounds.PlayAt(CSounds::CHN_WORLD, SOUND_PLAYER_SKID, 1.0f, Position);
-			m_SkidSoundTime = time();
-		}
-
-		m_pClient->m_Effects.SkidTrail(
-			Position + vec2(-Player.m_Direction * 6, 12),
-			vec2(-Player.m_Direction * 100 * length(Vel), -50),
-			Alpha);
-	}
+		m_pClient->m_Effects.SkidTrail(Position, Vel, Player.m_Direction, Alpha);
 
 	vec2 GhostWeaponPos = vec2(0, 0);
 	// draw gun
@@ -680,9 +675,9 @@ void CPlayers::RenderPlayer(
 					if(IsSit)
 						WeaponPosition.y += 3.0f;
 
-					// If active and attack is under way, bash stuffs
 					float QuadsRotation;
-					if(!Inactive || LastAttackTime < m_pClient->m_aTuning[g_Config.m_ClDummy].GetWeaponFireDelay(Player.m_Weapon))
+					// if active and attack is under way, bash stuffs
+					if(!Inactive || LastAttackTime < m_pClient->m_aClients[ClientId].m_Predicted.m_Tuning.GetWeaponFireDelay(Player.m_Weapon))
 					{
 						if(Direction.x < 0)
 							QuadsRotation = -pi / 2.0f - State.GetAttach()->m_Angle * pi * 2.0f;
@@ -1158,19 +1153,7 @@ void CPlayers::RenderPlayerGhost(
 
 	// do skidding
 	if(!InAir && WantOtherDir && length(Vel * 50) > 500.0f)
-	{
-		static int64_t s_SkidSoundTime = 0;
-		if(time() - s_SkidSoundTime > time_freq() / 10)
-		{
-			if(g_Config.m_SndGame)
-				m_pClient->m_Sounds.PlayAt(CSounds::CHN_WORLD, SOUND_PLAYER_SKID, 0.25f, Position);
-			s_SkidSoundTime = time();
-		}
-
-		m_pClient->m_Effects.SkidTrail(
-			Position + vec2(-Player.m_Direction * 6, 12),
-			vec2(-Player.m_Direction * 100 * length(Vel), -50));
-	}
+		m_pClient->m_Effects.SkidTrail(Position, Vel, Player.m_Direction, Alpha);
 
 	vec2 GhostWeaponPos = vec2(0, 0);
 	// draw gun
@@ -1229,12 +1212,12 @@ void CPlayers::RenderPlayerGhost(
 				{
 					Graphics()->QuadsSetRotation(-pi / 2 - State.GetAttach()->m_Angle * pi * 2);
 					WeaponPosition.x -= g_pData->m_Weapons.m_aId[CurrentWeapon].m_Offsetx;
-					m_pClient->m_Effects.PowerupShine(WeaponPosition + vec2(32, 0), vec2(32, 12));
+					m_pClient->m_Effects.PowerupShine(WeaponPosition + vec2(32, 0), vec2(32, 12), Alpha);
 				}
 				else
 				{
 					Graphics()->QuadsSetRotation(-pi / 2 + State.GetAttach()->m_Angle * pi * 2);
-					m_pClient->m_Effects.PowerupShine(WeaponPosition - vec2(32, 0), vec2(32, 12));
+					m_pClient->m_Effects.PowerupShine(WeaponPosition - vec2(32, 0), vec2(32, 12), Alpha);
 				}
 				Graphics()->RenderQuadContainerAsSprite(m_WeaponEmoteQuadContainerIndex, QuadOffset, WeaponPosition.x, WeaponPosition.y);
 
@@ -1364,7 +1347,7 @@ void CPlayers::RenderPlayerGhost(
 	vec2 BodyPos = Position + vec2(State.GetBody()->m_X, State.GetBody()->m_Y) * TeeAnimScale;
 	if(RenderInfo.m_TeeRenderFlags & TEE_EFFECT_FROZEN)
 	{
-		GameClient()->m_Effects.FreezingFlakes(BodyPos, vec2(32, 32));
+		GameClient()->m_Effects.FreezingFlakes(BodyPos, vec2(32, 32), Alpha);
 	}
 
 	int QuadOffsetToEmoticon = NUM_WEAPONS * 2 + 2 + 2;
@@ -1476,11 +1459,11 @@ void CPlayers::OnRender()
 	{
 		aRenderInfo[i] = m_pClient->m_aClients[i].m_RenderInfo;
 		aRenderInfo[i].m_TeeRenderFlags = 0;
-		if(m_pClient->m_aClients[i].m_FreezeEnd != 0)
+		if(m_pClient->m_aClients[i].m_Predicted.m_FreezeEnd != 0)
 			aRenderInfo[i].m_TeeRenderFlags |= TEE_EFFECT_FROZEN | TEE_NO_WEAPON;
-		if(m_pClient->m_aClients[i].m_LiveFrozen)
+		if(m_pClient->m_aClients[i].m_Predicted.m_LiveFrozen)
 			aRenderInfo[i].m_TeeRenderFlags |= TEE_EFFECT_FROZEN;
-		if(m_pClient->m_aClients[i].m_Invincible)
+		if(m_pClient->m_aClients[i].m_Predicted.m_Invincible)
 			aRenderInfo[i].m_TeeRenderFlags |= TEE_EFFECT_SPARKLE;
 		const CGameClient::CClientData *pClientData = &m_pClient->m_aClients[i];
 		const int PlayerClass = pClientData ? pClientData->m_InfClassPlayerClass : -1;
@@ -1494,10 +1477,8 @@ void CPlayers::OnRender()
 
 		aRenderInfo[i].m_InfectedHook = pClientData->m_InfClassPlayerFlags & INFCLASS_PLAYER_FLAG_INFECTED;
 
-		const CGameClient::CSnapState::CCharacterInfo &CharacterInfo = m_pClient->m_Snap.m_aCharacters[i];
-		const bool Frozen = CharacterInfo.m_HasExtendedData && CharacterInfo.m_ExtendedData.m_FreezeEnd != 0;
-
-		if(((CharacterInfo.m_Cur.m_Weapon == WEAPON_NINJA || Frozen) && g_Config.m_ClShowNinja) || (g_Config.m_ClAmIFrozen && g_Config.m_ClFreezeUpdateFix && m_pClient->m_Snap.m_LocalClientId == i && g_Config.m_ClShowNinja) || (Frozen && !m_pClient->m_GameInfo.m_NoSkinChangeForFrozen && g_Config.m_ClShowNinja))
+		const bool Frozen = m_pClient->m_aClients[i].m_Predicted.m_FreezeEnd != 0;
+		if((m_pClient->m_aClients[i].m_RenderCur.m_Weapon == WEAPON_NINJA || (Frozen && !m_pClient->m_GameInfo.m_NoSkinChangeForFrozen)) && g_Config.m_ClShowNinja)
 		{
 			// change the skin for the player to the ninja
 			const auto *pSkin = m_pClient->m_Skins.FindOrNullptr("x_ninja");
@@ -1598,7 +1579,7 @@ void CPlayers::OnRender()
 			if(!g_Config.m_ClSwapGhosts)
 				RenderGhost = false;
 		}
-		if(g_Config.m_ClUnpredOthersInFreeze && g_Config.m_ClAmIFrozen && g_Config.m_ClShowOthersGhosts)
+		if(g_Config.m_ClUnpredOthersInFreeze && Client()->m_IsLocalFrozen && g_Config.m_ClShowOthersGhosts)
 		{
 			RenderGhost = false;
 		}
