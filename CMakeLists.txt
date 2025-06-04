@@ -2945,11 +2945,11 @@ if(SERVER)
     instagib/enums.cpp
     instagib/enums.h
     instagib/extra_columns.h
+    instagib/gamecontext.cpp
     instagib/gamecontext.h
     instagib/gamecontext/bangcommands.cpp
     instagib/gamecontroller.cpp
     instagib/gamecontroller.h
-    instagib/gamelogic.cpp
     instagib/laser_text.cpp
     instagib/laser_text.h
     instagib/persistent_client_data.h

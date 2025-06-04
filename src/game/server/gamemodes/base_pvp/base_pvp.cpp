@@ -3,8 +3,11 @@
 #include <cstdint>
 #include <engine/server/server.h>
 #include <engine/shared/config.h>
+#include <engine/shared/network.h>
+#include <engine/shared/packer.h>
 #include <engine/shared/protocol.h>
 #include <game/generated/protocol.h>
+#include <game/race_state.h>
 #include <game/server/entities/character.h>
 #include <game/server/entities/ddnet_pvp/vanilla_projectile.h>
 #include <game/server/entities/flag.h>
@@ -440,6 +443,30 @@ bool CGameControllerPvp::ForceNetworkClippingLine(const CEntity *pEntity, int Sn
 	return (absolute(DistanceToLine.x) > ClippDistance || absolute(DistanceToLine.y) > ClippDistance);
 }
 
+bool CGameControllerPvp::OnClientPacket(int ClientId, bool Sys, int MsgId, CNetChunk *pPacket, CUnpacker *pUnpacker)
+{
+	// make a copy so we can consume fields
+	// without breaking the state for the server
+	// in case we pass the packet on
+	CUnpacker Unpacker = *pUnpacker;
+	bool Vital = pPacket->m_Flags & NET_CHUNKFLAG_VITAL;
+
+	if(Sys && MsgId == NETMSG_RCON_AUTH && Vital && Server()->IsSixup(ClientId))
+	{
+		const char *pCredentials = Unpacker.GetString(CUnpacker::SANITIZE_CC);
+		if(Unpacker.Error())
+			return false;
+
+		// check if 0.7 player sends valid credentials for
+		// a ddnet rcon account in the format username:pass
+		// in that case login and drop the message
+		if(Server()->SixupUsernameAuth(ClientId, pCredentials))
+			return true;
+	}
+
+	return false;
+}
+
 void CGameControllerPvp::OnShowStatsAll(const CSqlStatsPlayer *pStats, class CPlayer *pRequestingPlayer, const char *pRequestedName)
 {
 	char aBuf[1024];
@@ -632,14 +659,18 @@ void CGameControllerPvp::SaveStatsOnRoundEnd(CPlayer *pPlayer)
 	if(aMsg[0])
 		GameServer()->SendChatTarget(pPlayer->GetCid(), aMsg);
 
-	dbg_msg("sql", "saving round stats of player '%s' win=%d loss=%d msg='%s'", Server()->ClientName(pPlayer->GetCid()), Won, Lost, aMsg);
+	dbg_msg("stats", "saving round stats of player '%s' win=%d loss=%d msg='%s'", Server()->ClientName(pPlayer->GetCid()), Won, Lost, aMsg);
 
 	// the spree can not be incremented if stat track is off
 	// but the best spree will be counted even if it is off
 	// this ensures that the spree of a player counts that
 	// dominated the entire server into rq and never died
 	if(pPlayer->Spree() > pPlayer->m_Stats.m_BestSpree)
+	{
+		log_info("stats", "player '%s' has a spree of %d kills that was not tracked (force tracking it now)", Server()->ClientName(pPlayer->GetCid()), pPlayer->Spree());
+		log_info("stats", "player '%s' currently has %d tracked kills", Server()->ClientName(pPlayer->GetCid()), pPlayer->m_Stats.m_Kills);
 		pPlayer->m_Stats.m_BestSpree = pPlayer->Spree();
+	}
 	if(IsStatTrack())
 	{
 		if(Won)
@@ -957,7 +988,7 @@ void CGameControllerPvp::ModifyWeapons(IConsole::IResult *pResult, void *pUserDa
 		pChr->GiveWeapon(Weapon, Remove);
 	}
 
-	pChr->m_DDRaceState = DDRACE_CHEAT;
+	pChr->m_DDRaceState = ERaceState::CHEATED;
 }
 
 int CGameControllerPvp::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon)
@@ -1815,6 +1846,25 @@ bool CGameControllerPvp::OnSkinChange7(protocol7::CNetMsg_Cl_SkinChange *pMsg, i
 
 	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL | MSGFLAG_NORECORD, -1);
 	return true;
+}
+
+bool CGameControllerPvp::OnTeamChatCmd(IConsole::IResult *pResult)
+{
+	CPlayer *pPlayer = GameServer()->m_apPlayers[pResult->m_ClientId];
+	if(!pPlayer)
+		return false;
+
+	if(pPlayer->GetTeam() != TEAM_SPECTATORS)
+	{
+		Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp", "Only spectators can join ddrace teams");
+		return true;
+	}
+
+	pPlayer->SetTeam(TEAM_RED, false);
+	pPlayer->m_RespawnTick = 0;
+	pPlayer->TryRespawn();
+
+	return false;
 }
 
 void CGameControllerPvp::OnPlayerConnect(CPlayer *pPlayer)
