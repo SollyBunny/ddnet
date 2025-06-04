@@ -251,37 +251,37 @@ void CMod::Mute(const CMod::CIden &Iden, const char *pTime, const char *pReason)
 
 void CMod::OnConsoleInit()
 {
-	auto FRegisterModCommand = [&](const char *pName, const char *pParams, const char *pHelp, void (*FCallback)(IConsole::IResult *, CMod *)){
+	auto FRegisterModCommand = [&](const char *pName, const char *pParams, const char *pHelp, void (*FCallback)(IConsole::IResult *, CMod *)) {
 		Console()->Register(pName, pParams, CFGFLAG_CLIENT, (CConsole::FCommandCallback)FCallback, this, pHelp);
 	};
 
-	FRegisterModCommand("mod_rcon_ban", "s[id|ip] s[time (minutes)] ?r[reason]", "RCon ban someone", [](IConsole::IResult * pResult, CMod * pThis){
+	FRegisterModCommand("mod_rcon_ban", "s[id|ip] s[time (minutes)] ?r[reason]", "RCon ban someone", [](IConsole::IResult *pResult, CMod *pThis) {
 		pThis->Ban(CIden(pThis, pResult->GetString(0), CIden::EParseMode::ID_OR_ADDR), pResult->GetString(1), pResult->GetString(2));
 	});
-	FRegisterModCommand("mod_rcon_ban_name", "s[name] s[time (minutes)] ?r[reason]", "RCon ban someone by name", [](IConsole::IResult * pResult, CMod * pThis){
+	FRegisterModCommand("mod_rcon_ban_name", "s[name] s[time (minutes)] ?r[reason]", "RCon ban someone by name", [](IConsole::IResult *pResult, CMod *pThis) {
 		pThis->Ban(CIden(pThis, pResult->GetString(0), CIden::EParseMode::NAME), pResult->GetString(1), pResult->GetString(2));
 	});
 
-	FRegisterModCommand("mod_rcon_kick", "s[id|ip] ?r[reason]", "RCon kick someone", [](IConsole::IResult * pResult, CMod * pThis){
+	FRegisterModCommand("mod_rcon_kick", "s[id|ip] ?r[reason]", "RCon kick someone", [](IConsole::IResult *pResult, CMod *pThis) {
 		pThis->Kick(CIden(pThis, pResult->GetString(0), CIden::EParseMode::ID), pResult->GetString(2));
 	});
-	FRegisterModCommand("mod_rcon_kick_name", "s[name] ?r[reason]", "RCon kick someone by name", [](IConsole::IResult * pResult, CMod * pThis){
+	FRegisterModCommand("mod_rcon_kick_name", "s[name] ?r[reason]", "RCon kick someone by name", [](IConsole::IResult *pResult, CMod *pThis) {
 		pThis->Kick(CIden(pThis, pResult->GetString(0), CIden::EParseMode::NAME), pResult->GetString(2));
 	});
 
-	FRegisterModCommand("mod_rcon_mute", "s[id] s[time (minutes)] ?r[reason]", "RCon mute someone", [](IConsole::IResult * pResult, CMod * pThis){
+	FRegisterModCommand("mod_rcon_mute", "s[id] s[time (minutes)] ?r[reason]", "RCon mute someone", [](IConsole::IResult *pResult, CMod *pThis) {
 		pThis->Mute(CIden(pThis, pResult->GetString(0), CIden::EParseMode::ID), pResult->GetString(1), pResult->GetString(2));
 	});
-	FRegisterModCommand("mod_rcon_mute_name", "s[name] s[time (minutes)] ?r[reason]", "RCon mute someone by name", [](IConsole::IResult * pResult, CMod * pThis){
+	FRegisterModCommand("mod_rcon_mute_name", "s[name] s[time (minutes)] ?r[reason]", "RCon mute someone by name", [](IConsole::IResult *pResult, CMod *pThis) {
 		pThis->Mute(CIden(pThis, pResult->GetString(0), CIden::EParseMode::NAME), pResult->GetString(1), pResult->GetString(2));
 	});
 
-	FRegisterModCommand("mod_rcon_kill", "s[id/ip] ?s[2] ?s[3] ?s[4] ?s[5] ?s[6] ?s[7] ?s[8]", "RCon kill people", [](IConsole::IResult * pResult, CMod * pThis){
+	FRegisterModCommand("mod_rcon_kill", "s[id/ip] ?s[2] ?s[3] ?s[4] ?s[5] ?s[6] ?s[7] ?s[8]", "RCon kill people", [](IConsole::IResult *pResult, CMod *pThis) {
 		for(int i = 0; i < 8; ++i)
 			if(pResult->GetString(i)[0] != '\0')
 				pThis->Kill(CIden(pThis, pResult->GetString(i), CIden::EParseMode::ID), true);
 	});
-	FRegisterModCommand("mod_rcon_kill_name", "s[name] ?s[2] ?s[3] ?s[4] ?s[5] ?s[6] ?s[7] ?s[8]", "RCon kill people by name", [](IConsole::IResult * pResult, CMod * pThis){
+	FRegisterModCommand("mod_rcon_kill_name", "s[name] ?s[2] ?s[3] ?s[4] ?s[5] ?s[6] ?s[7] ?s[8]", "RCon kill people by name", [](IConsole::IResult *pResult, CMod *pThis) {
 		for(int i = 0; i < 8; ++i)
 			if(pResult->GetString(i)[0] != '\0')
 				pThis->Kill(CIden(pThis, pResult->GetString(i), CIden::EParseMode::NAME), true);
@@ -300,7 +300,8 @@ void CMod::OnRender()
 
 	Graphics()->TextureClear();
 
-	if(g_Config.m_ClShowPlayerHitBoxes > 0) {
+	if(g_Config.m_ClShowPlayerHitBoxes > 0)
+	{
 		auto FRenderHitbox = [&](vec2 Position, float Alpha) {
 			const float Radius = 16.0f;
 			Graphics()->QuadsBegin();
@@ -335,7 +336,7 @@ void CMod::OnRender()
 				continue;
 
 			FRenderHitbox(Player.m_RenderPos, 1.0f);
-			
+
 			if(g_Config.m_ClShowPlayerHitBoxes > 1)
 			{
 				// From CPlayers::RenderPlayer
