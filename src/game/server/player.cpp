@@ -756,7 +756,10 @@ void CPlayer::UpdatePlaytime()
 
 void CPlayer::AfkTimer()
 {
-	SetAfk(g_Config.m_SvMaxAfkTime != 0 && m_LastPlaytime < time_get() - time_freq() * g_Config.m_SvMaxAfkTime);
+	int AfkTime = g_Config.m_SvMaxAfkTime;
+	if(Server()->HasReduceAfkTime(m_ClientId))
+		AfkTime = std::min(AfkTime, 3);
+	SetAfk(AfkTime != 0 && m_LastPlaytime < time_get() - time_freq() * AfkTime);
 }
 
 void CPlayer::SetAfk(bool Afk)
