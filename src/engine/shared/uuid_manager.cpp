@@ -122,7 +122,17 @@ void CUuidManager::RegisterName(int Id, const char *pName)
 	CName Name;
 	Name.m_pName = pName;
 	Name.m_Uuid = CalculateUuid(pName);
-	dbg_assert(LookupUuid(Name.m_Uuid) == -1, "duplicate uuid");
+
+	// TClient
+	static std::vector<std::string> s_vDontFuckWithMe;
+	s_vDontFuckWithMe.emplace_back(pName);
+	if(LookupUuid(Name.m_Uuid) != UUID_UNKNOWN)
+	{
+		for(const std::string& Fuck : s_vDontFuckWithMe)
+			printf("%s\n", Fuck.c_str());
+	}
+
+	dbg_assert(LookupUuid(Name.m_Uuid) == UUID_UNKNOWN, "duplicate uuid %s", Name.m_pName);
 
 	m_vNames.push_back(Name);
 

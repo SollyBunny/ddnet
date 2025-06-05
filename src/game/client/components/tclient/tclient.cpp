@@ -1,4 +1,6 @@
-﻿#include <game/client/gameclient.h>
+﻿#include <base/log.h>
+
+#include <game/client/gameclient.h>
 #include <game/client/animstate.h>
 #include <game/client/components/chat.h>
 #include <game/client/render.h>
@@ -9,6 +11,7 @@
 #include <game/version.h>
 
 #include <engine/client/enums.h>
+#include <engine/external/tinyexpr.h>
 #include <engine/graphics.h>
 #include <engine/shared/config.h>
 #include <engine/shared/json.h>
@@ -341,8 +344,20 @@ void CTClient::ConEmoteCycle(IConsole::IResult *pResult, void *pUserData)
 	This.GameClient()->m_Emoticon.Emote(This.m_EmoteCycle);
 }
 
+void CTClient::ConCalc(IConsole::IResult *pResult, void *pUserData)
+{
+	int Error = 0;
+	double Out = te_interp(pResult->GetString(0), &Error);
+	if(Out == NAN || Error != 0)
+		log_info("tclient", "Calc error: %d", Error);
+	else
+		log_info("tclient", "Calc result: %lf", Out);
+}
+
 void CTClient::OnConsoleInit()
 {
+	Console()->Register("calc", "r[expression]", CFGFLAG_CLIENT, ConCalc, this, "Evaluate an expression");
+
 	Console()->Register("tc_random_player", "s[type]", CFGFLAG_CLIENT, ConRandomTee, this, "Randomize player color (0 = all, 1 = body, 2 = feet, 3 = skin, 4 = flag) example: 0011 = randomize skin and flag [number is position]");
 	Console()->Chain("tc_random_player", ConchainRandomColor, this);
 
@@ -662,4 +677,43 @@ void CTClient::RenderMiniVoteHud()
 	Ui()->DoLabel(&RightColumn, aKey[0] == '\0' ? "no" : aKey, 0.5f, TEXTALIGN_MR);
 
 	TextRender()->TextColor(TextRender()->DefaultTextColor());
+}
+
+void CTClient::RenderCenterLines()
+{
+	if(g_Config.m_ClShowCenter <= 0)
+		return;
+
+	if(m_pClient->m_Scoreboard.IsActive())
+		return;
+
+	Graphics()->TextureClear();
+
+	float X0, Y0, X1, Y1;
+	Graphics()->GetScreen(&X0, &Y0, &X1, &Y1);
+	const float XMid = (X0 + X1) / 2.0f;
+	const float YMid = (Y0 + Y1) / 2.0f;
+
+	if(g_Config.m_ClShowCenterWidth == 0)
+	{
+		Graphics()->LinesBegin();
+		IGraphics::CLineItem aLines[2] = {
+			{XMid, Y0, XMid, Y1},
+			{X0, YMid, X1, YMid}};
+		Graphics()->SetColor(color_cast<ColorRGBA>(ColorHSLA(g_Config.m_ClShowCenterColor, true)));
+		Graphics()->LinesDraw(aLines, std::size(aLines));
+		Graphics()->LinesEnd();
+	}
+	else
+	{
+		const float W = g_Config.m_ClShowCenterWidth;
+		Graphics()->QuadsBegin();
+		IGraphics::CQuadItem aQuads[3] = {
+			{XMid, mix(Y0, Y1, 0.25f) - W / 4.0f, W, (Y1 - Y0 - W) / 2.0f},
+			{XMid, mix(Y0, Y1, 0.75f) + W / 4.0f, W, (Y1 - Y0 - W) / 2.0f},
+			{XMid, YMid, X1 - X0, W}};
+		Graphics()->SetColor(color_cast<ColorRGBA>(ColorHSLA(g_Config.m_ClShowCenterColor, true)));
+		Graphics()->QuadsDraw(aQuads, std::size(aQuads));
+		Graphics()->QuadsEnd();
+	}
 }

@@ -183,24 +183,6 @@ void CHud::RenderSuddenDeath()
 	}
 }
 
-void CHud::RenderCenterLines()
-{
-	if(m_pClient->m_Scoreboard.IsActive())
-		return;
-
-	Graphics()->TextureClear();
-	Graphics()->LinesBegin();
-	Graphics()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
-
-	IGraphics::CLineItem Array[2] = {
-		IGraphics::CLineItem(m_Width / 2.0, 0.0f, m_Width / 2.0, m_Height),
-		IGraphics::CLineItem(0.0f, m_Height / 2.0, m_Width, m_Height / 2.0f)};
-
-	Graphics()->LinesDraw(Array, 2);
-
-	Graphics()->LinesEnd();
-}
-
 void CHud::RenderScoreHud()
 {
 	// render small score hud
@@ -2419,8 +2401,7 @@ void CHud::OnRender()
 		RenderDummyActions();
 		RenderWarmupTimer();
 		RenderTextInfo();
-		if(g_Config.m_ClShowCenterLines)
-			RenderCenterLines();
+		GameClient()->m_TClient.RenderCenterLines();
 		RenderLocalTime((m_Width / 7) * 3);
 		if(Client()->State() != IClient::STATE_DEMOPLAYBACK)
 			RenderConnectionWarning();

@@ -8,6 +8,7 @@
 
 class CTClient : public CComponent
 {
+	static void ConCalc(IConsole::IResult *pResult, void *pUserData);
 	static void ConRandomTee(IConsole::IResult *pResult, void *pUserData);
 	static void ConchainRandomColor(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
 	static void RandomBodyColor();
@@ -50,6 +51,7 @@ public:
 	bool NeedUpdate();
 
 	void RenderMiniVoteHud();
+	void RenderCenterLines();
 
 	bool ChatDoSpecId(const char *pInput);
 

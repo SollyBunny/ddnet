@@ -108,6 +108,9 @@ const IConsole::CCommandInfo *CConsole::FirstCommandInfo(int AccessLevel, int Fl
 
 // the maximum number of tokens occurs in a string of length CONSOLE_MAX_STR_LENGTH with tokens size 1 separated by single spaces
 
+// TClient
+void (*g_pConditionalCompose)(const char *pString, char *pOut, int Length) = nullptr;
+
 int CConsole::ParseStart(CResult *pResult, const char *pString, int Length)
 {
 	char *pStr;
@@ -374,6 +377,11 @@ bool CConsole::LineIsValid(const char *pStr)
 	if(!pStr || *pStr == 0)
 		return false;
 
+	// TClient
+	char aComposedBuf[CONSOLE_MAX_STR_LENGTH];
+	g_pConditionalCompose(pStr, aComposedBuf, sizeof(aComposedBuf));
+	pStr = aComposedBuf;
+
 	do
 	{
 		CResult Result(-1);
@@ -419,6 +427,11 @@ bool CConsole::LineIsValid(const char *pStr)
 
 void CConsole::ExecuteLineStroked(int Stroke, const char *pStr, int ClientId, bool InterpretSemicolons)
 {
+	// TClient
+	char aComposedBuf[CONSOLE_MAX_STR_LENGTH];
+	g_pConditionalCompose(pStr, aComposedBuf, sizeof(aComposedBuf));
+	pStr = aComposedBuf;
+
 	const char *pWithoutPrefix = str_startswith(pStr, "mc;");
 	if(pWithoutPrefix)
 	{

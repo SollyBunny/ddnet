@@ -7,16 +7,16 @@
 class CConditional : public CComponent
 {
 private:
-	void ParseString(const char *pString, char *pOut, int Length);
+	int ParseValue(const char *pString, char *pOut, int Length);
 
 public:
-	int Sizeof() const override { return sizeof(*this); }
+	void ParseString(const char *pString, char *pOut, int Length);
 	static void ConIfeq(IConsole::IResult *pResult, void *pUserData);
 	static void ConIfneq(IConsole::IResult *pResult, void *pUserData);
 	static void ConIfreq(IConsole::IResult *pResult, void *pUserData);
 	static void ConIfrneq(IConsole::IResult *pResult, void *pUserData);
-	static void ConEchoValue(IConsole::IResult *pResult, void *pUserData);
 	void OnConsoleInit() override;
+	int Sizeof() const override { return sizeof(*this); }
 };
 
 #endif

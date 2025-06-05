@@ -99,7 +99,6 @@ class CHud : public CComponent
 	void RenderGameTimer();
 	void RenderPauseNotification();
 	void RenderSuddenDeath();
-	void RenderCenterLines();
 
 	void RenderScoreHud();
 	int m_LastLocalClientId = -1;
