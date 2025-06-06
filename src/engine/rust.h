@@ -3,5 +3,5 @@
 #include "console.h"
 
 typedef IConsole::IResult IConsole_IResult;
-typedef IConsole::FCommandCallback IConsole_FCommandCallback;
+typedef IConsole::FCommandCallbackDeprecated IConsole_FCommandCallback;
 #endif // ENGINE_RUST_H

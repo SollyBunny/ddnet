@@ -8,6 +8,7 @@
 #include <engine/storage.h>
 
 #include <memory>
+#include <functional>
 
 static constexpr ColorRGBA gs_ConsoleDefaultColor(1, 1, 1, 1);
 
@@ -91,9 +92,12 @@ public:
 
 	typedef void (*FTeeHistorianCommandCallback)(int ClientId, int FlagMask, const char *pCmd, IResult *pResult, void *pUser);
 	typedef void (*FPossibleCallback)(int Index, const char *pCmd, void *pUser);
-	typedef void (*FCommandCallback)(IResult *pResult, void *pUserData);
-	typedef void (*FChainCommandCallback)(IResult *pResult, void *pUserData, FCommandCallback pfnCallback, void *pCallbackUserData);
+	typedef void (*FCommandCallbackDeprecated)(IResult *pResult, void *pUserData);
+	typedef void (*FChainCommandCallbackDeprecated)(IResult *pResult, void *pUserData, FCommandCallbackDeprecated pfnCallback, void *pCallbackUserData);
 	typedef bool (*FUnknownCommandCallback)(const char *pCommand, void *pUser); // returns true if the callback has handled the argument
+
+	using FCommandCallback = std::function<void(IResult &)>;
+	using FChainCommandCallback = std::function<void(IResult &, const FCommandCallback &)>;
 
 	static void EmptyPossibleCommandCallback(int Index, const char *pCmd, void *pUser) {}
 	static bool EmptyUnknownCommandCallback(const char *pCommand, void *pUser) { return false; }
@@ -104,11 +108,21 @@ public:
 	virtual int PossibleCommands(const char *pStr, int FlagMask, bool Temp, FPossibleCallback pfnCallback = EmptyPossibleCommandCallback, void *pUser = nullptr) = 0;
 	virtual void ParseArguments(int NumArgs, const char **ppArguments) = 0;
 
-	virtual void Register(const char *pName, const char *pParams, int Flags, FCommandCallback pfnFunc, void *pUser, const char *pHelp) = 0;
+	/**
+	 * @deprecated
+	 * Prefer using Register which takes std::function
+	 */
+	virtual void Register(const char *pName, const char *pParams, int Flags, FCommandCallbackDeprecated pfnFunc, void *pUser, const char *pHelp) = 0;
+	virtual void Register(const char *pName, const char *pParams, const char *pHelp, int Flags, const FCommandCallback &FCallback) = 0;
 	virtual void RegisterTemp(const char *pName, const char *pParams, int Flags, const char *pHelp) = 0;
 	virtual void DeregisterTemp(const char *pName) = 0;
-	virtual void DeregisterTempAll() = 0;
-	virtual void Chain(const char *pName, FChainCommandCallback pfnChainFunc, void *pUser) = 0;
+	virtual void DeregisterAllTemp() = 0;
+	/**
+	 * @deprecated
+	 * Prefer using Chain which takes std::function
+	 */
+	virtual void Chain(const char *pName, FChainCommandCallbackDeprecated pfnChainFunc, void *pUser) = 0;
+	virtual void Chain(const char *pName, const FChainCommandCallback &FChainFunc) = 0;
 	virtual void StoreCommands(bool Store) = 0;
 
 	virtual bool LineIsValid(const char *pStr) = 0;

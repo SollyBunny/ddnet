@@ -1115,7 +1115,7 @@ void CSkins::OnConfigSave(IConfigManager *pConfigManager)
 	}
 }
 
-void CSkins::ConchainRefreshSkinList(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
+void CSkins::ConchainRefreshSkinList(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallbackDeprecated pfnCallback, void *pCallbackUserData)
 {
 	CSkins *pThis = static_cast<CSkins *>(pUserData);
 	pfnCallback(pResult, pCallbackUserData);

@@ -17,27 +17,41 @@ class CConsole : public IConsole
 		CCommand *m_pNext;
 		int m_Flags;
 		bool m_Temp;
-		FCommandCallback m_pfnCallback;
-		void *m_pUserData;
+		FCommandCallback m_FCallback;
+
+		// TODO get rid of this
+		bool m_IsColor = false;
 
 		const CCommandInfo *NextCommandInfo(int AccessLevel, int FlagMask) const override;
 
 		void SetAccessLevel(int AccessLevel) { m_AccessLevel = clamp(AccessLevel, (int)(ACCESS_LEVEL_ADMIN), (int)(ACCESS_LEVEL_USER)); }
 	};
 
-	class CChain
-	{
-	public:
-		FChainCommandCallback m_pfnChainCallback;
-		FCommandCallback m_pfnCallback;
-		void *m_pCallbackUserData;
-		void *m_pUserData;
-	};
-
 	int m_FlagMask;
 	bool m_StoreCommands;
 	const char *m_apStrokeStr[2];
 	CCommand *m_pFirstCommand;
+
+
+	// class CCaseInsensitiveHashFn {
+	// public:
+	// 	size_t operator()(const char *s) const {
+	// 		size_t Hash = 0x811C9DC5;
+	// 		while(*s != '\0') {
+	// 			int c = str_utf8_tolower_codepoint(str_utf8_decode(&s));
+	// 			Hash ^= c;
+	// 			Hash = (Hash * 0x01000193);
+	// 		}
+	// 		return Hash;
+	// 	}
+	// };
+	// class CCaseInsensitiveEqualFn {
+	// public:
+	// 	bool operator()(const char *a, const char *b) const {
+	// 		return str_utf8_comp_nocase(a, b) == 0;
+	// 	}
+	// };
+	// std::unordered_multimap<const char *, CCommand, CCaseInsensitiveHashFn, CCaseInsensitiveEqualFn> m_Commands;
 
 	class CExecFile
 	{
@@ -52,8 +66,6 @@ class CConsole : public IConsole
 
 	CCommand *m_pRecycleList;
 	CHeap m_TempCommands;
-
-	static void TraverseChain(FCommandCallback *ppfnCallback, void **ppUserData);
 
 	static void Con_Chain(IResult *pResult, void *pUserData);
 	static void Con_Echo(IResult *pResult, void *pUserData);
@@ -164,7 +176,7 @@ class CConsole : public IConsole
 	public:
 		CCommand *m_pCommand;
 		CResult m_Result;
-		CExecutionQueueEntry(CCommand *pCommand, CResult Result) :
+		CExecutionQueueEntry(CCommand *pCommand, CResult &Result) :
 			m_pCommand(pCommand),
 			m_Result(Result) {}
 	};
@@ -185,11 +197,13 @@ public:
 	int PossibleCommands(const char *pStr, int FlagMask, bool Temp, FPossibleCallback pfnCallback, void *pUser) override;
 
 	void ParseArguments(int NumArgs, const char **ppArguments) override;
-	void Register(const char *pName, const char *pParams, int Flags, FCommandCallback pfnFunc, void *pUser, const char *pHelp) override;
+	void Register(const char *pName, const char *pParams, int Flags, FCommandCallbackDeprecated pfnFunc, void *pUser, const char *pHelp) override;
+	void Register(const char *pName, const char *pParams, const char *pHelp, int Flags, const FCommandCallback &FCallback) override;
 	void RegisterTemp(const char *pName, const char *pParams, int Flags, const char *pHelp) override;
 	void DeregisterTemp(const char *pName) override;
-	void DeregisterTempAll() override;
-	void Chain(const char *pName, FChainCommandCallback pfnChainFunc, void *pUser) override;
+	void DeregisterAllTemp() override;
+	void Chain(const char *pName, FChainCommandCallbackDeprecated pfnChainFunc, void *pUser) override;
+	void Chain(const char *pName, const FChainCommandCallback &FChainFunc) override;
 	void StoreCommands(bool Store) override;
 
 	bool LineIsValid(const char *pStr) override;

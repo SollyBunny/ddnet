@@ -72,7 +72,7 @@ private:
 	bool OpenJoystick(int JoystickIndex);
 	void CloseJoysticks();
 	void UpdateActiveJoystick();
-	static void ConchainJoystickGuidChanged(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
+	static void ConchainJoystickGuidChanged(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallbackDeprecated pfnCallback, void *pCallbackUserData);
 	float GetJoystickDeadzone();
 
 	bool m_InputGrabbed;

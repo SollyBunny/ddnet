@@ -1627,14 +1627,14 @@ void CMenus::PopupConfirmDeleteFolder()
 	}
 }
 
-void CMenus::ConchainDemoPlay(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
+void CMenus::ConchainDemoPlay(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallbackDeprecated pfnCallback, void *pCallbackUserData)
 {
 	CMenus *pThis = static_cast<CMenus *>(pUserData);
 	pThis->m_LastPauseChange = pThis->Client()->GlobalTime();
 	pfnCallback(pResult, pCallbackUserData);
 }
 
-void CMenus::ConchainDemoSpeed(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
+void CMenus::ConchainDemoSpeed(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallbackDeprecated pfnCallback, void *pCallbackUserData)
 {
 	CMenus *pThis = static_cast<CMenus *>(pUserData);
 	if(pResult->NumArguments() == 1)

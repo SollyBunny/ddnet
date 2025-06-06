@@ -1594,7 +1594,7 @@ void CGameConsole::ConConsolePageBottom(IConsole::IResult *pResult, void *pUserD
 	pConsole->m_HasSelection = false;
 }
 
-void CGameConsole::ConchainConsoleOutputLevel(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
+void CGameConsole::ConchainConsoleOutputLevel(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallbackDeprecated pfnCallback, void *pCallbackUserData)
 {
 	CGameConsole *pSelf = (CGameConsole *)pUserData;
 	pfnCallback(pResult, pCallbackUserData);

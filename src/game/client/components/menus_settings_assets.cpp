@@ -643,7 +643,7 @@ void CMenus::RenderSettingsCustom(CUIRect MainView)
 	TextRender()->SetFontPreset(EFontPreset::DEFAULT_FONT);
 }
 
-void CMenus::ConchainAssetsEntities(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
+void CMenus::ConchainAssetsEntities(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallbackDeprecated pfnCallback, void *pCallbackUserData)
 {
 	CMenus *pThis = (CMenus *)pUserData;
 	if(pResult->NumArguments() == 1)
@@ -658,7 +658,7 @@ void CMenus::ConchainAssetsEntities(IConsole::IResult *pResult, void *pUserData,
 	pfnCallback(pResult, pCallbackUserData);
 }
 
-void CMenus::ConchainAssetGame(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
+void CMenus::ConchainAssetGame(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallbackDeprecated pfnCallback, void *pCallbackUserData)
 {
 	CMenus *pThis = (CMenus *)pUserData;
 	if(pResult->NumArguments() == 1)
@@ -673,7 +673,7 @@ void CMenus::ConchainAssetGame(IConsole::IResult *pResult, void *pUserData, ICon
 	pfnCallback(pResult, pCallbackUserData);
 }
 
-void CMenus::ConchainAssetParticles(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
+void CMenus::ConchainAssetParticles(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallbackDeprecated pfnCallback, void *pCallbackUserData)
 {
 	CMenus *pThis = (CMenus *)pUserData;
 	if(pResult->NumArguments() == 1)
@@ -688,7 +688,7 @@ void CMenus::ConchainAssetParticles(IConsole::IResult *pResult, void *pUserData,
 	pfnCallback(pResult, pCallbackUserData);
 }
 
-void CMenus::ConchainAssetEmoticons(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
+void CMenus::ConchainAssetEmoticons(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallbackDeprecated pfnCallback, void *pCallbackUserData)
 {
 	CMenus *pThis = (CMenus *)pUserData;
 	if(pResult->NumArguments() == 1)
@@ -703,7 +703,7 @@ void CMenus::ConchainAssetEmoticons(IConsole::IResult *pResult, void *pUserData,
 	pfnCallback(pResult, pCallbackUserData);
 }
 
-void CMenus::ConchainAssetHud(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
+void CMenus::ConchainAssetHud(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallbackDeprecated pfnCallback, void *pCallbackUserData)
 {
 	CMenus *pThis = (CMenus *)pUserData;
 	if(pResult->NumArguments() == 1)
@@ -718,7 +718,7 @@ void CMenus::ConchainAssetHud(IConsole::IResult *pResult, void *pUserData, ICons
 	pfnCallback(pResult, pCallbackUserData);
 }
 
-void CMenus::ConchainAssetExtras(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
+void CMenus::ConchainAssetExtras(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallbackDeprecated pfnCallback, void *pCallbackUserData)
 {
 	CMenus *pThis = (CMenus *)pUserData;
 	if(pResult->NumArguments() == 1)

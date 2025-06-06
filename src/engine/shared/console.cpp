@@ -358,12 +358,12 @@ void CConsole::InitChecksum(CChecksumData *pData) const
 	{
 		if(pData->m_NumCommands < (int)(std::size(pData->m_aCommandsChecksum)))
 		{
-			FCommandCallback pfnCallback = pCommand->m_pfnCallback;
-			void *pUserData = pCommand->m_pUserData;
-			TraverseChain(&pfnCallback, &pUserData);
-			int CallbackBits = (uintptr_t)pfnCallback & 0xfff;
-			int *pTarget = &pData->m_aCommandsChecksum[pData->m_NumCommands];
-			*pTarget = ((uint8_t)pCommand->m_pName[0]) | ((uint8_t)pCommand->m_pName[1] << 8) | (CallbackBits << 16);
+			int &Target = pData->m_aCommandsChecksum[pData->m_NumCommands];
+			Target = 0;
+			Target |= (uint8_t)pCommand->m_pName[0];
+			Target |= ((uint8_t)pCommand->m_pName[1]) << 8;
+			Target |= ((uintptr_t)&pCommand->m_FCallback & 0xFFFF) << 16;
+			// TODO chain
 		}
 		pData->m_NumCommands += 1;
 	}
@@ -501,13 +501,8 @@ void CConsole::ExecuteLineStroked(int Stroke, const char *pStr, int ClientId, bo
 
 				if(Stroke || IsStrokeCommand)
 				{
-					bool IsColor = false;
-					{
-						FCommandCallback pfnCallback = pCommand->m_pfnCallback;
-						void *pUserData = pCommand->m_pUserData;
-						TraverseChain(&pfnCallback, &pUserData);
-						IsColor = pfnCallback == &SColorConfigVariable::CommandCallback;
-					}
+					// TODO get rid of this
+					bool IsColor = pCommand->m_IsColor;
 
 					if(int Error = ParseArgs(&Result, pCommand->m_pParams, IsColor))
 					{
@@ -545,12 +540,12 @@ void CConsole::ExecuteLineStroked(int Stroke, const char *pStr, int ClientId, bo
 							for(int i = 0; i < MAX_CLIENTS; i++)
 							{
 								Result.SetVictim(i);
-								pCommand->m_pfnCallback(&Result, pCommand->m_pUserData);
+								pCommand->m_FCallback(Result);
 							}
 						}
 						else
 						{
-							pCommand->m_pfnCallback(&Result, pCommand->m_pUserData);
+							pCommand->m_FCallback(Result);
 						}
 
 						if(pCommand->m_Flags & CMDFLAG_TEST)
@@ -764,16 +759,6 @@ void CConsole::ConUserCommandStatus(IResult *pResult, void *pUser)
 	CConsole::ConCommandStatus(&Result, pConsole);
 }
 
-void CConsole::TraverseChain(FCommandCallback *ppfnCallback, void **ppUserData)
-{
-	while(*ppfnCallback == Con_Chain)
-	{
-		CChain *pChainInfo = static_cast<CChain *>(*ppUserData);
-		*ppfnCallback = pChainInfo->m_pfnCallback;
-		*ppUserData = pChainInfo->m_pCallbackUserData;
-	}
-}
-
 CConsole::CConsole(int FlagMask)
 {
 	m_FlagMask = FlagMask;
@@ -809,18 +794,7 @@ CConsole::~CConsole()
 	while(pCommand)
 	{
 		CCommand *pNext = pCommand->m_pNext;
-		{
-			FCommandCallback pfnCallback = pCommand->m_pfnCallback;
-			void *pUserData = pCommand->m_pUserData;
-			CChain *pChain = nullptr;
-			while(pfnCallback == Con_Chain)
-			{
-				pChain = static_cast<CChain *>(pUserData);
-				pfnCallback = pChain->m_pfnCallback;
-				pUserData = pChain->m_pCallbackUserData;
-				delete pChain;
-			}
-		}
+		// TODO conchain
 		// Temp commands are on m_TempCommands heap, so don't delete them
 		if(!pCommand->m_Temp)
 			delete pCommand;
@@ -882,7 +856,14 @@ void CConsole::AddCommandSorted(CCommand *pCommand)
 }
 
 void CConsole::Register(const char *pName, const char *pParams,
-	int Flags, FCommandCallback pfnFunc, void *pUser, const char *pHelp)
+	int Flags, FCommandCallbackDeprecated pfnFunc, void *pUser, const char *pHelp)
+{
+	Register(pName, pParams, pHelp, Flags, [pfnFunc, pUser](IResult &Result) {
+		pfnFunc(&Result, pUser);
+	});
+}
+
+void CConsole::Register(const char *pName, const char *pParams, const char *pHelp, int Flags, const FCommandCallback &FCallback)
 {
 	CCommand *pCommand = FindCommand(pName, Flags);
 	bool DoAdd = false;
@@ -891,8 +872,8 @@ void CConsole::Register(const char *pName, const char *pParams,
 		pCommand = new CCommand();
 		DoAdd = true;
 	}
-	pCommand->m_pfnCallback = pfnFunc;
-	pCommand->m_pUserData = pUser;
+
+	pCommand->m_FCallback = FCallback;
 
 	pCommand->m_pName = pName;
 	pCommand->m_pHelp = pHelp;
@@ -934,8 +915,7 @@ void CConsole::RegisterTemp(const char *pName, const char *pParams, int Flags, c
 		pCommand->m_pParams = pMem;
 	}
 
-	pCommand->m_pfnCallback = nullptr;
-	pCommand->m_pUserData = nullptr;
+	pCommand->m_FCallback = nullptr;
 	pCommand->m_Flags = Flags;
 	pCommand->m_Temp = true;
 
@@ -974,7 +954,7 @@ void CConsole::DeregisterTemp(const char *pName)
 	}
 }
 
-void CConsole::DeregisterTempAll()
+void CConsole::DeregisterAllTemp()
 {
 	// set non temp as first one
 	for(; m_pFirstCommand && m_pFirstCommand->m_Temp; m_pFirstCommand = m_pFirstCommand->m_pNext)
@@ -996,14 +976,11 @@ void CConsole::DeregisterTempAll()
 	m_pRecycleList = nullptr;
 }
 
-void CConsole::Con_Chain(IResult *pResult, void *pUserData)
+void CConsole::Chain(const char *pName, FChainCommandCallbackDeprecated pfnChainFunc, void *pUser)
 {
-	CChain *pInfo = (CChain *)pUserData;
-	pInfo->m_pfnChainCallback(pResult, pInfo->m_pUserData, pInfo->m_pfnCallback, pInfo->m_pCallbackUserData);
-}
+	Chain(pName, [](IResult &, const FCommandCallback &) {
 
-void CConsole::Chain(const char *pName, FChainCommandCallback pfnChainFunc, void *pUser)
-{
+	});
 	CCommand *pCommand = FindCommand(pName, m_FlagMask);
 
 	if(!pCommand)

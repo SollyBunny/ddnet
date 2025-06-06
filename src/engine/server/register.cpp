@@ -37,7 +37,7 @@ class CRegister : public IRegister
 	static const char *ProtocolToSystem(int Protocol);
 	static IPRESOLVE ProtocolToIpresolve(int Protocol);
 
-	static void ConchainOnConfigChange(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
+	static void ConchainOnConfigChange(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallbackDeprecated pfnCallback, void *pCallbackUserData);
 
 	class CGlobal
 	{
@@ -247,7 +247,7 @@ IPRESOLVE CRegister::ProtocolToIpresolve(int Protocol)
 	dbg_break();
 }
 
-void CRegister::ConchainOnConfigChange(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
+void CRegister::ConchainOnConfigChange(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallbackDeprecated pfnCallback, void *pCallbackUserData)
 {
 	pfnCallback(pResult, pCallbackUserData);
 	if(pResult->NumArguments())
