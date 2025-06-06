@@ -198,6 +198,11 @@ int CControls::SnapInput(int *pData)
 	if(Client()->ServerCapAnyPlayerFlag() && m_pClient->m_Camera.CamType() == CCamera::CAMTYPE_SPEC)
 		m_aInputData[g_Config.m_ClDummy].m_PlayerFlags |= PLAYERFLAG_SPEC_CAM;
 
+	// TClient
+	if(g_Config.m_ClHideChatBubbles && Client()->RconAuthed())
+		for(auto &InputData : m_aInputData)
+			InputData.m_PlayerFlags &= ~PLAYERFLAG_CHATTING;
+
 	bool Send = m_aLastData[g_Config.m_ClDummy].m_PlayerFlags != m_aInputData[g_Config.m_ClDummy].m_PlayerFlags;
 
 	m_aLastData[g_Config.m_ClDummy].m_PlayerFlags = m_aInputData[g_Config.m_ClDummy].m_PlayerFlags;

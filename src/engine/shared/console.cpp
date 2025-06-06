@@ -379,8 +379,11 @@ bool CConsole::LineIsValid(const char *pStr)
 
 	// TClient
 	char aComposedBuf[CONSOLE_MAX_STR_LENGTH];
-	g_pConditionalCompose(pStr, aComposedBuf, sizeof(aComposedBuf));
-	pStr = aComposedBuf;
+	if(g_pConditionalCompose)
+	{
+		g_pConditionalCompose(pStr, aComposedBuf, sizeof(aComposedBuf));
+		pStr = aComposedBuf;
+	}
 
 	do
 	{
@@ -429,8 +432,11 @@ void CConsole::ExecuteLineStroked(int Stroke, const char *pStr, int ClientId, bo
 {
 	// TClient
 	char aComposedBuf[CONSOLE_MAX_STR_LENGTH];
-	g_pConditionalCompose(pStr, aComposedBuf, sizeof(aComposedBuf));
-	pStr = aComposedBuf;
+	if(g_pConditionalCompose)
+	{
+		g_pConditionalCompose(pStr, aComposedBuf, sizeof(aComposedBuf));
+		pStr = aComposedBuf;
+	}
 
 	const char *pWithoutPrefix = str_startswith(pStr, "mc;");
 	if(pWithoutPrefix)

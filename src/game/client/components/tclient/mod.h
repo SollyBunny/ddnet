@@ -20,9 +20,6 @@ public:
 	void Ban(const CIden &Iden, const char *pTime, const char *pReason);
 	void Mute(const CIden &Iden, const char *pTime, const char *pReason);
 
-	void ConModRConIdTimeReason(IConsole::IResult *pResult, const char *pCmd, bool IsName, char Unit);
-	void ConModRConKill(IConsole::IResult *pResult, const char *pCmd, bool IsName, char Unit);
-
 	int Sizeof() const override { return sizeof(*this); }
 	void OnConsoleInit() override;
 	void OnRender() override;
