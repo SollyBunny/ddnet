@@ -12,17 +12,9 @@ file(STRINGS src/game/version.h VERSION_LINE
   REGEX "^#define CLIENT_VERSION "
 )
 
-if(VERSION_LINE MATCHES "([0-9]+)\\.([0-9]+)\\.([0-9]+)")
-  set(VERSION_MAJOR ${CMAKE_MATCH_1})
-  set(VERSION_MINOR ${CMAKE_MATCH_2})
-  set(VERSION_PATCH ${CMAKE_MATCH_3})
-elseif(VERSION_LINE MATCHES "([0-9]+)\\.([0-9]+)")
-  set(VERSION_MAJOR ${CMAKE_MATCH_1})
-  set(VERSION_MINOR ${CMAKE_MATCH_2})
-  set(VERSION_PATCH "0")
-else()
-  message(FATAL_ERROR "Couldn't parse version from src/game/version.h")
-endif()
+set(VERSION_MAJOR "0")
+set(VERSION_MINOR "0")
+set(VERSION_PATCH "0")
 
 if(VERSION_PATCH STREQUAL "0")
   project(DDNet VERSION ${VERSION_MAJOR}.${VERSION_MINOR})

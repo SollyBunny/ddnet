@@ -649,7 +649,7 @@ void CItems::RenderSoldierBomb(const CNetObj_InfClassObject *pCurrent, bool IsPr
 
 		int NumBombs = m_pClient->m_InfClassSoldierBombs;
 		float AngleStep = 2.0f * pi / NumBombs;
-		int ActiveBombs = clamp(pCurrent->m_Data1, 0, NumBombs);
+		int ActiveBombs = std::clamp(pCurrent->m_Data1, 0, NumBombs);
 		for(int i = 0; i < ActiveBombs; ++i)
 		{
 			const float Angle = BaseAngle + AngleStep * i;
