@@ -83,7 +83,7 @@ int CConditional::ParseValue(const char *pString, char *pOut, int Length)
 			"W", "C", "E",
 			"SW", "S", "SE"};
 		dbg_msg("conditional", "%f %f / %f %f\n", x, y, w, h);
-		int i = clamp((int)(y / h * 3.0f), 0, 2) * 3 + clamp((int)(x / w * 3.0f), 0, 2);
+		int i = std::clamp((int)(y / h * 3.0f), 0, 2) * 3 + std::clamp((int)(x / w * 3.0f), 0, 2);
 		return str_copy(pOut, s_apLocations[i], Length);
 	}
 	else

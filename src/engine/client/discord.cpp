@@ -47,6 +47,7 @@ public:
 		DiscordCreateParams Params;
 		DiscordCreateParamsSetDefault(&Params);
 
+		// Params.client_id = 752165779117441075; // DDNet
 		Params.client_id = 1325361453988970527; // TClient
 		Params.flags = EDiscordCreateFlags::DiscordCreateFlags_NoRequireDiscord;
 		Params.event_data = this;

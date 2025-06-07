@@ -855,7 +855,7 @@ public:
 
 	bool CreateFolder(const char *pFoldername, int Type) override
 	{
-		dbg_assert((Type >= TYPE_SAVE && Type < m_NumPaths) || Type == TYPE_ABSOLUTE, "Type invalid");
+		dbg_assert(Type >= TYPE_SAVE && Type < m_NumPaths, "Type invalid");
 
 		char aBuffer[IO_MAX_PATH_LENGTH];
 		GetPath(Type, pFoldername, aBuffer, sizeof(aBuffer));

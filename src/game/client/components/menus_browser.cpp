@@ -64,7 +64,7 @@ static void FormatServerbrowserPing(char (&aBuffer)[N], const CServerInfo *pInfo
 
 static ColorRGBA GetPingTextColor(int Latency)
 {
-	return color_cast<ColorRGBA>(ColorHSLA((300.0f - clamp(Latency, 0, 300)) / 1000.0f, 1.0f, 0.5f));
+	return color_cast<ColorRGBA>(ColorHSLA((300.0f - std::clamp(Latency, 0, 300)) / 1000.0f, 1.0f, 0.5f));
 }
 
 static ColorRGBA GetGametypeTextColor(const char *pGametype)
@@ -863,7 +863,7 @@ void CMenus::ResetServerbrowserFilters()
 	g_Config.m_BrFilterGametypeStrict = 0;
 	g_Config.m_BrFilterConnectingPlayers = 1;
 	g_Config.m_BrFilterServerAddress[0] = '\0';
-	g_Config.m_BrFilterLogin = false;
+	g_Config.m_BrFilterLogin = false; // TClient
 
 	if(g_Config.m_UiPage != PAGE_LAN)
 	{

@@ -524,6 +524,7 @@ public:
 		//vec2 m_DebugVector2 = vec2(0, 0);
 		//vec2 m_DebugVector3 = vec2(0, 0);
 		float m_Uncertainty = 0.0f;
+		float m_VolleyBallAngle = 0.0f;
 
 		std::shared_ptr<CManagedTeeRenderInfo> m_pSkinInfo = nullptr; // this is what the server reports
 		CTeeRenderInfo m_InfClassSkinInfo; // the local idea about the proper class skin TODO: use managed

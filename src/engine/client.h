@@ -310,6 +310,7 @@ public:
 	virtual IFriends *Foes() = 0;
 
 	virtual void GetSmoothTick(int *pSmoothTick, float *pSmoothIntraTick, float MixAmount) = 0;
+	// TClient
 	virtual void GetSmoothFreezeTick(int *pSmoothTick, float *pSmoothIntraTick, float MixAmount) = 0;
 
 	virtual void AddWarning(const SWarning &Warning) = 0;
@@ -407,6 +408,7 @@ public:
 	virtual int OnDemoRecSnap7(class CSnapshot *pFrom, class CSnapshot *pTo, int Conn) = 0;
 	virtual int TranslateSnap(class CSnapshot *pSnapDstSix, class CSnapshot *pSnapSrcSeven, int Conn, bool Dummy) = 0;
 
+	// TClient
 	virtual bool CheckNewInput() = 0;
 	virtual void InitializeLanguage() = 0;
 };

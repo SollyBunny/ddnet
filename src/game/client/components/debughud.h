@@ -11,12 +11,11 @@ class CDebugHud : public CComponent
 	void RenderNetCorrections();
 	void RenderTuning();
 	void RenderHint();
-	void RenderTaterDebug();
 
 	CGraph m_RampGraph;
 	CGraph m_ZoomedInGraph;
 	float m_SpeedTurningPoint;
-	float MiddleOfZoomedInGraph;
+	float m_MiddleOfZoomedInGraph;
 	float m_OldVelrampStart;
 	float m_OldVelrampRange;
 	float m_OldVelrampCurvature;

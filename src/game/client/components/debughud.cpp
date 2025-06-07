@@ -208,11 +208,11 @@ void CDebugHud::RenderTuning()
 
 		m_ZoomedInGraph.Init(0.0f, 0.0f);
 		PreviousRampedSpeed = 1.0f;
-		MiddleOfZoomedInGraph = m_SpeedTurningPoint;
+		m_MiddleOfZoomedInGraph = m_SpeedTurningPoint;
 		for(int64_t i = 0; i < GRAPH_MAX_VALUES; i++)
 		{
 			// This is a calculation of the speed values per second on the X axis, from (MiddleOfZoomedInGraph - 64 * StepSize) to (MiddleOfZoomedInGraph + 64 * StepSize)
-			const float Speed = MiddleOfZoomedInGraph - 64 * StepSizeZoomedInGraph + i * StepSizeZoomedInGraph;
+			const float Speed = m_MiddleOfZoomedInGraph - 64 * StepSizeZoomedInGraph + i * StepSizeZoomedInGraph;
 			const float Ramp = VelocityRamp(Speed, m_pClient->m_aTuning[g_Config.m_ClDummy].m_VelrampStart, m_pClient->m_aTuning[g_Config.m_ClDummy].m_VelrampRange, m_pClient->m_aTuning[g_Config.m_ClDummy].m_VelrampCurvature);
 			const float RampedSpeed = Speed * Ramp;
 			if(RampedSpeed >= PreviousRampedSpeed)
@@ -239,7 +239,7 @@ void CDebugHud::RenderTuning()
 	m_RampGraph.Render(Graphics(), TextRender(), GraphX, GraphY, GraphW, GraphH, aBuf);
 	str_format(aBuf, sizeof(aBuf), "Max Velspeed before it ramps off:  %.2f Bps", m_SpeedTurningPoint / 32);
 	TextRender()->Text(GraphX, GraphY - GraphFontSize, GraphFontSize, aBuf);
-	str_format(aBuf, sizeof(aBuf), "Zoomed in on turning point (Velspeed %d to %d)", ((int)MiddleOfZoomedInGraph - 64 * StepSizeZoomedInGraph) / 32, ((int)MiddleOfZoomedInGraph + 64 * StepSizeZoomedInGraph) / 32);
+	str_format(aBuf, sizeof(aBuf), "Zoomed in on turning point (Velspeed %d to %d)", ((int)m_MiddleOfZoomedInGraph - 64 * StepSizeZoomedInGraph) / 32, ((int)m_MiddleOfZoomedInGraph + 64 * StepSizeZoomedInGraph) / 32);
 	m_ZoomedInGraph.Render(Graphics(), TextRender(), GraphX + GraphW + GraphSpacing, GraphY, GraphW, GraphH, aBuf);
 }
 
@@ -259,59 +259,6 @@ void CDebugHud::RenderHint()
 	TextRender()->Text(Spacing, Height - FontSize - Spacing, FontSize, Localize("Debug mode enabled. Press Ctrl+Shift+D to disable debug mode."));
 }
 
-void CDebugHud::RenderTaterDebug()
-{
-	if(!g_Config.m_Debug)
-		return;
-	Graphics()->TextureClear();
-	GameClient()->RenderTools()->MapScreenToGroup(GameClient()->m_Camera.m_Center.x, GameClient()->m_Camera.m_Center.y, GameClient()->Layers()->GameGroup(), GameClient()->m_Camera.m_Zoom);
-	for(int ClientId = 0; ClientId < MAX_CLIENTS; ClientId++)
-	{
-		//if(!m_pClient->m_Snap.m_aCharacters[ClientId].m_Active)
-		//{
-		//	continue;
-		//}
-		//vec2 ServerPos = mix(vec2(GameClient()->m_Snap.m_aCharacters[ClientId].m_Prev.m_X, GameClient()->m_Snap.m_aCharacters[ClientId].m_Prev.m_Y),
-		//	vec2(GameClient()->m_Snap.m_aCharacters[ClientId].m_Cur.m_X, GameClient()->m_Snap.m_aCharacters[ClientId].m_Cur.m_Y),
-		//	Client()->IntraGameTick(g_Config.m_ClDummy));
-
-		//vec2 RenderPos = m_pClient->m_aClients[ClientId].m_RenderPos;
-		//vec2 Vector = m_pClient->m_aClients[ClientId].m_DebugVector;
-		//vec2 StartPos = ServerPos;
-		//vec2 EndPos = ServerPos + (Vector);
-		//Graphics()->LinesBegin();
-		//Graphics()->SetColor(ColorRGBA(0.0f, 1.0, 0.0f, 1.0f));
-
-		//IGraphics::CLineItem LineItem(StartPos.x, StartPos.y, EndPos.x, EndPos.y);
-		//Graphics()->LinesDraw(&LineItem, 1);
-
-		//EndPos = ServerPos + m_pClient->m_aClients[ClientId].m_DebugVector2;
-		//LineItem = IGraphics::CLineItem(StartPos.x, StartPos.y, EndPos.x, EndPos.y);
-		//Graphics()->SetColor(ColorRGBA(0.5f, 0.5, 1.0f, 1.0f));
-		//Graphics()->LinesDraw(&LineItem, 1);
-
-		//EndPos = ServerPos + m_pClient->m_aClients[ClientId].m_DebugVector3;
-		//LineItem = IGraphics::CLineItem(StartPos.x, StartPos.y, EndPos.x, EndPos.y);
-		//Graphics()->SetColor(ColorRGBA(1.0f, 0.0, 0.0f, 1.0f));
-		//Graphics()->LinesDraw(&LineItem, 1);
-		//Graphics()->LinesEnd();
-
-		//Graphics()->LinesBegin();
-		//Graphics()->SetColor(ColorRGBA(0.0f, 1.0, 0.0f, 1.0f));
-		//for(int i = 0; i < 20; i++)
-		//{
-		//	break;
-		//	int GameTick = Client()->GameTick(g_Config.m_ClDummy) - i;
-		//	vec2 EndPos = m_pClient->m_aClients[ClientId].m_aPredPos[(GameTick) % 200];
-		//	vec2 StartPos = m_pClient->m_aClients[ClientId].m_aPredPos[(GameTick - 1) % 200];
-
-		//	LineItem = IGraphics::CLineItem(StartPos.x, StartPos.y, EndPos.x, EndPos.y);
-		//	Graphics()->LinesDraw(&LineItem, 1);
-		//}
-		//Graphics()->LinesEnd();
-	}
-}
-
 void CDebugHud::OnRender()
 {
 	if(Client()->State() != IClient::STATE_ONLINE && Client()->State() != IClient::STATE_DEMOPLAYBACK)
@@ -320,5 +267,4 @@ void CDebugHud::OnRender()
 	RenderTuning();
 	RenderNetCorrections();
 	RenderHint();
-	// RenderTaterDebug();
 }

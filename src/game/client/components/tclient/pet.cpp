@@ -52,7 +52,7 @@ void CPet::OnRender()
 		const vec2 DeltaDamped = (m_Velocity * -2.0f * std::sqrt(k) + DeltaPosition * k) * Delta;
 		static const float Friction = 0.01f;
 		const vec2 DeltaWizzy = (m_Velocity + DeltaPosition * Delta * 50.0f) * std::pow(Friction, Delta) - m_Velocity;
-		m_Velocity += mix(DeltaDamped, DeltaWizzy, clamp(DeltaLength / 64.0f, 0.0f, 1.0f));
+		m_Velocity += mix(DeltaDamped, DeltaWizzy, std::clamp(DeltaLength / 64.0f, 0.0f, 1.0f));
 	}
 	else
 	{
@@ -86,7 +86,7 @@ void CPet::OnRender()
 		vec2 DirVel = m_Velocity;
 		if(length(DirVel) > 1.0f)
 			DirVel = normalize(DirVel);
-		DirTarget = mix(DirMouse, DirVel, clamp(length(m_Velocity) / 32.0f, 0.0f, 1.0f));
+		DirTarget = mix(DirMouse, DirVel, std::clamp(length(m_Velocity) / 32.0f, 0.0f, 1.0f));
 	}
 	m_Dir = (DirTarget + m_Dir) / 2.0f; // TODO: stop being lazy
 

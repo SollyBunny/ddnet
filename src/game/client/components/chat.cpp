@@ -1250,10 +1250,10 @@ void CChat::OnRender()
 	float x = 5.0f;
 
 	// TClient
-	float y = 300.0f - (20.0f * FontSize() / 6.f + (g_Config.m_ClStatusBar ? g_Config.m_ClStatusBarHeight : 0));
-	// float y = 300.0f - 20.0f * FontSize() / 6.f;
+	float y = 300.0f - (20.0f * FontSize() / 6.0f + (g_Config.m_ClStatusBar ? g_Config.m_ClStatusBarHeight : 0.0f));
+	// float y = 300.0f - 20.0f * FontSize() / 6.0f;
 
-	float ScaledFontSize = FontSize() * (8 / 6.f);
+	float ScaledFontSize = FontSize() * (8.0f / 6.0f);
 	if(m_Mode != MODE_NONE)
 	{
 		// render chat input

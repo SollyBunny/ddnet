@@ -652,7 +652,7 @@ void CTClient::RenderMiniVoteHud()
 	Row.VSplitLeft(2.0f, nullptr, &Row);
 
 	SProgressSpinnerProperties ProgressProps;
-	ProgressProps.m_Progress = clamp((time() - GameClient()->m_Voting.m_Opentime) / (float)(GameClient()->m_Voting.m_Closetime - GameClient()->m_Voting.m_Opentime), 0.0f, 1.0f);
+	ProgressProps.m_Progress = std::clamp((time() - GameClient()->m_Voting.m_Opentime) / (float)(GameClient()->m_Voting.m_Closetime - GameClient()->m_Voting.m_Opentime), 0.0f, 1.0f);
 	Ui()->RenderProgressSpinner(ProgressSpinner.Center(), ProgressSpinner.h / 2.0f, ProgressProps);
 
 	Ui()->DoLabel(&Row, aBuf, 3.0f, TEXTALIGN_ML);

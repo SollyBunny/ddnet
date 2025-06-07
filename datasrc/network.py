@@ -40,6 +40,10 @@ LaserFlags = [
 	"NO_PREDICT",
 ]
 
+PickupFlags = [
+	"XFLIP", "YFLIP", "ROTATE", "NO_PREDICT",
+]
+
 LaserTypes = ["RIFLE", "SHOTGUN", "DOOR", "FREEZE", "DRAGGER", "GUN", "PLASMA"]
 DraggerTypes = ["WEAK", "WEAK_NW", "NORMAL", "NORMAL_NW", "STRONG", "STRONG_NW"]
 GunTypes = ["UNFREEZE", "EXPLOSIVE", "FREEZE", "EXPFREEZE"]
@@ -104,6 +108,7 @@ Flags = [
 	Flags("LEGACYPROJECTILEFLAG", LegacyProjectileFlags),
 	Flags("PROJECTILEFLAG", ProjectileFlags),
 	Flags("LASERFLAG", LaserFlags),
+	Flags("PICKUPFLAG", PickupFlags),
 	Flags("INFCLASS_PLAYER_FLAG", InfClassPlayerFlags),
 	Flags("INFCLASS_OBJECT_FLAG", InfClassObjectFlags),
 	Flags("INFCLASS_CLASSINFO_FLAG", InfClassClassInfoFlags),
@@ -357,6 +362,7 @@ Objects = [
 		NetIntRange("m_Type", 0, 'max_int'),
 		NetIntRange("m_Subtype", 0, 'max_int'),
 		NetIntAny("m_SwitchNumber"),
+		NetIntAny("m_Flags", default=0),
 	]),
 
 	NetObjectEx("DDNetSpectatorInfo", "spectator-info@netobj.ddnet.org", [

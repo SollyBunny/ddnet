@@ -483,7 +483,7 @@ public:
 		if(!m_Visible)
 			return;
 		int ping = Data.m_InGame ? This.m_Snap.m_apPlayerInfos[Data.m_ClientId]->m_Latency : (1 + Data.m_ClientId) * 25;
-		m_Color = color_cast<ColorRGBA>(ColorHSLA((float)(300 - clamp(ping, 0, 300)) / 1000.0f, 1.0f, 0.5f, Data.m_Color.a));
+		m_Color = color_cast<ColorRGBA>(ColorHSLA((float)(300 - std::clamp(ping, 0, 300)) / 1000.0f, 1.0f, 0.5f, Data.m_Color.a));
 	}
 	void Render(CGameClient &This, vec2 Pos) const override
 	{
@@ -800,7 +800,7 @@ void CNamePlates::RenderNamePlateGame(vec2 Position, const CNetObj_PlayerInfo *p
 	Data.m_FontSizeDirection = 18.0f + 20.0f * g_Config.m_ClDirectionSize / 100.0f;
 
 	if(g_Config.m_ClNamePlatesAlways == 0)
-		Alpha *= clamp(1.0f - std::pow(distance(GameClient()->m_Controls.m_aTargetPos[g_Config.m_ClDummy], Position) / 200.0f, 16.0f), 0.0f, 1.0f);
+		Alpha *= std::clamp(1.0f - std::pow(distance(GameClient()->m_Controls.m_aTargetPos[g_Config.m_ClDummy], Position) / 200.0f, 16.0f), 0.0f, 1.0f);
 	if(OtherTeam)
 		Alpha *= (float)g_Config.m_ClShowOthersAlpha / 100.0f;
 
@@ -1040,6 +1040,9 @@ void CNamePlates::OnRender()
 		// Only render name plates for active characters
 		if(GameClient()->m_Snap.m_aCharacters[i].m_Active)
 		{
+			// TClient
+			if(GameClient()->m_aClients[i].m_DeepFrozen && (g_Config.m_ClVolleyBallBetterBall == 2 || (g_Config.m_ClVolleyBallBetterBall == 1 && str_startswith_nocase(Client()->GetCurrentMap(), "volleyball"))))
+				continue;
 			const vec2 RenderPos = GameClient()->m_aClients[i].m_RenderPos;
 			RenderNamePlateGame(RenderPos, pInfo, 1.0f);
 		}

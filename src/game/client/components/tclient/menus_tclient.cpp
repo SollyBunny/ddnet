@@ -101,12 +101,12 @@ bool CMenus::DoSliderWithScaledValue(const void *pId, int *pOption, const CUIRec
 	if(Input()->ModifierIsPressed() && Input()->KeyPress(KEY_MOUSE_WHEEL_UP) && Ui()->MouseInside(pRect))
 	{
 		Value += Increment;
-		Value = clamp(Value, Min, Max);
+		Value = std::clamp(Value, Min, Max);
 	}
 	if(Input()->ModifierIsPressed() && Input()->KeyPress(KEY_MOUSE_WHEEL_DOWN) && Ui()->MouseInside(pRect))
 	{
 		Value -= Increment;
-		Value = clamp(Value, Min, Max);
+		Value = std::clamp(Value, Min, Max);
 	}
 
 	char aBuf[256];
@@ -115,7 +115,7 @@ bool CMenus::DoSliderWithScaledValue(const void *pId, int *pOption, const CUIRec
 	if(NoClampValue)
 	{
 		// Clamp the value internally for the scrollbar
-		Value = clamp(Value, Min, Max);
+		Value = std::clamp(Value, Min, Max);
 	}
 
 	CUIRect Label, ScrollBar;
