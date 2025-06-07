@@ -147,9 +147,6 @@ const IConsole::CCommandInfo *CConsole::FirstCommandInfo(int AccessLevel, int Fl
 
 // the maximum number of tokens occurs in a string of length CONSOLE_MAX_STR_LENGTH with tokens size 1 separated by single spaces
 
-// TClient
-void (*g_pConditionalCompose)(const char *pString, char *pOut, int Length) = nullptr;
-
 int CConsole::ParseStart(CResult *pResult, const char *pString, int Length)
 {
 	char *pStr;
@@ -423,9 +420,9 @@ bool CConsole::LineIsValid(const char *pStr)
 
 	// TClient
 	char aComposedBuf[CONSOLE_MAX_STR_LENGTH];
-	if(g_pConditionalCompose)
+	if(m_pConditionalCompose)
 	{
-		g_pConditionalCompose(pStr, aComposedBuf, sizeof(aComposedBuf));
+		m_pConditionalCompose(pStr, aComposedBuf, sizeof(aComposedBuf));
 		pStr = aComposedBuf;
 	}
 
@@ -476,9 +473,9 @@ void CConsole::ExecuteLineStroked(int Stroke, const char *pStr, int ClientId, bo
 {
 	// TClient
 	char aComposedBuf[CONSOLE_MAX_STR_LENGTH];
-	if(g_pConditionalCompose)
+	if(m_pConditionalCompose)
 	{
-		g_pConditionalCompose(pStr, aComposedBuf, sizeof(aComposedBuf));
+		m_pConditionalCompose(pStr, aComposedBuf, sizeof(aComposedBuf));
 		pStr = aComposedBuf;
 	}
 
@@ -722,9 +719,13 @@ bool CConsole::ExecuteFile(const char *pFilename, int ClientId, bool LogFailure,
 		str_format(aBuf, sizeof(aBuf), "executing '%s'", pFilename);
 		Print(IConsole::OUTPUT_LEVEL_STANDARD, "console", aBuf);
 
+		m_Return = false; // TClient
 		while(const char *pLine = LineReader.Get())
 		{
 			ExecuteLine(pLine, ClientId);
+			// TClient
+			if(m_Return)
+				break;
 		}
 
 		Success = true;

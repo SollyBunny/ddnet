@@ -15,6 +15,7 @@ public:
 	static void ConIfneq(IConsole::IResult *pResult, void *pUserData);
 	static void ConIfreq(IConsole::IResult *pResult, void *pUserData);
 	static void ConIfrneq(IConsole::IResult *pResult, void *pUserData);
+	static void ConReturn(IConsole::IResult *pResult, void *pUserData);
 	void OnConsoleInit() override;
 	int Sizeof() const override { return sizeof(*this); }
 };
