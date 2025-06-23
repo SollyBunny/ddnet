@@ -98,9 +98,9 @@ void CCountryFlags::OnInit()
 	}
 
 	m_FlagsQuadContainerIndex = Graphics()->CreateQuadContainer(false);
-	Graphics()->SetColor(1.f, 1.f, 1.f, 1.f);
-	Graphics()->QuadsSetSubset(0, 0, 1, 1);
-	RenderTools()->QuadContainerAddSprite(m_FlagsQuadContainerIndex, 0, 0, 1, 1);
+	Graphics()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+	Graphics()->QuadsSetSubset(0.0f, 0.0f, 1.0f, 1.0f);
+	RenderTools()->QuadContainerAddSprite(m_FlagsQuadContainerIndex, 0.0f, 0.0f, 1.0f, 1.0f);
 	Graphics()->QuadContainerUpload(m_FlagsQuadContainerIndex);
 }
 
