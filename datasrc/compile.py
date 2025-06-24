@@ -357,7 +357,7 @@ bool CNetObjHandler::TeeHistorianRecordMsg(int Type)
 
 	lines = []
 	lines += ["""\
-void RegisterGameUuids(CUuidManager *pManager)
+void RegisterGameUuids(CUuidManager *pManager) // NOLINT(misc-use-internal-linkage)
 {
 	"""]
 
