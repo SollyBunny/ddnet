@@ -14,6 +14,7 @@
 
 #include "eventhandler.h"
 #include "gameworld.h"
+#include "playermapping.h"
 #include "teehistorian.h"
 
 #include <map>
@@ -58,17 +59,19 @@ struct CScoreRandomMapResult;
 
 struct CSnapContext
 {
-	CSnapContext(int Version, bool Sixup = false) :
-		m_ClientVersion(Version), m_Sixup(Sixup)
+	CSnapContext(int Version, bool Sixup, int ClientId) :
+		m_ClientVersion(Version), m_Sixup(Sixup), m_ClientId(ClientId)
 	{
 	}
 
 	int GetClientVersion() const { return m_ClientVersion; }
 	bool IsSixup() const { return m_Sixup; }
+	int GetClientId() const { return m_ClientId; }
 
 private:
 	int m_ClientVersion;
 	bool m_Sixup;
+	int m_ClientId;
 };
 
 class CMute
@@ -216,6 +219,7 @@ public:
 
 	IGameController *m_pController;
 	CGameWorld m_World;
+	CPlayerMapping m_PlayerMapping;
 
 	// helper functions
 	class CCharacter *GetPlayerChar(int ClientId);
@@ -320,8 +324,6 @@ public:
 	void OnPreSnap() override;
 	void OnSnap(int ClientId) override;
 	void OnPostSnap() override;
-
-	void UpdatePlayerMaps();
 
 	void *PreProcessMsg(int *pMsgId, CUnpacker *pUnpacker, int ClientId);
 	void CensorMessage(char *pCensoredMessage, const char *pMessage, int Size);
@@ -619,6 +621,7 @@ public:
 	void SendRecord(int ClientId);
 	void SendFinish(int ClientId, float Time, float PreviousBestTime);
 	void OnSetAuthed(int ClientId, int Level) override;
+	void OnSetTimedOut(int ClientId) override;
 
 	void ResetTuning();
 };

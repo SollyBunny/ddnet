@@ -87,7 +87,7 @@ enum
 	SERVERINFO_MAX_CLIENTS = 128,
 	MAX_CLIENTS = 128,
 	VANILLA_MAX_CLIENTS = 16,
-	SERVER_MAX_CLIENTS = 64,
+	LEGACY_MAX_CLIENTS = 64,
 	MAX_CHECKPOINTS = 25,
 	MIN_TICK = 0,
 	MAX_TICK = 0x6FFFFFFF,
@@ -104,7 +104,8 @@ enum
 	MSGFLAG_FLUSH = 2, // makes the msg be sent immediately, without it it's delayed until the next flush
 	MSGFLAG_NORECORD = 4, // don't write msg to demo recorders
 	MSGFLAG_RECORD = 8, // write msg to demo recorders
-	MSGFLAG_NOSEND = 16 // don't send the msg to client/server, useful combined with MSGFLAG_RECORD to record a msg without sending it
+	MSGFLAG_NOSEND = 16, // don't send the msg to client/server, useful combined with MSGFLAG_RECORD to record a msg without sending it
+	MSGFLAG_NOTRANSLATE = 32, // don't translate message, useful for fake disconnect/connects
 };
 
 enum

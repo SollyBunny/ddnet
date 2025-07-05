@@ -184,7 +184,7 @@ void CPickup::Snap(int SnappingClient)
 			return;
 	}
 
-	GameServer()->SnapPickup(CSnapContext(SnappingClientVersion, Sixup), GetId(), m_Pos, m_Type, m_Subtype, m_Number, m_Flags);
+	GameServer()->SnapPickup(CSnapContext(SnappingClientVersion, Sixup, -1), GetId(), m_Pos, m_Type, m_Subtype, m_Number, m_Flags);
 }
 
 void CPickup::Move()
