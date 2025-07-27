@@ -195,7 +195,6 @@ public:
 
 		// DDRace
 
-		NETADDR m_Addr;
 		bool m_GotDDNetVersionPacket;
 		bool m_DDNetVersionSettled;
 		int m_DDNetVersion;
