@@ -11,14 +11,12 @@ declare -A known_contributors=(
 
 git_email_to_gh_username() {
 	local email="$1"
-	if [[ "$email" =~ ^@[0-9]+\+(.*)@users.noreply.github.com$ ]]
-	then
+	if [[ "$email" =~ ^@[0-9]+\+(.*)@users.noreply.github.com$ ]]; then
 		printf '%s' "${BASH_REMATCH[1]}"
 		return 0
 	fi
 	known="${known_contributors["$email"]}"
-	if [ "$known" != "" ]
-	then
+	if [ "$known" != "" ]; then
 		printf '%s' "$known"
 		return 0
 	fi
@@ -46,8 +44,7 @@ while read -r commit; do
 		--no-patch \
 		--pretty=format:'%ae')"
 	if [[ "${email,,}" != "chillerdragon@gmail.com" ]]; then
-		if ! username="$(git_email_to_gh_username "$email")"
-		then
+		if ! username="$(git_email_to_gh_username "$email")"; then
 			username="$(git \
 				show "$commit" \
 				--no-patch \
