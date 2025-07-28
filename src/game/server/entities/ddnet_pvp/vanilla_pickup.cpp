@@ -165,7 +165,7 @@ void CVanillaPickup::Snap(int SnappingClient)
 			return;
 	}
 
-	GameServer()->SnapPickup(CSnapContext(SnappingClientVersion, Sixup), GetId(), m_Pos, m_Type, m_Subtype, m_Number, PICKUPFLAG_NO_PREDICT);
+	GameServer()->SnapPickup(CSnapContext(SnappingClientVersion, Sixup, SnappingClient), GetId(), m_Pos, m_Type, m_Subtype, m_Number, PICKUPFLAG_NO_PREDICT);
 }
 
 void CVanillaPickup::Move()
