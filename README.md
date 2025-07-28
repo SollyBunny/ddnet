@@ -436,7 +436,7 @@ The following configs determine which format the stats will be represented in.
 
 And these configs determin where the stats will be sent to.
 
-+ `sv_round_stats_discord_webhook` Will do a discord webhook POST request to that url. The url has to look like this: `https://discord.com/api/webhooks/1232962289217568799/8i_a89XXXXXXXXXXXXXXXXXXXXXXX`
++ `sv_round_stats_discord_webhooks` Will do a discord webhook POST request to that url. The url has to look like this: `https://discord.com/api/webhooks/1232962289217568799/8i_a89XXXXXXXXXXXXXXXXXXXXXXX`
   If you don't know how to setup a discord webhook, don't worry its quite simple. You need to have admin access to a discord server and then you can follow this [1 minute youtube tutorial](https://www.youtube.com/watch?v=fKksxz2Gdnc).
 + `sv_round_stats_http_endpoint` It will do a http POST request to that url with the round stats as payload. You can set this to your custom api endpoint that collect stats. Example: `https://api.zillyhuhn.com/insta/round_stats`
 + `sv_round_stats_output_file` It will write the round stats to a file located at that path. You could then read that file with another tool or expose it with an http server.
