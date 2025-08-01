@@ -389,29 +389,30 @@ void IGameController::SendRoundTopMessage(int ClientId)
 	char aBuf[512];
 	CPlayer *apPlayers[MAX_CLIENTS];
 	memcpy(apPlayers, GameServer()->m_apPlayers, sizeof(apPlayers));
+	const int NumTop = 3;
 
-	// kills
-	GameServer()->SendChatTarget(ClientId, "~~~ top killer ~~~");
+	// accuracy
+	GameServer()->SendChatTarget(ClientId, "-------- Top Accuracy ------");
 	std::stable_sort(apPlayers, apPlayers + MAX_CLIENTS,
 		[](const CPlayer *pPlayer1, const CPlayer *pPlayer2) -> bool {
 			if(!pPlayer1)
 				return false;
 			if(!pPlayer2)
 				return true;
-			return pPlayer1->Kills() > pPlayer2->Kills();
+			return pPlayer1->m_Stats.HitAccuracy() > pPlayer2->m_Stats.HitAccuracy();
 		});
-	for(int i = 0; i < 5; i++)
+	for(int i = 0; i < NumTop; i++)
 	{
 		CPlayer *pPlayer = apPlayers[i];
 		if(!pPlayer)
 			break;
 
-		str_format(aBuf, sizeof(aBuf), "%d. '%s' kills: %d", i + 1, Server()->ClientName(pPlayer->GetCid()), pPlayer->m_Stats.m_Kills);
+		str_format(aBuf, sizeof(aBuf), "%d. '%s' - Accuracy: %.2f%%", i + 1, Server()->ClientName(pPlayer->GetCid()), pPlayer->m_Stats.HitAccuracy());
 		GameServer()->SendChatTarget(ClientId, aBuf);
 	}
 
 	// kd
-	GameServer()->SendChatTarget(ClientId, "~~~ top ratios ~~~");
+	GameServer()->SendChatTarget(ClientId, "---- Top Kill/Death Ratio ----");
 	std::stable_sort(apPlayers, apPlayers + MAX_CLIENTS,
 		[this](const CPlayer *pPlayer1, const CPlayer *pPlayer2) -> bool {
 			if(!pPlayer1)
@@ -419,37 +420,17 @@ void IGameController::SendRoundTopMessage(int ClientId)
 			if(!pPlayer2)
 				return true;
 			float Kd1 = CalcKillDeathRatio(pPlayer1->Kills(), pPlayer1->Deaths());
-			float Kd2 = CalcKillDeathRatio(pPlayer1->Kills(), pPlayer1->Deaths());
+			float Kd2 = CalcKillDeathRatio(pPlayer2->Kills(), pPlayer2->Deaths());
 			return Kd1 > Kd2;
 		});
-	for(int i = 0; i < 5; i++)
+	for(int i = 0; i < NumTop; i++)
 	{
 		CPlayer *pPlayer = apPlayers[i];
 		if(!pPlayer)
 			break;
 
 		float Ratio = CalcKillDeathRatio(pPlayer->Kills(), pPlayer->Deaths());
-		str_format(aBuf, sizeof(aBuf), "%d. '%s' k/d ratio: %.2f", i + 1, Server()->ClientName(pPlayer->GetCid()), Ratio);
-		GameServer()->SendChatTarget(ClientId, aBuf);
-	}
-
-	// deaths
-	GameServer()->SendChatTarget(ClientId, "~~~ top survivors ~~~");
-	std::stable_sort(apPlayers, apPlayers + MAX_CLIENTS,
-		[](const CPlayer *pPlayer1, const CPlayer *pPlayer2) -> bool {
-			if(!pPlayer1)
-				return false;
-			if(!pPlayer2)
-				return true;
-			return pPlayer1->Deaths() < pPlayer2->Deaths();
-		});
-	for(int i = 0; i < 5; i++)
-	{
-		CPlayer *pPlayer = apPlayers[i];
-		if(!pPlayer)
-			break;
-
-		str_format(aBuf, sizeof(aBuf), "%d. '%s' deaths: %d", i + 1, Server()->ClientName(pPlayer->GetCid()), pPlayer->Deaths());
+		str_format(aBuf, sizeof(aBuf), "%d. '%s' - Ratio: %.2f", i + 1, Server()->ClientName(pPlayer->GetCid()), Ratio);
 		GameServer()->SendChatTarget(ClientId, aBuf);
 	}
 }
