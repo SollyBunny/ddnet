@@ -15,13 +15,13 @@
 
 class CRegister : public IRegister
 {
-	enum
+	enum class EStatus
 	{
-		STATUS_NONE = 0,
-		STATUS_OK,
-		STATUS_NEEDCHALLENGE,
-		STATUS_NEEDINFO,
-		STATUS_ERROR,
+		NONE = 0,
+		OK,
+		NEEDCHALLENGE,
+		NEEDINFO,
+		ERROR,
 	};
 
 	enum
@@ -33,7 +33,7 @@ class CRegister : public IRegister
 		NUM_PROTOCOLS,
 	};
 
-	static bool StatusFromString(int *pResult, const char *pString);
+	static bool StatusFromString(EStatus *pResult, const char *pString);
 	static const char *ProtocolToScheme(int Protocol);
 	static const char *ProtocolToString(int Protocol);
 	static bool ProtocolFromString(int *pResult, const char *pString);
@@ -63,7 +63,7 @@ class CRegister : public IRegister
 			std::shared_ptr<CGlobal> m_pGlobal;
 			CLock m_Lock;
 			int m_NumTotalRequests GUARDED_BY(m_Lock) = 0;
-			int m_LatestResponseStatus GUARDED_BY(m_Lock) = STATUS_NONE;
+			EStatus m_LatestResponseStatus GUARDED_BY(m_Lock) = EStatus::NONE;
 			int m_LatestResponseIndex GUARDED_BY(m_Lock) = -1;
 		};
 
@@ -146,27 +146,27 @@ public:
 	void OnShutdown() override;
 };
 
-bool CRegister::StatusFromString(int *pResult, const char *pString)
+bool CRegister::StatusFromString(EStatus *pResult, const char *pString)
 {
 	if(str_comp(pString, "success") == 0)
 	{
-		*pResult = STATUS_OK;
+		*pResult = EStatus::OK;
 	}
 	else if(str_comp(pString, "need_challenge") == 0)
 	{
-		*pResult = STATUS_NEEDCHALLENGE;
+		*pResult = EStatus::NEEDCHALLENGE;
 	}
 	else if(str_comp(pString, "need_info") == 0)
 	{
-		*pResult = STATUS_NEEDINFO;
+		*pResult = EStatus::NEEDINFO;
 	}
 	else if(str_comp(pString, "error") == 0)
 	{
-		*pResult = STATUS_ERROR;
+		*pResult = EStatus::ERROR;
 	}
 	else
 	{
-		*pResult = -1;
+		*pResult =  EStatus::NONE;
 		return true;
 	}
 	return false;
@@ -315,7 +315,7 @@ void CRegister::CProtocol::SendRegister()
 	int RequestIndex;
 	{
 		CLockScope ls(m_pShared->m_Lock);
-		if(m_pShared->m_LatestResponseStatus != STATUS_OK)
+		if(m_pShared->m_LatestResponseStatus != EStatus::OK)
 		{
 			log_info(ProtocolToSystem(m_Protocol), "registering...");
 		}
@@ -333,8 +333,8 @@ void CRegister::CProtocol::SendDeleteIfRegistered(bool Shutdown)
 {
 	{
 		const CLockScope LockScope(m_pShared->m_Lock);
-		const bool ShouldSendDelete = m_pShared->m_LatestResponseStatus == STATUS_OK;
-		m_pShared->m_LatestResponseStatus = STATUS_NONE;
+		const bool ShouldSendDelete = m_pShared->m_LatestResponseStatus == EStatus::OK;
+		m_pShared->m_LatestResponseStatus = EStatus::NONE;
 		if(!ShouldSendDelete)
 			return;
 	}
@@ -379,16 +379,18 @@ void CRegister::CProtocol::CheckChallengeStatus()
 	{
 		switch(m_pShared->m_LatestResponseStatus)
 		{
-		case STATUS_NEEDCHALLENGE:
+		case EStatus::NEEDCHALLENGE:
 			if(m_NewChallengeToken)
 			{
 				// Immediately resend if we got the token.
 				m_NextRegister = time_get();
 			}
 			break;
-		case STATUS_NEEDINFO:
+		case EStatus::NEEDINFO:
 			// Act immediately if the master requests more info.
 			m_NextRegister = time_get();
+			break;
+		default:
 			break;
 		}
 	}
@@ -440,14 +442,14 @@ void CRegister::CProtocol::CJob::Run()
 		log_error(ProtocolToSystem(m_Protocol), "invalid JSON response from master");
 		return;
 	}
-	int Status;
+	EStatus Status;
 	if(StatusFromString(&Status, StatusString))
 	{
 		log_error(ProtocolToSystem(m_Protocol), "invalid status from master: %s", (const char *)StatusString);
 		json_value_free(pJson);
 		return;
 	}
-	if(Status == STATUS_ERROR)
+	if(Status == EStatus::ERROR)
 	{
 		const json_value &Message = Json["message"];
 		if(Message.type != json_string)
@@ -470,7 +472,7 @@ void CRegister::CProtocol::CJob::Run()
 		CLockScope ls(m_pShared->m_Lock);
 		if(Status != m_pShared->m_LatestResponseStatus)
 		{
-			if(Status != STATUS_OK)
+			if(Status != EStatus::OK)
 			{
 				log_debug(ProtocolToSystem(m_Protocol), "status: %s", (const char *)StatusString);
 			}
@@ -479,7 +481,7 @@ void CRegister::CProtocol::CJob::Run()
 				log_info(ProtocolToSystem(m_Protocol), "successfully registered");
 			}
 		}
-		if(Status == m_pShared->m_LatestResponseStatus && Status == STATUS_NEEDCHALLENGE)
+		if(Status == m_pShared->m_LatestResponseStatus && Status == EStatus::NEEDCHALLENGE)
 		{
 			log_error(ProtocolToSystem(m_Protocol), "ERROR: the master server reports that clients can not connect to this server.");
 			log_error(ProtocolToSystem(m_Protocol), "ERROR: configure your firewall/nat to let through udp on port %d.", m_ServerPort);
@@ -491,7 +493,7 @@ void CRegister::CProtocol::CJob::Run()
 			m_pShared->m_LatestResponseStatus = Status;
 		}
 	}
-	if(Status == STATUS_OK)
+	if(Status == EStatus::OK)
 	{
 		CLockScope ls(m_pShared->m_pGlobal->m_Lock);
 		if(m_InfoSerial > m_pShared->m_pGlobal->m_LatestSuccessfulInfoSerial)
@@ -499,7 +501,7 @@ void CRegister::CProtocol::CJob::Run()
 			m_pShared->m_pGlobal->m_LatestSuccessfulInfoSerial = m_InfoSerial;
 		}
 	}
-	else if(Status == STATUS_NEEDINFO)
+	else if(Status == EStatus::NEEDINFO)
 	{
 		CLockScope ls(m_pShared->m_pGlobal->m_Lock);
 		if(m_InfoSerial == m_pShared->m_pGlobal->m_LatestSuccessfulInfoSerial)
