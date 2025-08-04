@@ -400,7 +400,7 @@ void CPlayer::ResetOwnLastTouchOnAllOtherPlayers()
 		if(!pPlayer)
 			continue;
 
-		if(pPlayer->m_OriginalFreezerId == pPlayer->GetCid())
+		if(pPlayer->m_OriginalFreezerId == GetCid())
 			pPlayer->m_OriginalFreezerId = -1;
 
 		if(!pPlayer->m_LastToucher.has_value())
