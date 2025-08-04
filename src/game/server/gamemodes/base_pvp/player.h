@@ -163,6 +163,13 @@ public:
 	void UpdateLastToucher(int ClientId);
 	void ResetLastToucherAfterSeconds(int Seconds);
 
+	// resets all m_LastToucher states of OTHER players
+	// where the last toucher is **this** player
+	// does NOT reset m_LastToucher on **this**
+	//
+	// used for team switches
+	void ResetOwnLastTouchOnAllOtherPlayers();
+
 	// Will also be set if spree chat messages are turned off
 	// this is the current spree
 	// not to be confused with m_Stats.m_BestSpree which is the highscore

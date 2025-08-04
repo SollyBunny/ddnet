@@ -2145,6 +2145,14 @@ void CGameControllerPvp::DoTeamChange(CPlayer *pPlayer, int Team, bool DoChatMsg
 
 	// ddnet-insta
 
+	// https://github.com/ddnet-insta/ddnet-insta/issues/388
+	// makes sure changing team during a fng sacrafice does not give the
+	// player a wrong shire punishment
+	//
+	// also invalidates block or fly kills when the killer joined spectators between starting the kill (hooking, shooting)
+	// and the actual death of the victim
+	pPlayer->ResetOwnLastTouchOnAllOtherPlayers();
+
 	if(OldTeam == TEAM_SPECTATORS)
 	{
 		GameServer()->AlertOnSpecialInstagibConfigs(pPlayer->GetCid());

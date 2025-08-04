@@ -392,3 +392,22 @@ void CPlayer::ResetLastToucherAfterSeconds(int Seconds)
 	if(SecsSinceTouch > Seconds)
 		UpdateLastToucher(-1);
 }
+
+void CPlayer::ResetOwnLastTouchOnAllOtherPlayers()
+{
+	for(CPlayer *pPlayer : GameServer()->m_apPlayers)
+	{
+		if(!pPlayer)
+			continue;
+
+		if(pPlayer->m_OriginalFreezerId == pPlayer->GetCid())
+			pPlayer->m_OriginalFreezerId = -1;
+
+		if(!pPlayer->m_LastToucher.has_value())
+			continue;
+		if(pPlayer->m_LastToucher.value().m_UniqueClientId != GetUniqueCid())
+			continue;
+
+		pPlayer->m_LastToucher = std::nullopt;
+	}
+}
