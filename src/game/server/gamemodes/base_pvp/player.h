@@ -131,7 +131,7 @@ public:
 	/*******************************************************************
 	 * fng                                                             *
 	 *******************************************************************/
-	// see also m_LastToucherId
+	// see also m_LastToucher
 	int m_OriginalFreezerId = -1;
 
 	int m_Multi = 1;
