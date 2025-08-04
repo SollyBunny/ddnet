@@ -161,6 +161,7 @@ public:
 	// spikes in fly or fng
 	std::optional<CLastToucher> m_LastToucher;
 	void UpdateLastToucher(int ClientId);
+	void ResetLastToucherAfterSeconds(int Seconds);
 
 	// Will also be set if spree chat messages are turned off
 	// this is the current spree

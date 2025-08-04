@@ -381,3 +381,14 @@ void CPlayer::UpdateLastToucher(int ClientId)
 		pPlayer->GetTeam(),
 		Server()->Tick());
 }
+
+void CPlayer::ResetLastToucherAfterSeconds(int Seconds)
+{
+	if(!m_LastToucher.has_value())
+		return;
+
+	int TicksSinceTouch = Server()->Tick() - m_LastToucher.value().m_TouchTick;
+	int SecsSinceTouch = TicksSinceTouch / Server()->TickSpeed();
+	if(SecsSinceTouch > Seconds)
+		UpdateLastToucher(-1);
+}

@@ -39,18 +39,12 @@ void CGameControllerBlock::OnCharacterSpawn(class CCharacter *pChr)
 
 void CGameControllerBlock::Tick()
 {
-	// TODO: this code is duplicated with fly
 	for(CPlayer *pPlayer : GameServer()->m_apPlayers)
 	{
 		if(!pPlayer)
 			continue;
-		if(!pPlayer->m_LastToucher.has_value())
-			continue;
 
-		int TicksSinceTouch = Server()->Tick() - pPlayer->m_LastToucher.value().m_TouchTick;
-		int SecsSinceTouch = TicksSinceTouch / Server()->TickSpeed();
-		if(SecsSinceTouch > 3)
-			pPlayer->UpdateLastToucher(-1);
+		pPlayer->ResetLastToucherAfterSeconds(3);
 	}
 
 	// keep last to
