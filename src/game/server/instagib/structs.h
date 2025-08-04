@@ -79,4 +79,37 @@ public:
 	}
 };
 
+// stores information about who interacted with who last
+// this is used to know the killer
+// when a player dies in the world like in fng and block
+// we track more than the client id to support kills
+// made after the killer left
+//
+// touches from team mates will reset the last toucher
+class CLastToucher
+{
+public:
+	// client id of the last toucher
+	// touches from team mates reset it to -1
+	int m_ClientId;
+
+	// Use GetPlayerByUniqueId() if you think the m_ClientId
+	// might be pointing to a new player after reconnect
+	uint32_t m_UniqueClientId;
+
+	// The team of the last toucher
+	// TEAM_RED, TEAM_BLUE maybe also TEAM_SPECTATORS
+	int m_Team;
+
+	// the server tick of when this interaction happend
+	// can be used to determin the touch interaction age
+	// only used in block mode for now
+	int m_TouchTick;
+
+	CLastToucher(int ClientId, uint32_t UniqueClientId, int Team, int ServerTick) :
+		m_ClientId(ClientId), m_UniqueClientId(UniqueClientId), m_Team(Team), m_TouchTick(ServerTick)
+	{
+	}
+};
+
 #endif

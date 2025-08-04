@@ -17,6 +17,7 @@
 #include <game/server/instagib/ip_storage.h>
 #include <game/server/instagib/sql_stats.h>
 #include <game/server/instagib/sql_stats_player.h>
+#include <game/server/instagib/structs.h>
 #include <game/server/teeinfo.h>
 
 class CCharacter;

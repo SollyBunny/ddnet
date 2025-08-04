@@ -44,9 +44,11 @@ void CGameControllerBlock::Tick()
 	{
 		if(!pPlayer)
 			continue;
+		if(!pPlayer->m_LastToucher.has_value())
+			continue;
 
-		pPlayer->m_TicksSinceLastTouch++;
-		int SecsSinceTouch = pPlayer->m_TicksSinceLastTouch / Server()->TickSpeed();
+		int TicksSinceTouch = Server()->Tick() - pPlayer->m_LastToucher.value().m_TouchTick;
+		int SecsSinceTouch = TicksSinceTouch / Server()->TickSpeed();
 		if(SecsSinceTouch > 3)
 			pPlayer->UpdateLastToucher(-1);
 	}
@@ -77,7 +79,11 @@ int CGameControllerBlock::OnCharacterDeath(class CCharacter *pVictim, class CPla
 		return CGameControllerPvp::OnCharacterDeath(pVictim, pKiller, Weapon);
 	}
 
-	int LastToucherId = pVictim->GetPlayer()->m_LastToucherId;
+	// died alone without any killer
+	if(!pVictim->GetPlayer()->m_LastToucher.has_value())
+		return 0; // do not count the kill
+
+	int LastToucherId = pVictim->GetPlayer()->m_LastToucher.value().m_ClientId;
 	if(LastToucherId >= 0 && LastToucherId < MAX_CLIENTS)
 		pKiller = GameServer()->m_apPlayers[LastToucherId];
 

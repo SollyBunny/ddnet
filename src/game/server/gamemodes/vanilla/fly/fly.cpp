@@ -25,9 +25,11 @@ void CGameControllerFly::Tick()
 	{
 		if(!pPlayer)
 			continue;
+		if(!pPlayer->m_LastToucher.has_value())
+			continue;
 
-		pPlayer->m_TicksSinceLastTouch++;
-		int SecsSinceTouch = pPlayer->m_TicksSinceLastTouch / Server()->TickSpeed();
+		int TicksSinceTouch = Server()->Tick() - pPlayer->m_LastToucher.value().m_TouchTick;
+		int SecsSinceTouch = TicksSinceTouch / Server()->TickSpeed();
 		if(SecsSinceTouch > 3)
 			pPlayer->UpdateLastToucher(-1);
 	}
@@ -43,7 +45,7 @@ int CGameControllerFly::OnCharacterDeath(class CCharacter *pVictim, class CPlaye
 	int OldScore = pVictim->GetPlayer()->m_Score.value_or(0);
 
 	// spike kills
-	int LastToucherId = pVictim->GetPlayer()->m_LastToucherId;
+	const int LastToucherId = pVictim->GetPlayer()->m_LastToucher.has_value() ? pVictim->GetPlayer()->m_LastToucher.value().m_ClientId : -1;
 	if(LastToucherId >= 0 && LastToucherId < MAX_CLIENTS)
 		pKiller = GameServer()->m_apPlayers[LastToucherId];
 

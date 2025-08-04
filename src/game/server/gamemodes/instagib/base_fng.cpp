@@ -244,7 +244,7 @@ void CGameControllerBaseFng::OnSpike(class CCharacter *pChr, int SpikeTile)
 	}
 
 	CPlayer *pKiller = nullptr;
-	const int LastToucherId = pChr->GetPlayer()->m_LastToucherId;
+	const int LastToucherId = pChr->GetPlayer()->m_LastToucher.has_value() ? pChr->GetPlayer()->m_LastToucher.value().m_ClientId : -1;
 	if(LastToucherId >= 0 && LastToucherId < MAX_CLIENTS)
 		pKiller = GameServer()->m_apPlayers[LastToucherId];
 

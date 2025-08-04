@@ -10,6 +10,7 @@
 #include <game/server/instagib/ip_storage.h>
 #include <game/server/instagib/sql_stats.h>
 #include <game/server/instagib/sql_stats_player.h>
+#include <game/server/instagib/structs.h>
 #include <game/server/teeinfo.h>
 #include <optional>
 #include <vector>
@@ -153,17 +154,13 @@ public:
 
 	// fng and block
 	// track the enemy that last interacted with this tee
-	// touches from team mates reset it to -1
+	// touches from team mates remove the last toucher
 	// this is used to know who to set as killer when
 	// a player dies in the world
 	// for example selfkill in freeze in block
 	// spikes in fly or fng
-	int m_LastToucherId = -1;
+	std::optional<CLastToucher> m_LastToucher;
 	void UpdateLastToucher(int ClientId);
-
-	// ticks since m_LastToucherId was set
-	// only used in block mode for now
-	int m_TicksSinceLastTouch = 0;
 
 	// Will also be set if spree chat messages are turned off
 	// this is the current spree

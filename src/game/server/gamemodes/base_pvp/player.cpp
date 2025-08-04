@@ -7,9 +7,12 @@
 #include <game/server/gamecontext.h>
 #include <game/server/gamecontroller.h>
 #include <game/server/instagib/sql_stats.h>
+#include <game/server/instagib/structs.h>
 #include <game/server/player.h>
 #include <game/server/score.h>
 #include <game/version.h>
+
+#include <optional>
 
 void CPlayer::ResetStats()
 {
@@ -346,22 +349,35 @@ void CPlayer::UpdateLastToucher(int ClientId)
 	{
 		// covers the reset case when -1 is passed explicitly
 		// to reset the last toucher when being hammered by a team mate in fng
-		m_LastToucherId = -1;
+		m_LastToucher = std::nullopt;
 		return;
 	}
 
-	// TODO: should we really reset the last toucher when we get shot by a team mate?
 	CPlayer *pPlayer = GameServer()->m_apPlayers[ClientId];
+
+	// that is a weird case. Should we assert instead? Or log? Or segfault?
+	// I assume this can be triggered if a flying projectile such as grenade
+	// hits a player after the shooter already left
+	// in that case we dont have enough information anymore to setup a proper last toucher
+	// and it will just be as if the player was never touched
+	// not counting it is block, fly kill or sacrafice in fng
+	// seems okay to me
+	if(!pPlayer)
+		return;
+
+	// TODO: should we really reset the last toucher when we get shot by a team mate?
 	if(
-		pPlayer &&
 		GameServer()->m_pController &&
 		GameServer()->m_pController->IsTeamPlay() &&
 		pPlayer->GetTeam() == GetTeam())
 	{
-		m_LastToucherId = -1;
+		m_LastToucher = std::nullopt;
 		return;
 	}
 
-	m_LastToucherId = ClientId;
-	m_TicksSinceLastTouch = 0;
+	m_LastToucher = CLastToucher(
+		ClientId,
+		pPlayer->GetUniqueCid(),
+		pPlayer->GetTeam(),
+		Server()->Tick());
 }
