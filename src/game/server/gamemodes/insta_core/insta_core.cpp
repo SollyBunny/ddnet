@@ -90,6 +90,7 @@ void CGameControllerInstaCore::OnInit()
 
 void CGameControllerInstaCore::OnPlayerConnect(CPlayer *pPlayer)
 {
+	IGameController::OnPlayerConnect(pPlayer);
 	m_InvalidateConnectedIpsCache = true;
 
 	CIpStorage *pIpStorage = GameServer()->m_IpStorageController.FindEntry(Server()->ClientAddr(pPlayer->GetCid()));
