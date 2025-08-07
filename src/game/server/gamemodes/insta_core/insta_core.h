@@ -36,6 +36,7 @@ public:
 	int OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon) override;
 	void Tick() override;
 	bool OnVoteNetMessage(const CNetMsg_Cl_Vote *pMsg, int ClientId) override;
+	bool OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMsg, int ClientId) override;
 	int GetPlayerTeam(class CPlayer *pPlayer, bool Sixup) override;
 	int GetAutoTeam(int NotThisId) override;
 	bool CanJoinTeam(int Team, int NotThisId, char *pErrorReason, int ErrorReasonSize) override;
@@ -44,6 +45,12 @@ public:
 	bool OnSkinChange7(protocol7::CNetMsg_Cl_SkinChange *pMsg, int ClientId) override;
 	void OnClientDataPersist(CPlayer *pPlayer, CGameContext::CPersistentClientData *pData) override;
 	void OnClientDataRestore(CPlayer *pPlayer, const CGameContext::CPersistentClientData *pData) override;
+	void RoundInitPlayer(class CPlayer *pPlayer) override;
+	void InitPlayer(class CPlayer *pPlayer) override;
+	int SnapPlayerFlags7(int SnappingClient, CPlayer *pPlayer, int PlayerFlags7) override;
+	void SnapPlayer6(int SnappingClient, CPlayer *pPlayer, CNetObj_ClientInfo *pClientInfo, CNetObj_PlayerInfo *pPlayerInfo) override;
+	void SnapDDNetPlayer(int SnappingClient, CPlayer *pPlayer, CNetObj_DDNetPlayer *pDDNetPlayer) override;
+	bool OnClientPacket(int ClientId, bool Sys, int MsgId, struct CNetChunk *pPacket, class CUnpacker *pUnpacker) override;
 
 	void OnPlayerTick(class CPlayer *pPlayer);
 	void OnCharacterTick(class CCharacter *pChr);
@@ -69,6 +76,8 @@ public:
 	int GetDefaultWeaponBasedOnSpawnWeapons() const;
 	void SetSpawnWeapons(class CCharacter *pChr) override;
 
+	void OnUpdateSpectatorVotesConfig() override;
+
 	// Used for sv_punish_freeze_disconnect
 	// restore freeze state on reconnect
 	// this is used for players trying to bypass
@@ -82,6 +91,7 @@ public:
 	// ***************
 
 	void Anticamper();
+	void ApplyVanillaDamage(int &Dmg, int From, int Weapon, CCharacter *pCharacter) override;
 
 	// displays fng styled laser text points in the world
 	void MakeLaserTextPoints(vec2 Pos, int Points, int Seconds);

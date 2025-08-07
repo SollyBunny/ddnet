@@ -276,6 +276,61 @@ bool CGameControllerInstaCore::OnVoteNetMessage(const CNetMsg_Cl_Vote *pMsg, int
 	return false;
 }
 
+// called before spam protection on client team join request
+// return true to consume the event and not run the base controller code
+bool CGameControllerInstaCore::OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMsg, int ClientId)
+{
+	CPlayer *pPlayer = GameServer()->m_apPlayers[ClientId];
+	if(!pPlayer)
+		return false;
+
+	if(GameServer()->m_World.m_Paused)
+	{
+		if(!g_Config.m_SvAllowTeamChangeDuringPause)
+		{
+			GameServer()->SendChatTarget(pPlayer->GetCid(), "Changing teams while the game is paused is currently disabled.");
+			return true;
+		}
+	}
+
+	int Team = pMsg->m_Team;
+
+	// user joins the spectators while allow spec is on
+	// we have to mark him as fake dead spec
+	if(Server()->IsSixup(ClientId) && g_Config.m_SvSpectatorVotes && g_Config.m_SvSpectatorVotesSixup && !pPlayer->m_IsFakeDeadSpec)
+	{
+		if(Team == TEAM_SPECTATORS)
+		{
+			pPlayer->m_IsFakeDeadSpec = true;
+			return false;
+		}
+	}
+
+	if(Server()->IsSixup(ClientId) && g_Config.m_SvSpectatorVotes && pPlayer->m_IsFakeDeadSpec)
+	{
+		if(Team != TEAM_SPECTATORS)
+		{
+			// This should be in all cases coming from the hacked recursion branch below
+			//
+			// the 0.7 client should think it is in game
+			// so it should never display a join game button
+			// only a join spectators button
+			return false;
+		}
+
+		pPlayer->m_IsFakeDeadSpec = false;
+
+		// hijack and drop
+		// and then call it again
+		// as a hack to edit the team
+		CNetMsg_Cl_SetTeam Msg;
+		Msg.m_Team = TEAM_RED;
+		GameServer()->OnSetTeamNetMessage(&Msg, ClientId);
+		return true;
+	}
+	return false;
+}
+
 int CGameControllerInstaCore::GetPlayerTeam(class CPlayer *pPlayer, bool Sixup)
 {
 	if(g_Config.m_SvTournament)
@@ -416,6 +471,100 @@ void CGameControllerInstaCore::OnClientDataRestore(CPlayer *pPlayer, const CGame
 {
 }
 
+// called on round init and on join
+void CGameControllerInstaCore::RoundInitPlayer(CPlayer *pPlayer)
+{
+	pPlayer->m_IsDead = false;
+	pPlayer->m_KillerId = -1;
+}
+
+// this is only called once on connect
+// NOT ON ROUND END
+void CGameControllerInstaCore::InitPlayer(CPlayer *pPlayer)
+{
+	pPlayer->m_Spree = 0;
+	pPlayer->m_UntrackedSpree = 0;
+	pPlayer->ResetStats();
+	pPlayer->m_SavedStats.Reset();
+
+	pPlayer->m_IsReadyToPlay = !GameServer()->m_pController->IsPlayerReadyMode();
+	pPlayer->m_DeadSpecMode = false;
+	pPlayer->m_GameStateBroadcast = false;
+	pPlayer->m_Score = 0; // ddnet-insta
+	pPlayer->m_DisplayScore = GameServer()->m_DisplayScore;
+	pPlayer->m_JoinTime = time_get();
+
+	RoundInitPlayer(pPlayer);
+}
+
+int CGameControllerInstaCore::SnapPlayerFlags7(int SnappingClient, CPlayer *pPlayer, int PlayerFlags7)
+{
+	if(SnappingClient < 0 || SnappingClient >= MAX_CLIENTS)
+		return PlayerFlags7;
+
+	if(pPlayer->m_IsDead && (!pPlayer->GetCharacter() || !pPlayer->GetCharacter()->IsAlive()))
+		PlayerFlags7 |= protocol7::PLAYERFLAG_DEAD;
+	// hack to let 0.7 players vote as spectators
+	if(g_Config.m_SvSpectatorVotes && g_Config.m_SvSpectatorVotesSixup && pPlayer->GetTeam() == TEAM_SPECTATORS)
+		PlayerFlags7 |= protocol7::PLAYERFLAG_DEAD;
+	if(g_Config.m_SvHideAdmins && Server()->GetAuthedState(SnappingClient) == AUTHED_NO)
+		PlayerFlags7 &= ~(protocol7::PLAYERFLAG_ADMIN);
+	return PlayerFlags7;
+}
+
+void CGameControllerInstaCore::SnapPlayer6(int SnappingClient, CPlayer *pPlayer, CNetObj_ClientInfo *pClientInfo, CNetObj_PlayerInfo *pPlayerInfo)
+{
+	if(!IsGameRunning() &&
+		GameServer()->m_World.m_Paused &&
+		GameState() != IGameController::IGS_END_ROUND &&
+		pPlayer->GetTeam() != TEAM_SPECTATORS &&
+		(!IsPlayerReadyMode() || pPlayer->m_IsReadyToPlay))
+	{
+		char aReady[512];
+		char aName[64];
+		static const int MaxNameLen = MAX_NAME_LENGTH - (str_length("\xE2\x9C\x93") + 2);
+		str_truncate(aName, sizeof(aName), Server()->ClientName(pPlayer->GetCid()), MaxNameLen);
+		str_format(aReady, sizeof(aReady), "\xE2\x9C\x93 %s", aName);
+		// 0.7 puts the checkmark at the end
+		// we put it in the beginning because ddnet scoreboard cuts off long names
+		// such as WWWWWWWWWW... which would also hide the checkmark in the end
+		StrToInts(&pClientInfo->m_Name0, 4, aReady);
+	}
+}
+
+void CGameControllerInstaCore::SnapDDNetPlayer(int SnappingClient, CPlayer *pPlayer, CNetObj_DDNetPlayer *pDDNetPlayer)
+{
+	if(SnappingClient < 0 || SnappingClient >= MAX_CLIENTS)
+		return;
+
+	if(g_Config.m_SvHideAdmins && Server()->GetAuthedState(SnappingClient) == AUTHED_NO)
+		pDDNetPlayer->m_AuthLevel = AUTHED_NO;
+}
+
+bool CGameControllerInstaCore::OnClientPacket(int ClientId, bool Sys, int MsgId, CNetChunk *pPacket, CUnpacker *pUnpacker)
+{
+	// make a copy so we can consume fields
+	// without breaking the state for the server
+	// in case we pass the packet on
+	CUnpacker Unpacker = *pUnpacker;
+	bool Vital = pPacket->m_Flags & NET_CHUNKFLAG_VITAL;
+
+	if(Sys && MsgId == NETMSG_RCON_AUTH && Vital && Server()->IsSixup(ClientId))
+	{
+		const char *pCredentials = Unpacker.GetString(CUnpacker::SANITIZE_CC);
+		if(Unpacker.Error())
+			return false;
+
+		// check if 0.7 player sends valid credentials for
+		// a ddnet rcon account in the format username:pass
+		// in that case login and drop the message
+		if(Server()->SixupUsernameAuth(ClientId, pCredentials))
+			return true;
+	}
+
+	return false;
+}
+
 void CGameControllerInstaCore::OnPlayerTick(class CPlayer *pPlayer)
 {
 	pPlayer->InstagibTick();
@@ -545,6 +694,65 @@ void CGameControllerInstaCore::SetSpawnWeapons(class CCharacter *pChr)
 	}
 }
 
+void CGameControllerInstaCore::OnUpdateSpectatorVotesConfig()
+{
+	// spec votes was activated
+	// spoof all specatators to in game dead specs for 0.7
+	// so the client side knows it can call votes
+	if(g_Config.m_SvSpectatorVotes && g_Config.m_SvSpectatorVotesSixup)
+	{
+		for(CPlayer *pPlayer : GameServer()->m_apPlayers)
+		{
+			if(!pPlayer)
+				continue;
+			if(pPlayer->GetTeam() != TEAM_SPECTATORS)
+				continue;
+			if(!Server()->IsSixup(pPlayer->GetCid()))
+				continue;
+
+			// Every sixup client only needs to see it self as spectator
+			// It does not care about others
+			protocol7::CNetMsg_Sv_Team Msg;
+			Msg.m_ClientId = pPlayer->GetCid();
+			Msg.m_Team = TEAM_RED; // fake
+			Msg.m_Silent = true;
+			Msg.m_CooldownTick = 0;
+			Server()->SendPackMsg(&Msg, MSGFLAG_VITAL | MSGFLAG_NORECORD, pPlayer->GetCid());
+
+			pPlayer->m_IsFakeDeadSpec = true;
+		}
+	}
+	else
+	{
+		// spec votes were deactivated
+		// so revert spoofed in game teams back to regular spectators
+		// make sure this does not mess with ACTUAL dead spec tees
+		for(CPlayer *pPlayer : GameServer()->m_apPlayers)
+		{
+			if(!pPlayer)
+				continue;
+			if(!Server()->IsSixup(pPlayer->GetCid()))
+				continue;
+			if(!pPlayer->m_IsFakeDeadSpec)
+				continue;
+
+			if(pPlayer->GetTeam() != TEAM_SPECTATORS)
+			{
+				dbg_msg("ddnet-insta", "ERROR: tried to move player back to team=%d but expected spectators", pPlayer->GetTeam());
+			}
+
+			protocol7::CNetMsg_Sv_Team Msg;
+			Msg.m_ClientId = pPlayer->GetCid();
+			Msg.m_Team = pPlayer->GetTeam(); // restore real team
+			Msg.m_Silent = true;
+			Msg.m_CooldownTick = 0;
+			Server()->SendPackMsg(&Msg, MSGFLAG_VITAL | MSGFLAG_NORECORD, pPlayer->GetCid());
+
+			pPlayer->m_IsFakeDeadSpec = false;
+		}
+	}
+}
+
 void CGameControllerInstaCore::RestoreFreezeStateOnRejoin(CPlayer *pPlayer)
 {
 	const NETADDR *pAddr = Server()->ClientAddr(pPlayer->GetCid());
@@ -646,6 +854,60 @@ void CGameControllerInstaCore::Anticamper()
 			}
 		}
 	}
+}
+
+void CGameControllerInstaCore::ApplyVanillaDamage(int &Dmg, int From, int Weapon, CCharacter *pCharacter)
+{
+	CPlayer *pPlayer = pCharacter->GetPlayer();
+	if(From == pPlayer->GetCid())
+	{
+		// m_pPlayer only inflicts half damage on self
+		Dmg = maximum(1, Dmg / 2);
+	}
+
+	pCharacter->m_DamageTaken++;
+
+	// create healthmod indicator
+	if(Server()->Tick() < pCharacter->m_DamageTakenTick + 25)
+	{
+		// make sure that the damage indicators doesn't group together
+		GameServer()->CreateDamageInd(pCharacter->m_Pos, pCharacter->m_DamageTaken * 0.25f, Dmg);
+	}
+	else
+	{
+		pCharacter->m_DamageTaken = 0;
+		GameServer()->CreateDamageInd(pCharacter->m_Pos, 0, Dmg);
+	}
+
+	if(Dmg)
+	{
+		if(pCharacter->m_Armor)
+		{
+			if(Dmg > 1)
+			{
+				pCharacter->m_Health--;
+				Dmg--;
+			}
+
+			if(Dmg > pCharacter->m_Armor)
+			{
+				Dmg -= pCharacter->m_Armor;
+				pCharacter->m_Armor = 0;
+			}
+			else
+			{
+				pCharacter->m_Armor -= Dmg;
+				Dmg = 0;
+			}
+		}
+	}
+
+	pCharacter->m_DamageTakenTick = Server()->Tick();
+
+	if(Dmg > 2)
+		GameServer()->CreateSound(pCharacter->m_Pos, SOUND_PLAYER_PAIN_LONG);
+	else
+		GameServer()->CreateSound(pCharacter->m_Pos, SOUND_PLAYER_PAIN_SHORT);
 }
 
 void CGameControllerInstaCore::MakeLaserTextPoints(vec2 Pos, int Points, int Seconds)

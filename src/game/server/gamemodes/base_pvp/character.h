@@ -11,6 +11,7 @@ class CCharacter : public CEntity
 {
 #endif // IN_CLASS_CHARACTER
 
+	friend class CGameControllerInstaCore;
 	friend class CGameControllerVanilla;
 	friend class CGameControllerPvp;
 	friend class CGameControllerCTF;

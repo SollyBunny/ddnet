@@ -28,16 +28,9 @@ public:
 	void Tick() override;
 	int SnapGameInfoExFlags(int SnappingClient, int DDRaceFlags) override;
 	int SnapGameInfoExFlags2(int SnappingClient, int DDRaceFlags) override;
-	int SnapPlayerFlags7(int SnappingClient, CPlayer *pPlayer, int PlayerFlags7) override;
-	void SnapPlayer6(int SnappingClient, CPlayer *pPlayer, CNetObj_ClientInfo *pClientInfo, CNetObj_PlayerInfo *pPlayerInfo) override;
-	void SnapDDNetPlayer(int SnappingClient, CPlayer *pPlayer, CNetObj_DDNetPlayer *pDDNetPlayer) override;
 	int SnapPlayerScore(int SnappingClient, CPlayer *pPlayer, int DDRaceScore) override;
 	int GetDefaultWeapon(class CPlayer *pPlayer) override { return m_DefaultWeapon; }
-	void OnUpdateSpectatorVotesConfig() override;
-	bool OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMsg, int ClientId) override;
 	void OnDDRaceTimeLoad(class CPlayer *pPlayer, float Time) override{};
-	void RoundInitPlayer(class CPlayer *pPlayer) override;
-	void InitPlayer(class CPlayer *pPlayer) override;
 	bool LoadNewPlayerNameData(int ClientId) override;
 	void OnLoadedNameStats(const CSqlStatsPlayer *pStats, class CPlayer *pPlayer) override;
 	bool OnTeamChatCmd(IConsole::IResult *pResult) override;
@@ -65,7 +58,6 @@ public:
 	void OnHammerHit(CPlayer *pPlayer, CPlayer *pTarget, vec2 &Force) override;
 	void ApplyFngHammerForce(CPlayer *pPlayer, CPlayer *pTarget, vec2 &Force) override;
 	void FngUnmeltHammerHit(CPlayer *pPlayer, CPlayer *pTarget, vec2 &Force) override;
-	void ApplyVanillaDamage(int &Dmg, int From, int Weapon, CCharacter *pCharacter) override;
 	void OnKill(class CPlayer *pVictim, class CPlayer *pKiller, int Weapon) override;
 	bool DecreaseHealthAndKill(int Dmg, int From, int Weapon, CCharacter *pCharacter) override;
 	bool SkipDamage(int Dmg, int From, int Weapon, const CCharacter *pCharacter, bool &ApplyForce) override;
@@ -86,7 +78,6 @@ public:
 	void OnFlagCapture(class CFlag *pFlag, float Time, int TimeTicks) override;
 	bool ForceNetworkClipping(const CEntity *pEntity, int SnappingClient, vec2 CheckPos) override;
 	bool ForceNetworkClippingLine(const CEntity *pEntity, int SnappingClient, vec2 StartPos, vec2 EndPos) override;
-	bool OnClientPacket(int ClientId, bool Sys, int MsgId, struct CNetChunk *pPacket, class CUnpacker *pUnpacker) override;
 
 	// pPlayer is the player that just hit
 	// an enemy with the grenade
