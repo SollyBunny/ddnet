@@ -12,6 +12,17 @@
 // you can also inherit from CGameControllerInstaCore directly
 // but you might be missing out on some things
 // technically you can also build a simple ddrace block mode based on the pvp controller
+//
+// things base pvp handles that insta core does not handle:
+// - team balance
+// - spawn protection
+// - killing sprees
+// - database stats for kills/deaths and more
+// - fastcap flag capture time ranks in database
+// - rounds (timelimit, scorelimit, score)
+// - pause the game and ready mode
+// - vanilla weapon tuning and damage
+// - network clipping against zoom cheats
 class CGameControllerPvp : public CGameControllerInstaCore
 {
 public:
