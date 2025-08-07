@@ -12,6 +12,14 @@
 // it aims to be more generic than the base pvp controller
 // and makes no assumption about your gameplay
 // so it can also be used for ddrace based gamemodes
+//
+// the general rule of what should go into base pvp and what into insta core
+// is the following:
+// As much as possible should go into insta core so everyone can use it.
+// Unless it is something that could be possibly unwanted by any gametype
+// even ones not included in ddnet-insta. So everything that can not be turned off
+// or ignored and could bother someone should go into the base pvp controller.
+// Everything else into the insta core controller.
 class CGameControllerInstaCore : public CGameControllerDDRace
 {
 public:
