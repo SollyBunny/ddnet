@@ -886,11 +886,9 @@ bool IGameController::CanJoinTeam(int Team, int NotThisId, char *pErrorReason, i
 
 int IGameController::ClampTeam(int Team)
 {
-	if(Team < TEAM_RED)
+	if(Team < 0)
 		return TEAM_SPECTATORS;
-	if(IsTeamPlay())
-		return Team & 1;
-	return TEAM_RED;
+	return 0;
 }
 
 CClientMask IGameController::GetMaskForPlayerWorldEvent(int Asker, int ExceptId)

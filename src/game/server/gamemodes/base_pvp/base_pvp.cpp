@@ -870,26 +870,6 @@ int CGameControllerPvp::GetPlayerTeam(class CPlayer *pPlayer, bool Sixup)
 	return IGameController::GetPlayerTeam(pPlayer, Sixup);
 }
 
-bool CGameControllerPvp::CanJoinTeam(int Team, int NotThisId, char *pErrorReason, int ErrorReasonSize)
-{
-	const CPlayer *pPlayer = GameServer()->m_apPlayers[NotThisId];
-	if(pPlayer && pPlayer->IsPaused())
-	{
-		if(pErrorReason)
-			str_copy(pErrorReason, "Use /pause first then you can kill", ErrorReasonSize);
-		return false;
-	}
-	if(Team == TEAM_SPECTATORS || (pPlayer && pPlayer->GetTeam() != TEAM_SPECTATORS))
-		return true;
-
-	if(FreeInGameSlots())
-		return true;
-
-	if(pErrorReason)
-		str_format(pErrorReason, ErrorReasonSize, "Only %d active players are allowed", Server()->MaxClients() - g_Config.m_SvSpectatorSlots);
-	return false;
-}
-
 int CGameControllerPvp::GetAutoTeam(int NotThisId)
 {
 	if(Config()->m_SvTournamentMode)
@@ -913,6 +893,35 @@ int CGameControllerPvp::GetAutoTeam(int NotThisId)
 		return Team;
 	}
 	return TEAM_SPECTATORS;
+}
+
+bool CGameControllerPvp::CanJoinTeam(int Team, int NotThisId, char *pErrorReason, int ErrorReasonSize)
+{
+	const CPlayer *pPlayer = GameServer()->m_apPlayers[NotThisId];
+	if(pPlayer && pPlayer->IsPaused())
+	{
+		if(pErrorReason)
+			str_copy(pErrorReason, "Use /pause first then you can kill", ErrorReasonSize);
+		return false;
+	}
+	if(Team == TEAM_SPECTATORS || (pPlayer && pPlayer->GetTeam() != TEAM_SPECTATORS))
+		return true;
+
+	if(FreeInGameSlots())
+		return true;
+
+	if(pErrorReason)
+		str_format(pErrorReason, ErrorReasonSize, "Only %d active players are allowed", Server()->MaxClients() - g_Config.m_SvSpectatorSlots);
+	return false;
+}
+
+int CGameControllerPvp::ClampTeam(int Team)
+{
+	if(Team < TEAM_RED)
+		return TEAM_SPECTATORS;
+	if(IsTeamPlay())
+		return Team & 1;
+	return TEAM_RED;
 }
 
 void CGameControllerPvp::SendChatTarget(int To, const char *pText, int Flags) const

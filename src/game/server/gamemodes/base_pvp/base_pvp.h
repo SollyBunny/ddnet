@@ -38,8 +38,9 @@ public:
 	void OnCharacterSpawn(class CCharacter *pChr) override;
 	int OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon) override;
 	void Tick() override;
-	bool CanJoinTeam(int Team, int NotThisId, char *pErrorReason, int ErrorReasonSize) override;
 	int GetAutoTeam(int NotThisId) override;
+	bool CanJoinTeam(int Team, int NotThisId, char *pErrorReason, int ErrorReasonSize) override;
+	int ClampTeam(int Team) override;
 	int SnapGameInfoExFlags(int SnappingClient, int DDRaceFlags) override;
 	int SnapGameInfoExFlags2(int SnappingClient, int DDRaceFlags) override;
 	int SnapPlayerFlags7(int SnappingClient, CPlayer *pPlayer, int PlayerFlags7) override;
