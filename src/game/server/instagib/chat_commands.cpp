@@ -11,7 +11,7 @@
 
 #include <game/server/gamecontext.h>
 
-void CGameContext::ConCreditsGctf(IConsole::IResult *pResult, void *pUserData)
+void CGameContext::ConInstaCredits(IConsole::IResult *pResult, void *pUserData)
 {
 	CGameContext *pSelf = (CGameContext *)pUserData;
 	static constexpr const char *CREDITS[] = {
@@ -23,6 +23,88 @@ void CGameContext::ConCreditsGctf(IConsole::IResult *pResult, void *pUserData)
 	};
 	for(const char *pLine : CREDITS)
 		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp", pLine);
+}
+
+void CGameContext::ConInstaTogglePause(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	if(!pSelf->m_pController)
+		return;
+
+	if(pSelf->m_pController->IsDDRaceGameType())
+		ConTogglePause(pResult, pUserData);
+	else
+		ConReadyChange(pResult, pUserData);
+}
+
+void CGameContext::ConInstaToggleSpec(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	if(!pSelf->m_pController)
+		return;
+
+	if(pSelf->m_pController->IsDDRaceGameType())
+	{
+		ConToggleSpec(pResult, pUserData);
+	}
+	else
+	{
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp", "Command not available in this gametype.");
+	}
+}
+
+void CGameContext::ConInstaTogglePauseVoted(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	if(!pSelf->m_pController)
+		return;
+	if(!CheckClientId(pResult->m_ClientId))
+		return;
+
+	if(pSelf->m_pController->IsDDRaceGameType())
+	{
+		ConTogglePauseVoted(pResult, pUserData);
+		return;
+	}
+
+	CPlayer *pPlayer = pSelf->m_apPlayers[pResult->m_ClientId];
+	if(!pPlayer)
+		return;
+
+	if(pPlayer->GetTeam() != TEAM_SPECTATORS)
+	{
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp", "Only spectators can use this command.");
+		return;
+	}
+
+	ConTogglePauseVoted(pResult, pUserData);
+}
+
+void CGameContext::ConInstaToggleSpecVoted(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	if(!pSelf->m_pController)
+		return;
+	if(!CheckClientId(pResult->m_ClientId))
+		return;
+
+	if(pSelf->m_pController->IsDDRaceGameType())
+	{
+		ConToggleSpecVoted(pResult, pUserData);
+		return;
+	}
+
+	CPlayer *pPlayer = pSelf->m_apPlayers[pResult->m_ClientId];
+	if(!pPlayer)
+		return;
+
+	if(pPlayer->GetTeam() != TEAM_SPECTATORS)
+	{
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp", "Only spectators can use this command.");
+		return;
+	}
+
+	ConToggleSpecVoted(pResult, pUserData);
 }
 
 void CGameContext::ConReadyChange(IConsole::IResult *pResult, void *pUserData)

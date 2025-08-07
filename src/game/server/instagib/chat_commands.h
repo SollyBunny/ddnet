@@ -11,6 +11,8 @@
 // ideally the ddnet-insta commands call the original command
 // if sv_gametype is "ddnet"
 
+// "credits" shadows a ddnet command
+CONSOLE_COMMAND("credits", "", CFGFLAG_CHAT | CFGFLAG_SERVER, ConInstaCredits, this, "Shows the credits of the ddnet-insta mod");
 CONSOLE_COMMAND("credits_ddnet", "", CFGFLAG_CHAT | CFGFLAG_SERVER, ConCredits, this, "Shows the credits of the DDNet mod");
 
 // "rank" shadows a ddnet command
@@ -19,8 +21,16 @@ CONSOLE_COMMAND("rank", "", CFGFLAG_CHAT | CFGFLAG_SERVER, ConRankCmdlist, this,
 CONSOLE_COMMAND("top5", "", CFGFLAG_CHAT | CFGFLAG_SERVER, ConTopCmdlist, this, "Lists available top commands")
 CONSOLE_COMMAND("top", "", CFGFLAG_CHAT | CFGFLAG_SERVER, ConTopCmdlist, this, "Lists available top commands")
 
-// "pause" shadows a ddnet command
-CONSOLE_COMMAND("pause", "", CFGFLAG_CHAT | CFGFLAG_SERVER, ConReadyChange, this, "Pause or resume the game")
+// "pause" shadows a ddnet command, alias for "ready" in pvp modes, Has pvp description. This is wrong in ddrace gametypes.
+CONSOLE_COMMAND("pause", "", CFGFLAG_CHAT | CFGFLAG_SERVER, ConInstaTogglePause, this, "Pause or resume the game")
+// "spec" shadows a ddnet command
+CONSOLE_COMMAND("spec", "?r[player name]", CFGFLAG_CHAT | CFGFLAG_SERVER, ConInstaToggleSpec, this, "Toggles spec (if not available behaves as /pause)");
+// "pausevoted" shadows a ddnet command
+CONSOLE_COMMAND("pausevoted", "", CFGFLAG_CHAT | CFGFLAG_SERVER, ConInstaTogglePauseVoted, this, "Toggles pause on the currently voted player");
+// "specvoted" shadows a ddnet command
+CONSOLE_COMMAND("specvoted", "", CFGFLAG_CHAT | CFGFLAG_SERVER, ConInstaToggleSpecVoted, this, "Toggles spec on the currently voted player");
+
+// alias for "pause" in pvp modes
 CONSOLE_COMMAND("ready", "", CFGFLAG_CHAT | CFGFLAG_SERVER, ConReadyChange, this, "Pause or resume the game")
 // "swap" shadows a ddnet command
 CONSOLE_COMMAND("swap", "", CFGFLAG_CHAT | CFGFLAG_SERVER, ConInstaSwap, this, "Call a vote to swap teams")

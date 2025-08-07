@@ -109,7 +109,11 @@ public:
 	static void ConUndeepJail(IConsole::IResult *pResult, void *pUserData);
 
 	// chat_commands.cpp
-	static void ConCreditsGctf(IConsole::IResult *pResult, void *pUserData);
+	static void ConInstaCredits(IConsole::IResult *pResult, void *pUserData);
+	static void ConInstaTogglePause(IConsole::IResult *pResult, void *pUserData);
+	static void ConInstaToggleSpec(IConsole::IResult *pResult, void *pUserData);
+	static void ConInstaTogglePauseVoted(IConsole::IResult *pResult, void *pUserData);
+	static void ConInstaToggleSpecVoted(IConsole::IResult *pResult, void *pUserData);
 	static void ConReadyChange(IConsole::IResult *pResult, void *pUserData);
 	static void ConInstaSwap(IConsole::IResult *pResult, void *pUserData);
 	static void ConInstaSwapRandom(IConsole::IResult *pResult, void *pUserData);
