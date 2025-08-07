@@ -2785,6 +2785,8 @@ if(SERVER)
     gamemodes/base_pvp/player.h
     gamemodes/ddrace/block/block.cpp
     gamemodes/ddrace/block/block.h
+    gamemodes/insta_core/insta_core.cpp
+    gamemodes/insta_core/insta_core.h
     gamemodes/instagib/base_fng.cpp
     gamemodes/instagib/base_fng.h
     gamemodes/instagib/base_instagib.cpp

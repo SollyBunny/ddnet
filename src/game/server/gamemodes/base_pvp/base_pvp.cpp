@@ -12,6 +12,7 @@
 #include <game/server/entities/ddnet_pvp/vanilla_projectile.h>
 #include <game/server/entities/flag.h>
 #include <game/server/gamecontroller.h>
+#include <game/server/gamemodes/insta_core/insta_core.h>
 #include <game/server/instagib/enums.h>
 #include <game/server/instagib/ip_storage.h>
 #include <game/server/instagib/laser_text.h>
@@ -29,7 +30,7 @@
 #include "base_pvp.h"
 
 CGameControllerPvp::CGameControllerPvp(class CGameContext *pGameServer) :
-	CGameControllerDDRace(pGameServer)
+	CGameControllerInstaCore(pGameServer)
 {
 	m_GameFlags = GAMEFLAG_TEAMS | GAMEFLAG_FLAGS;
 
@@ -61,8 +62,26 @@ CGameControllerPvp::CGameControllerPvp(class CGameContext *pGameServer) :
 	m_vFrozenQuitters.clear();
 
 	m_UnbalancedTick = TBALANCE_OK;
+}
 
-	g_AntibobContext.m_pConsole = Console();
+CGameControllerPvp::~CGameControllerPvp()
+{
+	// TODO: we have to make sure to block all operations and save everything if sv_gametype is switched
+	//       there should be no data loss no matter in which state and how often the controller is recreated
+	//
+	//       this also has to save player sprees that were not ended yet!
+	dbg_msg("ddnet-insta", "cleaning up database connection ...");
+	if(m_pSqlStats)
+	{
+		delete m_pSqlStats;
+		m_pSqlStats = nullptr;
+	}
+
+	if(m_pExtraColumns)
+	{
+		delete m_pExtraColumns;
+		m_pExtraColumns = nullptr;
+	}
 }
 
 void CGameControllerPvp::OnReset()
@@ -174,26 +193,6 @@ void CGameControllerPvp::OnRoundEnd()
 
 		if(m_pStatsTable[0] != '\0')
 			SaveStatsOnRoundEnd(pPlayer);
-	}
-}
-
-CGameControllerPvp::~CGameControllerPvp()
-{
-	// TODO: we have to make sure to block all operations and save everything if sv_gametype is switched
-	//       there should be no data loss no matter in which state and how often the controller is recreated
-	//
-	//       this also has to save player sprees that were not ended yet!
-	dbg_msg("ddnet-insta", "cleaning up database connection ...");
-	if(m_pSqlStats)
-	{
-		delete m_pSqlStats;
-		m_pSqlStats = nullptr;
-	}
-
-	if(m_pExtraColumns)
-	{
-		delete m_pExtraColumns;
-		m_pExtraColumns = nullptr;
 	}
 }
 
@@ -922,16 +921,6 @@ int CGameControllerPvp::ClampTeam(int Team)
 	if(IsTeamPlay())
 		return Team & 1;
 	return TEAM_RED;
-}
-
-void CGameControllerPvp::SendChatTarget(int To, const char *pText, int Flags) const
-{
-	GameServer()->SendChatTarget(To, pText, Flags);
-}
-
-void CGameControllerPvp::SendChat(int ClientId, int Team, const char *pText, int SpamProtectionClientId, int Flags)
-{
-	GameServer()->SendChat(ClientId, Team, pText, SpamProtectionClientId, Flags);
 }
 
 void CGameControllerPvp::UpdateSpawnWeapons(bool Silent, bool Apply)
