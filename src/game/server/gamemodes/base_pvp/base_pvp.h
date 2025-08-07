@@ -18,7 +18,6 @@ public:
 	CGameControllerPvp(class CGameContext *pGameServer);
 	~CGameControllerPvp() override;
 
-	bool CanSpawn(int Team, vec2 *pOutPos, int DDTeam) override;
 	bool BlockFirstShotOnSpawn(class CCharacter *pChr, int Weapon) const;
 	bool BlockFullAutoUntilRepress(class CCharacter *pChr, int Weapon) const;
 	void OnReset() override;
