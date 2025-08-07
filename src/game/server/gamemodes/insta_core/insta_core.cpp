@@ -70,6 +70,10 @@ void CGameControllerInstaCore::SendChatSpectators(const char *pMessage, int Flag
 	}
 }
 
+void CGameControllerInstaCore::OnInit()
+{
+}
+
 void CGameControllerInstaCore::OnPlayerConnect(CPlayer *pPlayer)
 {
 	m_InvalidateConnectedIpsCache = true;
@@ -356,6 +360,14 @@ bool CGameControllerInstaCore::OnSkinChange7(protocol7::CNetMsg_Cl_SkinChange *p
 
 	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL | MSGFLAG_NORECORD, -1);
 	return true;
+}
+
+void CGameControllerInstaCore::OnClientDataPersist(CPlayer *pPlayer, CGameContext::CPersistentClientData *pData)
+{
+}
+
+void CGameControllerInstaCore::OnClientDataRestore(CPlayer *pPlayer, const CGameContext::CPersistentClientData *pData)
+{
 }
 
 void CGameControllerInstaCore::OnPlayerTick(class CPlayer *pPlayer)

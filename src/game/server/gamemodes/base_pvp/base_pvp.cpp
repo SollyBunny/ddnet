@@ -94,6 +94,8 @@ void CGameControllerPvp::OnReset()
 
 void CGameControllerPvp::OnInit()
 {
+	CGameControllerInstaCore::OnInit();
+
 	if(GameFlags() & GAMEFLAG_FLAGS)
 	{
 		m_pSqlStats->CreateFastcapTable();
@@ -1522,14 +1524,6 @@ bool CGameControllerPvp::LoadNewPlayerNameData(int ClientId)
 
 	// consume the event and do not load ddrace times
 	return true;
-}
-
-void CGameControllerPvp::OnClientDataPersist(CPlayer *pPlayer, CGameContext::CPersistentClientData *pData)
-{
-}
-
-void CGameControllerPvp::OnClientDataRestore(CPlayer *pPlayer, const CGameContext::CPersistentClientData *pData)
-{
 }
 
 bool CGameControllerPvp::OnTeamChatCmd(IConsole::IResult *pResult)

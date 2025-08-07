@@ -42,8 +42,6 @@ public:
 	void InitPlayer(class CPlayer *pPlayer) override;
 	bool LoadNewPlayerNameData(int ClientId) override;
 	void OnLoadedNameStats(const CSqlStatsPlayer *pStats, class CPlayer *pPlayer) override;
-	void OnClientDataPersist(CPlayer *pPlayer, CGameContext::CPersistentClientData *pData) override;
-	void OnClientDataRestore(CPlayer *pPlayer, const CGameContext::CPersistentClientData *pData) override;
 	bool OnTeamChatCmd(IConsole::IResult *pResult) override;
 	bool OnSetDDRaceTeam(int ClientId, int Team) override;
 

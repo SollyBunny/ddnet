@@ -28,6 +28,7 @@ public:
 	void SendChat(int ClientId, int Team, const char *pText, int SpamProtectionClientId = -1, int Flags = CGameContext::FLAG_SIX | CGameContext::FLAG_SIXUP);
 	void SendChatSpectators(const char *pMessage, int Flags);
 
+	void OnInit() override;
 	void OnPlayerConnect(CPlayer *pPlayer) override;
 	void OnPlayerDisconnect(CPlayer *pPlayer, const char *pReason) override;
 	void OnCharacterSpawn(class CCharacter *pChr) override;
@@ -39,6 +40,8 @@ public:
 	bool CanJoinTeam(int Team, int NotThisId, char *pErrorReason, int ErrorReasonSize) override;
 	int ClampTeam(int Team) override;
 	bool OnSkinChange7(protocol7::CNetMsg_Cl_SkinChange *pMsg, int ClientId) override;
+	void OnClientDataPersist(CPlayer *pPlayer, CGameContext::CPersistentClientData *pData) override;
+	void OnClientDataRestore(CPlayer *pPlayer, const CGameContext::CPersistentClientData *pData) override;
 
 	void OnPlayerTick(class CPlayer *pPlayer);
 	void OnCharacterTick(class CCharacter *pChr);
