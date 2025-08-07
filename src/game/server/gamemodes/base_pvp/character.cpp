@@ -8,11 +8,6 @@
 
 #include "base_pvp.h"
 
-void CGameControllerPvp::OnCharacterConstruct(class CCharacter *pChr)
-{
-	pChr->m_IsGodmode = false;
-}
-
 bool CCharacter::IsTouchingTile(int Tile)
 {
 	if(!Collision()->GameLayer())
