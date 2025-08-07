@@ -47,7 +47,6 @@ public:
 	bool OnTeamChatCmd(IConsole::IResult *pResult) override;
 	bool OnSetDDRaceTeam(int ClientId, int Team) override;
 
-
 	// chat.cpp
 	bool AllowPublicChat(const CPlayer *pPlayer);
 	bool ParseChatCmd(char Prefix, int ClientId, const char *pCmdWithArgs);
