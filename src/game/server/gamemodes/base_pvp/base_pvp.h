@@ -47,7 +47,6 @@ public:
 	bool OnTeamChatCmd(IConsole::IResult *pResult) override;
 	bool OnSetDDRaceTeam(int ClientId, int Team) override;
 
-	void ModifyWeapons(IConsole::IResult *pResult, void *pUserData, int Weapon, bool Remove);
 
 	// chat.cpp
 	bool AllowPublicChat(const CPlayer *pPlayer);

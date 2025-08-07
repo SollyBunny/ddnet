@@ -617,35 +617,6 @@ void CGameControllerPvp::SaveStatsOnDisconnect(CPlayer *pPlayer)
 	m_pSqlStats->SaveRoundStats(Server()->ClientName(pPlayer->GetCid()), StatsTable(), &pPlayer->m_Stats);
 }
 
-void CGameControllerPvp::ModifyWeapons(IConsole::IResult *pResult, void *pUserData,
-	int Weapon, bool Remove)
-{
-	CGameControllerPvp *pSelf = (CGameControllerPvp *)pUserData;
-	CCharacter *pChr = GameServer()->GetPlayerChar(pResult->m_ClientId);
-	if(!pChr)
-		return;
-
-	if(std::clamp(Weapon, -1, NUM_WEAPONS - 1) != Weapon)
-	{
-		pSelf->GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "info",
-			"invalid weapon id");
-		return;
-	}
-
-	if(Weapon == -1)
-	{
-		pChr->GiveWeapon(WEAPON_SHOTGUN, Remove);
-		pChr->GiveWeapon(WEAPON_GRENADE, Remove);
-		pChr->GiveWeapon(WEAPON_LASER, Remove);
-	}
-	else
-	{
-		pChr->GiveWeapon(Weapon, Remove);
-	}
-
-	pChr->m_DDRaceState = ERaceState::CHEATED;
-}
-
 int CGameControllerPvp::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon)
 {
 	CGameControllerInstaCore::OnCharacterDeath(pVictim, pKiller, Weapon);
