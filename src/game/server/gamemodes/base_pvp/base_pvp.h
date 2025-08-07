@@ -20,7 +20,6 @@ public:
 
 	bool BlockFirstShotOnSpawn(class CCharacter *pChr, int Weapon) const;
 	bool BlockFullAutoUntilRepress(class CCharacter *pChr, int Weapon) const;
-	void OnReset() override;
 	void OnInit() override;
 	void OnPlayerConnect(CPlayer *pPlayer) override;
 	void OnPlayerDisconnect(class CPlayer *pPlayer, const char *pReason) override;

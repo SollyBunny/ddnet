@@ -78,20 +78,6 @@ CGameControllerPvp::~CGameControllerPvp()
 	}
 }
 
-void CGameControllerPvp::OnReset()
-{
-	CGameControllerDDRace::OnReset();
-
-	for(auto &pPlayer : GameServer()->m_apPlayers)
-	{
-		if(!pPlayer)
-			continue;
-
-		pPlayer->m_IsReadyToPlay = true;
-		pPlayer->m_ScoreStartTick = Server()->Tick();
-	}
-}
-
 void CGameControllerPvp::OnInit()
 {
 	CGameControllerInstaCore::OnInit();

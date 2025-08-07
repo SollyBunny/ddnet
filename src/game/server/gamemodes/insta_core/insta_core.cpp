@@ -70,6 +70,20 @@ void CGameControllerInstaCore::SendChatSpectators(const char *pMessage, int Flag
 	}
 }
 
+void CGameControllerInstaCore::OnReset()
+{
+	CGameControllerDDRace::OnReset();
+
+	for(CPlayer *pPlayer : GameServer()->m_apPlayers)
+	{
+		if(!pPlayer)
+			continue;
+
+		pPlayer->m_IsReadyToPlay = true;
+		pPlayer->m_ScoreStartTick = Server()->Tick();
+	}
+}
+
 void CGameControllerInstaCore::OnInit()
 {
 }
