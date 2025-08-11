@@ -60,4 +60,31 @@ public:
 	char m_aVersionStr[10] = "0";
 };
 
+class CGameClient;
+class IGraphics;
+
+class CSquishy
+{
+private:
+	vec2 m_Squish = vec2(0.0f, 0.0f);
+	vec2 m_SquishVel = vec2(0.0f, 0.0f);
+	float m_RenderDir = 0.0f;
+	float m_RenderLength = 1.0f;
+public:
+	/**
+	 * Render a squishy, set texture beforehand
+	 *
+	 * @param Pos
+	 * @param Size
+	 * @param Color
+	 * @param AlwaysRender Render even if squishy doesn't apply
+	 *
+	 * @return true = squishy was rendered, false = normal was rendered
+	**/
+	void Reset();
+	void Update(vec2 Vel, vec2 Accel, bool Flipped, float Delta);
+	void Update(CGameClient &GameClient, int ClientId);
+	bool Render(IGraphics &Graphics, vec2 Pos, float Size, float Rotation, ColorRGBA Color, bool AlwaysRender) const;
+};
+
 #endif
