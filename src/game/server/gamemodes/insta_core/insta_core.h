@@ -122,6 +122,12 @@ public:
 	int GetFirstAlivePlayerId();
 
 	// kills the tee of all connected players
+	//
+	// WARNING: this instantly deletes the character pointer!
+	//          if this is called during a character tick it will cause use after free!
+	//          Within a character tick you have to use CCharacter::Die instead of CPlayer::KillCharacter
+	//          rule of thumb is that all controller methods that get passed a character pointer
+	//          are in a character tick. In those you should never call this method!
 	void KillAllPlayers();
 
 	// returns player pointer or nullptr if none is found
