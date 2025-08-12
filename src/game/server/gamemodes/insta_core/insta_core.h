@@ -51,10 +51,13 @@ public:
 	// you can override this to silence the message or change it
 	virtual void PrintDisconnect(CPlayer *pPlayer, const char *pReason);
 
-	// logs the connect to console
-	// and prints it to the chat
+	// prints the join message into public chat
 	// you can override this to silence the message or change it
 	virtual void PrintConnect(CPlayer *pPlayer, const char *pName);
+
+	// prints the mod welcome and version message
+	// called on join
+	virtual void PrintModWelcome(CPlayer *pPlayer);
 
 	void OnCharacterSpawn(class CCharacter *pChr) override;
 	int OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon) override;

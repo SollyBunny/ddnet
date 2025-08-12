@@ -93,16 +93,17 @@ void CGameControllerInstaCore::OnPlayerConnect(CPlayer *pPlayer)
 	IGameController::OnPlayerConnect(pPlayer);
 	m_InvalidateConnectedIpsCache = true;
 
-	CIpStorage *pIpStorage = GameServer()->m_IpStorageController.FindEntry(Server()->ClientAddr(pPlayer->GetCid()));
+	int ClientId = pPlayer->GetCid();
+	CIpStorage *pIpStorage = GameServer()->m_IpStorageController.FindEntry(Server()->ClientAddr(ClientId));
 	if(pIpStorage)
 	{
 		char aAddr[512];
-		net_addr_str(Server()->ClientAddr(pPlayer->GetCid()), aAddr, sizeof(aAddr), false);
+		net_addr_str(Server()->ClientAddr(ClientId), aAddr, sizeof(aAddr), false);
 		log_info(
 			"ddnet-insta",
 			"player cid=%d name='%s' ip=%s loaded ip storage (in total there are %ld entries)",
-			pPlayer->GetCid(),
-			Server()->ClientName(pPlayer->GetCid()),
+			ClientId,
+			Server()->ClientName(ClientId),
 			aAddr,
 			GameServer()->m_IpStorageController.Entries().size());
 		pPlayer->m_IpStorage = *pIpStorage;
@@ -115,6 +116,10 @@ void CGameControllerInstaCore::OnPlayerConnect(CPlayer *pPlayer)
 
 	RestoreFreezeStateOnRejoin(pPlayer);
 	PrintConnect(pPlayer, Server()->ClientName(pPlayer->GetCid()));
+	if(!Server()->ClientPrevIngame(ClientId))
+	{
+		PrintModWelcome(pPlayer);
+	}
 }
 
 // this method should be kept as slim as possible in insta core
@@ -197,10 +202,14 @@ void CGameControllerInstaCore::PrintConnect(CPlayer *pPlayer, const char *pName)
 			GameServer()->SendChat(-1, TEAM_ALL, aBuf, -1, CGameContext::FLAG_SIX);
 		else if(g_Config.m_SvTournamentJoinMsgs == 2)
 			SendChatSpectators(aBuf, CGameContext::FLAG_SIX);
-
-		GameServer()->SendChatTarget(ClientId, "DDNet-insta " DDNET_INSTA_VERSIONSTR " github.com/ddnet-insta/ddnet-insta");
-		GameServer()->SendChatTarget(ClientId, "DDraceNetwork Mod. Version: " GAME_VERSION);
 	}
+}
+
+void CGameControllerInstaCore::PrintModWelcome(CPlayer *pPlayer)
+{
+	int ClientId = pPlayer->GetCid();
+	GameServer()->SendChatTarget(ClientId, "DDNet-insta " DDNET_INSTA_VERSIONSTR " github.com/ddnet-insta/ddnet-insta");
+	GameServer()->SendChatTarget(ClientId, "DDraceNetwork Mod. Version: " GAME_VERSION);
 }
 
 void CGameControllerInstaCore::OnCharacterSpawn(class CCharacter *pChr)
