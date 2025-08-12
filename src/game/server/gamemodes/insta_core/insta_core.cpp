@@ -114,6 +114,7 @@ void CGameControllerInstaCore::OnPlayerConnect(CPlayer *pPlayer)
 	}
 
 	RestoreFreezeStateOnRejoin(pPlayer);
+	PrintConnect(pPlayer, Server()->ClientName(pPlayer->GetCid()));
 }
 
 // this method should be kept as slim as possible in insta core
@@ -179,6 +180,26 @@ void CGameControllerInstaCore::PrintDisconnect(CPlayer *pPlayer, const char *pRe
 
 		str_format(aBuf, sizeof(aBuf), "leave player='%d:%s'", ClientId, Server()->ClientName(ClientId));
 		GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "game", aBuf);
+	}
+}
+
+void CGameControllerInstaCore::PrintConnect(CPlayer *pPlayer, const char *pName)
+{
+	int ClientId = pPlayer->GetCid();
+	if(!Server()->ClientPrevIngame(ClientId))
+	{
+		char aBuf[512];
+		// you could also use Server()->ClientName(ClientId)
+		// instead of pName
+		// but if accounts and locked names are enabled they might be different
+		str_format(aBuf, sizeof(aBuf), "'%s' entered and joined the %s", pName, GetTeamName(pPlayer->GetTeam()));
+		if(!g_Config.m_SvTournamentJoinMsgs || pPlayer->GetTeam() != TEAM_SPECTATORS)
+			GameServer()->SendChat(-1, TEAM_ALL, aBuf, -1, CGameContext::FLAG_SIX);
+		else if(g_Config.m_SvTournamentJoinMsgs == 2)
+			SendChatSpectators(aBuf, CGameContext::FLAG_SIX);
+
+		GameServer()->SendChatTarget(ClientId, "DDNet-insta " DDNET_INSTA_VERSIONSTR " github.com/ddnet-insta/ddnet-insta");
+		GameServer()->SendChatTarget(ClientId, "DDraceNetwork Mod. Version: " GAME_VERSION);
 	}
 }
 

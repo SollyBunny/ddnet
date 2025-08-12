@@ -51,6 +51,11 @@ public:
 	// you can override this to silence the message or change it
 	virtual void PrintDisconnect(CPlayer *pPlayer, const char *pReason);
 
+	// logs the connect to console
+	// and prints it to the chat
+	// you can override this to silence the message or change it
+	virtual void PrintConnect(CPlayer *pPlayer, const char *pName);
+
 	void OnCharacterSpawn(class CCharacter *pChr) override;
 	int OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon) override;
 	void Tick() override;
