@@ -40,6 +40,17 @@ public:
 	void OnInit() override;
 	void OnPlayerConnect(CPlayer *pPlayer) override;
 	void OnPlayerDisconnect(CPlayer *pPlayer, const char *pReason) override;
+
+	// contains the base logic needed to make insta core work
+	// such as ip storage tracking and frozen quitter tracking
+	// you almost never want to not run this code
+	virtual void InstaCoreDisconnect(CPlayer *pPlayer, const char *pReason);
+
+	// logs the disconnect to console
+	// and prints it to the chat
+	// you can override this to silence the message or change it
+	virtual void PrintDisconnect(CPlayer *pPlayer, const char *pReason);
+
 	void OnCharacterSpawn(class CCharacter *pChr) override;
 	int OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon) override;
 	void Tick() override;

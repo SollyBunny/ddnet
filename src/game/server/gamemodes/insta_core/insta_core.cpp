@@ -116,7 +116,21 @@ void CGameControllerInstaCore::OnPlayerConnect(CPlayer *pPlayer)
 	RestoreFreezeStateOnRejoin(pPlayer);
 }
 
+// this method should be kept as slim as possible in insta core
+// all logic should be moved to InstaCoreDisconnect
+// so controllers inheriting can easier reimplement parts they want
 void CGameControllerInstaCore::OnPlayerDisconnect(class CPlayer *pPlayer, const char *pReason)
+{
+	InstaCoreDisconnect(pPlayer, pReason);
+	pPlayer->OnDisconnect();
+	PrintDisconnect(pPlayer, pReason);
+}
+
+// Holds all core logic. Should not contain code that can be possibly unwanted
+// by custom controllers inherting.
+// Code that other controllers might want to change or drop should go into
+// extra methods such as PrintDisconnect
+void CGameControllerInstaCore::InstaCoreDisconnect(CPlayer *pPlayer, const char *pReason)
 {
 	m_InvalidateConnectedIpsCache = true;
 
@@ -146,8 +160,10 @@ void CGameControllerInstaCore::OnPlayerDisconnect(class CPlayer *pPlayer, const 
 		CIpStorage *pStorage = GameServer()->m_IpStorageController.FindOrCreateEntry(pAddr);
 		pStorage->OnPlayerDisconnect(&pPlayer->m_IpStorage.value(), Server()->Tick());
 	}
+}
 
-	pPlayer->OnDisconnect();
+void CGameControllerInstaCore::PrintDisconnect(CPlayer *pPlayer, const char *pReason)
+{
 	int ClientId = pPlayer->GetCid();
 	if(Server()->ClientIngame(ClientId))
 	{
