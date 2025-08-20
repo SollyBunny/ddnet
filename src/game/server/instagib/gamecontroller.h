@@ -464,6 +464,20 @@ public:
 	virtual bool OnTeamChatCmd(IConsole::IResult *pResult) { return false; }
 
 	/*
+		Function: OnPauseChatCmd
+			Called when a player runs the /pause ddnet chat command
+			Contains the full implementation
+	*/
+	virtual void OnPauseChatCmd(IConsole::IResult *pResult, void *pUserData);
+
+	/*
+		Function: OnSpecChatCmd
+			Called when a player runs the /spec ddnet chat command
+			Contains the full implementation
+	*/
+	virtual void OnSpecChatCmd(IConsole::IResult *pResult, void *pUserData);
+
+	/*
 		Function: OnSetDDRaceTeam
 			Called every time a player changes team
 			Either by explicitly using the /teams command sucessfully

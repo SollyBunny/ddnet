@@ -14,6 +14,7 @@
 class CGameContext : public IGameServer
 {
 #endif // IN_CLASS_IGAMECONTEXT
+	friend class IGameController;
 
 public:
 	const char *ServerInfoClientScoreKind() override { return "points"; }

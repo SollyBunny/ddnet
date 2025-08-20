@@ -31,10 +31,7 @@ void CGameContext::ConInstaTogglePause(IConsole::IResult *pResult, void *pUserDa
 	if(!pSelf->m_pController)
 		return;
 
-	if(pSelf->m_pController->IsDDRaceGameType())
-		ConTogglePause(pResult, pUserData);
-	else
-		ConReadyChange(pResult, pUserData);
+	pSelf->m_pController->OnPauseChatCmd(pResult, pUserData);
 }
 
 void CGameContext::ConInstaToggleSpec(IConsole::IResult *pResult, void *pUserData)
@@ -43,14 +40,7 @@ void CGameContext::ConInstaToggleSpec(IConsole::IResult *pResult, void *pUserDat
 	if(!pSelf->m_pController)
 		return;
 
-	if(pSelf->m_pController->IsDDRaceGameType())
-	{
-		ConToggleSpec(pResult, pUserData);
-	}
-	else
-	{
-		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp", "Command not available in this gametype.");
-	}
+	pSelf->m_pController->OnSpecChatCmd(pResult, pUserData);
 }
 
 void CGameContext::ConInstaTogglePauseVoted(IConsole::IResult *pResult, void *pUserData)

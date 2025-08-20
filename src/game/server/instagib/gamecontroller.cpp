@@ -748,3 +748,23 @@ bool IGameController::HasWinningScore(const CPlayer *pPlayer) const
 
 	return false;
 }
+
+void IGameController::OnPauseChatCmd(IConsole::IResult *pResult, void *pUserData)
+{
+	if(IsDDRaceGameType())
+		CGameContext::ConTogglePause(pResult, pUserData);
+	else
+		CGameContext::ConReadyChange(pResult, pUserData);
+}
+
+void IGameController::OnSpecChatCmd(IConsole::IResult *pResult, void *pUserData)
+{
+	if(IsDDRaceGameType())
+	{
+		CGameContext::ConToggleSpec(pResult, pUserData);
+	}
+	else
+	{
+		GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp", "Command not available in this gametype.");
+	}
+}
