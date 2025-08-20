@@ -1609,6 +1609,10 @@ static CGameInfo GetGameInfo(const CNetObj_GameInfoEx *pInfoEx, int InfoExSize, 
 	// TClient
 	str_copy(Info.m_aGameType, pFallbackServerInfo->m_aGameType);
 
+	// Solly
+	Info.m_AllowEyeWheel = true;
+	Info.m_AllowHookColl = true;
+
 	return Info;
 }
 
