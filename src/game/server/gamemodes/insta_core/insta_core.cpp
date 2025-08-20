@@ -574,7 +574,7 @@ void CGameControllerInstaCore::SnapPlayer6(int SnappingClient, CPlayer *pPlayer,
 		// 0.7 puts the checkmark at the end
 		// we put it in the beginning because ddnet scoreboard cuts off long names
 		// such as WWWWWWWWWW... which would also hide the checkmark in the end
-		StrToInts(&pClientInfo->m_Name0, 4, aReady);
+		StrToInts(pClientInfo->m_aName, std::size(pClientInfo->m_aName), aReady);
 	}
 }
 
