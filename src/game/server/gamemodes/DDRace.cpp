@@ -6,7 +6,6 @@
 #include <engine/shared/config.h>
 #include <game/mapitems.h>
 #include <game/server/entities/character.h>
-#include <game/server/entities/flag.h>
 #include <game/server/gamecontext.h>
 #include <game/server/player.h>
 #include <game/server/score.h>
@@ -18,7 +17,6 @@
 CGameControllerDDRace::CGameControllerDDRace(class CGameContext *pGameServer) :
 	IGameController(pGameServer)
 {
-	// game
 	m_pGameType = g_Config.m_SvTestingCommands ? TEST_TYPE_NAME : GAME_TYPE_NAME;
 	m_GameFlags = protocol7::GAMEFLAG_RACE;
 }
