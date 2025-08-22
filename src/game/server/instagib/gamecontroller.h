@@ -67,7 +67,7 @@ public:
 
 		Arguments:
 			pVictim - The CCharacter that died.
-			Killer - The client id of the killer.
+			Killer - The client id of the killer. Can be negativ!
 			Weapon - What weapon that killed it. Can be -1 for undefined
 				weapon when switching team or player suicides.
 			SendKillMsg - if the kill infomessage for the death event should be sent to clients
@@ -75,7 +75,39 @@ public:
 	virtual void OnCharacterDeathImpl(class CCharacter *pVictim, int Killer, int Weapon, bool SendKillMsg);
 
 	/*
+		Function: SendDeathInfoMessage
+			Called on character death.
+			Sends the info message shown in the top right kill feed on the client.
+
+		Arguments:
+			pVictim - The CCharacter that died.
+			Killer - The client id of the killer. Can be negative!
+			Weapon - What weapon that killed it. Can be -1 for undefined
+				weapon when switching team or player suicides.
+			ModeSpecial - 0 in most cases can hold information if a flagger made a kill or was killed
+			              see https://github.com/MilkeeyCat/ddnet_protocol/issues/143 for more details
+	*/
+	void SendDeathInfoMessage(CCharacter *pVictim, int Killer, int Weapon, int ModeSpecial);
+
+	/*
+		Function: SendDeathEvent
+			Called on character death.
+			Plays the death sound.
+			Sends the death effect snap item that will render a bursting tee on the client side.
+
+		Arguments:
+			pVictim - The CCharacter that died.
+			Killer - The client id of the killer. Can be negative!
+			Weapon - What weapon that killed it. Can be -1 for undefined
+				weapon when switching team or player suicides.
+			ModeSpecial - 0 in most cases can hold information if a flagger made a kill or was killed
+			              see https://github.com/MilkeeyCat/ddnet_protocol/issues/143 for more details
+	*/
+	void SendDeathEvent(CCharacter *pVictim, int Killer, int Weapon);
+
+	/*
 		Function: LogKillMessage
+			Called on character death.
 			Prints a log message to the console about the kill.
 
 		Arguments:

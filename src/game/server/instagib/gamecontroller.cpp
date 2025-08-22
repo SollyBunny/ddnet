@@ -32,11 +32,8 @@ void IGameController::OnCharacterDeathImpl(CCharacter *pVictim, int Killer, int 
 
 	if(SendKillMsg)
 	{
-		pVictim->SendDeathMessageIfNotInLockedTeam(Killer, Weapon, ModeSpecial);
+		SendDeathInfoMessage(pVictim, Killer, Weapon, ModeSpecial);
 	}
-
-	// a nice sound
-	GameServer()->CreateSound(pVictim->m_Pos, SOUND_PLAYER_DIE, pVictim->TeamMask());
 
 	// this is to rate limit respawning to 3 secs
 	pVictim->m_pPlayer->m_PreviousDieTick = pVictim->m_pPlayer->m_DieTick;
@@ -47,9 +44,19 @@ void IGameController::OnCharacterDeathImpl(CCharacter *pVictim, int Killer, int 
 
 	GameServer()->m_World.RemoveEntity(pVictim);
 	GameServer()->m_World.m_Core.m_apCharacters[pVictim->m_pPlayer->GetCid()] = nullptr;
-	GameServer()->CreateDeath(pVictim->m_Pos, pVictim->m_pPlayer->GetCid(), pVictim->TeamMask());
 	pVictim->Teams()->OnCharacterDeath(pVictim->GetPlayer()->GetCid(), Weapon);
 	pVictim->CancelSwapRequests();
+}
+
+void IGameController::SendDeathInfoMessage(CCharacter *pVictim, int Killer, int Weapon, int ModeSpecial)
+{
+	pVictim->SendDeathMessageIfNotInLockedTeam(Killer, Weapon, ModeSpecial);
+}
+
+void IGameController::SendDeathEvent(CCharacter *pVictim, int Killer, int Weapon)
+{
+	GameServer()->CreateSound(pVictim->m_Pos, SOUND_PLAYER_DIE, pVictim->TeamMask());
+	GameServer()->CreateDeath(pVictim->m_Pos, pVictim->m_pPlayer->GetCid(), pVictim->TeamMask());
 }
 
 void IGameController::LogKillMessage(CCharacter *pVictim, int Killer, int Weapon, int ModeSpecial)
