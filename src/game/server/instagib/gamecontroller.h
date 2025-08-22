@@ -55,6 +55,26 @@ public:
 	virtual bool OnCharacterTakeDamage(vec2 &Force, int &Dmg, int &From, int &Weapon, CCharacter &Character) { return false; };
 
 	/*
+		Function: OnCharacterDeathImpl
+			Called when a CCharacter in the world dies.
+			This contains the full death implementation that in regular ddnet lives
+			in the `CCharacter::Die` method. You will most likely never
+			have to call or override this method.
+			If you want to hook into the death event have a look at
+			`IGameController::OnCharacterDeath` instead.
+			If you want to change parts of the implementation. Look at which
+			methods the implementation calls and override those.
+
+		Arguments:
+			pVictim - The CCharacter that died.
+			Killer - The client id of the killer.
+			Weapon - What weapon that killed it. Can be -1 for undefined
+				weapon when switching team or player suicides.
+			SendKillMsg - if the kill infomessage for the death event should be sent to clients
+	*/
+	virtual void OnCharacterDeathImpl(class CCharacter *pVictim, int Killer, int Weapon, bool SendKillMsg);
+
+	/*
 		Function: OnKill
 			This method is called when one player kills another (no selfkills).
 			It should be called before the victims character is marked as dead.

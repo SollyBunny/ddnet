@@ -23,6 +23,10 @@
 
 // ddnet-insta
 
+void IGameController::OnCharacterDeathImpl(CCharacter *pVictim, int Killer, int Weapon, bool SendKillMsg)
+{
+}
+
 void IGameController::OnDDRaceTimeLoad(class CPlayer *pPlayer, float Time)
 {
 	pPlayer->m_Score = Time;

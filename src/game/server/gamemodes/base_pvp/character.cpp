@@ -1,3 +1,4 @@
+#include <base/log.h>
 #include <engine/antibot.h>
 #include <engine/shared/config.h>
 #include <game/generated/server_data.h>
@@ -7,6 +8,55 @@
 #include <game/version.h>
 
 #include "base_pvp.h"
+
+void CCharacter::DieImpl(int Killer, int Weapon, bool SendKillMsg)
+{
+	// as much as possible code should be moved to `IGameController::OnCharacterDeathImpl`
+	// so gamemodes can easily override parts of the behavior
+	GameServer()->m_pController->OnCharacterDeathImpl(this, Killer, Weapon, SendKillMsg);
+
+	if(Killer != WEAPON_GAME && m_SetSavePos[RESCUEMODE_AUTO])
+		GetPlayer()->m_LastDeath = m_RescueTee[RESCUEMODE_AUTO];
+	StopRecording();
+	int ModeSpecial = GameServer()->m_pController->OnCharacterDeath(this, (Killer < 0) ? nullptr : GameServer()->m_apPlayers[Killer], Weapon);
+
+	// ddnet-insta added this branch
+	// inspired by upstream https://github.com/teeworlds/teeworlds/blob/5d682733e482950f686663c129adc4b751c8d790/src/game/server/entities/character.cpp#L665
+	// to fix a crash bug
+	if(Killer < 0 || !GameServer()->m_apPlayers[Killer])
+	{
+		log_info("game", "kill killer='%d:%s' victim='%d:%s' weapon=%d special=%d",
+			Killer, -1 - Killer,
+			m_pPlayer->GetCid(), Server()->ClientName(m_pPlayer->GetCid()), Weapon, ModeSpecial);
+	}
+	else
+	{
+		log_info("game", "kill killer='%d:%s' victim='%d:%s' weapon=%d special=%d",
+			Killer, Server()->ClientName(Killer),
+			m_pPlayer->GetCid(), Server()->ClientName(m_pPlayer->GetCid()), Weapon, ModeSpecial);
+	}
+
+	if(SendKillMsg)
+	{
+		SendDeathMessageIfNotInLockedTeam(Killer, Weapon, ModeSpecial);
+	}
+
+	// a nice sound
+	GameServer()->CreateSound(m_Pos, SOUND_PLAYER_DIE, TeamMask());
+
+	// this is to rate limit respawning to 3 secs
+	m_pPlayer->m_PreviousDieTick = m_pPlayer->m_DieTick;
+	m_pPlayer->m_DieTick = Server()->Tick();
+
+	m_Alive = false;
+	SetSolo(false);
+
+	GameServer()->m_World.RemoveEntity(this);
+	GameServer()->m_World.m_Core.m_apCharacters[m_pPlayer->GetCid()] = nullptr;
+	GameServer()->CreateDeath(m_Pos, m_pPlayer->GetCid(), TeamMask());
+	Teams()->OnCharacterDeath(GetPlayer()->GetCid(), Weapon);
+	CancelSwapRequests();
+}
 
 bool CCharacter::IsTouchingTile(int Tile)
 {
