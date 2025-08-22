@@ -16,14 +16,9 @@ class CCharacter : public CEntity
 	friend class CGameControllerPvp;
 	friend class CGameControllerCTF;
 	friend class CGameControllerBaseFng;
+	friend class IGameController;
 
 public:
-	// WARNING: do not call this method. Call `CCharacter::Die` instead.
-	//
-	// ddnet-insta copy of the ddnet method `CCharacter::Die` to keep the code
-	// changes in ddnet-insta specific code files
-	void DieImpl(int Killer, int Weapon, bool SendKillMsg);
-
 	/*
 		Reset instagib tee without resetting ddnet or teeworlds tee
 		update grenade ammo state without selfkill

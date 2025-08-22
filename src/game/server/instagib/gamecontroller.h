@@ -75,6 +75,20 @@ public:
 	virtual void OnCharacterDeathImpl(class CCharacter *pVictim, int Killer, int Weapon, bool SendKillMsg);
 
 	/*
+		Function: LogKillMessage
+			Prints a log message to the console about the kill.
+
+		Arguments:
+			pVictim - The CCharacter that died.
+			Killer - The client id of the killer.
+			Weapon - What weapon that killed it. Can be -1 for undefined
+				weapon when switching team or player suicides.
+			ModeSpecial - 0 in most cases can hold information if a flagger made a kill or was killed
+			              see https://github.com/MilkeeyCat/ddnet_protocol/issues/143 for more details
+	*/
+	virtual void LogKillMessage(class CCharacter *pVictim, int Killer, int Weapon, int ModeSpecial);
+
+	/*
 		Function: OnKill
 			This method is called when one player kills another (no selfkills).
 			It should be called before the victims character is marked as dead.
