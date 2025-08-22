@@ -35,6 +35,10 @@ void IGameController::OnCharacterDeathImpl(CCharacter *pVictim, int Killer, int 
 		SendDeathInfoMessage(pVictim, Killer, Weapon, ModeSpecial);
 	}
 
+	// a nice sound
+	// and exploding tee death effect
+	SendDeathEvent(pVictim, Killer, Weapon);
+
 	// this is to rate limit respawning to 3 secs
 	pVictim->m_pPlayer->m_PreviousDieTick = pVictim->m_pPlayer->m_DieTick;
 	pVictim->m_pPlayer->m_DieTick = Server()->Tick();
