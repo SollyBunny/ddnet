@@ -26,6 +26,11 @@
 #include <memory>
 #include <string>
 
+// ddnet-insta
+using GamemodesType = std::unordered_map<std::string, IGameController *(*)(CGameContext *)>;
+GamemodesType &Gamemodes();
+#define REGISTER_GAMEMODE(name, constructor) [[maybe_unused]] static auto s_Temp##name = ([]() {Gamemodes()[#name] = [](CGameContext *pGameServer) -> IGameController* { return new constructor; }; return 0; })();
+
 /*
 	Tick
 		Game Context (CGameContext::tick)
@@ -61,10 +66,6 @@ class IEngine;
 class IStorage;
 struct CAntibotRoundData;
 struct CScoreRandomMapResult;
-
-// ddnet-insta
-extern std::unordered_map<std::string, IGameController *(*)(CGameContext *)> g_Gamemodes;
-#define REGISTER_GAMEMODE(name, constructor) [[maybe_unused]] static auto s_Temp##name = ([]() {g_Gamemodes[#name] = [](CGameContext *pGameServer) -> IGameController* { return new constructor; }; return 0; })();
 
 struct CSnapContext
 {

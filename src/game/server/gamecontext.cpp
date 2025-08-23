@@ -34,11 +34,14 @@
 #include "score.h"
 
 // ddnet-insta
+#include <game/server/gamecontroller.h>
 #include <game/server/instagib/structs.h>
 
-#include <game/server/gamecontroller.h>
-
-decltype(g_Gamemodes) g_Gamemodes;
+GamemodesType &Gamemodes()
+{
+	static GamemodesType s_Gamemodes;
+	return s_Gamemodes;
+}
 
 // Not thread-safe!
 class CClientChatLogger : public ILogger
@@ -4150,7 +4153,7 @@ void CGameContext::OnInit(const void *pPersistentData)
 	}
 
 	m_pController = nullptr;
-	for(const auto &[String, Constructor] : g_Gamemodes)
+	for(const auto &[String, Constructor] : Gamemodes())
 	{
 		if(str_comp(Config()->m_SvGametype, String.c_str()) == 0)
 		{
@@ -4161,7 +4164,7 @@ void CGameContext::OnInit(const void *pPersistentData)
 	if(m_pController == nullptr)
 	{
 		log_warn("gametype", "unknown gametype '%s' falling back to ddnet", Config()->m_SvGametype);
-		m_pController = (g_Gamemodes["ddnet"])(this);
+		m_pController = (Gamemodes()["ddrace"])(this);
 	}
 
 	ReadCensorList();
