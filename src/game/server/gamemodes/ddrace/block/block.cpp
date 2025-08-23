@@ -102,3 +102,5 @@ int CGameControllerBlock::OnCharacterDeath(class CCharacter *pVictim, class CPla
 	// do not count the kill
 	return 0;
 }
+
+REGISTER_GAMEMODE(block, CGameControllerBlock(pGameServer));

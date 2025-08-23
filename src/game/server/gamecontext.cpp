@@ -30,27 +30,15 @@
 #include <game/generated/protocolglue.h>
 
 #include "entities/character.h"
-#include "gamemodes/DDRace.h"
-#include "gamemodes/ddrace/block/block.h"
-#include "gamemodes/instagib/bolofng/bolofng.h"
-#include "gamemodes/instagib/boomfng/boomfng.h"
-#include "gamemodes/instagib/fng/fng.h"
-#include "gamemodes/instagib/gctf/gctf.h"
-#include "gamemodes/instagib/gdm/gdm.h"
-#include "gamemodes/instagib/gtdm/gtdm.h"
-#include "gamemodes/instagib/ictf/ictf.h"
-#include "gamemodes/instagib/idm/idm.h"
-#include "gamemodes/instagib/itdm/itdm.h"
-#include "gamemodes/instagib/solofng/solofng.h"
-#include "gamemodes/instagib/zcatch/zcatch.h"
-#include "gamemodes/mod.h"
-#include "gamemodes/vanilla/ctf/ctf.h"
-#include "gamemodes/vanilla/dm/dm.h"
-#include "gamemodes/vanilla/fly/fly.h"
 #include "player.h"
 #include "score.h"
 
-#include <game/server/instagib/structs.h> // ddnet-insta
+// ddnet-insta
+#include <game/server/instagib/structs.h>
+
+#include <game/server/gamecontroller.h>
+
+decltype(g_Gamemodes) g_Gamemodes;
 
 // Not thread-safe!
 class CClientChatLogger : public ILogger
@@ -4161,43 +4149,19 @@ void CGameContext::OnInit(const void *pPersistentData)
 		}
 	}
 
-	if(!str_comp(Config()->m_SvGametype, "mod"))
-		m_pController = new CGameControllerMod(this);
-	else if(!str_comp_nocase(Config()->m_SvGametype, "gctf"))
-		m_pController = new CGameControllerGCTF(this);
-	else if(!str_comp_nocase(Config()->m_SvGametype, "ictf"))
-		m_pController = new CGameControllerICTF(this);
-	else if(!str_comp_nocase(Config()->m_SvGametype, "fng"))
-		m_pController = new CGameControllerFng(this);
-	else if(!str_comp_nocase(Config()->m_SvGametype, "boomfng"))
-		m_pController = new CGameControllerBoomFng(this);
-	else if(!str_comp_nocase(Config()->m_SvGametype, "solofng"))
-		m_pController = new CGameControllerSoloFng(this);
-	else if(!str_comp_nocase(Config()->m_SvGametype, "bolofng"))
-		m_pController = new CGameControllerBoloFng(this);
-	else if(!str_comp_nocase(Config()->m_SvGametype, "zcatch"))
-		m_pController = new CGameControllerZcatch(this);
-	else if(!str_comp_nocase(Config()->m_SvGametype, "gdm"))
-		m_pController = new CGameControllerGDM(this);
-	else if(!str_comp_nocase(Config()->m_SvGametype, "idm"))
-		m_pController = new CGameControllerIDM(this);
-	else if(!str_comp_nocase(Config()->m_SvGametype, "gtdm"))
-		m_pController = new CGameControllerGTDM(this);
-	else if(!str_comp_nocase(Config()->m_SvGametype, "itdm"))
-		m_pController = new CGameControllerITDM(this);
-	else if(!str_comp_nocase(Config()->m_SvGametype, "dm"))
-		m_pController = new CGameControllerDM(this);
-	else if(!str_comp_nocase(Config()->m_SvGametype, "ctf"))
-		m_pController = new CGameControllerCTF(this);
-	else if(!str_comp_nocase(Config()->m_SvGametype, "fly"))
-		m_pController = new CGameControllerFly(this);
-	else if(!str_comp_nocase(Config()->m_SvGametype, "block"))
-		m_pController = new CGameControllerBlock(this);
-	else
+	m_pController = nullptr;
+	for(const auto &[String, Constructor] : g_Gamemodes)
 	{
-		if(str_comp_nocase(Config()->m_SvGametype, "ddnet"))
-			Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "gametype", "unknown gametype falling back to ddnet");
-		m_pController = new CGameControllerDDRace(this);
+		if(str_comp(Config()->m_SvGametype, String.c_str()) == 0)
+		{
+			m_pController = Constructor(this);
+			break;
+		}
+	}
+	if(m_pController == nullptr)
+	{
+		log_info("gametype", "unknown gametype '%s' falling back to ddnet", Config()->m_SvGametype);
+		m_pController = (g_Gamemodes["ddnet"])(this);
 	}
 
 	ReadCensorList();

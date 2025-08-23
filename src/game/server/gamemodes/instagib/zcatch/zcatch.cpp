@@ -804,3 +804,5 @@ void CGameControllerZcatch::Snap(int SnappingClient)
 {
 	CGameControllerInstagib::Snap(SnappingClient);
 }
+
+REGISTER_GAMEMODE(zcatch, CGameControllerZcatch(pGameServer));

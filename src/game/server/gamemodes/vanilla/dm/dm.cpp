@@ -31,3 +31,5 @@ void CGameControllerDM::OnCharacterSpawn(class CCharacter *pChr)
 	pChr->GiveWeapon(WEAPON_HAMMER, false, -1);
 	pChr->GiveWeapon(WEAPON_GUN, false, 10);
 }
+
+REGISTER_GAMEMODE(dm, CGameControllerDM(pGameServer));

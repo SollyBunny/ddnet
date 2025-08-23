@@ -123,3 +123,5 @@ bool CGameControllerCTF::OnEntity(int Index, int x, int y, int Layer, int Flags,
 
 	return CGameControllerBaseCTF::OnEntity(Index, x, y, Layer, Flags, Initial, Number);
 }
+
+REGISTER_GAMEMODE(ctf, CGameControllerCTF(pGameServer));
