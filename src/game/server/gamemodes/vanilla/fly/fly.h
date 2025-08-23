@@ -3,7 +3,7 @@
 
 #include <game/server/gamemodes/vanilla/ctf/ctf.h>
 
-class CGameControllerFly : public CGameControllerCTF
+class CGameControllerFly : public CGameControllerCtf
 {
 public:
 	CGameControllerFly(class CGameContext *pGameServer);

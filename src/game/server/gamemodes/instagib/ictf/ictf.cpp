@@ -2,7 +2,7 @@
 
 #include "ictf.h"
 
-CGameControllerICTF::CGameControllerICTF(class CGameContext *pGameServer) :
+CGameControllerIctf::CGameControllerIctf(class CGameContext *pGameServer) :
 	CGameControllerInstaBaseCTF(pGameServer)
 {
 	m_pGameType = "iCTF";
@@ -14,16 +14,16 @@ CGameControllerICTF::CGameControllerICTF(class CGameContext *pGameServer) :
 	m_pSqlStats->CreateTable(m_pStatsTable);
 }
 
-CGameControllerICTF::~CGameControllerICTF() = default;
+CGameControllerIctf::~CGameControllerIctf() = default;
 
-void CGameControllerICTF::Tick()
+void CGameControllerIctf::Tick()
 {
 	// this is the main part of the gamemode, this function is run every tick
 
 	CGameControllerInstaBaseCTF::Tick();
 }
 
-void CGameControllerICTF::OnCharacterSpawn(class CCharacter *pChr)
+void CGameControllerIctf::OnCharacterSpawn(class CCharacter *pChr)
 {
 	CGameControllerInstaBaseCTF::OnCharacterSpawn(pChr);
 
@@ -31,4 +31,4 @@ void CGameControllerICTF::OnCharacterSpawn(class CCharacter *pChr)
 	pChr->GiveWeapon(m_DefaultWeapon, false, -1);
 }
 
-REGISTER_GAMEMODE(ictf, CGameControllerICTF(pGameServer));
+REGISTER_GAMEMODE(ictf, CGameControllerIctf(pGameServer));

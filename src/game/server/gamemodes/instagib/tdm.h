@@ -3,11 +3,11 @@
 
 #include <game/server/gamemodes/instagib/dm.h>
 
-class CGameControllerInstaTDM : public CGameControllerInstaBaseDM
+class CGameControllerInstaTdm : public CGameControllerInstaBaseDM
 {
 public:
-	CGameControllerInstaTDM(class CGameContext *pGameServer);
-	~CGameControllerInstaTDM() override;
+	CGameControllerInstaTdm(class CGameContext *pGameServer);
+	~CGameControllerInstaTdm() override;
 
 	void Snap(int SnappingClient) override;
 	int OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon) override;

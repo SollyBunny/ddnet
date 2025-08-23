@@ -8,7 +8,7 @@
 #include "fly.h"
 
 CGameControllerFly::CGameControllerFly(class CGameContext *pGameServer) :
-	CGameControllerCTF(pGameServer)
+	CGameControllerCtf(pGameServer)
 {
 	m_pGameType = "fly";
 	m_pStatsTable = "fly";
@@ -32,7 +32,7 @@ void CGameControllerFly::Tick()
 	// keep last to
 	// make sure the pvp ticks set the hooking toucher
 	// even if we did reset it this tick
-	CGameControllerCTF::Tick();
+	CGameControllerCtf::Tick();
 }
 
 int CGameControllerFly::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon)
@@ -60,7 +60,7 @@ int CGameControllerFly::OnCharacterDeath(class CCharacter *pVictim, class CPlaye
 		Msg.m_ModeSpecial = 0;
 		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
 	}
-	int ModeSpecial = CGameControllerCTF::OnCharacterDeath(pVictim, pKiller, Weapon);
+	int ModeSpecial = CGameControllerCtf::OnCharacterDeath(pVictim, pKiller, Weapon);
 
 	// if the player is punished for the selfkill
 	// we revert to the original score

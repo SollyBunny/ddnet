@@ -3,7 +3,7 @@
 
 #include "dm.h"
 
-CGameControllerDM::CGameControllerDM(class CGameContext *pGameServer) :
+CGameControllerDm::CGameControllerDm(class CGameContext *pGameServer) :
 	CGameControllerVanilla(pGameServer)
 {
 	m_GameFlags = 0;
@@ -16,14 +16,14 @@ CGameControllerDM::CGameControllerDM(class CGameContext *pGameServer) :
 	m_pSqlStats->CreateTable(m_pStatsTable);
 }
 
-CGameControllerDM::~CGameControllerDM() = default;
+CGameControllerDm::~CGameControllerDm() = default;
 
-void CGameControllerDM::Tick()
+void CGameControllerDm::Tick()
 {
 	CGameControllerVanilla::Tick();
 }
 
-void CGameControllerDM::OnCharacterSpawn(class CCharacter *pChr)
+void CGameControllerDm::OnCharacterSpawn(class CCharacter *pChr)
 {
 	CGameControllerVanilla::OnCharacterSpawn(pChr);
 
@@ -32,4 +32,4 @@ void CGameControllerDM::OnCharacterSpawn(class CCharacter *pChr)
 	pChr->GiveWeapon(WEAPON_GUN, false, 10);
 }
 
-REGISTER_GAMEMODE(dm, CGameControllerDM(pGameServer));
+REGISTER_GAMEMODE(dm, CGameControllerDm(pGameServer));

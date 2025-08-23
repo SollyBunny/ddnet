@@ -7,7 +7,7 @@
 
 #include "ctf.h"
 
-CGameControllerCTF::CGameControllerCTF(class CGameContext *pGameServer) :
+CGameControllerCtf::CGameControllerCtf(class CGameContext *pGameServer) :
 	CGameControllerBaseCTF(pGameServer)
 {
 	m_pGameType = "CTF*";
@@ -22,14 +22,14 @@ CGameControllerCTF::CGameControllerCTF(class CGameContext *pGameServer) :
 	m_pSqlStats->CreateTable(m_pStatsTable);
 }
 
-CGameControllerCTF::~CGameControllerCTF() = default;
+CGameControllerCtf::~CGameControllerCtf() = default;
 
-void CGameControllerCTF::Tick()
+void CGameControllerCtf::Tick()
 {
 	CGameControllerBaseCTF::Tick();
 }
 
-void CGameControllerCTF::OnCharacterSpawn(class CCharacter *pChr)
+void CGameControllerCtf::OnCharacterSpawn(class CCharacter *pChr)
 {
 	CGameControllerBaseCTF::OnCharacterSpawn(pChr);
 
@@ -38,7 +38,7 @@ void CGameControllerCTF::OnCharacterSpawn(class CCharacter *pChr)
 	pChr->GiveWeapon(WEAPON_GUN, false, 10);
 }
 
-int CGameControllerCTF::SnapGameInfoExFlags(int SnappingClient, int DDRaceFlags)
+int CGameControllerCtf::SnapGameInfoExFlags(int SnappingClient, int DDRaceFlags)
 {
 	int Flags = CGameControllerPvp::SnapGameInfoExFlags(SnappingClient, DDRaceFlags);
 	Flags &= ~(GAMEINFOFLAG_UNLIMITED_AMMO);
@@ -47,7 +47,7 @@ int CGameControllerCTF::SnapGameInfoExFlags(int SnappingClient, int DDRaceFlags)
 	return Flags;
 }
 
-bool CGameControllerCTF::OnCharacterTakeDamage(vec2 &Force, int &Dmg, int &From, int &Weapon, CCharacter &Character)
+bool CGameControllerCtf::OnCharacterTakeDamage(vec2 &Force, int &Dmg, int &From, int &Weapon, CCharacter &Character)
 {
 	if(Weapon == WEAPON_GUN || Weapon == WEAPON_SHOTGUN)
 		Dmg = 1;
@@ -71,7 +71,7 @@ bool CGameControllerCTF::OnCharacterTakeDamage(vec2 &Force, int &Dmg, int &From,
 	return false;
 }
 
-bool CGameControllerCTF::OnEntity(int Index, int x, int y, int Layer, int Flags, bool Initial, int Number)
+bool CGameControllerCtf::OnEntity(int Index, int x, int y, int Layer, int Flags, bool Initial, int Number)
 {
 	const vec2 Pos(x * 32.0f + 16.0f, y * 32.0f + 16.0f);
 
@@ -124,4 +124,4 @@ bool CGameControllerCTF::OnEntity(int Index, int x, int y, int Layer, int Flags,
 	return CGameControllerBaseCTF::OnEntity(Index, x, y, Layer, Flags, Initial, Number);
 }
 
-REGISTER_GAMEMODE(ctf, CGameControllerCTF(pGameServer));
+REGISTER_GAMEMODE(ctf, CGameControllerCtf(pGameServer));
