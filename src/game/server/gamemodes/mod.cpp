@@ -26,4 +26,3 @@ void CGameControllerMod::Tick()
 }
 
 REGISTER_GAMEMODE(mod, CGameControllerMod(pGameServer));
-
