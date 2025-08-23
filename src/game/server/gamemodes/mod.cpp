@@ -24,3 +24,6 @@ void CGameControllerMod::Tick()
 
 	IGameController::Tick();
 }
+
+REGISTER_GAMEMODE(mod, CGameControllerMod(pGameServer));
+

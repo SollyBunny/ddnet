@@ -29,3 +29,5 @@ void CGameControllerGTDM::OnCharacterSpawn(class CCharacter *pChr)
 	// give default weapons
 	pChr->GiveWeapon(m_DefaultWeapon, false, g_Config.m_SvGrenadeAmmoRegen ? g_Config.m_SvGrenadeAmmoRegenNum : -1);
 }
+
+REGISTER_GAMEMODE(gtdm, CGameControllerGTDM(pGameServer));

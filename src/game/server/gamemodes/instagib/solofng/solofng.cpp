@@ -56,3 +56,5 @@ void CGameControllerSoloFng::Snap(int SnappingClient)
 {
 	CGameControllerBaseFng::Snap(SnappingClient);
 }
+
+REGISTER_GAMEMODE(solofng, CGameControllerSoloFng(pGameServer));

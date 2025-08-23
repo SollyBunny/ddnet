@@ -56,3 +56,5 @@ void CGameControllerBoloFng::Snap(int SnappingClient)
 {
 	CGameControllerBaseFng::Snap(SnappingClient);
 }
+
+REGISTER_GAMEMODE(bolofng, CGameControllerBoloFng(pGameServer));

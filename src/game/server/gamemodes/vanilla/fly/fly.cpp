@@ -5,6 +5,7 @@
 #include <game/server/player.h>
 
 #include "fly.h"
+#include "game/server/gamecontext.h"
 
 CGameControllerFly::CGameControllerFly(class CGameContext *pGameServer) :
 	CGameControllerCTF(pGameServer)
@@ -73,3 +74,5 @@ int CGameControllerFly::OnCharacterDeath(class CCharacter *pVictim, class CPlaye
 
 	return ModeSpecial;
 }
+
+REGISTER_GAMEMODE(fly, CGameControllerFly(pGameServer));

@@ -34,3 +34,5 @@ void CGameControllerBoomFng::OnCharacterSpawn(class CCharacter *pChr)
 	// give default weapons
 	pChr->GiveWeapon(m_DefaultWeapon, false, -1);
 }
+
+REGISTER_GAMEMODE(boomfng, CGameControllerBoomFng(pGameServer));

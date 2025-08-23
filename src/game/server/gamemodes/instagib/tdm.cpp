@@ -72,3 +72,5 @@ void CGameControllerInstaTDM::Snap(int SnappingClient)
 	pGameDataObj->m_FlagCarrierRed = 0;
 	pGameDataObj->m_FlagCarrierBlue = 0;
 }
+
+REGISTER_GAMEMODE(tdm, CGameControllerInstaTDM(pGameServer));
