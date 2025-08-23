@@ -18,7 +18,8 @@ void CGameContext::ConInstaCredits(IConsole::IResult *pResult, void *pUserData)
 		"DDNet-insta written by ChillerDragon",
 		"https://github.com/ddnet-insta/ddnet-insta/",
 		"Thanks to AssassinTee, Cuube, Anime-pdf, M0REKZ",
-		"JSaurusRex, jxsl13, lukure, ByFox and zhn",
+		"JSaurusRex, jxsl13, lukure, ByFox, zhn",
+		"and SollyBunny",
 		"based on ddnet see /credits_ddnet",
 	};
 	for(const char *pLine : CREDITS)
