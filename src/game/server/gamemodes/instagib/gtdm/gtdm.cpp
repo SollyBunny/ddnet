@@ -3,8 +3,8 @@
 
 #include "gtdm.h"
 
-CGameControllerGTDM::CGameControllerGTDM(class CGameContext *pGameServer) :
-	CGameControllerInstaTDM(pGameServer)
+CGameControllerGtdm::CGameControllerGtdm(class CGameContext *pGameServer) :
+	CGameControllerTdm(pGameServer)
 {
 	m_pGameType = "gTDM";
 	m_DefaultWeapon = WEAPON_GRENADE;
@@ -15,19 +15,19 @@ CGameControllerGTDM::CGameControllerGTDM(class CGameContext *pGameServer) :
 	m_pSqlStats->CreateTable(m_pStatsTable);
 }
 
-CGameControllerGTDM::~CGameControllerGTDM() = default;
+CGameControllerGtdm::~CGameControllerGtdm() = default;
 
-void CGameControllerGTDM::Tick()
+void CGameControllerGtdm::Tick()
 {
-	CGameControllerInstaTDM::Tick();
+	CGameControllerTdm::Tick();
 }
 
-void CGameControllerGTDM::OnCharacterSpawn(class CCharacter *pChr)
+void CGameControllerGtdm::OnCharacterSpawn(class CCharacter *pChr)
 {
-	CGameControllerInstaTDM::OnCharacterSpawn(pChr);
+	CGameControllerTdm::OnCharacterSpawn(pChr);
 
 	// give default weapons
 	pChr->GiveWeapon(m_DefaultWeapon, false, g_Config.m_SvGrenadeAmmoRegen ? g_Config.m_SvGrenadeAmmoRegenNum : -1);
 }
 
-REGISTER_GAMEMODE(gtdm, CGameControllerGTDM(pGameServer));
+REGISTER_GAMEMODE(gtdm, CGameControllerGtdm(pGameServer));

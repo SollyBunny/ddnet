@@ -3,7 +3,7 @@
 
 #include "gdm.h"
 
-CGameControllerGDM::CGameControllerGDM(class CGameContext *pGameServer) :
+CGameControllerGdm::CGameControllerGdm(class CGameContext *pGameServer) :
 	CGameControllerInstaBaseDM(pGameServer)
 {
 	m_pGameType = "gDM";
@@ -15,14 +15,14 @@ CGameControllerGDM::CGameControllerGDM(class CGameContext *pGameServer) :
 	m_pSqlStats->CreateTable(m_pStatsTable);
 }
 
-CGameControllerGDM::~CGameControllerGDM() = default;
+CGameControllerGdm::~CGameControllerGdm() = default;
 
-void CGameControllerGDM::Tick()
+void CGameControllerGdm::Tick()
 {
 	CGameControllerInstaBaseDM::Tick();
 }
 
-void CGameControllerGDM::OnCharacterSpawn(class CCharacter *pChr)
+void CGameControllerGdm::OnCharacterSpawn(class CCharacter *pChr)
 {
 	CGameControllerInstaBaseDM::OnCharacterSpawn(pChr);
 
@@ -30,4 +30,4 @@ void CGameControllerGDM::OnCharacterSpawn(class CCharacter *pChr)
 	pChr->GiveWeapon(m_DefaultWeapon, false, g_Config.m_SvGrenadeAmmoRegen ? g_Config.m_SvGrenadeAmmoRegenNum : -1);
 }
 
-REGISTER_GAMEMODE(gdm, CGameControllerGDM(pGameServer));
+REGISTER_GAMEMODE(gdm, CGameControllerGdm(pGameServer));

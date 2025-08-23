@@ -3,8 +3,8 @@
 
 #include "itdm.h"
 
-CGameControllerITDM::CGameControllerITDM(class CGameContext *pGameServer) :
-	CGameControllerInstaTDM(pGameServer)
+CGameControllerItdm::CGameControllerItdm(class CGameContext *pGameServer) :
+	CGameControllerTdm(pGameServer)
 {
 	m_pGameType = "iTDM";
 	m_DefaultWeapon = WEAPON_LASER;
@@ -15,19 +15,19 @@ CGameControllerITDM::CGameControllerITDM(class CGameContext *pGameServer) :
 	m_pSqlStats->CreateTable(m_pStatsTable);
 }
 
-CGameControllerITDM::~CGameControllerITDM() = default;
+CGameControllerItdm::~CGameControllerItdm() = default;
 
-void CGameControllerITDM::Tick()
+void CGameControllerItdm::Tick()
 {
-	CGameControllerInstaTDM::Tick();
+	CGameControllerTdm::Tick();
 }
 
-void CGameControllerITDM::OnCharacterSpawn(class CCharacter *pChr)
+void CGameControllerItdm::OnCharacterSpawn(class CCharacter *pChr)
 {
-	CGameControllerInstaTDM::OnCharacterSpawn(pChr);
+	CGameControllerTdm::OnCharacterSpawn(pChr);
 
 	// give default weapons
 	pChr->GiveWeapon(m_DefaultWeapon, false, -1);
 }
 
-REGISTER_GAMEMODE(itdm, CGameControllerITDM(pGameServer));
+REGISTER_GAMEMODE(itdm, CGameControllerItdm(pGameServer));

@@ -83,11 +83,11 @@ public:
 	}
 };
 
-class CGameControllerDM : public CGameControllerVanilla
+class CGameControllerDm : public CGameControllerVanilla
 {
 public:
-	CGameControllerDM(class CGameContext *pGameServer);
-	~CGameControllerDM() override;
+	CGameControllerDm(class CGameContext *pGameServer);
+	~CGameControllerDm() override;
 
 	void OnCharacterSpawn(class CCharacter *pChr) override;
 	void Tick() override;

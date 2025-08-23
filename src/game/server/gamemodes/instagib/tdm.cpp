@@ -3,20 +3,20 @@
 
 #include "tdm.h"
 
-CGameControllerInstaTDM::CGameControllerInstaTDM(class CGameContext *pGameServer) :
+CGameControllerTdm::CGameControllerTdm(class CGameContext *pGameServer) :
 	CGameControllerInstaBaseDM(pGameServer)
 {
 	m_GameFlags = GAMEFLAG_TEAMS;
 }
 
-CGameControllerInstaTDM::~CGameControllerInstaTDM() = default;
+CGameControllerTdm::~CGameControllerTdm() = default;
 
-void CGameControllerInstaTDM::Tick()
+void CGameControllerTdm::Tick()
 {
 	CGameControllerInstaBaseDM::Tick();
 }
 
-int CGameControllerInstaTDM::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int WeaponId)
+int CGameControllerTdm::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int WeaponId)
 {
 	CGameControllerPvp::OnCharacterDeath(pVictim, pKiller, WeaponId);
 
@@ -55,7 +55,7 @@ int CGameControllerInstaTDM::OnCharacterDeath(class CCharacter *pVictim, class C
 	return false;
 }
 
-void CGameControllerInstaTDM::Snap(int SnappingClient)
+void CGameControllerTdm::Snap(int SnappingClient)
 {
 	CGameControllerPvp::Snap(SnappingClient);
 
@@ -73,4 +73,4 @@ void CGameControllerInstaTDM::Snap(int SnappingClient)
 	pGameDataObj->m_FlagCarrierBlue = 0;
 }
 
-REGISTER_GAMEMODE(tdm, CGameControllerInstaTDM(pGameServer));
+REGISTER_GAMEMODE(tdm, CGameControllerTdm(pGameServer));

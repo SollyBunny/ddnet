@@ -3,11 +3,11 @@
 
 #include "../tdm.h"
 
-class CGameControllerITDM : public CGameControllerInstaTDM
+class CGameControllerItdm : public CGameControllerTdm
 {
 public:
-	CGameControllerITDM(class CGameContext *pGameServer);
-	~CGameControllerITDM() override;
+	CGameControllerItdm(class CGameContext *pGameServer);
+	~CGameControllerItdm() override;
 
 	void OnCharacterSpawn(class CCharacter *pChr) override;
 	void Tick() override;

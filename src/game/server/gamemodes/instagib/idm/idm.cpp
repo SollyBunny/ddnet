@@ -2,7 +2,7 @@
 
 #include "idm.h"
 
-CGameControllerIDM::CGameControllerIDM(class CGameContext *pGameServer) :
+CGameControllerIdm::CGameControllerIdm(class CGameContext *pGameServer) :
 	CGameControllerInstaBaseDM(pGameServer)
 {
 	m_pGameType = "iDM";
@@ -14,14 +14,14 @@ CGameControllerIDM::CGameControllerIDM(class CGameContext *pGameServer) :
 	m_pSqlStats->CreateTable(m_pStatsTable);
 }
 
-CGameControllerIDM::~CGameControllerIDM() = default;
+CGameControllerIdm::~CGameControllerIdm() = default;
 
-void CGameControllerIDM::Tick()
+void CGameControllerIdm::Tick()
 {
 	CGameControllerInstaBaseDM::Tick();
 }
 
-void CGameControllerIDM::OnCharacterSpawn(class CCharacter *pChr)
+void CGameControllerIdm::OnCharacterSpawn(class CCharacter *pChr)
 {
 	CGameControllerInstaBaseDM::OnCharacterSpawn(pChr);
 
@@ -29,4 +29,4 @@ void CGameControllerIDM::OnCharacterSpawn(class CCharacter *pChr)
 	pChr->GiveWeapon(m_DefaultWeapon, false, -1);
 }
 
-REGISTER_GAMEMODE(idm, CGameControllerIDM(pGameServer));
+REGISTER_GAMEMODE(idm, CGameControllerIdm(pGameServer));

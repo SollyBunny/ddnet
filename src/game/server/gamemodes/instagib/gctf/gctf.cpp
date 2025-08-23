@@ -3,7 +3,7 @@
 
 #include "gctf.h"
 
-CGameControllerGCTF::CGameControllerGCTF(class CGameContext *pGameServer) :
+CGameControllerGctf::CGameControllerGctf(class CGameContext *pGameServer) :
 	CGameControllerInstaBaseCTF(pGameServer)
 {
 	m_pGameType = "gCTF";
@@ -15,14 +15,14 @@ CGameControllerGCTF::CGameControllerGCTF(class CGameContext *pGameServer) :
 	m_pSqlStats->CreateTable(m_pStatsTable);
 }
 
-CGameControllerGCTF::~CGameControllerGCTF() = default;
+CGameControllerGctf::~CGameControllerGctf() = default;
 
-void CGameControllerGCTF::Tick()
+void CGameControllerGctf::Tick()
 {
 	CGameControllerInstaBaseCTF::Tick();
 }
 
-void CGameControllerGCTF::OnCharacterSpawn(class CCharacter *pChr)
+void CGameControllerGctf::OnCharacterSpawn(class CCharacter *pChr)
 {
 	CGameControllerInstaBaseCTF::OnCharacterSpawn(pChr);
 
@@ -30,4 +30,4 @@ void CGameControllerGCTF::OnCharacterSpawn(class CCharacter *pChr)
 	pChr->GiveWeapon(m_DefaultWeapon, false, g_Config.m_SvGrenadeAmmoRegen ? g_Config.m_SvGrenadeAmmoRegenNum : -1);
 }
 
-REGISTER_GAMEMODE(gctf, CGameControllerGCTF(pGameServer));
+REGISTER_GAMEMODE(gctf, CGameControllerGctf(pGameServer));

@@ -83,11 +83,11 @@ public:
 	}
 };
 
-class CGameControllerCTF : public CGameControllerBaseCTF
+class CGameControllerCtf : public CGameControllerBaseCTF
 {
 public:
-	CGameControllerCTF(class CGameContext *pGameServer);
-	~CGameControllerCTF() override;
+	CGameControllerCtf(class CGameContext *pGameServer);
+	~CGameControllerCtf() override;
 
 	void OnCharacterSpawn(class CCharacter *pChr) override;
 	void Tick() override;
