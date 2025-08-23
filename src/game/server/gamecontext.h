@@ -64,7 +64,7 @@ struct CScoreRandomMapResult;
 
 // ddnet-insta
 extern std::unordered_map<std::string, IGameController *(*)(CGameContext *)> g_Gamemodes;
-#define REGISTER_GAMEMODE(name, constructor) [[maybe_unused]] static auto s_Temp ## name = ([]() {g_Gamemodes[#name] = [](CGameContext *pGameServer) -> IGameController* { return new constructor; }; return 0;})();
+#define REGISTER_GAMEMODE(name, constructor) [[maybe_unused]] static auto s_Temp##name = ([]() {g_Gamemodes[#name] = [](CGameContext *pGameServer) -> IGameController* { return new constructor; }; return 0; })();
 
 struct CSnapContext
 {

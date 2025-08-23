@@ -2,10 +2,10 @@
 #include <game/mapitems.h>
 #include <game/server/entities/character.h>
 #include <game/server/entities/ddnet_pvp/vanilla_pickup.h>
+#include <game/server/gamecontext.h>
 #include <game/server/player.h>
 
 #include "fly.h"
-#include "game/server/gamecontext.h"
 
 CGameControllerFly::CGameControllerFly(class CGameContext *pGameServer) :
 	CGameControllerCTF(pGameServer)

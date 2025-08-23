@@ -4160,7 +4160,7 @@ void CGameContext::OnInit(const void *pPersistentData)
 	}
 	if(m_pController == nullptr)
 	{
-		log_info("gametype", "unknown gametype '%s' falling back to ddnet", Config()->m_SvGametype);
+		log_warn("gametype", "unknown gametype '%s' falling back to ddnet", Config()->m_SvGametype);
 		m_pController = (g_Gamemodes["ddnet"])(this);
 	}
 
