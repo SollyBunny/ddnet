@@ -31,6 +31,9 @@ class CEnvPointBezier_upstream;
 class CMapItemGroup;
 class CQuad;
 
+// TClient
+class CSquishy;
+
 #include <game/generated/protocol.h>
 
 class CSkinDescriptor
@@ -181,6 +184,9 @@ public:
 	};
 
 	CSixup m_aSixup[NUM_DUMMIES];
+
+	// TClient
+	const CSquishy *m_pSquishy = nullptr;
 };
 
 class CManagedTeeRenderInfo

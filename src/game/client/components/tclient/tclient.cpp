@@ -628,7 +628,6 @@ void CTClient::OnStateChange(int OldState, int NewState)
 void CTClient::OnNewSnapshot()
 {
 	SetForcedAspect();
-	// Update volleyball
 	bool IsVolleyBall = false;
 	if(g_Config.m_TcVolleyBallBetterBall > 0 && g_Config.m_TcVolleyBallBetterBallSkin[0] != '\0')
 	{
@@ -637,9 +636,12 @@ void CTClient::OnNewSnapshot()
 		else
 			IsVolleyBall = str_startswith_nocase(Client()->GetCurrentMap(), "volleyball");
 	};
-	for(auto &Client : GameClient()->m_aClients)
+	for(auto &Data : GameClient()->m_aClients)
 	{
-		Client.m_IsVolleyBall = IsVolleyBall && Client.m_DeepFrozen;
+		// Update volleyball
+		Data.m_IsVolleyBall = IsVolleyBall && Data.m_DeepFrozen;
+		// Update squish
+		Data.m_Squishy.Update(*GameClient(), Data.ClientId());
 	}
 	// Update air rescue
 	if(Client()->State() != IClient::STATE_DEMOPLAYBACK)
@@ -811,4 +813,130 @@ void CTClient::RenderCenterLines()
 		Graphics()->QuadsDraw(aQuads, std::size(aQuads));
 		Graphics()->QuadsEnd();
 	}
+}
+
+void CSquishy::Reset()
+{
+	m_Squish = vec2(0.0f, 0.0f);
+	m_SquishVel = vec2(0.0f, 0.0f);
+}
+
+void CSquishy::Update(vec2 Vel, vec2 Accel, bool Flipped, float Delta)
+{
+	if(Delta <= 0.0f)
+		return;
+	Delta = std::min(Delta, 1.0f / 12.5f); // Half 25 tps
+
+	// Prevent explosion
+	if(!std::isfinite(m_Squish.x) || !std::isfinite(m_Squish.y))
+	{
+		Reset();
+	}
+	else
+	{
+		static constexpr float K = 50.0f;
+		static constexpr float D = 1.5f;
+
+		const vec2 Displacement = m_Squish;
+
+		vec2 Force = Displacement * -K + m_SquishVel * -D;
+		Force += Vel / 6.0f + Accel / 4.0f;
+
+		// Integrate acceleration to velocity
+		vec2 Acceleration = Force; // mass = 1
+		m_SquishVel += Acceleration * Delta;
+
+		// Integrate velocity to position
+		m_Squish += m_SquishVel * Delta;
+
+		// Make negative squishiness move to other axis
+		const float Sameness = dot(m_Squish, m_SquishVel) / (length(m_Squish) + length(m_SquishVel));
+		if(Sameness > 0)
+		{
+			const vec2 Energy = m_Squish * Sameness;
+			m_Squish -= Energy;
+			m_Squish += rotate(Energy, pi / 2.0f * (Flipped ? 1.0f : -1.0f));
+		}
+	}
+
+	m_RenderLength = 1.0f + std::clamp(length(m_Squish), -0.7f, 0.7f);
+	if(std::abs(m_RenderLength - 1.0f) < 0.01f)
+		m_RenderLength = 1.0f;
+	else
+		m_RenderDir = std::atan2(m_Squish.y, m_Squish.x);
+}
+
+void CSquishy::Update(CGameClient &GameClient, int ClientId)
+{
+	auto &Snapped = GameClient.m_Snap.m_aCharacters[ClientId];
+	if(g_Config.m_TcSquishyTees && Snapped.m_Active)
+	{
+		auto &Data = GameClient.m_aClients[ClientId];
+		const vec2 A = vec2(Snapped.m_Prev.m_VelX, Snapped.m_Prev.m_VelY) / 32.0f / 2.0f; // Magic numbers because they feel different than predicted
+		const vec2 B = vec2(Snapped.m_Cur.m_VelX, Snapped.m_Cur.m_VelY) / 32.0f / 2.0f;
+		const vec2 Vel = (A + B) / 2.0f;
+		const vec2 Accel = B - A;
+		const float Delta = (float)(GameClient.Client()->GameTick(g_Config.m_ClDummy) - GameClient.Client()->PrevGameTick(g_Config.m_ClDummy)) / GameClient.Client()->GameTickSpeed();
+		Update(Vel, Accel, Data.ClientId() % 2 == 0, Delta);
+		if(m_RenderLength != 1.0f)
+			Data.m_RenderInfo.m_pSquishy = this;
+	}
+	else
+	{
+		Reset();
+	}
+}
+
+bool CSquishy::Render(IGraphics &Graphics, vec2 Pos, float Size, float Rotation, ColorRGBA Color, bool AlwaysRender) const
+{
+	if(m_RenderLength == 1.0f)
+	{
+		if(AlwaysRender)
+		{
+			IGraphics::CQuadItem Item{Pos.x, Pos.y, Size, Size};
+			Graphics.QuadsBegin();
+			Graphics.QuadsSetRotation(Rotation);
+			Graphics.SetColor(Color);
+			Graphics.QuadsDraw(&Item, 1);
+			Graphics.QuadsEnd();
+		}
+		return false;
+	}
+
+	const float CosAngle = std::cos(m_RenderDir);
+	const float SinAngle = std::sin(m_RenderDir);
+	auto Transform = [&](vec2 P) -> vec2
+	{
+		if(Rotation != 0.0f)
+		{
+			const float CosRot = std::cos(Rotation);
+			const float SinRot = std::sin(Rotation);
+			P = {
+				P.x * CosRot - P.y * SinRot,
+				P.x * SinRot + P.y * CosRot,
+			};
+		}
+
+		const float Parallel = (P.x * CosAngle + P.y * SinAngle) * m_RenderLength;
+		const float Perp = (P.y * CosAngle - P.x * SinAngle) / m_RenderLength;
+		P = {
+			Parallel * CosAngle - Perp * SinAngle,
+			Parallel * SinAngle + Perp * CosAngle,
+		};
+		P = P * Size + Pos;
+		return P;
+	};
+	const auto PTL = Transform({-0.5f, -0.5f});
+	const auto PTR = Transform({0.5f, -0.5f});
+	const auto PBR = Transform({0.5f,  0.5f});
+	const auto PBL = Transform({-0.5f,  0.5f});
+	// NOTE: these values are literally magic, they were made by stealing code changing it all around until it almost worked then brute forced the rest, ala do not touch, here be dragons
+	const IGraphics::CFreeformItem Item = {PBR.x, PBR.y, PBL.x, PBL.y, PTR.x, PTR.y, PTL.x, PTL.y};
+	Graphics.QuadsBegin();
+	Graphics.SetColor(Color);
+	Graphics.QuadsSetSubsetFree(1, 1, 0, 1, 1, 0, 0, 0);
+	Graphics.QuadsDrawFreeform(&Item, 1);
+	Graphics.QuadsEnd();
+
+	return true;
 }

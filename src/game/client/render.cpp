@@ -526,7 +526,10 @@ void CRenderTools::RenderTee6(const CAnimState *pAnim, const CTeeRenderInfo *pIn
 				float BodyScale;
 				GetRenderTeeBodyScale(BaseSize, BodyScale);
 				Graphics()->TextureSet(OutLine == 1 ? pSkinTextures->m_BodyOutline : pSkinTextures->m_Body);
-				Graphics()->RenderQuadContainerAsSprite(m_TeeQuadContainerIndex, OutLine, BodyPos.x, BodyPos.y, BodyScale, BodyScale);
+				
+				// TClient
+				if(!pInfo->m_pSquishy || !pInfo->m_pSquishy->Render(*Graphics(), BodyPos, BaseSize, pAnim->GetBody()->m_Angle * pi * 2.0f, pInfo->m_ColorBody.WithAlpha(Alpha), false))
+					Graphics()->RenderQuadContainerAsSprite(m_TeeQuadContainerIndex, OutLine, BodyPos.x, BodyPos.y, BodyScale, BodyScale);
 
 				// draw eyes
 				if(Pass == 1)
