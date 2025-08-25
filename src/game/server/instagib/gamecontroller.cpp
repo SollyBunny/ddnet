@@ -70,7 +70,7 @@ void IGameController::LogKillMessage(CCharacter *pVictim, int Killer, int Weapon
 	// to fix a crash bug
 	if(Killer < 0 || !GameServer()->m_apPlayers[Killer])
 	{
-		log_info("game", "kill killer='%d:%s' victim='%d:%s' weapon=%d special=%d",
+		log_info("game", "kill killer='%d:%d:' victim='%d:%s' weapon=%d special=%d",
 			Killer, -1 - Killer,
 			pVictim->GetPlayer()->GetCid(), Server()->ClientName(pVictim->GetPlayer()->GetCid()), Weapon, ModeSpecial);
 	}
