@@ -7,6 +7,7 @@ class COutlines : public CComponent
 {
 public:
 	int Sizeof() const override { return sizeof(*this); }
+	void OnConsoleInit() override;
 	void OnRender() override;
 };
 

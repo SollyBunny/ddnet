@@ -62,18 +62,6 @@ decltype(CBindChat::BIND_DEFAULTS) CBindChat::BIND_DEFAULTS = {
 					   {TCLocalizable("Remove [group] [name]:"), {"!delname", "remove_war_name"}},
 					   {TCLocalizable("Remove [group] [clan]:"), {"!delclan", "remove_war_clan"}},
 				   }},
-	{TCLocalizable("Mod"), {
-				       {TCLocalizable("Mute ID:"), {"!mmute", "mod_rcon_mute"}},
-				       {TCLocalizable("Mute Name:"), {"!mmuten", "mod_rcon_mute_name"}},
-				       {TCLocalizable("Unmute Last:"), {"!munmutelast", "rcon unmute 0"}},
-				       {TCLocalizable("Kick ID:"), {"!mkick", "mod_rcon_kick"}},
-				       {TCLocalizable("Kick Name:"), {"!mkickn", "mod_rcon_kick_name"}},
-				       {TCLocalizable("Ban ID:"), {"!mban", "mod_rcon_ban"}},
-				       {TCLocalizable("Ban Name:"), {"!mbann", "mod_rcon_ban_name"}},
-				       {TCLocalizable("Unban Last:"), {"!munbanlast", "rcon unban 0"}},
-				       {TCLocalizable("Kill Ids:"), {"!mkill", "mod_rcon_kill"}},
-				       {TCLocalizable("Kill Names:"), {"!mkilln", "mod_rcon_kill_name"}},
-			       }},
 	{TCLocalizable("Other"), {
 					 {TCLocalizable("Translate:"), {"!translate", "translate"}},
 					 {TCLocalizable("Translate ID:"), {"!translateid", "translate_id"}},

@@ -10,6 +10,29 @@
 
 #include "outlines.h"
 
+void COutlines::OnConsoleInit()
+{
+	auto FixColorAlpha = [&](const char *pName, unsigned int &ColorInt) {
+		Console()->Chain(
+			pName, [](IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData) {
+				pfnCallback(pResult, pCallbackUserData);
+				unsigned int *pColorInt = decltype(pColorInt)(pUserData);
+				ColorHSLA Color(*pColorInt);
+				if(Color.a <= 0.0f)
+				{
+					Color.a = 1.0f;
+					*pColorInt = Color.Pack(true);
+				}
+			},
+			&ColorInt);
+	};
+	FixColorAlpha("tc_outline_color_solid", g_Config.m_TcOutlineColorSolid);
+	FixColorAlpha("tc_outline_color_freeze", g_Config.m_TcOutlineColorFreeze);
+	FixColorAlpha("tc_outline_color_unfreeze", g_Config.m_TcOutlineColorUnfreeze);
+	FixColorAlpha("tc_outline_color_kill", g_Config.m_TcOutlineColorKill);
+	FixColorAlpha("tc_outline_color_tele", g_Config.m_TcOutlineColorTele);
+}
+
 void COutlines::OnRender()
 {
 	if(GameClient()->m_MapLayersBackground.m_OnlineOnly && Client()->State() != IClient::STATE_ONLINE && Client()->State() != IClient::STATE_DEMOPLAYBACK)
@@ -18,7 +41,7 @@ void COutlines::OnRender()
 		return;
 	if(!g_Config.m_TcOutline)
 		return;
-	if(g_Config.m_TcOutlineFreeze || g_Config.m_TcOutlineSolid || g_Config.m_TcOutlineUnFreeze || g_Config.m_TcOutlineKill)
+	if(g_Config.m_TcOutlineSolid || g_Config.m_TcOutlineFreeze || g_Config.m_TcOutlineUnfreeze || g_Config.m_TcOutlineKill)
 	{
 		CMapItemLayerTilemap *pTMap = GameClient()->Layers()->GameLayer();
 		if(pTMap)
@@ -28,16 +51,7 @@ void COutlines::OnRender()
 			{
 				unsigned int Size = GameClient()->Layers()->Map()->GetDataSize(pTMap->m_Data);
 				if(Size >= (size_t)pTMap->m_Width * pTMap->m_Height * sizeof(CTile))
-				{
-					if(g_Config.m_TcOutlineUnFreeze)
-						RenderTools()->RenderGameTileOutlines(pTiles, pTMap->m_Width, pTMap->m_Height, 32.0f, TILE_UNFREEZE, (float)g_Config.m_TcOutlineAlpha / 100.0f);
-					if(g_Config.m_TcOutlineFreeze)
-						RenderTools()->RenderGameTileOutlines(pTiles, pTMap->m_Width, pTMap->m_Height, 32.0f, TILE_FREEZE, (float)g_Config.m_TcOutlineAlpha / 100.0f);
-					if(g_Config.m_TcOutlineSolid)
-						RenderTools()->RenderGameTileOutlines(pTiles, pTMap->m_Width, pTMap->m_Height, 32.0f, TILE_SOLID, (float)g_Config.m_TcOutlineAlphaSolid / 100.0f);
-					if(g_Config.m_TcOutlineKill)
-						RenderTools()->RenderGameTileOutlines(pTiles, pTMap->m_Width, pTMap->m_Height, 32.0f, TILE_DEATH, (float)g_Config.m_TcOutlineAlpha / 100.0f);
-				}
+					RenderTools()->RenderGameTileOutlines(pTiles, pTMap->m_Width, pTMap->m_Height, 32.0f, TILE_SOLID);
 			}
 		}
 	}
@@ -54,7 +68,7 @@ void COutlines::OnRender()
 				{
 					CTeleTile *pTeleTiles = (CTeleTile *)GameClient()->Layers()->Map()->GetData(pTMap->m_Tele);
 					CTile *pGameTiles = pTiles;
-					RenderTools()->RenderTeleOutlines(pGameTiles, pTeleTiles, pTMap->m_Width, pTMap->m_Height, 32.0f, (float)g_Config.m_TcOutlineAlpha / 100.0f);
+					RenderTools()->RenderTeleOutlines(pGameTiles, pTeleTiles, pTMap->m_Width, pTMap->m_Height, 32.0f);
 				}
 			}
 		}

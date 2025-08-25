@@ -20,7 +20,6 @@
 #include <game/client/components/countryflags.h>
 #include <game/client/components/touch_controls.h>
 #include <game/client/gameclient.h>
-#include <game/client/render.h>
 #include <game/client/ui.h>
 #include <game/client/ui_listbox.h>
 #include <game/client/ui_scrollregion.h>
@@ -817,7 +816,7 @@ void CMenus::RenderServerInfoMotd(CUIRect Motd)
 	if(!m_MotdTextContainerIndex.Valid() || s_MotdLastUpdateTime == -1 || s_MotdLastUpdateTime != GameClient()->m_Motd.ServerMotdUpdateTime())
 	{
 		CTextCursor Cursor;
-		TextRender()->SetCursor(&Cursor, 0.0f, 0.0f, MotdFontSize, TEXTFLAG_RENDER);
+		Cursor.m_FontSize = MotdFontSize;
 		Cursor.m_LineWidth = Motd.w;
 		TextRender()->RecreateTextContainer(m_MotdTextContainerIndex, &Cursor, GameClient()->m_Motd.ServerMotd());
 		s_MotdHeight = Cursor.Height();

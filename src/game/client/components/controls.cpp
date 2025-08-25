@@ -452,7 +452,7 @@ void CControls::ClampMousePos()
 		if(g_Config.m_TcLimitMouseToScreen)
 		{
 			float Width, Height;
-			RenderTools()->CalcScreenParams(Graphics()->ScreenAspect(), 1.0f, &Width, &Height);
+			Graphics()->CalcScreenParams(Graphics()->ScreenAspect(), 1.0f, &Width, &Height);
 			Height /= 2.0f;
 			Width /= 2.0f;
 			if(g_Config.m_TcLimitMouseToScreen == 2)

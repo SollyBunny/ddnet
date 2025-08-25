@@ -10,7 +10,6 @@
 #include <game/client/components/scoreboard.h>
 #include <game/client/components/sounds.h>
 #include <game/client/gameclient.h>
-#include <game/client/render.h>
 #include <game/generated/protocol.h>
 #include <game/localization.h>
 
@@ -89,8 +88,7 @@ void CVoting::CallvoteOption(int OptionId, const char *pReason, bool ForceVote)
 		{
 			if(ForceVote)
 			{
-				char aBuf[128];
-				str_copy(aBuf, "force_vote option \"");
+				char aBuf[128] = "force_vote option \"";
 				char *pDst = aBuf + str_length(aBuf);
 				str_escape(&pDst, pOption->m_aDescription, aBuf + sizeof(aBuf));
 				str_append(aBuf, "\" \"");
@@ -116,8 +114,7 @@ void CVoting::RemovevoteOption(int OptionId)
 	{
 		if(OptionId == 0)
 		{
-			char aBuf[128];
-			str_copy(aBuf, "remove_vote \"");
+			char aBuf[128] = "remove_vote \"";
 			char *pDst = aBuf + str_length(aBuf);
 			str_escape(&pDst, pOption->m_aDescription, aBuf + sizeof(aBuf));
 			str_append(aBuf, "\"");
@@ -132,8 +129,7 @@ void CVoting::RemovevoteOption(int OptionId)
 
 void CVoting::AddvoteOption(const char *pDescription, const char *pCommand)
 {
-	char aBuf[128];
-	str_copy(aBuf, "add_vote \"");
+	char aBuf[128] = "add_vote \"";
 	char *pDst = aBuf + str_length(aBuf);
 	str_escape(&pDst, pDescription, aBuf + sizeof(aBuf));
 	str_append(aBuf, "\" \"");

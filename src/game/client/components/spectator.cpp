@@ -10,7 +10,6 @@
 #include <game/generated/protocol.h>
 
 #include <game/client/animstate.h>
-#include <game/client/render.h>
 #include <game/localization.h>
 
 #include "camera.h"
@@ -517,7 +516,9 @@ void CSpectator::OnRender()
 			TeeAlpha = 1.0f;
 		}
 		CTextCursor NameCursor;
-		TextRender()->SetCursor(&NameCursor, Width / 2.0f + x + 50.0f, Height / 2.0f + y + BoxMove + (LineHeight - FontSize) / 2.f, FontSize, TEXTFLAG_RENDER | TEXTFLAG_ELLIPSIS_AT_END);
+		NameCursor.SetPosition(vec2(Width / 2.0f + x + 50.0f, Height / 2.0f + y + BoxMove + (LineHeight - FontSize) / 2.f));
+		NameCursor.m_FontSize = FontSize;
+		NameCursor.m_Flags |= TEXTFLAG_ELLIPSIS_AT_END;
 		NameCursor.m_LineWidth = 180.0f;
 		if(g_Config.m_ClShowIds || g_Config.m_TcSpecmenuID)
 		{

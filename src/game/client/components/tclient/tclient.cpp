@@ -341,18 +341,15 @@ void CTClient::AirRescue()
 		return;
 	}
 
-	auto IsIndexAirLike = [&](int Index)
-	{
+	auto IsIndexAirLike = [&](int Index) {
 		const auto Tile = Collision()->GetTileIndex(Index);
 		return Tile == TILE_AIR || Tile == TILE_UNFREEZE || Tile == TILE_DUNFREEZE;
 	};
-	auto IsPosAirLike = [&](vec2 Pos)
-	{
+	auto IsPosAirLike = [&](vec2 Pos) {
 		const int Index = Collision()->GetPureMapIndex(Pos);
 		return IsIndexAirLike(Index);
 	};
-	auto IsRadiusAirLike = [&](vec2 Pos, int Radius)
-	{
+	auto IsRadiusAirLike = [&](vec2 Pos, int Radius) {
 		for(int y = -Radius; y <= Radius; ++y)
 			for(int x = -Radius; x <= Radius; ++x)
 				if(!IsPosAirLike(Pos + vec2(x, y) * 32.0f))
@@ -367,7 +364,7 @@ void CTClient::AirRescue()
 		const vec2 NewPos = AirRescuePositions.front();
 		AirRescuePositions.pop_front();
 		// Check for safety
-		if (!IsRadiusAirLike(NewPos, 2))
+		if(!IsRadiusAirLike(NewPos, 2))
 			continue;
 		// Do it
 		char aBuf[256];
