@@ -93,7 +93,6 @@ void CMod::OnRender()
 					TextRender()->RenderTextContainer(TextContainer,
 						ColorRGBA(1.0f, 1.0f, 1.0f, 1.0f), TextRender()->DefaultTextOutlineColor(),
 						Player.m_RenderPos.x - BoundingBox.m_W / 2.0f, Y);
-					Y += BoundingBox.m_H + 15.0f;
 				}
 				TextRender()->DeleteTextContainer(TextContainer);
 			}
