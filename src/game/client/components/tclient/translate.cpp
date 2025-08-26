@@ -95,7 +95,7 @@ public:
 		}
 		return ParseResponse(Out);
 	}
-	~ITranslateBackendHttp()
+	~ITranslateBackendHttp() override
 	{
 		if(m_pHttpRequest)
 			m_pHttpRequest->Abort();
