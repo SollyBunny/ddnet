@@ -1,3 +1,4 @@
+#include <base/log.h>
 #include <engine/console.h>
 #include <engine/external/remimu.h>
 #include <engine/shared/config.h>
@@ -330,9 +331,8 @@ void CConditional::OnConsoleInit()
 			pAddress = &GameClient()->m_ConnectServerInfo->m_aAddresses[0];
 		else
 			return str_copy(pOut, "offline", Length);
-		const auto SizeBefore = str_length(pOut);
 		net_addr_str(pAddress, pOut, Length, true);
-		return str_length(pOut) - SizeBefore;
+		return str_length(pOut);
 	});
 	m_vVariables.emplace_back("players_connected", [&](char *pOut, int Length) {
 		return str_format(pOut, Length, "%d", GameClient()->m_Snap.m_NumPlayers);
