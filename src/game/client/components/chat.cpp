@@ -670,6 +670,10 @@ void CChat::AddLine(int ClientId, int Team, const char *pLine)
 					  (GameClient()->m_Snap.m_LocalClientId != ClientId && GameClient()->m_aClients[ClientId].m_Foe))))
 		return;
 
+	// TClient
+	if(ClientId == CLIENT_MSG && !g_Config.m_TcShowChatClient)
+		return;
+
 	// trim right and set maximum length to 256 utf8-characters
 	int Length = 0;
 	const char *pStr = pLine;

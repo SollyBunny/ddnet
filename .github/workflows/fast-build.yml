@@ -56,6 +56,7 @@ jobs:
         brew upgrade freetype
         pip3 install --break-system-packages dmgbuild
         echo /Library/Frameworks/Python.framework/Versions/3.12/bin >> $GITHUB_PATH
+        sudo rm -rf /Library/Developer/CommandLineTools
 
     - name: Add rust macOS
       if: contains(matrix.os, 'macOS')

@@ -739,7 +739,10 @@ bool CConsole::ExecuteFile(const char *pFilename, int ClientId, bool LogFailure,
 			ExecuteLine(pLine, ClientId);
 			// TClient
 			if(m_Return)
+			{
+				m_Return = false;
 				break;
+			}
 		}
 
 		Success = true;
