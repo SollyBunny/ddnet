@@ -353,7 +353,7 @@ void CConditional::OnConsoleInit()
 		return str_copy(pOut, pCurrentServerInfo ? pCurrentServerInfo->m_aCommunityId : "offline", Length);
 	});
 	m_vVariables.emplace_back("location", [&](char *pOut, int Length) {
-		if(GameClient()->m_GameInfo.m_Race)
+		if(GameClient()->m_GameInfo.m_Race && false) // Solly's doesn't care
 			return str_copy(pOut, "forbidden", Length);
 		float w = 100.0f, h = 100.0f;
 		float x = 50.0f, y = 50.0f;
