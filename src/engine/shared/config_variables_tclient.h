@@ -254,9 +254,6 @@ MACRO_CONFIG_INT(TcHideChatBubbles, tc_hide_chat_bubbles, 0, 0, 1, CFGFLAG_CLIEN
 MACRO_CONFIG_INT(TcModWeapon, tc_mod_weapon, 0, 0, 1, CFGFLAG_CLIENT, "Run a command (default kill) when you point and shoot at someone, only works when authed in remote console")
 MACRO_CONFIG_STR(TcModWeaponCommand, tc_mod_weapon_command, 256, "rcon kill_pl {0}; say \"{name {0}}\": blocking is not allowed", CFGFLAG_CLIENT | CFGFLAG_SAVE, "Command to run with tc_mod_weapon")
 
-// Webhook
-MACRO_CONFIG_STR(TcWebhookUrl, tc_webhook_url, 512, "", CFGFLAG_CLIENT, "URL to use with webhook (remember to enable http_allow_insecure for http)")
-
 // Run on join
 MACRO_CONFIG_STR(TcExecuteOnConnect, tc_execute_on_connect, 100, "Run a console command before connect", CFGFLAG_CLIENT | CFGFLAG_SAVE, "")
 MACRO_CONFIG_STR(TcExecuteOnJoin, tc_execute_on_join, 100, "Run a console command on join", CFGFLAG_CLIENT | CFGFLAG_SAVE, "")

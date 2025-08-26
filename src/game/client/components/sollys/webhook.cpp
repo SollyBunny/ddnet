@@ -31,7 +31,7 @@ void CWebhook::OnConsoleInit()
 	Console()->Register(
 		"webhook_command", "r[command]", CFGFLAG_CLIENT, [](IConsole::IResult *pResult, void *pUserData) {
 			auto &This = *(CWebhook *)pUserData;
-			if(g_Config.m_TcWebhookUrl[0] == '\0')
+			if(g_Config.m_ScWebhookUrl[0] == '\0')
 			{
 				log_error("webhook", "tc_webhook_url not set");
 				return;
@@ -47,7 +47,7 @@ void CWebhook::ConsoleLine(int Type, const char *pLine)
 		return; // This is so sure to break that I'm just disabling it before the problems will begin
 	if(Client()->State() == IClient::STATE_QUITTING)
 		return; // There's no time to get the response so just stop now
-	if(g_Config.m_TcWebhookUrl[0] == '\0')
+	if(g_Config.m_ScWebhookUrl[0] == '\0')
 		return;
 	m_TimeSinceLastRequest = 0.0f;
 	if(m_Buffer.empty())
@@ -102,7 +102,7 @@ void CWebhook::OnRender()
 			return true;
 		});
 	}
-	if(g_Config.m_TcWebhookUrl[0] == '\0')
+	if(g_Config.m_ScWebhookUrl[0] == '\0')
 		return;
 	m_TimeSinceLastRequest += Client()->RenderFrameTime();
 	m_TimeSinceBufferStart += Client()->RenderFrameTime();
@@ -123,7 +123,7 @@ void CWebhook::FlushBuffer()
 		log_error("webhook", "Server is overloaded with too many requests");
 		return;
 	}
-	auto pGet = std::make_shared<CHttpRequest>(g_Config.m_TcWebhookUrl);
+	auto pGet = std::make_shared<CHttpRequest>(g_Config.m_ScWebhookUrl);
 	pGet->LogProgress(HTTPLOG::FAILURE);
 	pGet->FailOnErrorStatus(true);
 	pGet->Timeout(CTimeout{1000, 0, 500, 10});

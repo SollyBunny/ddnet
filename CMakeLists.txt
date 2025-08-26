@@ -2145,6 +2145,7 @@ set_src(ENGINE_SHARED GLOB_RECURSE src/engine/shared
   config_domains.h
   config_includes.h
   config_variables.h
+  config_variables_sollys.h
   config_variables_tclient.h
   console.cpp
   console.h
@@ -2493,6 +2494,8 @@ if(CLIENT)
     components/skins.h
     components/skins7.cpp
     components/skins7.h
+    components/sollys/webhook.cpp
+    components/sollys/webhook.h
     components/sounds.cpp
     components/sounds.h
     components/spectator.cpp
@@ -2532,8 +2535,6 @@ if(CLIENT)
     components/tclient/translate.h
     components/tclient/warlist.cpp
     components/tclient/warlist.h
-    components/tclient/webhook.cpp
-    components/tclient/webhook.h
     components/tooltips.cpp
     components/tooltips.h
     components/touch_controls.cpp

@@ -60,6 +60,7 @@
 #include "components/sounds.h"
 #include "components/spectator.h"
 #include "components/statboard.h"
+#include "components/sollys/webhook.h"
 #include "components/tclient/bg_draw.h"
 #include "components/tclient/bindchat.h"
 #include "components/tclient/bindwheel.h"
@@ -75,7 +76,6 @@
 #include "components/tclient/trails.h"
 #include "components/tclient/translate.h"
 #include "components/tclient/warlist.h"
-#include "components/tclient/webhook.h"
 #include "components/tooltips.h"
 #include "components/touch_controls.h"
 #include "components/voting.h"
@@ -215,6 +215,8 @@ public:
 	CWarList m_WarList;
 	CConditional m_Conditional;
 	CMod m_Mod;
+
+	// Sollys Components
 	CWebhook m_Webhook;
 
 private:
