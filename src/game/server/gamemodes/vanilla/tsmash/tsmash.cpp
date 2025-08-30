@@ -168,16 +168,11 @@ int CGameControllerTsmash::OnCharacterDeath(class CCharacter *pVictim, class CPl
 {
 	// If this was a "self kill", change the weapon so scoring still happens
 	int ModeSpecial = CGameControllerVanilla::OnCharacterDeath(pVictim, pKiller, Weapon == WEAPON_WORLD ? WEAPON_HAMMER : Weapon);
-	// Do spree stuff
-	if(pKiller)
+	// On spree, reset health and get some armor so that the spree can go on
+	if(g_Config.m_SvKillingspreeKills > 0 && pKiller && pKiller->GetCharacter() && pKiller->Spree() % g_Config.m_SvKillingspreeKills == 0)
 	{
-		if(g_Config.m_SvKillingspreeKills > 0 && pKiller->Spree() % g_Config.m_SvKillingspreeKills == 0)
-		{
-			char aBuf[128];
-			str_format(aBuf, sizeof(aBuf), "Due to their spree, '%s' will have a super hammer for their next hit!", Server()->ClientName(pKiller->GetCid()));
-			GameServer()->SendChat(-1, TEAM_ALL, aBuf);
-			GiveSuperSmash(pKiller->GetCid(), 1);
-		}
+		pKiller->GetCharacter()->SetHealth(10);
+		pKiller->GetCharacter()->AddArmor(5);
 	}
 	if(pVictim)
 		m_aSuperSmash[pVictim->GetPlayer()->GetCid()] = nullptr;
