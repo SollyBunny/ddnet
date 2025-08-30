@@ -18,12 +18,12 @@ private:
 	const int m_ClientId;
 
 public:
-	CParticleCircle(CGameWorld *pGameWorld, int ClientId) :
+	CParticleCircle(CGameWorld *pGameWorld, int ClientId, int Amount) :
 		CEntity(pGameWorld, CGameWorld::ENTTYPE_PROJECTILE, vec2(0.0f, 0.0f), RADIUS), m_ClientId(ClientId)
 	{
 		for(int &Particle : m_aParticles)
 			Particle = Server()->SnapNewId();
-		m_Number = 1;
+		m_Number = Amount;
 		GameWorld()->InsertEntity(this);
 	}
 	~CParticleCircle() override
@@ -64,6 +64,28 @@ public:
 		}
 	}
 };
+
+void CGameControllerTsmash::GiveSuperSmash(int ClientId, int Amount)
+{
+	if(Amount == 0)
+		return;
+	if(Amount > 0)
+	{
+		if(m_aSuperSmash[ClientId])
+			m_aSuperSmash[ClientId]->m_Number += 1;
+		else
+			m_aSuperSmash[ClientId] = std::make_unique<CParticleCircle>(&GameServer()->m_World, ClientId, Amount);
+	}
+	else
+	{
+		if(m_aSuperSmash[ClientId])
+		{
+			m_aSuperSmash[ClientId]->m_Number -= 1;
+			if(m_aSuperSmash[ClientId]->m_Number == 0)
+				m_aSuperSmash[ClientId] = nullptr;
+		}
+	}
+}
 
 static int ColorToSixup(int Color6)
 {
@@ -154,14 +176,11 @@ int CGameControllerTsmash::OnCharacterDeath(class CCharacter *pVictim, class CPl
 			char aBuf[128];
 			str_format(aBuf, sizeof(aBuf), "Due to their spree, '%s' will have a super hammer for their next hit!", Server()->ClientName(pKiller->GetCid()));
 			GameServer()->SendChat(-1, TEAM_ALL, aBuf);
-			if(m_SuperSmash[pKiller->GetCid()])
-				m_SuperSmash[pKiller->GetCid()]->m_Number += 1;
-			else
-				m_SuperSmash[pKiller->GetCid()] = std::make_unique<CParticleCircle>(&GameServer()->m_World, pKiller->GetCid());
+			GiveSuperSmash(pKiller->GetCid(), 1);
 		}
 	}
 	if(pVictim)
-		m_SuperSmash.erase(pVictim->GetPlayer()->GetCid());
+		m_aSuperSmash[pVictim->GetPlayer()->GetCid()] = nullptr;
 	return ModeSpecial;
 }
 
@@ -178,7 +197,7 @@ void CGameControllerTsmash::OnCharacterSpawn(class CCharacter *pChr)
 	// give default weapons
 	pChr->GiveWeapon(m_DefaultWeapon, false, -1);
 
-	m_SuperSmash.erase(pChr->GetPlayer()->GetCid());
+	m_aSuperSmash[pChr->GetPlayer()->GetCid()] = nullptr;
 
 	m_aLastHealth[pChr->GetPlayer()->GetCid()] = -1;
 	SetTeeColor(pChr->GetPlayer());
@@ -201,12 +220,9 @@ void CGameControllerTsmash::OnAnyDamage(vec2 &Force, int &Dmg, int &From, int &W
 	Dmg = 1;
 	// Check for super smash
 	bool SuperSmash = false;
-	auto It = m_SuperSmash.find(From);
-	if(It != m_SuperSmash.end())
+	if(m_aSuperSmash[From])
 	{
-		It->second->m_Number -= 1;
-		if(It->second->m_Number == 0)
-			m_SuperSmash.erase(It);
+		GiveSuperSmash(From, -1);
 		CNetEvent_Explosion *pEvent = GameServer()->m_Events.Create<CNetEvent_Explosion>(pCharacter->TeamMask());
 		if(pEvent)
 		{
