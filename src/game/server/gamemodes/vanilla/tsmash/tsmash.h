@@ -4,18 +4,19 @@
 #include "../../vanilla/base_vanilla.h"
 
 #include <memory>
-#include <unordered_map>
 
 class CGameControllerTsmash : public CGameControllerVanilla
 {
 private:
 	void SetTeeColor(CPlayer *pPlayer);
 	int m_aLastHealth[MAX_CLIENTS];
-	std::unordered_map<int, std::unique_ptr<CEntity>> m_SuperSmash;
+	std::unique_ptr<CEntity> m_aSuperSmash[MAX_CLIENTS];
 
 public:
 	CGameControllerTsmash(class CGameContext *pGameServer, bool Teams);
 	~CGameControllerTsmash() override;
+
+	void GiveSuperSmash(int ClientId, int Amount); // Amount can be negative
 
 	void OnCharacterDeathImpl(CCharacter *pVictim, int Killer, int Weapon, bool SendKillMsg) override;
 	int OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon) override;
