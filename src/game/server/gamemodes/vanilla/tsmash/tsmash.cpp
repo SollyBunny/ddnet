@@ -197,24 +197,30 @@ void CGameControllerTsmash::Tick()
 
 void CGameControllerTsmash::OnAnyDamage(vec2 &Force, int &Dmg, int &From, int &Weapon, CCharacter *pCharacter)
 {
+	// Everything does 1 dmg
 	Dmg = 1;
-	float Scale = 1.0f;
-	Scale += (10.0f - (float)pCharacter->Health()) / 2.0f; // Low HP = more knockback
-	Scale -= (float)pCharacter->Armor() / 10.0f * 0.5f; // High Armor = less knockback
+	// Check for super smash
+	bool SuperSmash = false;
 	auto It = m_SuperSmash.find(From);
 	if(It != m_SuperSmash.end())
 	{
 		It->second->m_Number -= 1;
 		if(It->second->m_Number == 0)
 			m_SuperSmash.erase(It);
-		Scale += 15.0f;
 		CNetEvent_Explosion *pEvent = GameServer()->m_Events.Create<CNetEvent_Explosion>(pCharacter->TeamMask());
 		if(pEvent)
 		{
 			pEvent->m_X = (int)pCharacter->GetPos().x;
 			pEvent->m_Y = (int)pCharacter->GetPos().y;
 		}
+		SuperSmash = true;
 	}
+	// Calculate knockback increase
+	float Scale = 1.0f;
+	Scale += (10.0f - (float)pCharacter->Health()) / 2.0f; // Low HP = more knockback
+	Scale -= (float)pCharacter->Armor() / 10.0f * 0.5f; // High Armor = less knockback
+	if(SuperSmash)
+		Scale += 15.0f;
 	Force *= Scale;
 }
 
