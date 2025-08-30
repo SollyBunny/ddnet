@@ -26,6 +26,7 @@ public:
 	void OnAnyDamage(vec2 &Force, int &Dmg, int &From, int &Weapon, CCharacter *pCharacter) override;
 	bool DecreaseHealthAndKill(int Dmg, int From, int Weapon, CCharacter *pCharacter) override;
 	bool OnSelfkill(int ClientId) override;
+	void Snap(int SnappingClient) override;
 };
 
 #endif

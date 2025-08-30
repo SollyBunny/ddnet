@@ -154,10 +154,14 @@ void CGameControllerTsmash::OnCharacterDeathImpl(CCharacter *pVictim, int Killer
 	if(Killer == -1 || Killer == pVictim->GetPlayer()->GetCid())
 	{
 		const auto &LastToucher = pVictim->GetPlayer()->m_LastToucher;
-		if(LastToucher.has_value() && LastToucher->m_ClientId >= 0 && LastToucher->m_ClientId < (int)std::size(GameServer()->m_apPlayers) && GameServer()->m_apPlayers[LastToucher->m_ClientId])
+		if(LastToucher.has_value())
 		{
-			Killer = LastToucher->m_ClientId;
-			Weapon = WEAPON_WORLD;
+			AddTeamscore(LastToucher->m_Team, 1);
+			if(LastToucher->m_ClientId >= 0 && LastToucher->m_ClientId < (int)std::size(GameServer()->m_apPlayers) && GameServer()->m_apPlayers[LastToucher->m_ClientId])
+			{
+				Killer = LastToucher->m_ClientId;
+				Weapon = WEAPON_WORLD;
+			}
 		}
 	}
 
@@ -256,6 +260,24 @@ bool CGameControllerTsmash::OnSelfkill(int ClientId)
 {
 	GameServer()->SendChatTarget(ClientId, "Self kill is disabled");
 	return true;
+}
+
+void CGameControllerTsmash::Snap(int SnappingClient)
+{
+	CGameControllerVanilla::Snap(SnappingClient);
+
+	if(IsTeamPlay())
+	{
+		if(Server()->IsSixup(SnappingClient))
+			return;
+
+		CNetObj_GameData *pGameDataObj = (CNetObj_GameData *)Server()->SnapNewItem(NETOBJTYPE_GAMEDATA, 0, sizeof(CNetObj_GameData));
+		if(!pGameDataObj)
+			return;
+
+		pGameDataObj->m_TeamscoreRed = m_aTeamscore[TEAM_RED];
+		pGameDataObj->m_TeamscoreBlue = m_aTeamscore[TEAM_BLUE];
+	}
 }
 
 REGISTER_GAMEMODE(tsmash, CGameControllerTsmash(pGameServer, false));
