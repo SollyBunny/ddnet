@@ -2543,6 +2543,9 @@ if(CLIENT)
     tileart.cpp
   )
   set_src(GAME_MAP GLOB_RECURSE src/game/map
+    envelope_extrema.cpp
+    envelope_extrema.h
+    envelope_manager.h
     map_renderer.cpp
     map_renderer.h
     render_component.cpp
