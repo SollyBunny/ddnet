@@ -5,8 +5,6 @@
 
 class CGameControllerBaseCTF : public CGameControllerPvp
 {
-	bool DoWincheckRound() override;
-
 public:
 	CGameControllerBaseCTF(class CGameContext *pGameServer);
 	~CGameControllerBaseCTF() override;
