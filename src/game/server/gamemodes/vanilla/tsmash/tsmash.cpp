@@ -103,13 +103,13 @@ void CGameControllerTsmash::SetTeeColor(CPlayer *pPlayer)
 	LastHealth = pCharacter->Health();
 	// Get color
 	ColorHSLA Color;
-	if(m_GameFlags & GAMEFLAG_TEAMS && pCharacter->Team() == TEAM_RED)
+	if(IsTeamPlay() && pCharacter->Team() == TEAM_RED)
 	{
 		static constexpr ColorRGBA RED = ColorRGBA(1.0f, 0.5f, 0.5f);
 		Color = color_cast<ColorHSLA>(RED);
 		Color.h += (float)(10 - pCharacter->Health()) / 10.0f * 0.3f;
 	}
-	else if(m_GameFlags & GAMEFLAG_TEAMS && pCharacter->Team() == TEAM_BLUE)
+	else if(IsTeamPlay() && pCharacter->Team() == TEAM_BLUE)
 	{
 		static constexpr ColorRGBA BLUE = ColorRGBA(0.7f, 0.7f, 1.0f);
 		Color = color_cast<ColorHSLA>(BLUE);
