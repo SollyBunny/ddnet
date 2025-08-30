@@ -16,8 +16,9 @@ public:
 	CGameControllerTsmash(class CGameContext *pGameServer, bool Teams);
 	~CGameControllerTsmash() override;
 
-	void OnCreditsChatCmd(IConsole::IResult *pResult, void *pUserData) override;
 	void GiveSuperSmash(int ClientId, int Amount); // Amount can be negative
+
+	void OnCreditsChatCmd(IConsole::IResult *pResult, void *pUserData) override;
 	void OnCharacterDeathImpl(CCharacter *pVictim, int Killer, int Weapon, bool SendKillMsg) override;
 	int OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon) override;
 	void OnKill(class CPlayer *pVictim, class CPlayer *pKiller, int Weapon) override;
