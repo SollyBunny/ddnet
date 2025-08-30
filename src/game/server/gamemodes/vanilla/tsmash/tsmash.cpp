@@ -205,6 +205,7 @@ void CGameControllerTsmash::Tick()
 		if(!pPlayer)
 			continue;
 		SetTeeColor(pPlayer);
+		pPlayer->ResetLastToucherAfterSeconds(5);
 	}
 	CGameControllerPvp::Tick();
 }
