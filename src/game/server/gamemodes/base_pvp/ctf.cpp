@@ -288,9 +288,6 @@ void CGameControllerBaseCTF::FlagTick()
 					GameServer()->CreateSoundGlobal(SOUND_CTF_CAPTURE);
 					for(CFlag *pF : m_apFlags)
 						pF->Reset();
-					// do a win check(capture could trigger win condition)
-					if(DoWincheckRound())
-						return;
 				}
 			}
 		}
@@ -352,7 +349,6 @@ void CGameControllerBaseCTF::FlagTick()
 			}
 		}
 	}
-	DoWincheckRound();
 }
 
 void CGameControllerBaseCTF::Snap(int SnappingClient)
@@ -402,37 +398,4 @@ void CGameControllerBaseCTF::Snap(int SnappingClient)
 		pGameDataObj->m_TeamscoreRed = m_aTeamscore[TEAM_RED];
 		pGameDataObj->m_TeamscoreBlue = m_aTeamscore[TEAM_BLUE];
 	}
-}
-
-bool CGameControllerBaseCTF::DoWincheckRound()
-{
-	if(IsWarmup())
-		return false;
-
-	CGameControllerPvp::DoWincheckRound();
-
-	// check score win condition
-	if((m_GameInfo.m_ScoreLimit > 0 && (m_aTeamscore[TEAM_RED] >= m_GameInfo.m_ScoreLimit || m_aTeamscore[TEAM_BLUE] >= m_GameInfo.m_ScoreLimit)) ||
-		(m_GameInfo.m_TimeLimit > 0 && (Server()->Tick() - m_GameStartTick) >= m_GameInfo.m_TimeLimit * Server()->TickSpeed() * 60))
-	{
-		if(m_SuddenDeath)
-		{
-			if(m_aTeamscore[TEAM_RED] / 100 != m_aTeamscore[TEAM_BLUE] / 100)
-			{
-				EndRound();
-				return true;
-			}
-		}
-		else
-		{
-			if(m_aTeamscore[TEAM_RED] != m_aTeamscore[TEAM_BLUE])
-			{
-				EndRound();
-				return true;
-			}
-			else
-				m_SuddenDeath = 1;
-		}
-	}
-	return false;
 }

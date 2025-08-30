@@ -5,8 +5,6 @@
 
 class CGameControllerInstaBaseCTF : public CGameControllerInstagib
 {
-	bool DoWincheckRound() override;
-
 public:
 	CGameControllerInstaBaseCTF(class CGameContext *pGameServer);
 	~CGameControllerInstaBaseCTF() override;
