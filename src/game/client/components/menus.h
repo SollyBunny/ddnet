@@ -666,6 +666,7 @@ public:
 		SETTINGS_GRAPHICS,
 		SETTINGS_SOUND,
 		SETTINGS_DDNET,
+		SETTINGS_CCAC,
 		SETTINGS_ASSETS,
 
 		SETTINGS_LENGTH,
@@ -802,5 +803,8 @@ private:
 	void RenderSettingsDDNet(CUIRect MainView);
 	void RenderSettingsAppearance(CUIRect MainView);
 	bool RenderHslaScrollbars(CUIRect *pRect, unsigned int *pColor, bool Alpha, float DarkestLight);
+
+	// found in menus_ccac.cpp
+	void RenderSettingsCCAC(CUIRect MainView);
 };
 #endif

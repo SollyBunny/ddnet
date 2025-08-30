@@ -64,6 +64,10 @@
 #include "components/touch_controls.h"
 #include "components/voting.h"
 
+// chillerbot components
+#include "components/chillerbot/chatcommand.h"
+#include "components/chillerbot/warlist.h"
+
 #include <vector>
 
 class CGameInfo
@@ -177,6 +181,10 @@ public:
 	CTooltips m_Tooltips;
 
 	CLocalServer m_LocalServer;
+
+	// chillerbot-ux
+	CWarList m_WarList;
+	CChatCommand m_ChatCommand;
 
 private:
 	std::vector<class CComponent *> m_vpAll;

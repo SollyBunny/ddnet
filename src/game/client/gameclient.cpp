@@ -157,6 +157,12 @@ void CGameClient::OnConsoleInit()
 					      &m_Tooltips,
 					      &m_Menus.m_Binder,
 					      &m_GameConsole,
+
+					      /* <<< chillerbot-ux */
+					      &m_WarList,
+					      &m_ChatCommand,
+					      /* >>> chillerbot-ux */
+
 					      &m_MenuBackground});
 
 	// build the input stack

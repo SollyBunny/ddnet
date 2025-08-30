@@ -12,6 +12,10 @@
 #include <game/generated/protocol7.h>
 
 #include <game/client/animstate.h>
+
+#include <game/client/components/chillerbot/warlist.h>
+
+#include <game/client/components/console.h>
 #include <game/client/components/scoreboard.h>
 #include <game/client/components/skins.h>
 #include <game/client/components/sounds.h>
@@ -1328,6 +1332,9 @@ void CChat::SendChat(int Team, const char *pLine)
 {
 	// don't send empty messages
 	if(*str_utf8_skip_whitespaces(pLine) == '\0')
+		return;
+
+	if(GameClient()->m_ChatCommand.OnChatMsg(GameClient()->m_Snap.m_LocalClientId, Team, pLine))
 		return;
 
 	m_LastChatSend = time();

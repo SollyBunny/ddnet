@@ -112,6 +112,11 @@ public:
 		for(const char *pDir : COMMON_DIRS)
 			Success &= CreateFolder(pDir, TYPE_SAVE);
 
+		Success &= CreateFolder("ccac", TYPE_SAVE);
+		Success &= CreateFolder("ccac/bot", TYPE_SAVE);
+		Success &= CreateFolder("ccac/clean", TYPE_SAVE);
+		Success &= CreateFolder("ccac/sus", TYPE_SAVE);
+
 		if(!Success)
 		{
 			log_error("storage", "failed to create default folders in the user directory");

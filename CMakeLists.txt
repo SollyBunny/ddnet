@@ -2060,6 +2060,7 @@ set_src(ENGINE_SHARED GLOB_RECURSE src/engine/shared
   config.cpp
   config.h
   config_variables.h
+  config_variables_ccac.h
   console.cpp
   console.h
   csv.cpp
@@ -2338,6 +2339,13 @@ if(CLIENT)
     components/camera.h
     components/chat.cpp
     components/chat.h
+    components/chillerbot/chatcommand.cpp
+    components/chillerbot/chatcommand.h
+    components/chillerbot/chatcommands.h
+    components/chillerbot/menus_ccac.cpp
+    components/chillerbot/warlist.cpp
+    components/chillerbot/warlist.h
+    components/chillerbot/warlist_commands_simple.cpp
     components/community_icons.cpp
     components/community_icons.h
     components/console.cpp

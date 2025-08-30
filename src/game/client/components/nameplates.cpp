@@ -15,6 +15,8 @@
 
 #include "nameplates.h"
 
+#include "chillerbot/warlist.h"
+
 static constexpr float DEFAULT_PADDING = 5.0f;
 
 // Part Types
@@ -649,6 +651,9 @@ void CNamePlates::RenderNamePlateGame(vec2 Position, const CNetObj_PlayerInfo *p
 				Data.m_Color = GameClient()->GetDDTeamColor(Team, 0.75f);
 		}
 	}
+
+	Data.m_Color = GameClient()->m_WarList.GetNameplateColor(pPlayerInfo->m_ClientId); // chillerbot-ux
+
 	Data.m_Color.a = Alpha;
 
 	int ShowDirectionConfig = g_Config.m_ClShowDirection;
