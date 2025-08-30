@@ -211,13 +211,17 @@ void CGameControllerTsmash::Tick()
 
 void CGameControllerTsmash::OnAnyDamage(vec2 &Force, int &Dmg, int &From, int &Weapon, CCharacter *pCharacter)
 {
+	auto *pKiller = GetPlayerOrNullptr(From);
+	// Set last toucher
+	if(pKiller)
+		pCharacter->GetPlayer()->UpdateLastToucher(pKiller->GetCid());
 	// Everything does 1 dmg
 	Dmg = 1;
 	// Check for super smash
 	bool SuperSmash = false;
-	if(m_aSuperSmash[From])
+	if(pKiller && m_aSuperSmash[pKiller->GetCid()])
 	{
-		GiveSuperSmash(From, -1);
+		GiveSuperSmash(pKiller->GetCid(), -1);
 		CNetEvent_Explosion *pEvent = GameServer()->m_Events.Create<CNetEvent_Explosion>(pCharacter->TeamMask());
 		if(pEvent)
 		{
