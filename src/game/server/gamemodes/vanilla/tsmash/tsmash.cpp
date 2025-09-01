@@ -121,7 +121,7 @@ void CGameControllerTsmash::SetTeeColor(CPlayer *pPlayer)
 	}
 	// 0.6
 	auto Color6 = Color.Pack();
-	pPlayer->m_TeeInfos.m_UseCustomColor = 1;
+	pPlayer->m_TeeInfos.m_UseCustomColor = true;
 	pPlayer->m_TeeInfos.m_ColorBody = Color6;
 	pPlayer->m_TeeInfos.m_ColorFeet = Color6;
 	// 0.7

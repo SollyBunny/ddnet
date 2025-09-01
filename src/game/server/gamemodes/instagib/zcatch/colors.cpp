@@ -102,7 +102,7 @@ void CGameControllerZcatch::SetCatchColors(CPlayer *pPlayer)
 
 	// 0.6
 	pPlayer->m_TeeInfos.m_ColorBody = Color;
-	pPlayer->m_TeeInfos.m_UseCustomColor = 1;
+	pPlayer->m_TeeInfos.m_UseCustomColor = true;
 
 	// 0.7
 	for(int p = 0; p < protocol7::NUM_SKINPARTS; p++)
@@ -138,7 +138,7 @@ void CGameControllerZcatch::SendSkinBodyColor7(int ClientId, int Color)
 
 	// also update 0.6 just to be sure
 	pPlayer->m_TeeInfos.m_ColorBody = Color;
-	pPlayer->m_TeeInfos.m_UseCustomColor = 1;
+	pPlayer->m_TeeInfos.m_UseCustomColor = true;
 
 	// 0.7
 	for(int p = 0; p < protocol7::NUM_SKINPARTS; p++)
