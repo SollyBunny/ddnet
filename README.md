@@ -309,7 +309,7 @@ Below is a list of all the settings that were added in ddnet-insta.
 + `sv_melt_hammer_scale_x` linearly scale up hammer x power, percentage, for hammering frozen teammates (needs sv_fng_hammer)
 + `sv_melt_hammer_scale_y` linearly scale up hammer y power, percentage, for hammering frozen teammates (needs sv_fng_hammer)
 + `sv_fng_hammer` use sv_hammer_scale_x/y and sv_melt_hammer_scale_x/y tuning for hammer
-+ `sv_fng_spike_sound` Play flag capture sound when sacrificing an enemy into the spikes !0.6 only! (0=off/1=only the killer and the victim/2=everyone near the victim)
++ `sv_spike_sound` Play flag capture sound when sacrificing an enemy into the spikes !0.6 only! (0=off/1=only the killer and the victim/2=everyone near the victim)
 + `sv_laser_text_points` display laser text in the world on scoring (only fng for now)
 + `sv_announce_steals` show in chat when someone stole a kill (only fng for now)
 + `sv_grenade_ammo_regen` Activate or deactivate grenade ammo regeneration in general
@@ -417,10 +417,12 @@ ddnet-insta then added a bunch of own slash chat commands and also bang (!) chat
 + `!1v1` `!2v2` `!v1` `!v2` `!1on1` ... call vote to change in game slots
 + `!restart ?(seconds)` call vote to restart game with optional parameter of warmup seconds (default: 10)
 + `/drop flag` if it is a CTF gametype the flagger can drop the flag without dieing if either `sv_drop_flag_on_selfkill` or `sv_drop_flag_on_vote` is set
++ `/credits` Shows the credits of the ddnet-insta mod"
 + `/credits_ddnet` Shows the credits of the DDNet mod"
 + `/rank` Lists available rank commands
 + `/top5` Lists available top commands
 + `/top` Lists available top commands
++ `/specvoted` Toggles spec on the currently voted player"
 + `/stats` Shows the current round stats of player name (your stats by default)
 + `/statsall` Shows the all time stats of player name (your stats by default)
 + `/stats_all` Shows the all time stats of player name (your stats by default)

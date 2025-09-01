@@ -1,14 +1,30 @@
 #!/bin/bash
 
+CONFIG_HEADER="src/engine/shared/config_variables_insta.h"
+RCON_COMMANDS_HEADER="src/game/server/instagib/rcon_commands.h"
+CHAT_COMMANDS_HEADER="src/game/server/instagib/chat_commands.h"
+README_FILE="README.md"
+TEMP_DIR="scripts"
+TEMP_FILE="scripts/tmp.swp"
+
 arg_is_dry=0
 
-if [ "$1" == "--dry-run" ]; then
-	arg_is_dry=1
-fi
+for arg in "$@"; do
+	case "$arg" in
+	--dry-run)
+		arg_is_dry=1
+		;;
+	*)
+		echo "Unknown argument: $arg"
+		echo "Usage: $0 [--dry-run]"
+		exit 1
+		;;
+	esac
+done
 
 tmp() {
-	mkdir -p scripts/
-	echo "scripts/tmp.swp"
+	mkdir -p "$TEMP_DIR"
+	echo "$TEMP_FILE"
 }
 
 gen_configs() {
@@ -22,13 +38,13 @@ gen_configs() {
 		desc="${desc::-2}"
 		cmd="$(echo "$cfg" | cut -d',' -f2 | xargs)"
 		echo "+ \`$cmd\` $desc"
-	done < <(grep '^MACRO_CONFIG_INT' src/engine/shared/variables_insta.h)
+	done < <(grep '^MACRO_CONFIG_INT' "$CONFIG_HEADER")
 	while read -r cfg; do
 		desc="$(echo "$cfg" | cut -d',' -f6- | cut -d'"' -f2-)"
 		desc="${desc::-2}"
 		cmd="$(echo "$cfg" | cut -d',' -f2 | xargs)"
 		echo "+ \`$cmd\` $desc"
-	done < <(grep '^MACRO_CONFIG_STR' src/engine/shared/variables_insta.h)
+	done < <(grep '^MACRO_CONFIG_STR' "$CONFIG_HEADER")
 }
 
 gen_console_cmds() {
@@ -46,11 +62,11 @@ gen_console_cmds() {
 }
 
 gen_rcon_cmds() {
-	gen_console_cmds "" src/game/server/instagib/rcon_commands.h
+	gen_console_cmds "" "$RCON_COMMANDS_HEADER"
 }
 
 gen_chat_cmds() {
-	gen_console_cmds "/" src/game/server/instagib/chat_commands.h |
+	gen_console_cmds "/" "$CHAT_COMMANDS_HEADER" |
 		grep -Ev '(ready|pause|shuffle|swap|drop)'
 }
 
@@ -80,7 +96,7 @@ insert_at() {
 		if [ "$(cat "$(tmp)")" != "$(cat "$filename")" ]; then
 			echo "Error: missing docs for $filename"
 			echo "       run ./scripts/gendocs_instagib.sh"
-			git diff --no-index --color "$(tmp)" "$filename"
+			git diff --no-index --color "$filename" "$(tmp)"
 			exit 1
 		fi
 	else
@@ -88,9 +104,16 @@ insert_at() {
 	fi
 }
 
-insert_at '^## ddnet-insta configs$' '^# ' "\n$(gen_configs)" README.md
-insert_at '^# Rcon commands$' '^# ' "\n$(gen_rcon_cmds)" README.md
-insert_at '^\+ `/drop flag' '^# ' "$(gen_chat_cmds)" README.md
+insert_at '^## ddnet-insta configs$' '^# ' "\n$(gen_configs)" "$README_FILE"
+insert_at '^# Rcon commands$' '^# ' "\n$(gen_rcon_cmds)" "$README_FILE"
+insert_at '^+ `/drop flag' '^# ' "$(gen_chat_cmds)" "$README_FILE"
 
 [[ -f "$(tmp)" ]] && rm "$(tmp)"
+
+if [ "$arg_is_dry" == "1" ]; then
+	echo "Dry-run completed successfully. Documentation is up to date."
+else
+	echo "Documentation updated successfully."
+fi
+
 exit 0
