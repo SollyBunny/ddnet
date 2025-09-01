@@ -12,8 +12,9 @@
 #include <engine/console.h>
 #include <engine/server.h>
 
+#include <generated/protocol.h>
+
 #include <game/collision.h>
-#include <game/generated/protocol.h>
 #include <game/layers.h>
 #include <game/mapbugs.h>
 #include <game/voting.h>
@@ -613,7 +614,7 @@ private:
 	{
 		int64_t m_Timestamp;
 		bool m_FromServer;
-		char m_aDescription[128];
+		char m_aDescription[256 + 8];
 		int m_ClientVersion;
 		char m_aClientName[MAX_NAME_LENGTH];
 		char m_aClientAddrStr[NETADDR_MAXSTRSIZE];
