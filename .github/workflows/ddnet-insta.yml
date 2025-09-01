@@ -11,7 +11,7 @@ jobs:
 
     - name: Check doc gen
       run: |
-        ./scripts/gendocs_instagib.sh
+        ./scripts/gendocs_instagib.sh --dry-run
 
     - name: Check sql columns
       run: |

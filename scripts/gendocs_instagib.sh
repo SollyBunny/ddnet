@@ -5,7 +5,9 @@ RCON_COMMANDS_HEADER="src/game/server/instagib/rcon_commands.h"
 CHAT_COMMANDS_HEADER="src/game/server/instagib/chat_commands.h"
 README_FILE="README.md"
 TEMP_DIR="scripts"
-TEMP_FILE="scripts/tmp.swp"
+TEMP_FILE="$TEMP_DIR/tmp.swp"
+
+mkdir -p "$TEMP_DIR"
 
 arg_is_dry=0
 
@@ -21,11 +23,6 @@ for arg in "$@"; do
 		;;
 	esac
 done
-
-tmp() {
-	mkdir -p "$TEMP_DIR"
-	echo "$TEMP_FILE"
-}
 
 gen_configs() {
 	local cfg
@@ -91,16 +88,16 @@ insert_at() {
 		head -n "$((from_ln - 1))" "$filename"
 		printf '%b\n' "$content"
 		tail -n +"$to_ln" "$filename"
-	} > "$(tmp)"
+	} > "$TEMP_FILE"
 	if [ "$arg_is_dry" == "1" ]; then
-		if [ "$(cat "$(tmp)")" != "$(cat "$filename")" ]; then
+		if [ "$(cat "$TEMP_FILE")" != "$(cat "$filename")" ]; then
 			echo "Error: missing docs for $filename"
 			echo "       run ./scripts/gendocs_instagib.sh"
-			git diff --no-index --color "$filename" "$(tmp)"
+			git diff --no-index --color "$filename" "$TEMP_FILE"
 			exit 1
 		fi
 	else
-		mv "$(tmp)" "$filename"
+		mv "$TEMP_FILE" "$filename"
 	fi
 }
 
@@ -108,7 +105,7 @@ insert_at '^## ddnet-insta configs$' '^# ' "\n$(gen_configs)" "$README_FILE"
 insert_at '^# Rcon commands$' '^# ' "\n$(gen_rcon_cmds)" "$README_FILE"
 insert_at '^+ `/drop flag' '^# ' "$(gen_chat_cmds)" "$README_FILE"
 
-[[ -f "$(tmp)" ]] && rm "$(tmp)"
+[[ -f "$TEMP_FILE" ]] && rm "$TEMP_FILE"
 
 if [ "$arg_is_dry" == "1" ]; then
 	echo "Dry-run completed successfully. Documentation is up to date."
