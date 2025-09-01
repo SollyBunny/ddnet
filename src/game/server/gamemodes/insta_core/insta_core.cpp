@@ -5,7 +5,6 @@
 #include <engine/shared/network.h>
 #include <engine/shared/packer.h>
 #include <engine/shared/protocol.h>
-#include <game/generated/protocol.h>
 #include <game/race_state.h>
 #include <game/server/entities/character.h>
 #include <game/server/entities/ddnet_pvp/vanilla_projectile.h>
@@ -22,6 +21,7 @@
 #include <game/server/teams.h>
 #include <game/teamscore.h>
 #include <game/version.h>
+#include <generated/protocol.h>
 
 #include <game/server/instagib/antibob.h>
 
@@ -500,7 +500,7 @@ bool CGameControllerInstaCore::OnSkinChange7(protocol7::CNetMsg_Cl_SkinChange *p
 	Msg.m_ClientId = ClientId;
 	for(int p = 0; p < protocol7::NUM_SKINPARTS; p++)
 	{
-		Msg.m_apSkinPartNames[p] = pPlayer->m_TeeInfos.m_apSkinPartNames[p];
+		Msg.m_apSkinPartNames[p] = pPlayer->m_TeeInfos.m_aaSkinPartNames[p];
 		Msg.m_aSkinPartColors[p] = pPlayer->m_TeeInfos.m_aSkinPartColors[p];
 		Msg.m_aUseCustomColors[p] = pPlayer->m_TeeInfos.m_aUseCustomColors[p];
 	}

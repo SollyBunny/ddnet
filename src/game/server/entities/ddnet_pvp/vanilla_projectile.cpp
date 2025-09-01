@@ -2,8 +2,8 @@
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #include <engine/shared/config.h>
 
-#include <game/generated/protocol.h>
 #include <game/mapitems.h>
+#include <generated/protocol.h>
 
 #include <game/server/entities/character.h>
 #include <game/server/entities/projectile.h>

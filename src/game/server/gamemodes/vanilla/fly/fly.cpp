@@ -1,9 +1,9 @@
-#include <game/generated/protocol.h>
 #include <game/mapitems.h>
 #include <game/server/entities/character.h>
 #include <game/server/entities/ddnet_pvp/vanilla_pickup.h>
 #include <game/server/gamecontext.h>
 #include <game/server/player.h>
+#include <generated/protocol.h>
 
 #include "fly.h"
 

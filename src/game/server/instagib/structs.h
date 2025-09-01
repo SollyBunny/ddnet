@@ -3,7 +3,7 @@
 
 #include <base/vmath.h>
 #include <engine/shared/protocol.h>
-#include <game/generated/protocol.h>
+#include <generated/protocol.h>
 
 // ddnet-insta specific "structs"
 // classes that only hold data no behavior

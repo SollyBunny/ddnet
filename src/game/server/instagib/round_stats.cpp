@@ -4,8 +4,8 @@
 #include <engine/shared/json.h>
 #include <engine/shared/jsonwriter.h>
 #include <engine/shared/protocol.h>
-#include <game/generated/protocol.h>
 #include <game/server/instagib/strhelpers.h>
+#include <generated/protocol.h>
 
 #include <base/system.h>
 

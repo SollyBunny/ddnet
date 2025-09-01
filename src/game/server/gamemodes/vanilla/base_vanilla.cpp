@@ -1,13 +1,13 @@
 #include <base/math.h>
 #include <base/system.h>
 #include <engine/shared/config.h>
-#include <game/generated/protocol.h>
 #include <game/mapitems.h>
 #include <game/server/entities/character.h>
 #include <game/server/entities/ddnet_pvp/vanilla_pickup.h>
 #include <game/server/player.h>
 #include <game/server/score.h>
 #include <game/version.h>
+#include <generated/protocol.h>
 
 #include "base_vanilla.h"
 

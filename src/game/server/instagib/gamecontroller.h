@@ -10,8 +10,8 @@
 #include <game/server/teams.h>
 
 #include <engine/shared/http.h> // ddnet-insta
-#include <game/generated/protocol.h>
-#include <game/generated/protocol7.h>
+#include <generated/protocol.h>
+#include <generated/protocol7.h>
 
 #include <game/server/gamecontext.h>
 #include <game/server/instagib/enums.h>

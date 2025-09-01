@@ -6,7 +6,6 @@
 #include <engine/shared/network.h>
 #include <engine/shared/packer.h>
 #include <engine/shared/protocol.h>
-#include <game/generated/protocol.h>
 #include <game/race_state.h>
 #include <game/server/entities/character.h>
 #include <game/server/entities/ddnet_pvp/vanilla_projectile.h>
@@ -24,6 +23,7 @@
 #include <game/server/teams.h>
 #include <game/teamscore.h>
 #include <game/version.h>
+#include <generated/protocol.h>
 
 #include <game/server/instagib/antibob.h>
 

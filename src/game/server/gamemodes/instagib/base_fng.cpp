@@ -3,7 +3,6 @@
 #include <engine/server.h>
 #include <engine/shared/config.h>
 #include <engine/shared/protocol.h>
-#include <game/generated/protocol.h>
 #include <game/mapitems.h>
 #include <game/mapitems_insta.h>
 #include <game/server/entities/character.h>
@@ -12,6 +11,7 @@
 #include <game/server/instagib/laser_text.h>
 #include <game/server/instagib/sql_stats_player.h>
 #include <game/server/player.h>
+#include <generated/protocol.h>
 
 #include "base_fng.h"
 

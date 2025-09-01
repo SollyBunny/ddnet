@@ -1,11 +1,11 @@
 #include <base/log.h>
 #include <engine/antibot.h>
 #include <engine/shared/config.h>
-#include <game/generated/server_data.h>
 #include <game/server/entities/character.h>
 #include <game/server/player.h>
 #include <game/server/score.h>
 #include <game/version.h>
+#include <generated/server_data.h>
 
 #include "base_pvp.h"
 
@@ -175,7 +175,7 @@ void CCharacter::Rainbow(bool Activate)
 	Msg.m_ClientId = GetPlayer()->GetCid();
 	for(int p = 0; p < protocol7::NUM_SKINPARTS; p++)
 	{
-		Msg.m_apSkinPartNames[p] = GetPlayer()->m_TeeInfos.m_apSkinPartNames[p];
+		Msg.m_apSkinPartNames[p] = GetPlayer()->m_TeeInfos.m_aaSkinPartNames[p];
 		Msg.m_aSkinPartColors[p] = GetPlayer()->m_TeeInfos.m_aSkinPartColors[p];
 		Msg.m_aUseCustomColors[p] = GetPlayer()->m_TeeInfos.m_aUseCustomColors[p];
 	}
