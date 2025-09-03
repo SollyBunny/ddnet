@@ -2,6 +2,7 @@
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #include <SDL.h>
 
+#include <base/log.h>
 #include <base/math.h>
 #include <base/system.h>
 
@@ -330,8 +331,14 @@ void CSound::RateConvert(CSample &Sample) const
 	Sample.m_Rate = m_MixingRate;
 }
 
-bool CSound::DecodeOpus(CSample &Sample, const void *pData, unsigned DataSize) const
+bool CSound::DecodeOpus(CSample &Sample, const void *pData, unsigned DataSize, const char *pFilename) const
 {
+	auto LogError = [&](const char *pFormat, auto... Args) {
+		char aFormat[128];
+		str_format(aFormat, sizeof(aFormat), "%s Filename=%s", pFormat, pFilename);
+		log_error("sound/opus", aFormat, Args...);
+	};
+
 	int OpusError = 0;
 	OggOpusFile *pOpusFile = op_open_memory((const unsigned char *)pData, DataSize, &OpusError);
 	if(pOpusFile)
@@ -340,7 +347,7 @@ bool CSound::DecodeOpus(CSample &Sample, const void *pData, unsigned DataSize) c
 		if(NumChannels > 2)
 		{
 			op_free(pOpusFile);
-			dbg_msg("sound/opus", "file is not mono or stereo.");
+			LogError("File is not mono or stereo.");
 			return false;
 		}
 
@@ -348,7 +355,7 @@ bool CSound::DecodeOpus(CSample &Sample, const void *pData, unsigned DataSize) c
 		if(NumSamples < 0)
 		{
 			op_free(pOpusFile);
-			dbg_msg("sound/opus", "failed to get number of samples, error %d", NumSamples);
+			LogError("Failed to get number of samples, error %d.", NumSamples);
 			return false;
 		}
 
@@ -362,7 +369,7 @@ bool CSound::DecodeOpus(CSample &Sample, const void *pData, unsigned DataSize) c
 			{
 				free(pSampleData);
 				op_free(pOpusFile);
-				dbg_msg("sound/opus", "op_read error %d at %d", Read, Pos);
+				LogError("op_read error %d at %d.", Read, Pos);
 				return false;
 			}
 			else if(Read == 0) // EOF
@@ -382,7 +389,7 @@ bool CSound::DecodeOpus(CSample &Sample, const void *pData, unsigned DataSize) c
 	}
 	else
 	{
-		dbg_msg("sound/opus", "failed to decode sample, error %d", OpusError);
+		LogError("Failed to decode sample, error %d.", OpusError);
 		return false;
 	}
 
@@ -434,14 +441,24 @@ static int PushBackByte(void *pId, int Char)
 }
 #endif
 
-bool CSound::DecodeWV(CSample &Sample, const void *pData, unsigned DataSize) const
+bool CSound::DecodeWV(CSample &Sample, const void *pData, unsigned DataSize, const char *pFilename) const
 {
-	char aError[100];
+	// no need to load sound when we are running with no sound
+	if(!m_SoundEnabled)
+		return false;
 
 	dbg_assert(s_pWVBuffer == nullptr, "DecodeWV already in use");
 	s_pWVBuffer = pData;
 	s_WVBufferSize = DataSize;
 	s_WVBufferPosition = 0;
+
+	auto LogError = [&](const char *pFormat, auto... Args) {
+		char aFormat[128];
+		str_format(aFormat, sizeof(aFormat), "%s Filename=%s", pFormat, pFilename);
+		log_error("sound/wv", aFormat, Args...);
+	};
+
+	char aError[100];
 
 #if defined(CONF_WAVPACK_OPEN_FILE_INPUT_EX)
 	WavpackStreamReader Callback = {0};
@@ -463,14 +480,14 @@ bool CSound::DecodeWV(CSample &Sample, const void *pData, unsigned DataSize) con
 
 		if(NumChannels > 2)
 		{
-			dbg_msg("sound/wv", "file is not mono or stereo.");
+			LogError("File is not mono or stereo.");
 			s_pWVBuffer = nullptr;
 			return false;
 		}
 
 		if(BitsPerSample != 16)
 		{
-			dbg_msg("sound/wv", "bps is %d, not 16", BitsPerSample);
+			LogError("Bits per sample is %d, not 16.", BitsPerSample);
 			s_pWVBuffer = nullptr;
 			return false;
 		}
@@ -479,7 +496,7 @@ bool CSound::DecodeWV(CSample &Sample, const void *pData, unsigned DataSize) con
 		if(!WavpackUnpackSamples(pContext, pBuffer, NumSamples))
 		{
 			free(pBuffer);
-			dbg_msg("sound/wv", "WavpackUnpackSamples failed. NumSamples=%d, NumChannels=%d", NumSamples, NumChannels);
+			LogError("WavpackUnpackSamples failed. NumSamples=%d NumChannels=%d", NumSamples, NumChannels);
 			s_pWVBuffer = nullptr;
 			return false;
 		}
@@ -507,7 +524,7 @@ bool CSound::DecodeWV(CSample &Sample, const void *pData, unsigned DataSize) con
 	}
 	else
 	{
-		dbg_msg("sound/wv", "failed to decode sample (%s)", aError);
+		LogError("Failed to decode sample (%s).", aError);
 		s_pWVBuffer = nullptr;
 		return false;
 	}
@@ -524,7 +541,7 @@ int CSound::LoadOpus(const char *pFilename, int StorageType)
 	CSample *pSample = AllocSample();
 	if(!pSample)
 	{
-		dbg_msg("sound/opus", "failed to allocate sample ID. filename='%s'", pFilename);
+		log_error("sound/opus", "failed to allocate sample ID. filename='%s'", pFilename);
 		return -1;
 	}
 
@@ -533,11 +550,11 @@ int CSound::LoadOpus(const char *pFilename, int StorageType)
 	if(!m_pStorage->ReadFile(pFilename, StorageType, &pData, &DataSize))
 	{
 		UnloadSample(pSample->m_Index);
-		dbg_msg("sound/opus", "failed to open file. filename='%s'", pFilename);
+		log_error("sound/opus", "failed to open file. filename='%s'", pFilename);
 		return -1;
 	}
 
-	const bool DecodeSuccess = DecodeOpus(*pSample, pData, DataSize);
+	const bool DecodeSuccess = DecodeOpus(*pSample, pData, DataSize, pFilename);
 	free(pData);
 	if(!DecodeSuccess)
 	{
@@ -561,7 +578,7 @@ int CSound::LoadWV(const char *pFilename, int StorageType)
 	CSample *pSample = AllocSample();
 	if(!pSample)
 	{
-		dbg_msg("sound/wv", "failed to allocate sample ID. filename='%s'", pFilename);
+		log_error("sound/wv", "failed to allocate sample ID. filename='%s'", pFilename);
 		return -1;
 	}
 
@@ -570,11 +587,11 @@ int CSound::LoadWV(const char *pFilename, int StorageType)
 	if(!m_pStorage->ReadFile(pFilename, StorageType, &pData, &DataSize))
 	{
 		UnloadSample(pSample->m_Index);
-		dbg_msg("sound/wv", "failed to open file. filename='%s'", pFilename);
+		log_error("sound/wv", "failed to open file. filename='%s'", pFilename);
 		return -1;
 	}
 
-	const bool DecodeSuccess = DecodeWV(*pSample, pData, DataSize);
+	const bool DecodeSuccess = DecodeWV(*pSample, pData, DataSize, pFilename);
 	free(pData);
 	if(!DecodeSuccess)
 	{
@@ -599,7 +616,7 @@ int CSound::LoadOpusFromMem(const void *pData, unsigned DataSize, bool ForceLoad
 	if(!pSample)
 		return -1;
 
-	if(!DecodeOpus(*pSample, pData, DataSize))
+	if(!DecodeOpus(*pSample, pData, DataSize, "mem"))
 	{
 		UnloadSample(pSample->m_Index);
 		return -1;
@@ -619,7 +636,7 @@ int CSound::LoadWVFromMem(const void *pData, unsigned DataSize, bool ForceLoad =
 	if(!pSample)
 		return -1;
 
-	if(!DecodeWV(*pSample, pData, DataSize))
+	if(!DecodeWV(*pSample, pData, DataSize, "mem"))
 	{
 		UnloadSample(pSample->m_Index);
 		return -1;
