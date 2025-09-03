@@ -546,7 +546,7 @@ int CSound::LoadOpus(const char *pFilename, int StorageType)
 	}
 
 	if(g_Config.m_Debug)
-		dbg_msg("sound/opus", "loaded %s", pFilename);
+		dbg_msg("sound/opus", "loaded %s (%d)", pFilename, pSample->m_Index);
 
 	RateConvert(*pSample);
 	return pSample->m_Index;
@@ -583,7 +583,7 @@ int CSound::LoadWV(const char *pFilename, int StorageType)
 	}
 
 	if(g_Config.m_Debug)
-		dbg_msg("sound/wv", "loaded %s", pFilename);
+		dbg_msg("sound/wv", "loaded %s (%d)", pFilename, pSample->m_Index);
 
 	RateConvert(*pSample);
 	return pSample->m_Index;
