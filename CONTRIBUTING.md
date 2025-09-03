@@ -325,3 +325,13 @@ We use [Javadoc style block comments](https://www.doxygen.nl/manual/docblocks.ht
 ## Commit messages
 
 Describe the change your contribution is making for the player/user instead of talking about what you did in a technical sense. Your PR messages will ideally be in a format that can directly be used in the [change log](https://ddnet.org/downloads/).
+
+## Audio
+
+Audio should be at 48kHz with PCM signed 16 little endian.
+
+Here is an [`ffmpeg`](https://ffmpeg.org/) commands to reencode.
+
+```sh
+ffmpeg -i "input.mp3" -ar 48000 -ac 1 -c:a wavpack -sample_fmt s16 "output.wv"
+```
