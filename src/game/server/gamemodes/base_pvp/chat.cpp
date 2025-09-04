@@ -180,11 +180,11 @@ bool CGameControllerPvp::ParseChatCmd(char Prefix, int ClientId, const char *pCm
 	str_format(aBuf, sizeof(aBuf), "got cmd '%s' with %d args: %s", aCmd, NumArgs, aArgsStr);
 	Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "bang-command", aBuf);
 
-	bool match = OnBangCommand(ClientId, aCmd, NumArgs, (const char **)ppArgs);
+	bool Match = OnBangCommand(ClientId, aCmd, NumArgs, (const char **)ppArgs);
 	for(int x = 0; x < MAX_ARGS; ++x)
 		delete[] ppArgs[x];
 	delete[] ppArgs;
-	return match;
+	return Match;
 }
 
 // checks if it matches !1v1 !1vs1 and so on chat commands
