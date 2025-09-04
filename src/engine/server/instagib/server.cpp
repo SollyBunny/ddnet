@@ -102,7 +102,7 @@ bool CServer::SixupUsernameAuth(int ClientId, const char *pCredentials)
 
 	m_aClients[ClientId].m_Authed = AuthLevel; // Keeping m_Authed around is unwise...
 	m_aClients[ClientId].m_AuthKey = KeySlot;
-	m_aClients[ClientId].m_pRconCmdToSend = Console()->FirstCommandInfo(m_aClients[ClientId].ConsoleAccessLevel(), CFGFLAG_SERVER);
+	m_aClients[ClientId].m_pRconCmdToSend = Console()->FirstCommandInfo(ConsoleAccessLevel(ClientId), CFGFLAG_SERVER);
 	SendRconCmdGroupStart(ClientId);
 	if(m_aClients[ClientId].m_pRconCmdToSend == nullptr)
 	{
