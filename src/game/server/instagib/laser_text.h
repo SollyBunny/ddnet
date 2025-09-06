@@ -17,8 +17,8 @@ public:
 class CLaserText : public CEntity
 {
 public:
-	CLaserText(CGameWorld *pGameWorld, vec2 Pos, int AliveTicks, const char *pText);
-	CLaserText(CGameWorld *pGameWorld, vec2 Pos, int AliveTicks, const char *pText, float CharPointOffset, float CharOffsetFactor);
+	CLaserText(CGameWorld *pGameWorld, vec2 Pos, int AliveTicks, const char *pText, CClientMask Mask);
+	CLaserText(CGameWorld *pGameWorld, vec2 Pos, int AliveTicks, const char *pText, float CharPointOffset, float CharOffsetFactor, CClientMask Mask);
 	~CLaserText() override;
 
 	void Reset() override;
@@ -27,6 +27,7 @@ public:
 	void Snap(int SnappingClient) override;
 
 private:
+	CClientMask m_TeamMask;
 	float m_PosOffsetCharPoints;
 	float m_PosOffsetChars;
 

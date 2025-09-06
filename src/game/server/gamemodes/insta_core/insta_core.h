@@ -121,7 +121,7 @@ public:
 	void ApplyVanillaDamage(int &Dmg, int From, int Weapon, CCharacter *pCharacter) override;
 
 	// displays fng styled laser text points in the world
-	void MakeLaserTextPoints(vec2 Pos, int Points, int Seconds);
+	void MakeLaserTextPoints(vec2 Pos, int Points, int Seconds, CClientMask Mask);
 
 	// plays the satisfying hit sound
 	// that is used in teeworlds when a projectile causes damage
