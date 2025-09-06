@@ -1,7 +1,8 @@
 // https://github.com/Jupeyy/teeworlds-fng2-mod/blob/fng_06/src/game/server/laserText.cpp
-#include "laser_text.h"
 #include <game/server/gamecontext.h>
 #include <generated/protocol.h>
+
+#include "laser_text.h"
 
 static const bool asciiTable[256][5][3] = {
 	{{false, false, false}, {false, false, false}, {false, false, false}, {false, false, false}, {false, false, false}}, // ascii 0
@@ -262,7 +263,7 @@ static const bool asciiTable[256][5][3] = {
 	{{false, false, false}, {false, false, false}, {false, false, false}, {false, false, false}, {false, false, false}} // ascii 255
 };
 
-CLaserText::CLaserText(CGameWorld *pGameWorld, vec2 Pos, int pAliveTicks, const char *pText) :
+CLaserText::CLaserText(CGameWorld *pGameWorld, vec2 Pos, int pAliveTicks, const char *pText, CClientMask Mask) :
 	CEntity(pGameWorld, CGameWorld::ENTTYPE_LASER)
 {
 	m_Pos = Pos;
@@ -271,6 +272,7 @@ CLaserText::CLaserText(CGameWorld *pGameWorld, vec2 Pos, int pAliveTicks, const 
 	m_CurTicks = Server()->Tick();
 	m_StartTick = Server()->Tick();
 	m_AliveTicks = pAliveTicks;
+	m_TeamMask = Mask;
 
 	str_copy(m_aText, pText, sizeof(m_aText));
 	m_TextLen = str_length(m_aText);
@@ -303,7 +305,7 @@ CLaserText::CLaserText(CGameWorld *pGameWorld, vec2 Pos, int pAliveTicks, const 
 	}
 }
 
-CLaserText::CLaserText(CGameWorld *pGameWorld, vec2 Pos, int AliveTicks, const char *pText, float CharPointOffset, float CharOffsetFactor) :
+CLaserText::CLaserText(CGameWorld *pGameWorld, vec2 Pos, int AliveTicks, const char *pText, float CharPointOffset, float CharOffsetFactor, CClientMask Mask) :
 	CEntity(pGameWorld, CGameWorld::ENTTYPE_LASER)
 {
 	m_Pos = Pos;
@@ -312,6 +314,7 @@ CLaserText::CLaserText(CGameWorld *pGameWorld, vec2 Pos, int AliveTicks, const c
 	m_CurTicks = Server()->Tick();
 	m_StartTick = Server()->Tick();
 	m_AliveTicks = AliveTicks;
+	m_TeamMask = Mask;
 
 	str_copy(m_aText, pText, sizeof(m_aText));
 	m_TextLen = str_length(m_aText);
@@ -492,6 +495,9 @@ void CLaserText::MakeLaser(char Char, int CharOffset, int &CharCount)
 void CLaserText::Snap(int SnappingClient)
 {
 	if(NetworkClipped(SnappingClient))
+		return;
+
+	if(SnappingClient != SERVER_DEMO_CLIENT && !m_TeamMask.test(SnappingClient))
 		return;
 
 	for(int i = 0; i < m_CharNum; ++i)

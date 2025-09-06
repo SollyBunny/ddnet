@@ -956,7 +956,7 @@ void CGameControllerInstaCore::ApplyVanillaDamage(int &Dmg, int From, int Weapon
 		GameServer()->CreateSound(pCharacter->m_Pos, SOUND_PLAYER_PAIN_SHORT);
 }
 
-void CGameControllerInstaCore::MakeLaserTextPoints(vec2 Pos, int Points, int Seconds)
+void CGameControllerInstaCore::MakeLaserTextPoints(vec2 Pos, int Points, int Seconds, CClientMask Mask)
 {
 	if(!g_Config.m_SvLaserTextPoints)
 		return;
@@ -967,7 +967,7 @@ void CGameControllerInstaCore::MakeLaserTextPoints(vec2 Pos, int Points, int Sec
 	else
 		str_format(aText, sizeof(aText), "%d", Points);
 	Pos.y -= 60.0f;
-	new CLaserText(&GameServer()->m_World, Pos, Server()->TickSpeed() * Seconds, aText);
+	new CLaserText(&GameServer()->m_World, Pos, Server()->TickSpeed() * Seconds, aText, Mask);
 } // NOLINT(clang-analyzer-unix.Malloc)
 
 void CGameControllerInstaCore::DoDamageHitSound(int KillerId)
