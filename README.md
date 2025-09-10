@@ -1,3 +1,9 @@
+> [!NOTE]
+> hi this is me blazulite umm yeah i fucked up the git so instead of a fork i made a new repo haha oops
+> this readme as a whole is the original readme from ddnet-insta so yeah umm get DDNet-Insta here: https://github.com/ddnet-insta/ddnet-insta
+> 
+> - Blazulite
+
 [![DDraceNetwork](other/ddnet-insta.png)](https://ddnet.tw) [![](https://github.com/ddnet-insta/ddnet-insta/workflows/Build/badge.svg)](https://github.com/ddnet-insta/ddnet-insta/actions?query=workflow%3ABuild+event%3Apush+branch%3Amaster)
 
 DDNet-insta based on DDRaceNetwork, a Teeworlds mod. See the [website](https://ddnet.tw) for more information.
