@@ -1,5 +1,10 @@
 name: ddnet-insta
-on: [push]
+on:
+  push:
+    branches-ignore:
+      - gh-readonly-queue/**
+  pull_request:
+  merge_group:
 
 jobs:
   check-docs:
