@@ -174,10 +174,27 @@ void CGameControllerInstaCore::PrintDisconnect(CPlayer *pPlayer, const char *pRe
 	if(Server()->ClientIngame(ClientId))
 	{
 		char aBuf[512];
+		// JikaruMod
+		const char *aMessages[] = {
+			"Oh no! '%s' has left the game. :(",
+			"Womp womp, '%s' has left.",
+			"Uh oh, '%s' has left!",
+			"'%s' has left the game. :(",
+			"'%s' dispawned. :(",
+			"'%s' has left without saying goodbye! >:(",
+			"'%s' just exploded into a gazillion pieces!",
+			"'%s' says bye bye",
+			"'%s' has left the game. Bye bye!",
+			"'%s' has left the game. Probably ragequitted.",
+			"'%s' has left the game. Noob!",
+			"'%s' has popped! :(",
+		};
+		const int NumMessages = sizeof(aMessages) / sizeof(aMessages[0]);
+		int RandIdx = rand() % NumMessages;
 		if(pReason && *pReason)
 			str_format(aBuf, sizeof(aBuf), "'%s' has left the game (%s)", Server()->ClientName(ClientId), pReason);
 		else
-			str_format(aBuf, sizeof(aBuf), "'%s' has left the game", Server()->ClientName(ClientId));
+			str_format(aBuf, sizeof(aBuf), aMessages[RandIdx], Server()->ClientName(ClientId));
 		if(!g_Config.m_SvTournamentJoinMsgs || pPlayer->GetTeam() != TEAM_SPECTATORS)
 			GameServer()->SendChat(-1, TEAM_ALL, aBuf, -1, CGameContext::FLAG_SIX);
 		else if(g_Config.m_SvTournamentJoinMsgs == 2)
@@ -197,7 +214,18 @@ void CGameControllerInstaCore::PrintConnect(CPlayer *pPlayer, const char *pName)
 		// you could also use Server()->ClientName(ClientId)
 		// instead of pName
 		// but if accounts and locked names are enabled they might be different
-		str_format(aBuf, sizeof(aBuf), "'%s' entered and joined the %s", pName, GetTeamName(pPlayer->GetTeam()));
+		const char *aMessages[] = {
+			"A wild '%s' appeared!",
+			"Everybody say welcome to '%s'!",
+			"'%s' arrived!",
+			"Hey '%s'! We hope you brought pizza!",
+			"'%s' joins the battle!",
+			"'%s' is BACK!",
+			"'%s' spawned!"
+		};
+		const int NumMessages = sizeof(aMessages) / sizeof(aMessages[0]);
+		int RandIdx = rand() % NumMessages;
+		str_format(aBuf, sizeof(aBuf), aMessages[RandIdx], pName);
 		if(!g_Config.m_SvTournamentJoinMsgs || pPlayer->GetTeam() != TEAM_SPECTATORS)
 			GameServer()->SendChat(-1, TEAM_ALL, aBuf, -1, CGameContext::FLAG_SIX);
 		else if(g_Config.m_SvTournamentJoinMsgs == 2)
@@ -238,7 +266,7 @@ void CGameControllerInstaCore::OnCharacterSpawn(class CCharacter *pChr)
 		str_format(
 			aBuf,
 			sizeof(aBuf),
-			"'%s' spawned frozen because he quit while being frozen",
+			"'%s' spawned frozen because he quit while being frozen :P",
 			Server()->ClientName(pPlayer->GetCid()));
 		SendChat(-1, TEAM_ALL, aBuf);
 	}
