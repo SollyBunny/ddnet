@@ -236,8 +236,9 @@ void CGameControllerInstaCore::PrintConnect(CPlayer *pPlayer, const char *pName)
 void CGameControllerInstaCore::PrintModWelcome(CPlayer *pPlayer)
 {
 	int ClientId = pPlayer->GetCid();
-	GameServer()->SendChatTarget(ClientId, "DDNet-insta " DDNET_INSTA_VERSIONSTR " github.com/ddnet-insta/ddnet-insta");
-	GameServer()->SendChatTarget(ClientId, "DDraceNetwork Mod. Version: " GAME_VERSION);
+	GameServer()->SendChatTarget(ClientId, "Welcome to JIKARU Instagib!");
+	GameServer()->SendChatTarget(ClientId, "Please play fair! | Type /info for more information.");
+	GameServer()->SendChatTarget(ClientId, "JikaruInsta " JIKARU_MOD_VERSION " based on DDNet-insta " DDNET_INSTA_VERSIONSTR);
 }
 
 void CGameControllerInstaCore::OnCharacterSpawn(class CCharacter *pChr)
