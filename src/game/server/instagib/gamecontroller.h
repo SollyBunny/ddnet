@@ -998,6 +998,16 @@ public:
 	virtual bool CanBeMovedOnBalance(int ClientId) { return true; };
 
 	/*
+		Function: BallReset
+			Schedules the ball to reappear after a specified number of seconds for a given team.
+
+		Arguments:
+			DDrTeam - The team index for which the ball respawn is being scheduled.
+			Seconds - The number of seconds until e ball will appear.
+	*/
+	virtual void BallReset(int DDrTeam, int Seconds) {}
+
+	/*
 		Function: CheckTeamBalance
 			Called on tick to check if teams should be balanced.
 			Will then call DoteamBalance() to do the actual balancing.
@@ -1049,6 +1059,8 @@ public:
 	virtual bool IsZcatchGameType() const { return false; }
 	bool IsVanillaGameType() const { return m_IsVanillaGameType; }
 	virtual bool IsDDRaceGameType() const { return true; }
+	virtual bool IsFootGameType() const { return false; }
+	int m_BallTickSpawning[NUM_DDRACE_TEAMS];
 	bool m_IsVanillaGameType = false;
 	// decides if own grenade explosions
 	// or laser wallshots should harm the own tee

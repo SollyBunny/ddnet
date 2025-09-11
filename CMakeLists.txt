@@ -2769,6 +2769,10 @@ if(SERVER)
     entities/dragger_beam.h
     entities/flag.cpp
     entities/flag.h
+    entities/foot/foot_pickup.cpp
+    entities/foot/foot_pickup.h
+    entities/foot/foot_projectile.cpp
+    entities/foot/foot_projectile.h
     entities/gun.cpp
     entities/gun.h
     entities/laser.cpp
@@ -2791,6 +2795,11 @@ if(SERVER)
     gamecontroller.h
     gamemodes/DDRace.cpp
     gamemodes/DDRace.h
+    gamemodes/ball/base_foot.cpp
+    gamemodes/ball/base_foot.h
+    gamemodes/ball/foot/foot.cpp
+    gamemodes/ball/foot/foot.h
+    gamemodes/ball/foot/sql_columns.h
     gamemodes/base_pvp/base_pvp.cpp
     gamemodes/base_pvp/base_pvp.h
     gamemodes/base_pvp/character.cpp

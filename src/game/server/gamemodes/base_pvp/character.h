@@ -70,6 +70,14 @@ public:
 
 	const class CPlayer *GetPlayer() const { return m_pPlayer; }
 	int HookedPlayer() const { return m_Core.HookedPlayer(); }
+	CNetObj_PlayerInput GetLatestInput() { return m_LatestInput; }
+
+	// Foot
+	void LoseBall();
+	void PlayerGetBall();
+	int m_LoseBallTick = 0;
+	int m_BallLastTouchedBy = -1;
+	int m_BallLastTouchedTeam = -1;
 
 private:
 	// players skin changes colors

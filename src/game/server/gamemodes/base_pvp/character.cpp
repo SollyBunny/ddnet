@@ -190,3 +190,20 @@ void CCharacter::Rainbow(bool Activate)
 		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL | MSGFLAG_NORECORD, pRainbowReceiverPlayer->GetCid());
 	}
 }
+
+void CCharacter::PlayerGetBall()
+{
+	if(m_LoseBallTick)
+		return;
+
+	GiveWeapon(WEAPON_GRENADE, false, 1);
+	SetWeapon(WEAPON_GRENADE);
+	m_LoseBallTick = Server()->Tick() + Server()->TickSpeed() * 3;
+}
+
+void CCharacter::LoseBall()
+{
+	GiveWeapon(WEAPON_GRENADE, true);
+	SetWeapon(WEAPON_HAMMER);
+	m_LoseBallTick = 0;
+}

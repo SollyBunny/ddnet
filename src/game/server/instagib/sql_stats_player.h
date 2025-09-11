@@ -62,6 +62,13 @@ public:
 	int m_TicksInGame; // TODO: this is not tracked yet
 
 	/*************************************
+	 * foot                              *
+	 *************************************/
+
+	int m_Goals;
+	int m_OwnGoals;
+
+	/*************************************
 	 * solofng and fng                   *
 	 *************************************/
 

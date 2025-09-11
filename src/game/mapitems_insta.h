@@ -10,6 +10,9 @@ enum
 
 	TILE_FNG_SPIKE_GREEN = 14,
 	TILE_FNG_SPIKE_PURPLE = 15,
+
+	TILE_GOAL_RED = 55,
+	TILE_GOAL_BLUE = 56,
 };
 
 #endif
