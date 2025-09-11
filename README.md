@@ -231,7 +231,7 @@ Like boomfng but with laser.
 
 A hammer deathmatch where you only die from spikes.
 Every time you are hit you loose health which increases the knockback you take.
-Pickup hearts and sheilds to reduce knockback.
+Pickup hearts and shields to reduce knockback.
 
 ### TTSmash
 
