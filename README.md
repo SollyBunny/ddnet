@@ -9,7 +9,7 @@ For build instructions visit the [ddnet repo](https://github.com/ddnet/ddnet).
 A ddnet based pvp mod. With the focus on correct 0.6 and 0.7 support and staying close to and up to date with ddnet.
 While being highly configurable and feature rich.
 
-Implementing most of the relevant pvp gametypes: ctf, dm, gctf, ictf, gdm, idm, gtdm, itdm, zCatch, bolofng, solofng, boomfng, fng
+Implementing most of the relevant pvp gametypes: ctf, dm, gctf, ictf, gdm, idm, gtdm, itdm, zCatch, bolofng, solofng, boomfng, fng, tsmash, foot
 
 # Project name and scope
 
@@ -238,6 +238,13 @@ Pickup hearts and shields to reduce knockback.
 ``sv_gametype ttsmash``
 
 Like TSmash but with teams.
+
+### foot
+
+``sv_gametype foot``
+
+A football (soccer) teamplay mode. Where the grenade is your ball.
+And you have to score it into the enemy goal.
 
 # Configs
 
