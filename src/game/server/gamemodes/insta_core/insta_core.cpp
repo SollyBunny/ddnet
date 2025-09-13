@@ -457,19 +457,19 @@ bool CGameControllerInstaCore::CanSpawn(int Team, vec2 *pOutPos, int DDTeam)
 		Eval.m_FriendlyTeam = Team;
 
 		// first try own team spawn, then normal spawn and then enemy
-		EvaluateSpawnType(&Eval, 1 + (Team & 1), DDTeam);
+		EvaluateSpawnType(&Eval, (ESpawnType)(1 + (Team & 1)), DDTeam);
 		if(!Eval.m_Got)
 		{
-			EvaluateSpawnType(&Eval, 0, DDTeam);
+			EvaluateSpawnType(&Eval, SPAWNTYPE_DEFAULT, DDTeam);
 			if(!Eval.m_Got)
-				EvaluateSpawnType(&Eval, 1 + ((Team + 1) & 1), DDTeam);
+				EvaluateSpawnType(&Eval, (ESpawnType)(1 + ((Team + 1) & 1)), DDTeam);
 		}
 	}
 	else
 	{
-		EvaluateSpawnType(&Eval, 0, DDTeam);
-		EvaluateSpawnType(&Eval, 1, DDTeam);
-		EvaluateSpawnType(&Eval, 2, DDTeam);
+		EvaluateSpawnType(&Eval, SPAWNTYPE_DEFAULT, DDTeam);
+		EvaluateSpawnType(&Eval, SPAWNTYPE_RED, DDTeam);
+		EvaluateSpawnType(&Eval, SPAWNTYPE_BLUE, DDTeam);
 	}
 
 	*pOutPos = Eval.m_Pos;
