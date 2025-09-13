@@ -133,7 +133,7 @@ void CGameControllerBaseFoot::OnTeamReset(int Team)
 
 void CGameControllerBaseFoot::BallReset(int DDrTeam, int Seconds)
 {
-	GameServer()->m_pController->m_BallTickSpawning[DDrTeam] = Server()->Tick() + Seconds * Server()->TickSpeed();
+	m_aBallTickSpawning[DDrTeam] = Server()->Tick() + Seconds * Server()->TickSpeed();
 }
 
 void CGameControllerBaseFoot::OnAnyGoal(CPlayer *pPlayer, CFootProjectile *pProj = nullptr)
@@ -269,7 +269,7 @@ bool CGameControllerBaseFoot::OnEntity(int Index, int x, int y, int Layer, int F
 		// NOLINTBEGIN(clang-analyzer-unix.Malloc)
 		CFootPickup *pPickup = new CFootPickup(&GameServer()->m_World, Layer, Number);
 		pPickup->m_Pos = Pos;
-		for(int &BallTick : m_BallTickSpawning)
+		for(int &BallTick : m_aBallTickSpawning)
 			BallTick = 0;
 		// NOLINTEND(clang-analyzer-unix.Malloc)
 

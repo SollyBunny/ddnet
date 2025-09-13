@@ -12,6 +12,8 @@ public:
 	CGameControllerBaseFoot(class CGameContext *pGameServer);
 	~CGameControllerBaseFoot() override;
 
+	int m_aBallTickSpawning[NUM_DDRACE_TEAMS];
+
 	void Tick() override;
 	void Snap(int SnappingClient) override;
 	void OnReset() override;

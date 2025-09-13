@@ -1060,7 +1060,6 @@ public:
 	bool IsVanillaGameType() const { return m_IsVanillaGameType; }
 	virtual bool IsDDRaceGameType() const { return true; }
 	virtual bool IsFootGameType() const { return false; }
-	int m_BallTickSpawning[NUM_DDRACE_TEAMS];
 	bool m_IsVanillaGameType = false;
 	// decides if own grenade explosions
 	// or laser wallshots should harm the own tee

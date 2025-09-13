@@ -4,6 +4,7 @@
 #include <game/server/entities/pickup.h>
 #include <game/server/gamecontext.h>
 #include <game/server/gamecontroller.h>
+#include <game/server/gamemodes/ball/base_foot.h>
 #include <game/server/player.h>
 #include <generated/protocol.h>
 
@@ -31,6 +32,10 @@ void CFootPickup::Reset()
 
 void CFootPickup::Tick()
 {
+	// TODO: ideally this cast would be removed and foot pickups work properly in all modes
+	CGameControllerBaseFoot *pController = dynamic_cast<CGameControllerBaseFoot *>(GameServer()->m_pController);
+	dbg_assert(pController != nullptr, "foot pickup can only be used by foot controllers");
+
 	for(CEntity *pEnt = GameWorld()->FindFirst(CGameWorld::ENTTYPE_CHARACTER); pEnt; pEnt = pEnt->TypeNext())
 	{
 		CCharacter *pChr = dynamic_cast<CCharacter *>(pEnt);
@@ -41,14 +46,14 @@ void CFootPickup::Tick()
 		if(Team < 0 || Team >= NUM_DDRACE_TEAMS)
 			continue;
 
-		if(GameServer()->m_pController->m_BallTickSpawning[Team] && m_aSpawnTickTeam[Team] != -1 && GameServer()->m_pController->m_BallTickSpawning[Team] <= Server()->Tick())
+		if(pController->m_aBallTickSpawning[Team] && m_aSpawnTickTeam[Team] != -1 && pController->m_aBallTickSpawning[Team] <= Server()->Tick())
 		{
 			// respawn
 			m_aSpawnTickTeam[Team] = -1;
 			if(m_Type == POWERUP_WEAPON)
 				GameServer()->CreateSound(m_Pos, SOUND_WEAPON_SPAWN, pChr->TeamMask());
 		}
-		else if((!GameServer()->m_pController->m_BallTickSpawning[Team] && m_aSpawnTickTeam[Team] == 0) || GameServer()->m_pController->m_BallTickSpawning[Team] > Server()->Tick())
+		else if((!pController->m_aBallTickSpawning[Team] && m_aSpawnTickTeam[Team] == 0) || pController->m_aBallTickSpawning[Team] > Server()->Tick())
 			continue;
 
 		if(distance(m_Pos, pChr->m_Pos) > (GetProximityRadius() + CPickup::ms_CollisionExtraSize + pChr->GetProximityRadius()))
@@ -60,7 +65,7 @@ void CFootPickup::Tick()
 			m_aSpawnTickTeam[Team] = 0;
 			GameServer()->CreateSound(m_Pos, SOUND_PICKUP_GRENADE, pChr->TeamMask());
 
-			GameServer()->m_pController->m_BallTickSpawning[Team] = 0;
+			pController->m_aBallTickSpawning[Team] = 0;
 			pChr->PlayerGetBall();
 		}
 	}
