@@ -15,6 +15,7 @@
 #define MACRO_TOP_COLUMN(name, sql_name, display_name, order_by) ;
 #endif
 
+#include <game/server/gamemodes/ball/foot/sql_columns.h>
 #include <game/server/gamemodes/instagib/bolofng/sql_columns.h>
 #include <game/server/gamemodes/instagib/boomfng/sql_columns.h>
 #include <game/server/gamemodes/instagib/fng/sql_columns.h>

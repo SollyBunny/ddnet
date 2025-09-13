@@ -369,6 +369,12 @@ Below is a list of all the settings that were added in ddnet-insta.
 + `sv_round_stats_format_http` 0=csv 1=psv 2=ascii table 3=markdown table 4=json
 + `sv_round_stats_format_file` 0=csv 1=psv 2=ascii table 3=markdown table 4=json
 + `sv_print_round_stats` print top players in chat on round end
++ `sv_kill_tile_destroys_ball` Destroy the ball when it touches death tile (only foot)
++ `sv_ball_bounce_friction` The ball looses that much speed after a bounce (only foot)
++ `sv_ball_explode` Should the grenades explode (only foot)
++ `sv_ball_respawn_delay` Respawn time of the ball (only foot)
++ `sv_score_diff` Difference between the team-scores before a team can win (only foot)
++ `sv_sudden_death_score_diff` Difference between the team-scores before a team can win in sudden death (only foot)
 + `sv_spawn_weapons` possible values: grenade, laser
 + `sv_zcatch_colors` Color scheme for zCatch options: teetime, savander
 + `sv_display_score` values: points, round_points, spree, current_spree, win_points, wins, kills, round_kills
