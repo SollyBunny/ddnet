@@ -138,7 +138,10 @@ public:
 			STATE_CONNECTING,
 			STATE_READY,
 			STATE_INGAME,
+		};
 
+		enum
+		{
 			SNAPRATE_INIT = 0,
 			SNAPRATE_FULL,
 			SNAPRATE_RECOVER,

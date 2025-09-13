@@ -12,6 +12,7 @@
 #include <generated/protocol7.h>
 
 #include <game/client/animstate.h>
+#include <game/client/components/censor.h>
 #include <game/client/components/scoreboard.h>
 #include <game/client/components/skins.h>
 #include <game/client/components/sounds.h>
@@ -137,7 +138,7 @@ void CChat::Reset()
 	m_EditingNewLine = true;
 	m_ServerSupportsCommandInfo = false;
 	m_ServerCommandsNeedSorting = false;
-	mem_zero(m_aCurrentInputText, sizeof(m_aCurrentInputText));
+	m_aCurrentInputText[0] = '\0';
 	DisableMode();
 	m_vServerCommands.clear();
 
@@ -542,7 +543,16 @@ void CChat::OnMessage(int MsgType, void *pRawMsg)
 	if(MsgType == NETMSGTYPE_SV_CHAT)
 	{
 		CNetMsg_Sv_Chat *pMsg = (CNetMsg_Sv_Chat *)pRawMsg;
-		AddLine(pMsg->m_ClientId, pMsg->m_Team, pMsg->m_pMessage);
+
+		if(g_Config.m_ClCensorChat)
+		{
+			char aMessage[MAX_LINE_LENGTH];
+			str_copy(aMessage, pMsg->m_pMessage);
+			GameClient()->m_Censor.CensorMessage(aMessage);
+			AddLine(pMsg->m_ClientId, pMsg->m_Team, aMessage);
+		}
+		else
+			AddLine(pMsg->m_ClientId, pMsg->m_Team, pMsg->m_pMessage);
 	}
 	else if(MsgType == NETMSGTYPE_SV_COMMANDINFO)
 	{
