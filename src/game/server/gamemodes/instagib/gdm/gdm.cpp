@@ -20,7 +20,7 @@ CGameControllerGDM::~CGameControllerGDM() = default;
 void CGameControllerGDM::OnCreditsChatCmd(IConsole::IResult *pResult, void *pUserData)
 {
 	static constexpr const char *CREDITS[] = {
-		"ddnet-insta gdm created by M0REKZ in 2024",
+		"ddnet-insta gdm created by +KZ (M0REKZ) in 2024",
 		"This is not a ddnet-insta original mode.",
 		"The origin and original creator of the gdm gamemode is unknown.",
 		"For more information see /credits_insta",
