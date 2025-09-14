@@ -65,6 +65,18 @@ public:
 	}
 };
 
+void CGameControllerTsmash::OnCreditsChatCmd(IConsole::IResult *pResult, void *pUserData)
+{
+	static constexpr const char *CREDITS[] = {
+		"ddnet-insta tsmash created by SollyBunny in 2025",
+		"teesmash was originally created by Ryozuki & timakro in 2016",
+		"https://github.com/edg-l/teesmash",
+		"For more information see /credits_insta",
+	};
+	for(const char *pLine : CREDITS)
+		GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp", pLine);
+}
+
 void CGameControllerTsmash::GiveSuperSmash(int ClientId, int Amount)
 {
 	if(Amount == 0)

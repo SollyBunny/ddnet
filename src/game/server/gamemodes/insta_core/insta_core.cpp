@@ -70,6 +70,15 @@ void CGameControllerInstaCore::SendChatSpectators(const char *pMessage, int Flag
 	}
 }
 
+void CGameControllerInstaCore::OnCreditsChatCmd(IConsole::IResult *pResult, void *pUserData)
+{
+	// fallback to project wide credits
+	// if the mode did not set specific ones
+	// but it is recommended that every mode defines their own credits
+	// these project wide credits can be fetched with "/credits_insta"
+	GameServer()->PrintInstaCredits();
+}
+
 void CGameControllerInstaCore::OnReset()
 {
 	CGameControllerDDRace::OnReset();

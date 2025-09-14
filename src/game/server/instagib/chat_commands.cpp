@@ -11,19 +11,19 @@
 
 #include <game/server/gamecontext.h>
 
+// "/credits"
+void CGameContext::ConInstaModeCredits(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	if(pSelf->m_pController)
+		pSelf->m_pController->OnCreditsChatCmd(pResult, pUserData);
+}
+
+// "/credits_insta"
 void CGameContext::ConInstaCredits(IConsole::IResult *pResult, void *pUserData)
 {
 	CGameContext *pSelf = (CGameContext *)pUserData;
-	static constexpr const char *CREDITS[] = {
-		"DDNet-insta written by ChillerDragon",
-		"https://github.com/ddnet-insta/ddnet-insta/",
-		"Thanks to AssassinTee, Cuube, Anime-pdf, M0REKZ",
-		"JSaurusRex, jxsl13, lukure, ByFox, zhn",
-		"and SollyBunny",
-		"based on ddnet see /credits_ddnet",
-	};
-	for(const char *pLine : CREDITS)
-		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp", pLine);
+	pSelf->PrintInstaCredits();
 }
 
 void CGameContext::ConInstaTogglePause(IConsole::IResult *pResult, void *pUserData)

@@ -544,6 +544,13 @@ public:
 	virtual void OnSpecChatCmd(IConsole::IResult *pResult, void *pUserData);
 
 	/*
+		Function: OnCreditsChatCmd
+			Called when a player runs the /credits ddnet chat command
+			Contains the full implementation
+	*/
+	virtual void OnCreditsChatCmd(IConsole::IResult *pResult, void *pUserData);
+
+	/*
 		Function: OnSetDDRaceTeam
 			Called every time a player changes team
 			Either by explicitly using the /teams command sucessfully

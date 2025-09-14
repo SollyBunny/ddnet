@@ -12,7 +12,8 @@
 // if sv_gametype is "ddnet"
 
 // "credits" shadows a ddnet command
-CONSOLE_COMMAND("credits", "", CFGFLAG_CHAT | CFGFLAG_SERVER, ConInstaCredits, this, "Shows the credits of the ddnet-insta mod");
+CONSOLE_COMMAND("credits", "", CFGFLAG_CHAT | CFGFLAG_SERVER, ConInstaModeCredits, this, "Shows the credits of the current ddnet-insta mode");
+CONSOLE_COMMAND("credits_insta", "", CFGFLAG_CHAT | CFGFLAG_SERVER, ConInstaCredits, this, "Shows the credits of the entire ddnet-insta project");
 CONSOLE_COMMAND("credits_ddnet", "", CFGFLAG_CHAT | CFGFLAG_SERVER, ConCredits, this, "Shows the credits of the DDNet mod");
 
 // "rank" shadows a ddnet command

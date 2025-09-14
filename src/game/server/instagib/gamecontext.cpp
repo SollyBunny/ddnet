@@ -28,6 +28,20 @@ void CGameContext::OnInitInstagib()
 	m_pController->OnRoundStart();
 }
 
+void CGameContext::PrintInstaCredits()
+{
+	static constexpr const char *CREDITS[] = {
+		"DDNet-insta written by ChillerDragon",
+		"https://github.com/ddnet-insta/ddnet-insta/",
+		"Thanks to AssassinTee, Cuube, Anime-pdf, M0REKZ",
+		"JSaurusRex, jxsl13, lukure, ByFox, zhn",
+		"and SollyBunny",
+		"based on ddnet see /credits_ddnet",
+	};
+	for(const char *pLine : CREDITS)
+		Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp", pLine);
+}
+
 void CGameContext::AlertOnSpecialInstagibConfigs(int ClientId) const
 {
 	if(g_Config.m_SvTournament)

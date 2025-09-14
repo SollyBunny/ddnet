@@ -827,3 +827,8 @@ void IGameController::OnSpecChatCmd(IConsole::IResult *pResult, void *pUserData)
 		GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp", "Command not available in this gametype.");
 	}
 }
+
+void IGameController::OnCreditsChatCmd(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext::ConCredits(pResult, pUserData);
+}

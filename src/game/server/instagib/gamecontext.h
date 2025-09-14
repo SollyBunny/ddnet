@@ -21,6 +21,7 @@ public:
 
 	// instagib/gamecontext.cpp
 	void OnInitInstagib();
+	void PrintInstaCredits();
 	void AlertOnSpecialInstagibConfigs(int ClientId = -1) const;
 	void ShowCurrentInstagibConfigsMotd(int ClientId = -1, bool Force = false) const;
 	void UpdateVoteCheckboxes() const;
@@ -110,6 +111,7 @@ public:
 	static void ConUndeepJail(IConsole::IResult *pResult, void *pUserData);
 
 	// chat_commands.cpp
+	static void ConInstaModeCredits(IConsole::IResult *pResult, void *pUserData);
 	static void ConInstaCredits(IConsole::IResult *pResult, void *pUserData);
 	static void ConInstaTogglePause(IConsole::IResult *pResult, void *pUserData);
 	static void ConInstaToggleSpec(IConsole::IResult *pResult, void *pUserData);
