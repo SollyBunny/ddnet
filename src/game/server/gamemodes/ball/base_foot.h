@@ -14,6 +14,7 @@ public:
 
 	int m_aBallTickSpawning[NUM_DDRACE_TEAMS];
 
+	void OnCreditsChatCmd(IConsole::IResult *pResult, void *pUserData) override;
 	void Tick() override;
 	void Snap(int SnappingClient) override;
 	void OnReset() override;

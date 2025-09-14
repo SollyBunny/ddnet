@@ -23,6 +23,18 @@ CGameControllerBaseFoot::CGameControllerBaseFoot(class CGameContext *pGameServer
 
 CGameControllerBaseFoot::~CGameControllerBaseFoot() = default;
 
+void CGameControllerBaseFoot::OnCreditsChatCmd(IConsole::IResult *pResult, void *pUserData)
+{
+	static constexpr const char *CREDITS[] = {
+		"ddnet-insta foot created by ByFox in 2025",
+		"This is not a ddnet-insta original mode.",
+		"The origin and original creator of the foot gamemode is unknown.",
+		"For more information see /credits_insta",
+	};
+	for(const char *pLine : CREDITS)
+		GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp", pLine);
+}
+
 int CGameControllerBaseFoot::SnapGameInfoExFlags(int SnappingClient, int DDRaceFlags)
 {
 	int Flags = CGameControllerPvp::SnapGameInfoExFlags(SnappingClient, DDRaceFlags);
