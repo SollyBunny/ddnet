@@ -16,6 +16,18 @@ CGameControllerIDM::CGameControllerIDM(class CGameContext *pGameServer) :
 
 CGameControllerIDM::~CGameControllerIDM() = default;
 
+void CGameControllerIDM::OnCreditsChatCmd(IConsole::IResult *pResult, void *pUserData)
+{
+	static constexpr const char *CREDITS[] = {
+		"ddnet-insta idm created by M0REKZ in 2024",
+		"This is not a ddnet-insta original mode.",
+		"The origin and original creator of the idm gamemode is unknown.",
+		"For more information see /credits_insta",
+	};
+	for(const char *pLine : CREDITS)
+		GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp", pLine);
+}
+
 void CGameControllerIDM::Tick()
 {
 	CGameControllerInstaBaseDM::Tick();

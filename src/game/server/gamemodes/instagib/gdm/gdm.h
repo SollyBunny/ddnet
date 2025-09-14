@@ -9,6 +9,7 @@ public:
 	CGameControllerGDM(class CGameContext *pGameServer);
 	~CGameControllerGDM() override;
 
+	void OnCreditsChatCmd(IConsole::IResult *pResult, void *pUserData) override;
 	void OnCharacterSpawn(class CCharacter *pChr) override;
 	void Tick() override;
 };
