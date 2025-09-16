@@ -6,7 +6,7 @@
 #include <base/math.h>
 #include <base/system.h>
 
-#include <game/generated/client_data.h>
+#include <generated/client_data.h>
 
 #include <engine/console.h>
 #include <engine/engine.h>
@@ -741,6 +741,17 @@ void CGameConsole::CInstance::UpdateEntryTextAttributes(CBacklogEntry *pEntry) c
 	pEntry->m_LineCount = Cursor.m_LineCount;
 }
 
+bool CGameConsole::CInstance::IsInputHidden() const
+{
+	if(m_Type != CONSOLETYPE_REMOTE)
+		return false;
+	if(m_pGameConsole->Client()->State() != IClient::STATE_ONLINE || m_Searching)
+		return false;
+	if(m_pGameConsole->Client()->RconAuthed())
+		return false;
+	return m_UserGot || !m_UsernameReq;
+}
+
 void CGameConsole::CInstance::SetSearching(bool Searching)
 {
 	m_Searching = Searching;
@@ -1200,7 +1211,7 @@ void CGameConsole::OnRender()
 		}
 
 		// render console input (wrap line)
-		pConsole->m_Input.SetHidden(m_ConsoleType == CONSOLETYPE_REMOTE && Client()->State() == IClient::STATE_ONLINE && !Client()->RconAuthed() && (pConsole->m_UserGot || !pConsole->m_UsernameReq));
+		pConsole->m_Input.SetHidden(pConsole->IsInputHidden());
 		if(m_ConsoleState == CONSOLE_OPEN)
 		{
 			pConsole->m_Input.Activate(EInputPriority::CONSOLE); // Ensure that the input is active
@@ -1240,8 +1251,6 @@ void CGameConsole::OnRender()
 
 			Info.m_Cursor.SetPosition(vec2(InitialX - Info.m_Offset, InitialY + RowHeight + 2.0f));
 			Info.m_Cursor.m_FontSize = FONT_SIZE;
-			Info.m_Cursor.m_Flags |= TEXTFLAG_STOP_AT_END;
-			Info.m_Cursor.m_LineWidth = std::numeric_limits<float>::max();
 			const int NumCommands = m_pConsole->PossibleCommands(Info.m_pCurrentCmd, pConsole->m_CompletionFlagmask, m_ConsoleType != CGameConsole::CONSOLETYPE_LOCAL && Client()->RconAuthed() && Client()->UseTempRconCommands(), PossibleCommandsRenderCallback, &Info);
 			pConsole->m_CompletionRenderOffset = Info.m_Offset;
 
@@ -1640,6 +1649,9 @@ void CGameConsole::OnConsoleInit()
 	m_RemoteConsole.Init(this);
 
 	m_pConsole = Kernel()->RequestInterface<IConsole>();
+
+	// TClient
+	Console()->Register("clear", "", CFGFLAG_CLIENT, ConClearLocalConsole, this, "Clear local console");
 
 	Console()->Register("toggle_local_console", "", CFGFLAG_CLIENT, ConToggleLocalConsole, this, "Toggle local console");
 	Console()->Register("toggle_remote_console", "", CFGFLAG_CLIENT, ConToggleRemoteConsole, this, "Toggle remote console");

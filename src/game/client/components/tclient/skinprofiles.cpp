@@ -45,41 +45,26 @@ void CSkinProfiles::AddProfile(int BodyColor, int FeetColor, int CountryFlag, in
 
 void CSkinProfiles::ApplyProfile(int Dummy, const CProfile &Profile)
 {
-	char aCommand[2048] = "";
-	auto AddPart = [&](const char *pName, const char *pValue) {
-		str_append(aCommand, Dummy ? "dummy" : "player");
-		str_append(aCommand, "_");
-		str_append(aCommand, pName);
-		str_append(aCommand, " \"");
-		char *pDst = aCommand + str_length(aCommand);
-		str_escape(&pDst, pValue, aCommand + sizeof(aCommand) - 1); // 1 extra for end quote
-		str_append(aCommand, "\";");
-	};
-	auto AddPartNumber = [&](const char *pName, int Value) {
-		str_append(aCommand, Dummy ? "dummy" : "player");
-		str_append(aCommand, "_");
-		str_append(aCommand, pName);
-		str_append(aCommand, " ");
-		int Length = str_length(aCommand);
-		str_format(aCommand + Length, sizeof(aCommand) - Length, "%d", Value);
-		str_append(aCommand, ";");
-	};
 	if(g_Config.m_TcProfileSkin && strlen(Profile.m_SkinName) != 0)
-		AddPart("skin", Profile.m_SkinName);
+		str_copy(Dummy ? g_Config.m_ClDummySkin : g_Config.m_ClPlayerSkin, Profile.m_SkinName);
 	if(g_Config.m_TcProfileColors && Profile.m_BodyColor != -1 && Profile.m_FeetColor != -1)
 	{
-		AddPartNumber("color_body", Profile.m_BodyColor);
-		AddPartNumber("color_feet", Profile.m_FeetColor);
+		(Dummy ? g_Config.m_ClDummyColorBody : g_Config.m_ClPlayerColorBody) = Profile.m_BodyColor;
+		(Dummy ? g_Config.m_ClDummyColorFeet : g_Config.m_ClPlayerColorFeet) = Profile.m_FeetColor;
 	}
 	if(g_Config.m_TcProfileEmote && Profile.m_Emote != -1)
-		AddPartNumber("default_eyes", Profile.m_Emote);
+		(Dummy ? g_Config.m_ClDummyDefaultEyes : g_Config.m_ClPlayerDefaultEyes) = Profile.m_Emote;
 	if(g_Config.m_TcProfileName && strlen(Profile.m_Name) != 0)
-		AddPart("name", Profile.m_Name);
+		str_copy(Dummy ? g_Config.m_ClDummyName : g_Config.m_PlayerName, Profile.m_Name); // TODO m_ClPlayerName
 	if(g_Config.m_TcProfileClan && (strlen(Profile.m_Clan) != 0 || g_Config.m_TcProfileOverwriteClanWithEmpty))
-		AddPart("clan", Profile.m_Clan);
+		str_copy(Dummy ? g_Config.m_ClDummyClan : g_Config.m_PlayerClan, Profile.m_Clan); // TODO m_ClPlayerClan
 	if(g_Config.m_TcProfileFlag && Profile.m_CountryFlag != -2)
-		AddPartNumber("country", Profile.m_CountryFlag);
-	Console()->ExecuteLine(aCommand);
+		(Dummy ? g_Config.m_ClDummyCountry : g_Config.m_PlayerCountry) = Profile.m_CountryFlag;
+	GameClient()->m_Skins.m_SkinList.ForceRefresh(); // Prevent segfault
+	if(Dummy)
+		GameClient()->SendDummyInfo(false);
+	else
+		GameClient()->SendInfo(false);
 }
 
 void CSkinProfiles::ConfigSaveCallback(IConfigManager *pConfigManager, void *pUserData)

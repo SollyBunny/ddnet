@@ -48,7 +48,7 @@ private:
 	{
 	public:
 		CAbstractSkinLoadJob(CSkins *pSkins, const char *pName);
-		virtual ~CAbstractSkinLoadJob();
+		~CAbstractSkinLoadJob() override;
 
 		CSkinLoadData m_Data;
 		bool m_NotFound = false;
@@ -329,5 +329,7 @@ private:
 	static void ConfigSaveCallback(IConfigManager *pConfigManager, void *pUserData);
 	void OnConfigSave(IConfigManager *pConfigManager);
 	static void ConchainRefreshSkinList(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
+
+	friend class CSkinProfiles;
 };
 #endif

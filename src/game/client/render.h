@@ -8,9 +8,11 @@
 #include <base/color.h>
 #include <base/vmath.h>
 
+#include <generated/protocol.h>
+#include <generated/protocol7.h>
+
 #include <game/client/skin.h>
 #include <game/client/ui_rect.h>
-#include <game/generated/protocol7.h>
 
 #include <functional>
 #include <memory>
@@ -21,10 +23,6 @@ class CSwitchTile;
 class CTeleTile;
 class CTile;
 class CTuneTile;
-namespace client_data7 {
-struct CDataSprite;
-}
-struct CDataSprite;
 class CEnvPoint;
 class CEnvPointBezier;
 class CEnvPointBezier_upstream;
@@ -33,8 +31,6 @@ class CQuad;
 
 // TClient
 class CSquishy;
-
-#include <game/generated/protocol.h>
 
 class CSkinDescriptor
 {
@@ -252,10 +248,6 @@ public:
 	static void GetRenderTeeOffsetToRenderedTee(const CAnimState *pAnim, const CTeeRenderInfo *pInfo, vec2 &TeeOffsetToMid);
 	// object render methods
 	void RenderTee(const CAnimState *pAnim, const CTeeRenderInfo *pInfo, int Emote, vec2 Dir, vec2 Pos, float Alpha = 1.0f) const;
-
-	// TClient
-	void RenderGameTileOutlines(CTile *pTiles, int w, int h, float Scale, int TileType) const;
-	void RenderTeleOutlines(CTile *pTiles, CTeleTile *pTele, int w, int h, float Scale) const;
 };
 
 #endif

@@ -12,7 +12,7 @@
 
 #include "render_map.h"
 
-#include <game/generated/client_data.h>
+#include <generated/client_data.h>
 
 #include <game/mapitems.h>
 #include <game/mapitems_ex.h>
@@ -371,14 +371,6 @@ static void Rotate(const CPoint *pCenter, CPoint *pPoint, float Rotation)
 	int y = pPoint->y - pCenter->y;
 	pPoint->x = (int)(x * std::cos(Rotation) - y * std::sin(Rotation) + pCenter->x);
 	pPoint->y = (int)(x * std::sin(Rotation) + y * std::cos(Rotation) + pCenter->y);
-}
-
-void CRenderMap::RenderQuads(CQuad *pQuads, int NumQuads, int RenderFlags, IEnvelopeEval *pEnvEval)
-{
-	if(!g_Config.m_ClShowQuads || g_Config.m_ClOverlayEntities == 100)
-		return;
-
-	ForceRenderQuads(pQuads, NumQuads, RenderFlags, pEnvEval, (100 - g_Config.m_ClOverlayEntities) / 100.0f);
 }
 
 void CRenderMap::ForceRenderQuads(CQuad *pQuads, int NumQuads, int RenderFlags, IEnvelopeEval *pEnvEval, float Alpha)
@@ -1414,4 +1406,25 @@ void CRenderMap::RenderTunemap(CTuneTile *pTune, int w, int h, float Scale, Colo
 	else
 		Graphics()->QuadsEnd();
 	Graphics()->MapScreen(ScreenX0, ScreenY0, ScreenX1, ScreenY1);
+}
+
+void CRenderMap::RenderDebugClip(float ClipX, float ClipY, float ClipW, float ClipH, ColorRGBA Color, float Zoom, const char *pLabel)
+{
+	Graphics()->TextureClear();
+	Graphics()->LinesBegin();
+	Graphics()->SetColor(Color);
+	IGraphics::CLineItem aLineItems[] = {
+		IGraphics::CLineItem(ClipX, ClipY, ClipX, ClipY + ClipH),
+		IGraphics::CLineItem(ClipX + ClipW, ClipY, ClipX + ClipW, ClipY + ClipH),
+		IGraphics::CLineItem(ClipX, ClipY, ClipX + ClipW, ClipY),
+		IGraphics::CLineItem(ClipX, ClipY + ClipH, ClipX + ClipW, ClipY + ClipH),
+	};
+	Graphics()->LinesDraw(aLineItems, std::size(aLineItems));
+	Graphics()->LinesEnd();
+
+	TextRender()->TextColor(Color);
+
+	// clamp zoom and set line width, because otherwise the text can be partially clipped out
+	TextRender()->Text(ClipX, ClipY, std::min(12.0f * Zoom, 20.0f), pLabel, ClipW);
+	TextRender()->TextColor(TextRender()->DefaultTextColor());
 }

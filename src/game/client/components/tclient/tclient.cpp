@@ -6,7 +6,6 @@
 #include <game/client/render.h>
 #include <game/client/ui.h>
 
-#include <game/generated/protocol.h>
 #include <game/localization.h>
 #include <game/version.h>
 
@@ -15,6 +14,10 @@
 #include <engine/graphics.h>
 #include <engine/shared/config.h>
 #include <engine/shared/json.h>
+
+#include <generated/client_data.h>
+
+#include "data_version.h"
 
 #include "tclient.h"
 
@@ -99,6 +102,17 @@ void CTClient::OnInit()
 	TextRender()->SetCustomFace(g_Config.m_TcCustomFont);
 	m_pGraphics = Kernel()->RequestInterface<IEngineGraphics>();
 	FetchTClientInfo();
+
+	char aError[512] = "";
+	if(!Storage()->FileExists("tclient/gui_logo.png", IStorage::TYPE_ALL))
+		str_format(aError, sizeof(aError), TCLocalize("%s not found", DATA_VERSION_PATH), "data/tclient/gui_logo.png");
+	if (aError[0] == '\0')
+		CheckDataVersion(aError, sizeof(aError), Storage()->OpenFile(DATA_VERSION_PATH, IOFLAG_READ, IStorage::TYPE_ALL));
+	if (aError[0] != '\0')
+	{
+		SWarning Warning(aError, TCLocalize("You have probably only installed the TClient DDNet.exe which is not supported, please use the entire TClient folder", "data_version.h"));
+		Client()->AddWarning(Warning);
+	}
 }
 
 static bool LineShouldHighlight(const char *pLine, const char *pName)
@@ -186,8 +200,10 @@ void CTClient::OnMessage(int MsgType, void *pRawMsg)
 
 	if(MsgType == NETMSGTYPE_SV_VOTESET)
 	{
+		const int LocalId = GameClient()->m_aLocalIds[g_Config.m_ClDummy]; // Do not care about spec behaviour
+		const bool Afk = LocalId >= 0 && GameClient()->m_aClients[LocalId].m_Afk; // TODO Depends on server afk time
 		CNetMsg_Sv_VoteSet *pMsg = (CNetMsg_Sv_VoteSet *)pRawMsg;
-		if(pMsg->m_Timeout)
+		if(pMsg->m_Timeout && !Afk)
 		{
 			char aDescription[VOTE_DESC_LENGTH];
 			char aReason[VOTE_REASON_LENGTH];
@@ -205,7 +221,7 @@ void CTClient::OnMessage(int MsgType, void *pRawMsg)
 			if(g_Config.m_TcAutoVoteWhenFar && (MapVote || RandomMapVote))
 			{
 				int RaceTime = 0;
-				if(GameClient()->m_Snap.m_pGameInfoObj->m_GameStateFlags & GAMESTATEFLAG_RACETIME)
+				if(GameClient()->m_Snap.m_pGameInfoObj && GameClient()->m_Snap.m_pGameInfoObj->m_GameStateFlags & GAMESTATEFLAG_RACETIME)
 					RaceTime = (Client()->GameTick(g_Config.m_ClDummy) + GameClient()->m_Snap.m_pGameInfoObj->m_WarmupTimer) / Client()->GameTickSpeed();
 
 				if(RaceTime / 60 >= g_Config.m_TcAutoVoteWhenFarTime)

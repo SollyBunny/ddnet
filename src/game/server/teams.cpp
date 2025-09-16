@@ -935,8 +935,8 @@ void CGameTeams::SwapTeamCharacters(CPlayer *pPrimaryPlayer, CPlayer *pTargetPla
 	CSaveTee SecondarySavedTee;
 	SecondarySavedTee.Save(pTargetPlayer->GetCharacter());
 
-	PrimarySavedTee.Load(pTargetPlayer->GetCharacter(), Team, true);
-	SecondarySavedTee.Load(pPrimaryPlayer->GetCharacter(), Team, true);
+	PrimarySavedTee.Load(pTargetPlayer->GetCharacter());
+	SecondarySavedTee.Load(pPrimaryPlayer->GetCharacter());
 
 	if(Team >= 1 && !m_aTeamFlock[Team])
 	{
@@ -1243,12 +1243,12 @@ void CGameTeams::ResetSavedTeam(int ClientId, int Team)
 	}
 }
 
-int CGameTeams::GetFirstEmptyTeam() const
+std::optional<int> CGameTeams::GetFirstEmptyTeam() const
 {
 	for(int i = 1; i < TEAM_SUPER; i++)
 		if(m_aTeamState[i] == ETeamState::EMPTY)
 			return i;
-	return -1;
+	return std::nullopt;
 }
 
 bool CGameTeams::TeeStarted(int ClientId) const

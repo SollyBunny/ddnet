@@ -12,7 +12,7 @@
 #include <game/client/component.h>
 #include <game/client/lineinput.h>
 #include <game/client/render.h>
-#include <game/generated/protocol7.h>
+#include <generated/protocol7.h>
 
 class CTranslateResponse
 {
@@ -42,6 +42,7 @@ class CChat : public CComponent
 		CLine();
 		void Reset(CChat &This);
 
+		bool m_Initialized;
 		int64_t m_Time;
 		float m_aYOffset[2];
 		int m_ClientId;
@@ -78,11 +79,17 @@ class CChat : public CComponent
 		// client IDs for special messages
 		CLIENT_MSG = -2,
 		SERVER_MSG = -1,
+	};
 
+	enum
+	{
 		MODE_NONE = 0,
 		MODE_ALL,
 		MODE_TEAM,
+	};
 
+	enum
+	{
 		CHAT_SERVER = 0,
 		CHAT_HIGHLIGHT,
 		CHAT_CLIENT,

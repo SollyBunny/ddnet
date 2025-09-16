@@ -12,6 +12,7 @@
 #include <base/vmath.h>
 
 #include <engine/client.h>
+#include <engine/client/updater.h>
 #include <engine/config.h>
 #include <engine/editor.h>
 #include <engine/friends.h>
@@ -23,9 +24,8 @@
 #include <engine/storage.h>
 #include <engine/textrender.h>
 
-#include <game/generated/protocol.h>
-
-#include <engine/client/updater.h>
+#include <generated/client_data.h>
+#include <generated/protocol.h>
 
 #include <game/client/animstate.h>
 #include <game/client/components/binds.h>
@@ -34,7 +34,6 @@
 #include <game/client/components/sounds.h>
 #include <game/client/gameclient.h>
 #include <game/client/ui_listbox.h>
-#include <game/generated/client_data.h>
 #include <game/localization.h>
 
 #include "menus.h"
@@ -245,7 +244,7 @@ int CMenus::DoButton_MenuTab(CButtonContainer *pButtonContainer, const char *pTe
 	return Ui()->DoButtonLogic(pButtonContainer, Checked, pRect, BUTTONFLAG_LEFT);
 }
 
-int CMenus::DoButton_GridHeader(const void *pId, const char *pText, int Checked, const CUIRect *pRect)
+int CMenus::DoButton_GridHeader(const void *pId, const char *pText, int Checked, const CUIRect *pRect, int Align)
 {
 	if(Checked == 2)
 		pRect->Draw(ColorRGBA(1, 0.98f, 0.5f, 0.55f), IGraphics::CORNER_T, 5.0f);
@@ -253,8 +252,8 @@ int CMenus::DoButton_GridHeader(const void *pId, const char *pText, int Checked,
 		pRect->Draw(ColorRGBA(1, 1, 1, 0.5f), IGraphics::CORNER_T, 5.0f);
 
 	CUIRect Temp;
-	pRect->VSplitLeft(5.0f, nullptr, &Temp);
-	Ui()->DoLabel(&Temp, pText, pRect->h * CUi::ms_FontmodHeight, TEXTALIGN_ML);
+	pRect->VMargin(5.0f, &Temp);
+	Ui()->DoLabel(&Temp, pText, pRect->h * CUi::ms_FontmodHeight, Align);
 	return Ui()->DoButtonLogic(pId, Checked, pRect, BUTTONFLAG_LEFT);
 }
 
@@ -883,6 +882,7 @@ void CMenus::OnInterfacesInit(CGameClient *pClient)
 	CComponentInterfaces::OnInterfacesInit(pClient);
 	m_CommunityIcons.OnInterfacesInit(pClient);
 	m_MenusStart.OnInterfacesInit(pClient);
+	m_MenusIngameTouchControls.OnInterfacesInit(pClient);
 }
 
 void CMenus::OnInit()
@@ -1570,11 +1570,16 @@ void CMenus::RenderPopupFullscreen(CUIRect Screen)
 			if(!m_vpFilteredDemos[m_DemolistSelectedIndex]->m_IsDir && !str_endswith(aBufNew, ".demo"))
 				str_append(aBufNew, ".demo");
 
-			if(!str_valid_filename(m_DemoRenameInput.GetString()))
+			if(str_comp(aBufOld, aBufNew) == 0)
+			{
+				// Nothing to rename, also same capitalization
+			}
+			else if(!str_valid_filename(m_DemoRenameInput.GetString()))
 			{
 				PopupMessage(Localize("Error"), Localize("This name cannot be used for files and folders"), Localize("Ok"), POPUP_RENAME_DEMO);
 			}
-			else if(Storage()->FileExists(aBufNew, m_vpFilteredDemos[m_DemolistSelectedIndex]->m_StorageType))
+			else if(str_utf8_comp_nocase(aBufOld, aBufNew) != 0 && // Allow renaming if it only changes capitalization to support case-insensitive filesystems
+				Storage()->FileExists(aBufNew, m_vpFilteredDemos[m_DemolistSelectedIndex]->m_StorageType))
 			{
 				PopupMessage(Localize("Error"), Localize("A demo with this name already exists"), Localize("Ok"), POPUP_RENAME_DEMO);
 			}

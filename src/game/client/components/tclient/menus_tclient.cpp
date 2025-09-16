@@ -11,7 +11,6 @@
 #include <engine/textrender.h>
 #include <engine/updater.h>
 
-#include <game/generated/protocol.h>
 #include <game/localization.h>
 
 #include <game/client/animstate.h>
@@ -2196,8 +2195,10 @@ void CMenus::RenderSettingsTClientProfiles(CUIRect MainView)
 	CUIRect Label, Button;
 
 	auto RenderProfile = [&](CUIRect Rect, const CProfile &Profile, bool Main) {
-		auto RenderCross = [&](CUIRect Cross) {
+		auto RenderCross = [&](CUIRect Cross, float MaxSize = 0.0f) {
 			float MaxExtent = std::max(Cross.w, Cross.h);
+			if(MaxSize > 0.0f && MaxExtent > MaxSize)
+				MaxExtent = MaxSize;
 			TextRender()->TextColor(ColorRGBA(1.0f, 0.0f, 0.0f));
 			TextRender()->SetFontPreset(EFontPreset::ICON_FONT);
 			const auto TextBoudningBox = TextRender()->TextBoundingBox(MaxExtent * 0.8f, FONT_ICON_XMARK);
@@ -2210,7 +2211,7 @@ void CMenus::RenderSettingsTClientProfiles(CUIRect MainView)
 			Rect.VSplitLeft(50.0f, &Skin, &Rect);
 			if(!Main && Profile.m_SkinName[0] == '\0')
 			{
-				RenderCross(Skin);
+				RenderCross(Skin, 20.0f);
 			}
 			else
 			{
@@ -2260,7 +2261,7 @@ void CMenus::RenderSettingsTClientProfiles(CUIRect MainView)
 			Rect.VSplitRight(50.0f, &Rect, &Flag);
 			Flag = {Flag.x, Flag.y + (Flag.h - 25.0f) / 2.0f, Flag.w, 25.0f};
 			if(Profile.m_CountryFlag == -2)
-				RenderCross(Flag);
+				RenderCross(Flag, 20.0f);
 			else
 				GameClient()->m_CountryFlags.Render(Profile.m_CountryFlag, ColorRGBA(1.0f, 1.0f, 1.0f, 1.0f), Flag.x, Flag.y, Flag.w, Flag.h);
 		}

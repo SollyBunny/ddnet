@@ -4,7 +4,6 @@
 
 #include <base/system.h>
 
-#include <game/generated/protocol.h>
 #include <game/localization.h>
 
 #include "mod.h"

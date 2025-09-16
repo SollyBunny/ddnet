@@ -13,7 +13,6 @@ on:
       body:
         description: 'Release description'
         required: false
-     
       run_id:
         description: 'Run ID of the build workflow to download artifacts from'
         required: true
@@ -109,25 +108,6 @@ jobs:
             echo "Moved $new_name to ./artifacts/"
           done
 
-
-      - name: Extract and Copy DDNet.exe
-        run: |
-          # Define variables
-          WINDOWS_ZIP="./artifacts/${CLIENT_NAME}-windows.zip"
-          TEMP_DIR="./artifacts/windows_temp"
-          mkdir -p "$TEMP_DIR"
-          echo "Extracting $WINDOWS_ZIP to $TEMP_DIR"
-          unzip -q "$WINDOWS_ZIP" -d "$TEMP_DIR"
-          DDNET_EXE=$(find "$TEMP_DIR" -type f -iname "DDNet.exe")
-          if [ -z "$DDNET_EXE" ]; then
-            echo "DDNet.exe not found in the extracted files."
-            exit 1
-          fi
-          echo "Copying DDNet.exe to ./artifacts/"
-          cp "$DDNET_EXE" ./artifacts/
-          rm -rf "$TEMP_DIR"
-          echo "DDNet.exe has been successfully copied to ./artifacts/"
-
       - name: List artifacts directory
         run: |
           echo "Listing ./artifacts directory:"
@@ -173,14 +153,3 @@ jobs:
           asset_path: ./artifacts/${{ env.CLIENT_NAME }}-android.apk
           asset_name: ${{ env.CLIENT_NAME }}-android.apk
           asset_content_type: application/apk
-
-      - name: Upload Raw exe
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/DDNet.exe
-          asset_name: DDNet.exe
-          asset_content_type: application/exe
-          

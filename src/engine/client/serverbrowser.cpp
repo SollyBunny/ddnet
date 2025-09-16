@@ -51,6 +51,13 @@ static bool MatchesExactly(const char *a, const char *b)
 	return str_comp(a, &b[1]) == 0;
 }
 
+static NETADDR CommunityAddressKey(const NETADDR &Addr)
+{
+	NETADDR AddressKey = Addr;
+	AddressKey.type &= ~NETTYPE_TW7;
+	return AddressKey;
+}
+
 CServerBrowser::CServerBrowser() :
 	m_CommunityCache(this),
 	m_CountriesFilter(&m_CommunityCache),
@@ -1170,7 +1177,7 @@ void CServerBrowser::UpdateFromHttp()
 		Want = [this, pWantedCommunity, IsNoneCommunity](const NETADDR *pAddrs, int NumAddrs) -> bool {
 			for(int AddressIndex = 0; AddressIndex < NumAddrs; AddressIndex++)
 			{
-				const auto CommunityServer = m_CommunityServersByAddr.find(pAddrs[AddressIndex]);
+				const auto CommunityServer = m_CommunityServersByAddr.find(CommunityAddressKey(pAddrs[AddressIndex]));
 				if(CommunityServer != m_CommunityServersByAddr.end())
 				{
 					if(IsNoneCommunity)
@@ -1496,20 +1503,26 @@ void CServerBrowser::LoadDDNetServers()
 	m_vCommunities.clear();
 	m_CommunityServersByAddr.clear();
 
-	if(!m_pDDNetInfo)
+	// TClient
+	std::vector<json_value *> vCommunities;
+	if(m_pDDNetInfo)
 	{
-		return;
+		const json_value &Communities = (*m_pDDNetInfo)["communities"];
+		if(Communities.type == json_array)
+		{
+			vCommunities.insert(
+				vCommunities.end(),
+				Communities.u.array.values,
+				Communities.u.array.values + Communities.u.array.length
+			);
+		}
 	}
-
-	const json_value &Communities = (*m_pDDNetInfo)["communities"];
-	if(Communities.type != json_array)
+	if(m_CustomCommunitiesFunction)
+		m_CustomCommunitiesFunction(vCommunities);
+	
+	for(unsigned CommunityIndex = 0; CommunityIndex < vCommunities.size(); ++CommunityIndex)
 	{
-		return;
-	}
-
-	for(unsigned CommunityIndex = 0; CommunityIndex < Communities.u.array.length; ++CommunityIndex)
-	{
-		const json_value &Community = Communities[CommunityIndex];
+		const json_value &Community = *vCommunities[CommunityIndex];
 		if(Community.type != json_object)
 		{
 			log_error("serverbrowser", "invalid community (CommunityIndex=%d)", (int)CommunityIndex);
@@ -1594,7 +1607,7 @@ void CServerBrowser::LoadDDNetServers()
 		{
 			for(const auto &Server : Country.Servers())
 			{
-				m_CommunityServersByAddr.emplace(Server.Address(), CCommunityServer(NewCommunity.Id(), Country.Name(), Server.TypeName()));
+				m_CommunityServersByAddr.emplace(CommunityAddressKey(Server.Address()), CCommunityServer(NewCommunity.Id(), Country.Name(), Server.TypeName()));
 			}
 		}
 		m_vCommunities.push_back(std::move(NewCommunity));
@@ -1642,7 +1655,7 @@ void CServerBrowser::UpdateServerCommunity(CServerInfo *pInfo) const
 {
 	for(int AddressIndex = 0; AddressIndex < pInfo->m_NumAddresses; AddressIndex++)
 	{
-		const auto Community = m_CommunityServersByAddr.find(pInfo->m_aAddresses[AddressIndex]);
+		const auto Community = m_CommunityServersByAddr.find(CommunityAddressKey(pInfo->m_aAddresses[AddressIndex]));
 		if(Community != m_CommunityServersByAddr.end())
 		{
 			str_copy(pInfo->m_aCommunityId, Community->second.CommunityId());
