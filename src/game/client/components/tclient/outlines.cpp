@@ -10,7 +10,8 @@
 #include "outlines.h"
 
 // The order of this is the order of priority for outlines
-enum {
+enum
+{
 	OUTLINE_NONE = 0,
 	OUTLINE_UNFREEZE,
 	OUTLINE_FREEZE,
@@ -19,8 +20,11 @@ enum {
 	OUTLINE_SOLID,
 };
 
-enum class OutlineLayer {
-	GAME, FRONT, TELE
+enum class OutlineLayer
+{
+	GAME,
+	FRONT,
+	TELE
 };
 
 class COutLineLayer
@@ -46,6 +50,7 @@ private:
 			return pThis->Layers()->TeleLayer()->m_Tele;
 		dbg_assert(false, "Invalid value for m_Type");
 	}
+
 public:
 	const OutlineLayer m_Type;
 	void GetMeta(CGameClient *pThis, ivec2 &Size) const
@@ -172,7 +177,7 @@ void COutlines::OnRender()
 		for(int x = StartX; x < EndX; x++)
 		{
 			const int Type = GetTile(x, y);
-			if (Type == OUTLINE_NONE)
+			if(Type == OUTLINE_NONE)
 				continue;
 			class COutlineConfig
 			{
@@ -182,15 +187,15 @@ void COutlines::OnRender()
 				const unsigned int &m_Color;
 			};
 			const COutlineConfig Config = [&]() -> COutlineConfig {
-				if (Type == OUTLINE_SOLID)
+				if(Type == OUTLINE_SOLID)
 					return {g_Config.m_TcOutlineSolid, g_Config.m_TcOutlineWidthSolid, g_Config.m_TcOutlineColorSolid};
-				if (Type == OUTLINE_FREEZE)
+				if(Type == OUTLINE_FREEZE)
 					return {g_Config.m_TcOutlineFreeze, g_Config.m_TcOutlineWidthFreeze, g_Config.m_TcOutlineColorFreeze};
-				if (Type == OUTLINE_UNFREEZE)
+				if(Type == OUTLINE_UNFREEZE)
 					return {g_Config.m_TcOutlineUnfreeze, g_Config.m_TcOutlineWidthUnfreeze, g_Config.m_TcOutlineColorUnfreeze};
-				if (Type == OUTLINE_KILL)
+				if(Type == OUTLINE_KILL)
 					return {g_Config.m_TcOutlineKill, g_Config.m_TcOutlineWidthKill, g_Config.m_TcOutlineColorKill};
-				if (Type == OUTLINE_TELE)
+				if(Type == OUTLINE_TELE)
 					return {g_Config.m_TcOutlineTele, g_Config.m_TcOutlineWidthTele, g_Config.m_TcOutlineColorTele};
 				dbg_assert(false, "Invalid value for Type at %d, %d/%d, %d", x, y, m_MapDataSize.x, m_MapDataSize.y);
 			}();

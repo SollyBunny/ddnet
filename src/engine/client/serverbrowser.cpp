@@ -1513,13 +1513,12 @@ void CServerBrowser::LoadDDNetServers()
 			vCommunities.insert(
 				vCommunities.end(),
 				Communities.u.array.values,
-				Communities.u.array.values + Communities.u.array.length
-			);
+				Communities.u.array.values + Communities.u.array.length);
 		}
 	}
 	if(m_CustomCommunitiesFunction)
 		m_CustomCommunitiesFunction(vCommunities);
-	
+
 	for(unsigned CommunityIndex = 0; CommunityIndex < vCommunities.size(); ++CommunityIndex)
 	{
 		const json_value &Community = *vCommunities[CommunityIndex];

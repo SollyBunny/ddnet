@@ -54,8 +54,7 @@ void CCustomCommunities::CustomCommunitiesFunction(std::vector<json_value *> &vC
 			vCommunities.insert(
 				vCommunities.end(),
 				Communities.u.array.values,
-				Communities.u.array.values + Communities.u.array.length
-			);
+				Communities.u.array.values + Communities.u.array.length);
 		}
 	}
 }
