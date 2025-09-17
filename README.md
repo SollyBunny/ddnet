@@ -3,7 +3,7 @@
 A combination of
 * [DDNet](https://github.com/ddnet/ddnet/)
 * [TClient](https://github.com/sjrc6/TaterClient-ddnet/)
-* ~~[DDNet Insta](https://github.com/ddnet-insta/ddnet-insta/)~~
+* [DDNet Insta](https://github.com/ddnet-insta/ddnet-insta/)
 * ~~[Infclass Client](https://github.com/infclass/infclass-client)~~
 
 ## Download
@@ -20,7 +20,7 @@ Here are the links for your convenience
 
 * [DDNet](https://github.com/ddnet/ddnet/compare/master...SollyBunny:ddnet:master)
 * [TClient](https://github.com/sjrc6/TaterClient-ddnet/compare/master...SollyBunny:ddnet:master)
-* ~~[DDNet Insta](https://github.com/ddnet-insta/ddnet-insta/compare/master...SollyBunny:ddnet:master)~~
+* [DDNet Insta](https://github.com/ddnet-insta/ddnet-insta/compare/master...SollyBunny:ddnet:master)
 * ~~[Infclass Client](https://github.com/infclass/infclass-client/compare/infc-0.2.0-on-19.1...SollyBunny:ddnet:master)~~
 
 ### Webhook Tutorial
