@@ -62,6 +62,18 @@ public:
 
 class CServer : public IServer
 {
+	// ddnet-insta
+public:
+	std::vector<std::string> m_vMapPool;
+	void AddMapToRandomPool(const char *pMap) override;
+	void ClearRandomMapPool() override;
+	const char *GetRandomMapFromPool() override;
+	void ShutdownServer() override { m_RunServer = STOPPING; };
+	CAuthManager *AuthManager() override { return &m_AuthManager; }
+	static void ConRedirect(IConsole::IResult *pResult, void *pUser);
+	bool SixupUsernameAuth(int ClientId, const char *pCredentials) override;
+
+private:
 	friend class CServerLogger;
 
 	class IGameServer *m_pGameServer;

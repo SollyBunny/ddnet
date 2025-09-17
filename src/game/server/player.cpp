@@ -23,9 +23,12 @@ CPlayer::CPlayer(CGameContext *pGameServer, uint32_t UniqueClientId, int ClientI
 	m_UniqueClientId(UniqueClientId)
 {
 	m_pGameServer = pGameServer;
+	m_RespawnTick = Server()->Tick(); // ddnet-insta
+	m_HasGhostCharInGame = false; // ddnet-insta
 	m_ClientId = ClientId;
-	m_Team = GameServer()->m_pController->ClampTeam(Team);
+	m_Team = Team;
 	m_NumInputs = 0;
+	m_Spawning = false;
 	Reset();
 	GameServer()->Antibot()->OnPlayerInit(m_ClientId);
 }
@@ -147,6 +150,8 @@ void CPlayer::Reset()
 	m_RescueMode = RESCUEMODE_AUTO;
 
 	m_CameraInfo.Reset();
+
+	GameServer()->m_pController->InitPlayer(this); // ddnet-insta
 }
 
 static int PlayerFlags_SixToSeven(int Flags)
@@ -223,10 +228,8 @@ void CPlayer::Tick()
 
 	if(!GameServer()->m_World.m_Paused)
 	{
-		int EarliestRespawnTick = m_PreviousDieTick + Server()->TickSpeed() * 3;
-		int RespawnTick = maximum(m_DieTick, EarliestRespawnTick) + 2;
-		if(!m_pCharacter && RespawnTick <= Server()->Tick())
-			m_Spawning = true;
+		if(!m_pCharacter && m_DieTick + Server()->TickSpeed() * 3 <= Server()->Tick())
+			Respawn();
 
 		if(m_pCharacter)
 		{
@@ -242,11 +245,12 @@ void CPlayer::Tick()
 				m_pCharacter = nullptr;
 			}
 		}
-		else if(m_Spawning && !m_WeakHookSpawn)
+		else if(m_Spawning && !m_WeakHookSpawn && m_RespawnTick <= Server()->Tick())
 			TryRespawn();
 	}
 	else
 	{
+		++m_RespawnTick;
 		++m_DieTick;
 		++m_PreviousDieTick;
 		++m_JoinTick;
@@ -353,6 +357,8 @@ void CPlayer::Snap(int SnappingClient)
 	if(SnappingClient != m_ClientId && g_Config.m_SvHideScore)
 		Score = -9999;
 
+	Score = GameServer()->m_pController->SnapPlayerScore(SnappingClient, this, Score); // ddnet-insta
+
 	if(!Server()->IsSixup(SnappingClient))
 	{
 		CNetObj_PlayerInfo *pPlayerInfo = Server()->SnapNewItem<CNetObj_PlayerInfo>(id);
@@ -369,6 +375,9 @@ void CPlayer::Snap(int SnappingClient)
 			// In older versions the SPECTATORS TEAM was also used if the own player is in PAUSE_PAUSED or if any player is in PAUSE_SPEC.
 			pPlayerInfo->m_Team = (m_Paused != PAUSE_PAUSED || m_ClientId != SnappingClient) && m_Paused < PAUSE_SPEC ? m_Team : TEAM_SPECTATORS;
 		}
+
+		// ddnet-insta
+		GameServer()->m_pController->SnapPlayer6(SnappingClient, this, pClientInfo, pPlayerInfo);
 	}
 	else
 	{
@@ -381,10 +390,15 @@ void CPlayer::Snap(int SnappingClient)
 			pPlayerInfo->m_PlayerFlags |= protocol7::PLAYERFLAG_AIM;
 		if(Server()->IsRconAuthed(m_ClientId) && ((SnappingClient >= 0 && Server()->IsRconAuthed(SnappingClient)) || !Server()->HasAuthHidden(m_ClientId)))
 			pPlayerInfo->m_PlayerFlags |= protocol7::PLAYERFLAG_ADMIN;
+		if(!GameServer()->m_pController->IsPlayerReadyMode() || m_IsReadyToPlay)
+			pPlayerInfo->m_PlayerFlags |= protocol7::PLAYERFLAG_READY;
 
 		// Times are in milliseconds for 0.7
-		pPlayerInfo->m_Score = m_Score.has_value() ? GameServer()->Score()->PlayerData(m_ClientId)->m_BestTime * 1000 : -1;
+		pPlayerInfo->m_Score = Score; // ddnet-insta moved milliseconds code to SnapPlayerScore()
 		pPlayerInfo->m_Latency = Latency;
+
+		// ddnet-insta
+		pPlayerInfo->m_PlayerFlags = GameServer()->m_pController->SnapPlayerFlags7(SnappingClient, this, pPlayerInfo->m_PlayerFlags);
 	}
 
 	if(m_ClientId == SnappingClient && (m_Team == TEAM_SPECTATORS || m_Paused))
@@ -502,6 +516,9 @@ void CPlayer::Snap(int SnappingClient)
 		pSpecChar->m_X = m_pCharacter->Core()->m_Pos.x;
 		pSpecChar->m_Y = m_pCharacter->Core()->m_Pos.y;
 	}
+
+	// ddnet-insta
+	GameServer()->m_pController->SnapDDNetPlayer(SnappingClient, this, pDDNetPlayer);
 }
 
 void CPlayer::FakeSnap()
@@ -648,7 +665,21 @@ void CPlayer::Respawn(bool WeakHook)
 	{
 		m_WeakHookSpawn = WeakHook;
 		m_Spawning = true;
+
+		// ddnet-insta
+		if(m_IsDead)
+		{
+			m_DeadSpecMode = true;
+			m_Spawning = false;
+		}
+		else
+		{
+			m_IsReadyToPlay = true;
+		}
+		return;
 	}
+
+	m_DeadSpecMode = false;
 }
 
 CCharacter *CPlayer::ForceSpawn(vec2 Pos)
@@ -675,6 +706,9 @@ void CPlayer::SetTeam(int Team, bool DoChatMsg)
 	Msg.m_Silent = !DoChatMsg;
 	Msg.m_CooldownTick = m_LastSetTeam + Server()->TickSpeed() * g_Config.m_SvTeamChangeDelay;
 	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL | MSGFLAG_NORECORD, -1);
+
+	// we got to wait 0.5 secs before respawning
+	m_RespawnTick = Server()->Tick() + Server()->TickSpeed() / 2;
 
 	if(Team == TEAM_SPECTATORS)
 	{
@@ -982,7 +1016,7 @@ void CPlayer::ProcessScoreResult(CScorePlayerResult &Result)
 			if(Result.m_Data.m_Info.m_Time.has_value())
 			{
 				GameServer()->Score()->PlayerData(m_ClientId)->Set(Result.m_Data.m_Info.m_Time.value(), Result.m_Data.m_Info.m_aTimeCp);
-				m_Score = Result.m_Data.m_Info.m_Time;
+				GameServer()->m_pController->OnDDRaceTimeLoad(this, Result.m_Data.m_Info.m_Time.value()); // ddnet-insta
 			}
 			Server()->ExpireServerInfo();
 			int Birthday = Result.m_Data.m_Info.m_Birthday;

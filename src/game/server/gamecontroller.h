@@ -8,6 +8,15 @@
 #include <engine/shared/protocol.h>
 #include <game/server/teams.h>
 
+#include <engine/shared/http.h> // ddnet-insta
+#include <game/server/gamecontext.h> // ddnet-insta
+#include <game/server/instagib/enums.h> // ddnet-insta
+#include <game/server/instagib/sql_stats.h> // ddnet-insta
+#include <game/server/instagib/structs.h> // ddnet-insta
+
+#include <generated/protocol.h>
+#include <generated/protocol7.h>
+
 struct CScoreLoadBestTimeResult;
 
 /*
@@ -17,6 +26,9 @@ struct CScoreLoadBestTimeResult;
 */
 class IGameController
 {
+#define IN_CLASS_IGAMECONTROLLER
+#include <game/server/instagib/gamecontroller.h>
+
 	friend class CSaveTeam; // need access to GameServer() and Server()
 
 protected:
@@ -129,7 +141,7 @@ public:
 	virtual void DoWarmup(int Seconds);
 
 	void StartRound();
-	void EndRound();
+	// void EndRound(); // ddnet-insta
 	void ChangeMap(const char *pToMap);
 
 	/*

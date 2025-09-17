@@ -1695,6 +1695,10 @@ void CServer::ProcessClientPacket(CNetChunk *pPacket)
 		SendMsg(&Packer, MSGFLAG_VITAL, ClientId);
 	}
 
+	// ddnet-insta
+	if(GameServer()->OnClientPacket(ClientId, Sys, Msg, pPacket, &Unpacker))
+		return;
+
 	if(Sys)
 	{
 		// system message
@@ -2642,7 +2646,7 @@ void CServer::UpdateRegisterServerInfo()
 	JsonWriter.WriteStrValue(GameServer()->Version());
 
 	JsonWriter.WriteAttribute("client_score_kind");
-	JsonWriter.WriteStrValue("time"); // "points" or "time"
+	JsonWriter.WriteStrValue(GameServer()->ServerInfoClientScoreKind()); // "points" or "time"
 
 	JsonWriter.WriteAttribute("requires_login");
 	JsonWriter.WriteBoolValue(false);

@@ -13,6 +13,13 @@
 #include <memory>
 #include <optional>
 
+#include <game/server/instagib/enums.h>
+#include <game/server/instagib/ip_storage.h>
+#include <game/server/instagib/sql_stats.h>
+#include <game/server/instagib/sql_stats_player.h>
+#include <game/server/instagib/structs.h>
+#include <game/server/teeinfo.h>
+
 class CCharacter;
 class CGameContext;
 class IServer;
@@ -23,6 +30,8 @@ struct CScorePlayerResult;
 class CPlayer
 {
 	MACRO_ALLOC_POOL_ID()
+#define IN_CLASS_PLAYER
+#include <game/server/gamemodes/base_pvp/player.h>
 
 public:
 	CPlayer(CGameContext *pGameServer, uint32_t UniqueClientId, int ClientId, int Team);
@@ -233,6 +242,7 @@ public:
 	int64_t m_EligibleForFinishCheck;
 	bool m_VotedForPractice;
 	int m_SwapTargetsClientId; //Client ID of the swap target for the given player
+
 	bool m_BirthdayAnnounced;
 
 	int m_RescueMode;

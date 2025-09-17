@@ -412,6 +412,10 @@ const char *CGameTeams::SetCharacterTeam(int ClientId, int Team)
 
 void CGameTeams::SetForceCharacterTeam(int ClientId, int Team)
 {
+	// ddnet-insta
+	if(GameServer()->m_pController && GameServer()->m_pController->OnSetDDRaceTeam(ClientId, Team))
+		return;
+
 	m_aTeeStarted[ClientId] = false;
 	m_aTeeFinished[ClientId] = false;
 	int OldTeam = m_Core.Team(ClientId);
@@ -536,8 +540,8 @@ CClientMask CGameTeams::TeamMask(int Team, int ExceptId, int Asker, int VersionF
 		{ // Not spectator
 			if(i != Asker)
 			{ // Actions of other players
-				if(!Character(i))
-					continue; // Player is currently dead
+				// if(!Character(i)) // commented out by ddnet-insta
+				// 	continue; // Player is currently dead
 				if(GetPlayer(i)->m_ShowOthers == SHOW_OTHERS_ONLY_TEAM)
 				{
 					if(m_Core.Team(i) != Team && m_Core.Team(i) != TEAM_SUPER)

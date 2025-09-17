@@ -193,3 +193,5 @@ void CGameControllerDDRace::DoTeamChange(class CPlayer *pPlayer, int Team, bool 
 
 	IGameController::DoTeamChange(pPlayer, Team, DoChatMsg);
 }
+
+REGISTER_GAMEMODE(ddnet, CGameControllerDDRace(pGameServer));

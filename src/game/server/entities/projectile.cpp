@@ -11,6 +11,7 @@
 
 #include <game/server/gamecontext.h>
 #include <game/server/gamemodes/DDRace.h>
+#include <game/server/player.h>
 
 CProjectile::CProjectile(
 	CGameWorld *pGameWorld,
@@ -48,6 +49,31 @@ CProjectile::CProjectile(
 	m_BelongsToPracticeTeam = pOwnerChar && pOwnerChar->Teams()->IsPractice(pOwnerChar->Team());
 	m_DDRaceTeam = m_Owner == -1 ? 0 : GameServer()->GetDDRaceTeam(m_Owner);
 	m_IsSolo = pOwnerChar && pOwnerChar->GetCore().m_Solo;
+
+	m_AffectedCharacters = CClientMask().set();
+
+	if(m_Type == WEAPON_GRENADE)
+	{
+		m_AffectedCharacters = CClientMask().set().reset();
+
+		if(Owner >= 0 && Owner <= MAX_CLIENTS)
+		{
+			for(int i = 0; i < MAX_CLIENTS; ++i)
+			{
+				if(GameServer()->m_apPlayers[i])
+				{
+					CPlayer *pPlayer = GameServer()->m_apPlayers[i];
+					if(pPlayer->GetTeam() != TEAM_SPECTATORS &&
+						pPlayer->GetCharacter() &&
+						pPlayer->GetCharacter()->IsAlive() &&
+						!NetworkClipped(Owner, pPlayer->GetCharacter()->GetPos()))
+					{
+						m_AffectedCharacters.set(i);
+					}
+				}
+			}
+		}
+	}
 
 	GameWorld()->InsertEntity(this);
 }
@@ -164,7 +190,7 @@ void CProjectile::Tick()
 			for(int i = 0; i < Number; i++)
 			{
 				GameServer()->CreateExplosion(ColPos, m_Owner, m_Type, m_Owner == -1, (!pTargetChr ? -1 : pTargetChr->Team()),
-					(m_Owner != -1) ? TeamMask : CClientMask().set());
+					(m_Owner != -1) ? TeamMask : CClientMask().set(), m_AffectedCharacters);
 				GameServer()->CreateSound(ColPos, m_SoundImpact,
 					(m_Owner != -1) ? TeamMask : CClientMask().set());
 			}
@@ -267,7 +293,7 @@ void CProjectile::Tick()
 			}
 
 			GameServer()->CreateExplosion(ColPos, m_Owner, m_Type, m_Owner == -1, (!pOwnerChar ? -1 : pOwnerChar->Team()),
-				(m_Owner != -1) ? TeamMask : CClientMask().set());
+				(m_Owner != -1) ? TeamMask : CClientMask().set(), m_AffectedCharacters);
 			GameServer()->CreateSound(ColPos, m_SoundImpact,
 				(m_Owner != -1) ? TeamMask : CClientMask().set());
 		}

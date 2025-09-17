@@ -27,6 +27,8 @@ enum
 class CCharacter : public CEntity
 {
 	MACRO_ALLOC_POOL_ID()
+#define IN_CLASS_CHARACTER
+#include <game/server/gamemodes/base_pvp/character.h>
 
 	// need to use core
 	friend class CSaveTee;
@@ -85,7 +87,7 @@ public:
 	bool IncreaseHealth(int Amount);
 	bool IncreaseArmor(int Amount);
 
-	void GiveWeapon(int Weapon, bool Remove = false);
+	void GiveWeapon(int Weapon, bool Remove = false, int Ammo = -1);
 	void GiveNinja();
 	void RemoveNinja();
 	void SetEndlessHook(bool Enable);

@@ -31,7 +31,6 @@ IGameController::IGameController(class CGameContext *pGameServer) :
 	m_pGameType = "unknown";
 
 	//
-	DoWarmup(g_Config.m_SvWarmup);
 	m_GameOverTick = -1;
 	m_SuddenDeath = 0;
 	m_RoundStartTick = Server()->Tick();
@@ -40,6 +39,51 @@ IGameController::IGameController(class CGameContext *pGameServer) :
 	m_aMapWish[0] = 0;
 
 	m_CurrentRecord = 0;
+
+	// ddnet-insta
+	m_apFlags[0] = nullptr;
+	m_apFlags[1] = nullptr;
+	m_Warmup = 0;
+	m_GameState = IGS_GAME_RUNNING;
+	m_GameStateTimer = TIMER_INFINITE;
+	m_GameStartTick = Server()->Tick();
+	// if(Config()->m_SvWarmup)
+	// 	SetGameState(IGS_WARMUP_USER, Config()->m_SvWarmup);
+	// else
+	// 	SetGameState(IGS_WARMUP_GAME, TIMER_INFINITE);
+
+	// if new game starts with warmup
+	// then ready change wont kick in
+	// because it only pauses running games
+	// think about wether we want warump with timer infinite at all?
+	// if yes it should also be active when a round finishes
+	// until a new restart is triggered
+	// then we also have to indicate to users
+	// that there is currently no game running
+	// also nice for tournaments to activate public chat again
+	//
+	// i drafted out a sv_casual_rounds config that decides wether
+	// games do go into state warmup infinite or running after match ends
+	// and then decided to not fully implement the idea
+	// because even for pro games it is confusing that rounds do not auto start
+	// one might forget to !restart and then we play a full game in state warmup
+	// which will block a bunch of features such as winning pausing the game
+	// so if we go down that route make sure to properly indicate
+	// that a game is not running
+
+	m_aTeamSize[TEAM_RED] = 0;
+	m_aTeamSize[TEAM_BLUE] = 0;
+	m_GameStartTick = Server()->Tick();
+	m_aTeamscore[TEAM_RED] = 0;
+	m_aTeamscore[TEAM_BLUE] = 0;
+
+	// info
+	m_GameFlags = 0;
+	m_pGameType = "unknown";
+	m_GameInfo.m_MatchCurrent = 0;
+	m_GameInfo.m_MatchNum = 0;
+	m_GameInfo.m_ScoreLimit = Config()->m_SvScorelimit;
+	m_GameInfo.m_TimeLimit = Config()->m_SvTimelimit;
 }
 
 IGameController::~IGameController() = default;
@@ -447,23 +491,29 @@ void IGameController::OnPlayerDisconnect(class CPlayer *pPlayer, const char *pRe
 	}
 }
 
-void IGameController::EndRound()
-{
-	if(m_Warmup) // game can't end when we are running warmup
-		return;
-
-	GameServer()->m_World.m_Paused = true;
-	m_GameOverTick = Server()->Tick();
-	m_SuddenDeath = 0;
-}
-
 void IGameController::ResetGame()
 {
+	for(CPlayer *pPlayer : GameServer()->m_apPlayers)
+	{
+		if(!pPlayer)
+			continue;
+
+		pPlayer->m_HasGhostCharInGame = pPlayer->GetCharacter() != 0;
+	}
 	GameServer()->m_World.m_ResetRequested = true;
 }
 
 const char *IGameController::GetTeamName(int Team)
 {
+	// ddnet-insta
+	if(IsTeamPlay())
+	{
+		if(Team == TEAM_RED)
+			return "red team";
+		if(Team == TEAM_BLUE)
+			return "blue team";
+	}
+
 	if(Team == 0)
 		return "game";
 	return "spectators";
@@ -481,6 +531,8 @@ void IGameController::StartRound()
 	char aBuf[256];
 	str_format(aBuf, sizeof(aBuf), "start round type='%s' teamplay='%d'", m_pGameType, m_GameFlags & GAMEFLAG_TEAMS);
 	GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", aBuf);
+
+	OnRoundStart(); // ddnet-insta
 }
 
 void IGameController::ChangeMap(const char *pToMap)
@@ -491,8 +543,13 @@ void IGameController::ChangeMap(const char *pToMap)
 void IGameController::OnReset()
 {
 	for(auto &pPlayer : GameServer()->m_apPlayers)
-		if(pPlayer)
-			pPlayer->Respawn();
+	{
+		if(!pPlayer)
+			continue;
+		pPlayer->Respawn();
+		pPlayer->m_RespawnTick = Server()->Tick() + Server()->TickSpeed() / 2;
+		pPlayer->m_Score = 0;
+	}
 }
 
 int IGameController::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon)
@@ -520,20 +577,103 @@ void IGameController::HandleCharacterTiles(CCharacter *pChr, int MapIndex)
 
 void IGameController::DoWarmup(int Seconds)
 {
-	if(Seconds < 0)
-		m_Warmup = 0;
-	else
-		m_Warmup = Seconds * Server()->TickSpeed();
+	// gets overwritten by SetGameState
+	// but SetGameState might not set it
+	// and then it is unitialized
+	m_Warmup = 0;
+	SetGameState(IGS_WARMUP_USER, Seconds);
 }
 
 void IGameController::Tick()
 {
+	// handle game states
+	if(m_GameState != IGS_GAME_RUNNING)
+	{
+		if(m_GameStateTimer > 0)
+		{
+			--m_GameStateTimer;
+
+			// 0.6 can do warmup timers (world unpaused incoming reload)
+			// but no game countdown timers (world paused incoming unpause)
+			if(m_GameState == IGS_START_COUNTDOWN_ROUND_START || m_GameState == IGS_START_COUNTDOWN_UNPAUSE)
+			{
+				static int s_LastSecs = -1;
+				int Secs = (m_GameStateTimer / Server()->TickSpeed()) + 1;
+				if(s_LastSecs != Secs)
+				{
+					s_LastSecs = Secs;
+					if(Secs == 1)
+						GameServer()->SendBroadcastSix("", false);
+					else
+					{
+						char aBuf[512];
+						str_format(aBuf, sizeof(aBuf), "Game starts in: %d", Secs);
+						GameServer()->SendBroadcastSix(aBuf, false);
+					}
+				}
+			}
+		}
+
+		if(m_GameStateTimer == 0)
+		{
+			// timer fires
+			switch(m_GameState)
+			{
+			case IGS_WARMUP_USER:
+				// end warmup
+				SetGameState(IGS_WARMUP_USER, 0);
+				break;
+			case IGS_START_COUNTDOWN_ROUND_START:
+			case IGS_START_COUNTDOWN_UNPAUSE:
+				// unpause the game
+				SetGameState(IGS_GAME_RUNNING);
+				break;
+			case IGS_GAME_PAUSED:
+				// end pause
+				SetGameState(IGS_GAME_PAUSED, 0);
+				break;
+			case IGS_END_ROUND:
+				StartRound();
+				break;
+			case IGS_WARMUP_GAME:
+			case IGS_GAME_RUNNING:
+				// not effected
+				break;
+			}
+		}
+		else
+		{
+			// timer still running
+			switch(m_GameState)
+			{
+			case IGS_WARMUP_USER:
+				// check if player ready mode was disabled and it waits that all players are ready -> end warmup
+				if(!Config()->m_SvPlayerReadyMode && m_GameStateTimer == TIMER_INFINITE)
+					SetGameState(IGS_WARMUP_USER, 0);
+				break;
+			case IGS_START_COUNTDOWN_ROUND_START:
+			case IGS_START_COUNTDOWN_UNPAUSE:
+			case IGS_GAME_PAUSED:
+				// freeze the game
+				++m_RoundStartTick;
+				++m_GameStartTick;
+				break;
+			case IGS_WARMUP_GAME:
+			case IGS_GAME_RUNNING:
+			case IGS_END_ROUND:
+				// not effected
+				break;
+			}
+		}
+	}
+
 	// do warmup
 	if(m_Warmup)
 	{
 		m_Warmup--;
-		if(!m_Warmup)
-			StartRound();
+		// ddnet-insta uses StartRound() in SetGameState() vanilla style
+		// if(!m_Warmup)
+		// 	StartRound();
 	}
 
 	if(m_GameOverTick != -1)
@@ -580,8 +720,11 @@ void IGameController::Snap(int SnappingClient)
 		pGameInfoObj->m_GameStateFlags |= GAMESTATEFLAG_SUDDENDEATH;
 	if(GameServer()->m_World.m_Paused)
 		pGameInfoObj->m_GameStateFlags |= GAMESTATEFLAG_PAUSED;
-	pGameInfoObj->m_RoundStartTick = m_RoundStartTick;
+	pGameInfoObj->m_RoundStartTick = SnapRoundStartTick(SnappingClient);
 	pGameInfoObj->m_WarmupTimer = m_Warmup;
+
+	pGameInfoObj->m_ScoreLimit = g_Config.m_SvScorelimit;
+	pGameInfoObj->m_TimeLimit = SnapTimeLimit(SnappingClient);
 
 	pGameInfoObj->m_RoundNum = 0;
 	pGameInfoObj->m_RoundCurrent = m_RoundCount + 1;
@@ -634,6 +777,9 @@ void IGameController::Snap(int SnappingClient)
 		pGameInfoEx->m_Flags2 |= GAMEINFOFLAG2_NO_WEAK_HOOK;
 	pGameInfoEx->m_Version = GAMEINFO_CURVERSION;
 
+	pGameInfoEx->m_Flags = SnapGameInfoExFlags(SnappingClient, pGameInfoEx->m_Flags); // ddnet-insta
+	pGameInfoEx->m_Flags2 = SnapGameInfoExFlags2(SnappingClient, pGameInfoEx->m_Flags2); // ddnet-insta
+
 	if(Server()->IsSixup(SnappingClient))
 	{
 		protocol7::CNetObj_GameData *pGameData = Server()->SnapNewItem<protocol7::CNetObj_GameData>(0);
@@ -658,6 +804,46 @@ void IGameController::Snap(int SnappingClient)
 		pRaceData->m_BestTime = round_to_int(m_CurrentRecord * 1000);
 		pRaceData->m_Precision = 2;
 		pRaceData->m_RaceFlags = protocol7::RACEFLAG_KEEP_WANTED_WEAPON;
+
+		// ddnet-insta
+		if(IsTeamPlay())
+		{
+			protocol7::CNetObj_GameDataTeam *pGameDataTeam = static_cast<protocol7::CNetObj_GameDataTeam *>(Server()->SnapNewItem(-protocol7::NETOBJTYPE_GAMEDATATEAM, 0, sizeof(protocol7::CNetObj_GameDataTeam)));
+			if(!pGameDataTeam)
+				return;
+
+			pGameDataTeam->m_TeamscoreRed = m_aTeamscore[TEAM_RED];
+			pGameDataTeam->m_TeamscoreBlue = m_aTeamscore[TEAM_BLUE];
+		}
+		switch(m_GameState)
+		{
+		case IGS_WARMUP_GAME:
+		case IGS_WARMUP_USER:
+			pGameData->m_GameStateFlags |= protocol7::GAMESTATEFLAG_WARMUP;
+			if(m_GameStateTimer != TIMER_INFINITE)
+				pGameData->m_GameStateEndTick = Server()->Tick() + m_GameStateTimer;
+			break;
+		case IGS_START_COUNTDOWN_ROUND_START:
+		case IGS_START_COUNTDOWN_UNPAUSE:
+			pGameData->m_GameStateFlags |= protocol7::GAMESTATEFLAG_STARTCOUNTDOWN | protocol7::GAMESTATEFLAG_PAUSED;
+			if(m_GameStateTimer != TIMER_INFINITE)
+				pGameData->m_GameStateEndTick = Server()->Tick() + m_GameStateTimer;
+			break;
+		case IGS_GAME_PAUSED:
+			pGameData->m_GameStateFlags |= protocol7::GAMESTATEFLAG_PAUSED;
+			if(m_GameStateTimer != TIMER_INFINITE)
+				pGameData->m_GameStateEndTick = Server()->Tick() + m_GameStateTimer;
+			break;
+		case IGS_END_ROUND:
+			pGameData->m_GameStateFlags = pGameData->m_GameStateFlags & ~protocol7::GAMESTATEFLAG_PAUSED; // clear pause
+			// pGameData->m_GameStateFlags |= protocol7::GAMESTATEFLAG_ROUNDOVER;
+			pGameData->m_GameStateFlags |= protocol7::GAMESTATEFLAG_GAMEOVER;
+			pGameData->m_GameStateEndTick = Server()->Tick() - m_GameStartTick - TIMER_END / 2 * Server()->TickSpeed() + m_GameStateTimer;
+			break;
+		case IGS_GAME_RUNNING:
+			// not effected
+			break;
+		}
 	}
 
 	GameServer()->SnapSwitchers(SnappingClient);

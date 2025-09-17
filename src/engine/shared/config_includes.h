@@ -13,3 +13,6 @@ SET_CONFIG_DOMAIN(ConfigDomain::TCLIENT)
 
 SET_CONFIG_DOMAIN(ConfigDomain::SOLLYS)
 #include "config_variables_sollys.h"
+
+SET_CONFIG_DOMAIN(ConfigDomain::INSTA)
+#include "config_variables_insta.h"

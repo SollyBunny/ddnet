@@ -10,6 +10,8 @@
 #include <game/teamscore.h>
 #include <game/version.h>
 
+#include <game/server/instagib/version.h>
+
 #include "gamecontext.h"
 #include "player.h"
 #include "score.h"
@@ -48,6 +50,14 @@ void CGameContext::ConCredits(IConsole::IResult *pResult, void *pUserData)
 void CGameContext::ConInfo(IConsole::IResult *pResult, void *pUserData)
 {
 	CGameContext *pSelf = (CGameContext *)pUserData;
+	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp",
+		"DDNet-insta " DDNET_INSTA_VERSIONSTR " by ChillerDragon");
+	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp",
+		"https://github.com/ddnet-insta/ddnet-insta/");
+	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp",
+		"built on: " DDNET_INSTA_BUILD_DATE);
+	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp",
+		"based on:");
 	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp",
 		"DDraceNetwork Mod. Version: " GAME_VERSION);
 	if(GIT_SHORTREV_HASH)
@@ -1376,6 +1386,10 @@ void CGameContext::ConTeam(IConsole::IResult *pResult, void *pUserData)
 
 	CPlayer *pPlayer = pSelf->m_apPlayers[pResult->m_ClientId];
 	if(!pPlayer)
+		return;
+
+	// ddnet-insta
+	if(pSelf->m_pController->OnTeamChatCmd(pResult))
 		return;
 
 	if(pResult->NumArguments() > 0)

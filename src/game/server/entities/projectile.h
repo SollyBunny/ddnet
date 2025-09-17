@@ -31,7 +31,7 @@ public:
 	void Snap(int SnappingClient) override;
 	void SwapClients(int Client1, int Client2) override;
 
-private:
+protected: // ddnet-insta protected instead of private for vanilla proj inheritance
 	vec2 m_Direction;
 	int m_LifeSpan;
 	int m_Owner;
@@ -50,6 +50,9 @@ private:
 	int m_DDRaceTeam;
 	bool m_IsSolo;
 	vec2 m_InitDir;
+
+	// ddnet-insta
+	CClientMask m_AffectedCharacters;
 
 public:
 	void SetBouncing(int Value);
