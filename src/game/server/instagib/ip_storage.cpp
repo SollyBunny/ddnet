@@ -84,6 +84,6 @@ void CIpStorageController::OnTick(int ServerTick)
 
 	if(Deleted)
 	{
-		log_info("ddnet-insta", "ip storage entries after cleanup: %ld", m_vEntries.size());
+		log_info("ddnet-insta", "ip storage entries after cleanup: %" PRIzu, m_vEntries.size());
 	}
 }
