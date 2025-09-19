@@ -221,7 +221,7 @@ public:
 
 	CGameContext();
 	CGameContext(int Reset);
-	~CGameContext();
+	~CGameContext() override;
 
 	void Clear();
 
