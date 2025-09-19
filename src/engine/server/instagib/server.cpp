@@ -94,13 +94,12 @@ bool CServer::SixupUsernameAuth(int ClientId, const char *pCredentials)
 
 	if(AuthLevel == -1)
 		return false;
-	if(m_aClients[ClientId].m_Authed == AuthLevel)
+	if(GetAuthedState(ClientId) == AuthLevel)
 		return false;
 
 	CMsgPacker Msgp(protocol7::NETMSG_RCON_AUTH_ON, true, true);
 	SendMsg(&Msgp, MSGFLAG_VITAL, ClientId);
 
-	m_aClients[ClientId].m_Authed = AuthLevel; // Keeping m_Authed around is unwise...
 	m_aClients[ClientId].m_AuthKey = KeySlot;
 	m_aClients[ClientId].m_pRconCmdToSend = Console()->FirstCommandInfo(ConsoleAccessLevel(ClientId), CFGFLAG_SERVER);
 	SendRconCmdGroupStart(ClientId);
