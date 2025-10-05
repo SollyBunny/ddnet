@@ -26,7 +26,7 @@ const char *CServer::GetRandomMapFromPool()
 	const char *pMap = m_vMapPool[RandIdx].c_str();
 
 	char aBuf[512];
-	str_format(aBuf, sizeof(aBuf), "Chose random map '%s' out of %zu maps", pMap, m_vMapPool.size());
+	str_format(aBuf, sizeof(aBuf), "Chose random map '%s' out of %" PRIzu " maps", pMap, m_vMapPool.size());
 	Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "ddnet-insta", aBuf);
 	return pMap;
 }
@@ -94,14 +94,12 @@ bool CServer::SixupUsernameAuth(int ClientId, const char *pCredentials)
 
 	if(AuthLevel == -1)
 		return false;
-	// TODO this is wrong!!!!
-	if(m_aClients[ClientId].m_AuthKey == AuthLevel)
+	if(GetAuthedState(ClientId) == AuthLevel)
 		return false;
 
 	CMsgPacker Msgp(protocol7::NETMSG_RCON_AUTH_ON, true, true);
 	SendMsg(&Msgp, MSGFLAG_VITAL, ClientId);
 
-	m_aClients[ClientId].m_AuthKey = AuthLevel; // Keeping m_Authed around is unwise...
 	m_aClients[ClientId].m_AuthKey = KeySlot;
 	m_aClients[ClientId].m_pRconCmdToSend = Console()->FirstCommandInfo(ConsoleAccessLevel(ClientId), CFGFLAG_SERVER);
 	SendRconCmdGroupStart(ClientId);

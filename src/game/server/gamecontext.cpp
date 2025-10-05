@@ -4126,7 +4126,7 @@ void CGameContext::OnInit(const void *pPersistentData)
 	m_pController = nullptr;
 	for(const auto &[String, Constructor] : Gamemodes())
 	{
-		if(str_comp(Config()->m_SvGametype, String.c_str()) == 0)
+		if(str_comp_nocase(Config()->m_SvGametype, String.c_str()) == 0)
 		{
 			m_pController = Constructor(this);
 			break;

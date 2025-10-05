@@ -54,8 +54,10 @@ void CGameControllerZcatch::UpdateCatchTicks(class CPlayer *pPlayer, ECatchUpdat
 				SendChat(-1, TEAM_ALL, aBuf);
 			return;
 		}
-		str_format(aBuf, sizeof(aBuf), "round end and player '%s' has both alive and dead tick counters set", Server()->ClientName(pPlayer->GetCid()));
-		dbg_assert(pPlayer->m_DeadSinceTick == 0 || pPlayer->m_AliveSinceTick == 0, aBuf);
+		dbg_assert(
+			pPlayer->m_DeadSinceTick == 0 || pPlayer->m_AliveSinceTick == 0,
+			"round end and player '%s' has both alive and dead tick counters set",
+			Server()->ClientName(pPlayer->GetCid()));
 
 		if(pPlayer->m_DeadSinceTick)
 		{

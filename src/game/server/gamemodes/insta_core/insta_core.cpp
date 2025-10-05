@@ -110,7 +110,7 @@ void CGameControllerInstaCore::OnPlayerConnect(CPlayer *pPlayer)
 		net_addr_str(Server()->ClientAddr(ClientId), aAddr, sizeof(aAddr), false);
 		log_info(
 			"ddnet-insta",
-			"player cid=%d name='%s' ip=%s loaded ip storage (in total there are %ld entries)",
+			"player cid=%d name='%s' ip=%s loaded ip storage (in total there are %" PRIzu " entries)",
 			ClientId,
 			Server()->ClientName(ClientId),
 			aAddr,
@@ -826,7 +826,7 @@ void CGameControllerInstaCore::RestoreFreezeStateOnRejoin(CPlayer *pPlayer)
 
 	if(Match)
 	{
-		log_info("ddnet-insta", "a frozen player rejoined removing slot %d (%zu left)", Index, m_vFrozenQuitters.size() - 1);
+		log_info("ddnet-insta", "a frozen player rejoined removing slot %d (%" PRIzu " left)", Index, m_vFrozenQuitters.size() - 1);
 		m_vFrozenQuitters.erase(m_vFrozenQuitters.begin() + Index);
 
 		pPlayer->m_FreezeOnSpawn = 20;
