@@ -1,8 +1,9 @@
 // https://github.com/Jupeyy/teeworlds-fng2-mod/blob/fng_06/src/game/server/laserText.cpp
-#include <game/server/gamecontext.h>
+#include "laser_text.h"
+
 #include <generated/protocol.h>
 
-#include "laser_text.h"
+#include <game/server/gamecontext.h>
 
 static const bool asciiTable[256][5][3] = {
 	{{false, false, false}, {false, false, false}, {false, false, false}, {false, false, false}, {false, false, false}}, // ascii 0

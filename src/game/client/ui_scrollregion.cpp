@@ -1,13 +1,13 @@
 /* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
+#include "ui_scrollregion.h"
+
 #include <base/system.h>
 #include <base/vmath.h>
 
 #include <engine/client.h>
 #include <engine/keys.h>
 #include <engine/shared/config.h>
-
-#include "ui_scrollregion.h"
 
 CScrollRegion::CScrollRegion()
 {
@@ -98,7 +98,7 @@ void CScrollRegion::End()
 		if(!ProgrammaticScroll)
 			m_ScrollSpeedMultiplier = 1.0f;
 
-		// Hack to allow slider scroll adjustment -Tater
+		// TClient: Hack to allow slider scroll adjustment
 		if(Input()->ModifierIsPressed())
 			m_ScrollDirection = SCROLLRELATIVE_NONE;
 
@@ -141,19 +141,19 @@ void CScrollRegion::End()
 	if(absolute(m_AnimInitScrollY - m_AnimTargetScrollY) < 0.5f)
 		m_AnimTime = 0.0f;
 
-	// Hack to allow slider scroll adjustment -Tater
-	if(!Input()->ModifierIsPressed())
+	if(m_AnimTime > 0.0f && !Input()->ModifierIsPressed()) // TClient: Hack to allow slider scroll adjustment
 	{
-		if(m_AnimTime > 0.0f)
+		m_AnimTime -= Client()->RenderFrameTime();
+		if(m_AnimTime < 0.0f)
 		{
-			m_AnimTime -= Client()->RenderFrameTime();
-			float AnimProgress = (1.0f - std::pow(m_AnimTime / m_AnimTimeMax, 3.0f)); // cubic ease out
-			m_ScrollY = m_AnimInitScrollY + (m_AnimTargetScrollY - m_AnimInitScrollY) * AnimProgress;
+			m_AnimTime = 0.0f;
 		}
-		else
-		{
-			m_ScrollY = m_AnimTargetScrollY;
-		}
+		float AnimProgress = (1.0f - std::pow(m_AnimTime / m_AnimTimeMax, 3.0f)); // cubic ease out
+		m_ScrollY = m_AnimInitScrollY + (m_AnimTargetScrollY - m_AnimInitScrollY) * AnimProgress;
+	}
+	else
+	{
+		m_ScrollY = m_AnimTargetScrollY;
 	}
 
 	Slider.y += m_ScrollY / MaxScroll * MaxSlider;

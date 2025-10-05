@@ -1,16 +1,13 @@
 /* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
-#include <cmath>
+#include "render.h"
+
+#include "animstate.h"
 
 #include <base/math.h>
 
-#include "animstate.h"
-#include "render.h"
-
 #include <engine/graphics.h>
 #include <engine/map.h>
-#include <game/client/gameclient.h>
-
 #include <engine/shared/config.h>
 
 #include <generated/client_data.h>
@@ -18,7 +15,10 @@
 #include <generated/protocol.h>
 #include <generated/protocol7.h>
 
+#include <game/client/gameclient.h>
 #include <game/mapitems.h>
+
+#include <cmath>
 
 CSkinDescriptor::CSkinDescriptor()
 {
@@ -526,7 +526,7 @@ void CRenderTools::RenderTee6(const CAnimState *pAnim, const CTeeRenderInfo *pIn
 				float BodyScale;
 				GetRenderTeeBodyScale(BaseSize, BodyScale);
 				Graphics()->TextureSet(OutLine == 1 ? pSkinTextures->m_BodyOutline : pSkinTextures->m_Body);
-				
+
 				// TClient
 				if(!pInfo->m_pSquishy || !pInfo->m_pSquishy->Render(*Graphics(), BodyPos, BaseSize, pAnim->GetBody()->m_Angle * pi * 2.0f, pInfo->m_ColorBody.WithAlpha(Alpha), false))
 					Graphics()->RenderQuadContainerAsSprite(m_TeeQuadContainerIndex, OutLine, BodyPos.x, BodyPos.y, BodyScale, BodyScale);

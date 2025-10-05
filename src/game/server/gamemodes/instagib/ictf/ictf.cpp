@@ -1,6 +1,6 @@
-#include <game/server/entities/character.h>
-
 #include "ictf.h"
+
+#include <game/server/entities/character.h>
 
 CGameControllerICTF::CGameControllerICTF(class CGameContext *pGameServer) :
 	CGameControllerInstaBaseCTF(pGameServer)

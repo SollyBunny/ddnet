@@ -1,6 +1,6 @@
-#include <game/server/entities/character.h>
-
 #include "idm.h"
+
+#include <game/server/entities/character.h>
 
 CGameControllerIDM::CGameControllerIDM(class CGameContext *pGameServer) :
 	CGameControllerInstaBaseDM(pGameServer)

@@ -10,9 +10,9 @@
 class CBgDrawItemDataPoint
 {
 public:
-	const float x, y;
-	const float w;
-	const float r, g, b, a;
+	float x, y;
+	float w;
+	float r, g, b, a;
 
 	CBgDrawItemDataPoint(float X, float Y, float W, float R, float G, float B, float A) :
 		x(X), y(Y), w(W), r(R), g(G), b(B), a(A) {}
@@ -35,20 +35,21 @@ public:
 
 using CBgDrawItemData = std::vector<CBgDrawItemDataPoint>;
 
-namespace BgDrawFile {
-[[nodiscard]] bool Write(const std::function<bool(const char *)> &WriteLine, const CBgDrawItemData &Data);
-[[nodiscard]] bool Read(const std::function<bool(char *pBuf, int Length)> &ReadLine, CBgDrawItemData &Data);
-[[nodiscard]] bool Write(FILE *pFile, const CBgDrawItemData &Data);
-[[nodiscard]] bool Read(FILE *pFile, CBgDrawItemData &Data);
+namespace BgDrawFile
+{
+	[[nodiscard]] bool Write(const std::function<bool(const char *)> &WriteLine, const CBgDrawItemData &Data);
+	[[nodiscard]] bool Read(const std::function<bool(char *pBuf, int Length)> &ReadLine, CBgDrawItemData &Data);
+	[[nodiscard]] bool Write(FILE *pFile, const CBgDrawItemData &Data);
+	[[nodiscard]] bool Read(FILE *pFile, CBgDrawItemData &Data);
 #ifdef BASE_SYSTEM_H
-[[nodiscard]] bool Write(IOHANDLE File, const CBgDrawItemData &Data)
-{
-	return Write((FILE *)File, Data);
-}
-[[nodiscard]] bool Read(IOHANDLE File, CBgDrawItemData &Data)
-{
-	return Read((FILE *)File, Data);
-}
+	[[nodiscard]] bool Write(IOHANDLE File, const CBgDrawItemData &Data)
+	{
+		return Write((FILE *)File, Data);
+	}
+	[[nodiscard]] bool Read(IOHANDLE File, CBgDrawItemData &Data)
+	{
+		return Read((FILE *)File, Data);
+	}
 #endif
 }; // namespace BgDrawFile
 

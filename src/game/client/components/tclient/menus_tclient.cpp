@@ -11,8 +11,6 @@
 #include <engine/textrender.h>
 #include <engine/updater.h>
 
-#include <game/localization.h>
-
 #include <game/client/animstate.h>
 #include <game/client/components/chat.h>
 #include <game/client/components/countryflags.h>
@@ -23,13 +21,13 @@
 #include <game/client/components/tclient/bindchat.h>
 #include <game/client/components/tclient/bindwheel.h>
 #include <game/client/components/tclient/trails.h>
-
 #include <game/client/gameclient.h>
 #include <game/client/render.h>
 #include <game/client/skin.h>
 #include <game/client/ui.h>
 #include <game/client/ui_listbox.h>
 #include <game/client/ui_scrollregion.h>
+#include <game/localization.h>
 
 #include <vector>
 
@@ -429,9 +427,10 @@ void CMenus::RenderSettingsTClientSettngs(CUIRect MainView)
 	else
 		Ui()->DoScrollbarOption(&g_Config.m_TcAnimateWheelTime, &g_Config.m_TcAnimateWheelTime, &Button, TCLocalize("Wheel animate"), 0, 1000, &CUi::ms_LinearScrollbarScale, 0, "ms (off)");
 
-	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_TcPingNameCircle, TCLocalize("Show ping colored circle before names"), &g_Config.m_TcPingNameCircle, &Column, LineSize);
+	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_TcNameplatePingCircle, TCLocalize("Show ping colored circle in nameplates"), &g_Config.m_TcNameplatePingCircle, &Column, LineSize);
+	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_TcNameplateCountry, TCLocalize("Show country flags in nameplates"), &g_Config.m_TcNameplateCountry, &Column, LineSize);
 	// DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_TcRenderNameplateSpec, TCLocalize("Hide nameplates in spec"), &g_Config.m_TcRenderNameplateSpec, &Column, LineSize);
-	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_TcShowSkinName, TCLocalize("Show skin names in nameplate"), &g_Config.m_TcShowSkinName, &Column, LineSize);
+	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_TcNameplateSkins, TCLocalize("Show skin names in nameplate"), &g_Config.m_TcNameplateSkins, &Column, LineSize);
 	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClFreezeStars, TCLocalize("Freeze stars"), &g_Config.m_ClFreezeStars, &Column, LineSize);
 	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_TcColorFreeze, TCLocalize("Color frozen tee skins"), &g_Config.m_TcColorFreeze, &Column, LineSize);
 	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_TcFreezeKatana, TCLocalize("Show katan on frozen players"), &g_Config.m_TcFreezeKatana, &Column, LineSize);
@@ -448,21 +447,35 @@ void CMenus::RenderSettingsTClientSettngs(CUIRect MainView)
 		Ui()->DoEditBox(&s_WhiteFeet, &FeetBox, EditBoxFontSize);
 	}
 
-	// ***** Tiny Tee's ***** //
-	static std::vector<CButtonContainer> s_vButtonContainersTinyTees = {{}, {}, {}};
-	int Value = g_Config.m_TcTinyTees ? (g_Config.m_TcTinyTeesOthers ? 2 : 1) : 0;
-	if(DoLine_RadioMenu(Column, TCLocalize("Tiny Tees"),
-		   s_vButtonContainersTinyTees,
-		   {Localize("None"), Localize("Own"), Localize("All")},
-		   {0, 1, 2},
-		   Value))
 	{
-		g_Config.m_TcTinyTees = Value > 0 ? 1 : 0;
-		g_Config.m_TcTinyTeesOthers = Value > 1 ? 1 : 0;
+		static std::vector<CButtonContainer> s_vButtonContainers = {{}, {}, {}};
+		int Value = g_Config.m_TcTinyTees ? (g_Config.m_TcTinyTeesOthers ? 2 : 1) : 0;
+		if(DoLine_RadioMenu(Column, TCLocalize("Tiny Tees"),
+			   s_vButtonContainers,
+			   {Localize("None"), Localize("Own"), Localize("All")},
+			   {0, 1, 2},
+			   Value))
+		{
+			g_Config.m_TcTinyTees = Value > 0 ? 1 : 0;
+			g_Config.m_TcTinyTeesOthers = Value > 1 ? 1 : 0;
+		}
+		Column.HSplitTop(LineSize, &TinyTeeConfig, &Column);
+		if(g_Config.m_TcTinyTees > 0)
+			Ui()->DoScrollbarOption(&g_Config.m_TcTinyTeeSize, &g_Config.m_TcTinyTeeSize, &TinyTeeConfig, TCLocalize("Tiny Tee Size"), 85, 115);
 	}
-	Column.HSplitTop(LineSize, &TinyTeeConfig, &Column);
-	if(g_Config.m_TcTinyTees > 0)
-		Ui()->DoScrollbarOption(&g_Config.m_TcTinyTeeSize, &g_Config.m_TcTinyTeeSize, &TinyTeeConfig, TCLocalize("Tiny Tee Size"), 85, 115);
+
+	{
+		static std::vector<CButtonContainer> s_vButtonContainers = {{}, {}, {}};
+		int Value = g_Config.m_TcFakeCtfFlags;
+		if(DoLine_RadioMenu(Column, TCLocalize("Fake CTF flags"),
+			   s_vButtonContainers,
+			   {Localize("None"), Localize("Red"), Localize("Blue")},
+			   {0, 1, 2},
+			   Value))
+		{
+			g_Config.m_TcFakeCtfFlags = Value;
+		}
+	}
 
 	Column.HSplitTop(MarginExtraSmall, nullptr, &Column);
 	s_SectionBoxes.back().h = Column.y - s_SectionBoxes.back().y;

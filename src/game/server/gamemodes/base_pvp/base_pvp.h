@@ -1,10 +1,11 @@
 #ifndef GAME_SERVER_GAMEMODES_BASE_PVP_BASE_PVP_H
 #define GAME_SERVER_GAMEMODES_BASE_PVP_BASE_PVP_H
 
-#include <cstdint>
 #include <game/server/gamemodes/insta_core/insta_core.h>
 #include <game/server/instagib/extra_columns.h>
 #include <game/server/instagib/sql_stats.h>
+
+#include <cstdint>
 
 // base pvp functionality such as damage
 // should be inherited from in all pvp modes such as ctf, dm, zcatch and so on

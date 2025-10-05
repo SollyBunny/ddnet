@@ -1,7 +1,8 @@
-#include <engine/shared/config.h>
-#include <game/server/entities/character.h>
-
 #include "gctf.h"
+
+#include <engine/shared/config.h>
+
+#include <game/server/entities/character.h>
 
 CGameControllerGCTF::CGameControllerGCTF(class CGameContext *pGameServer) :
 	CGameControllerInstaBaseCTF(pGameServer)

@@ -898,6 +898,7 @@ set_src(RUST_BRIDGE_SHARED GLOB_RECURSE src/rust-bridge
 
 set_glob(RUST_MASTERSRV GLOB "rs;toml" src/mastersrv/src
   addr.rs
+  community_token.rs
   config.rs
   locations.rs
   main.rs
@@ -2264,6 +2265,8 @@ set_src(ENGINE_SHARED GLOB_RECURSE src/engine/shared
 )
 set_src(ENGINE_EXTERNAL GLOB src/engine/external
   remimu.h
+  spt.cpp
+  spt.h
   tinyexpr.cpp
   tinyexpr.h
 )

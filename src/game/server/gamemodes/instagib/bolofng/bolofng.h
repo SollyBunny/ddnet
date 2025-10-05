@@ -1,9 +1,9 @@
 #ifndef GAME_SERVER_GAMEMODES_INSTAGIB_BOLOFNG_BOLOFNG_H
 #define GAME_SERVER_GAMEMODES_INSTAGIB_BOLOFNG_BOLOFNG_H
 
-#include <game/server/instagib/extra_columns.h>
-
 #include "../base_fng.h"
+
+#include <game/server/instagib/extra_columns.h>
 
 class CBolofngColumns : public CExtraColumns
 {

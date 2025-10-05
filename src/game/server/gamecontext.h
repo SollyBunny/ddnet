@@ -3,13 +3,12 @@
 #ifndef GAME_SERVER_GAMECONTEXT_H
 #define GAME_SERVER_GAMECONTEXT_H
 
-#include <engine/http.h> // ddnet-insta m_pHttp
-#include <game/server/instagib/enums.h> // ddnet-insta
-#include <game/server/instagib/ip_storage.h> // ddnet-insta
-#include <string> // ddnet-insta map pool
-#include <vector> // ddnet-insta map pool
+#include "eventhandler.h"
+#include "gameworld.h"
+#include "teehistorian.h"
 
 #include <engine/console.h>
+#include <engine/http.h> // ddnet-insta m_pHttp
 #include <engine/server.h>
 
 #include <generated/protocol.h>
@@ -17,15 +16,14 @@
 #include <game/collision.h>
 #include <game/layers.h>
 #include <game/mapbugs.h>
+#include <game/server/instagib/enums.h> // ddnet-insta
+#include <game/server/instagib/ip_storage.h> // ddnet-insta
 #include <game/voting.h>
-
-#include "eventhandler.h"
-#include "gameworld.h"
-#include "teehistorian.h"
 
 #include <map>
 #include <memory>
 #include <string>
+#include <vector> // ddnet-insta map pool
 
 // ddnet-insta
 using GamemodesType = std::unordered_map<std::string, IGameController *(*)(CGameContext *)>;
@@ -415,7 +413,7 @@ public:
 	bool RateLimitPlayerVote(int ClientId);
 	bool RateLimitPlayerMapVote(int ClientId) const;
 
-	void OnUpdatePlayerServerInfo(CJsonStringWriter *pJSonWriter, int Id) override;
+	void OnUpdatePlayerServerInfo(CJsonWriter *pJsonWriter, int ClientId) override;
 	void ReadCensorList();
 
 	bool PracticeByDefault() const;

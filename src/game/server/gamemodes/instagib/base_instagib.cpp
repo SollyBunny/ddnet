@@ -1,15 +1,18 @@
+#include "base_instagib.h"
+
 #include <base/system.h>
+
 #include <engine/shared/config.h>
 #include <engine/shared/protocol.h>
+
+#include <generated/protocol.h>
+
 #include <game/mapitems.h>
 #include <game/server/entities/character.h>
 #include <game/server/gamemodes/base_pvp/base_pvp.h>
 #include <game/server/player.h>
 #include <game/server/score.h>
 #include <game/version.h>
-#include <generated/protocol.h>
-
-#include "base_instagib.h"
 
 CGameControllerInstagib::CGameControllerInstagib(class CGameContext *pGameServer) :
 	CGameControllerPvp(pGameServer)

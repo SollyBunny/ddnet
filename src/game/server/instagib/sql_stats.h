@@ -3,6 +3,7 @@
 
 #include <engine/server/databases/connection_pool.h>
 #include <engine/shared/protocol.h>
+
 #include <game/server/instagib/extra_columns.h>
 #include <game/server/instagib/sql_stats_player.h>
 #include <game/server/scoreworker.h>

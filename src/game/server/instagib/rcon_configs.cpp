@@ -1,13 +1,14 @@
 #include <base/system.h>
+
 #include <engine/server/server.h>
 #include <engine/shared/config.h>
+
 #include <game/server/entities/character.h>
+#include <game/server/gamecontext.h>
 #include <game/server/gamecontroller.h>
 #include <game/server/gamemodes/base_pvp/base_pvp.h>
 #include <game/server/instagib/enums.h>
 #include <game/server/player.h>
-
-#include <game/server/gamecontext.h>
 
 void CGameContext::RegisterInstagibCommands()
 {

@@ -1,20 +1,21 @@
 /* (c) Shereef Marzouk. See "licence DDRace.txt" and the readme.txt in the root of the distribution for more information. */
+#include "gamecontext.h"
+#include "player.h"
+#include "score.h"
+
 #include <base/log.h>
+
 #include <engine/shared/config.h>
 #include <engine/shared/protocol.h>
+
 #include <game/mapitems.h>
 #include <game/server/entities/character.h>
 #include <game/server/gamemodes/DDRace.h>
+#include <game/server/instagib/version.h>
 #include <game/server/teams.h>
 #include <game/team_state.h>
 #include <game/teamscore.h>
 #include <game/version.h>
-
-#include <game/server/instagib/version.h>
-
-#include "gamecontext.h"
-#include "player.h"
-#include "score.h"
 
 void CGameContext::ConCredits(IConsole::IResult *pResult, void *pUserData)
 {
@@ -782,11 +783,11 @@ void CGameContext::ConPracticeCmdList(IConsole::IResult *pResult, void *pUserDat
 
 	char aPracticeCommands[256] = "Available practice commands: ";
 	for(const IConsole::ICommandInfo *pCmd = pSelf->Console()->FirstCommandInfo(IConsole::EAccessLevel::USER, CMDFLAG_PRACTICE);
-		pCmd; pCmd = pCmd->NextCommandInfo(IConsole::EAccessLevel::USER, CMDFLAG_PRACTICE))
+		pCmd; pCmd = pSelf->Console()->NextCommandInfo(pCmd, IConsole::EAccessLevel::USER, CMDFLAG_PRACTICE))
 	{
 		char aCommand[64];
 
-		str_format(aCommand, sizeof(aCommand), "/%s%s", pCmd->Name(), pCmd->NextCommandInfo(IConsole::EAccessLevel::USER, CMDFLAG_PRACTICE) ? ", " : "");
+		str_format(aCommand, sizeof(aCommand), "/%s%s", pCmd->Name(), pSelf->Console()->NextCommandInfo(pCmd, IConsole::EAccessLevel::USER, CMDFLAG_PRACTICE) ? ", " : "");
 
 		if(str_length(aCommand) + str_length(aPracticeCommands) > 255)
 		{

@@ -1,20 +1,26 @@
+#include "bg_draw.h"
+
+#include <base/log.h>
+
+#include <engine/client.h>
+#include <engine/external/spt.h>
 #include <engine/graphics.h>
 #include <engine/shared/config.h>
 
 #include <game/client/animstate.h>
+#include <game/client/components/tclient/bg_draw_file.h>
 #include <game/client/gameclient.h>
 #include <game/client/render.h>
 #include <game/localization.h>
 
 #include <algorithm>
+#include <array>
 #include <deque>
 #include <vector>
 
-#include <game/client/components/tclient/bg_draw_file.h>
-
-#include "bg_draw.h"
-
 #define MAX_ITEMS_TO_LOAD 65536
+
+constexpr float AUTO_SAVE_INTERVAL = 60.0f;
 
 static float cross(vec2 A, vec2 B)
 {
@@ -36,36 +42,73 @@ static bool line_intersects(vec2 A, vec2 B, vec2 C, vec2 D)
 	return (T >= 0.0f && T <= 1.0f) && (U >= 0.0f && U <= 1.0f);
 }
 
-class CBgDrawItem
+class CBoundingBox
 {
-private:
-	CGameClient &m_This;
-
-	int m_Drawing = true;
-	int m_QuadContainerIndex = -1;
-	int m_QuadCount = 0;
-
-	vec2 m_BoundingBoxMin = vec2(0.0f, 0.0f);
-	vec2 m_BoundingBoxMax = vec2(0.0f, 0.0f);
-	CBgDrawItemData m_Data;
-
+public:
+	vec2 m_Min = vec2(0.0f, 0.0f);
+	vec2 m_Max = vec2(0.0f, 0.0f);
 	void ExtendBoundingBox(vec2 Pos, float Radius)
 	{
 		const vec2 MinPos = Pos - vec2(Radius, Radius);
 		const vec2 MaxPos = Pos + vec2(Radius, Radius);
-		if(MinPos.x < m_BoundingBoxMin.x)
-			m_BoundingBoxMin.x = MinPos.x;
-		if(MinPos.y < m_BoundingBoxMin.y)
-			m_BoundingBoxMin.y = MinPos.y;
-		if(MaxPos.x > m_BoundingBoxMax.x)
-			m_BoundingBoxMax.x = MaxPos.x;
-		if(MaxPos.y > m_BoundingBoxMax.y)
-			m_BoundingBoxMax.y = MaxPos.y;
+		if(m_Min == m_Max)
+		{
+			m_Min = MinPos;
+			m_Max = MaxPos;
+			return;
+		}
+		if(MinPos.x < m_Min.x)
+			m_Min.x = MinPos.x;
+		if(MinPos.y < m_Min.y)
+			m_Min.y = MinPos.y;
+		if(MaxPos.x > m_Max.x)
+			m_Max.x = MaxPos.x;
+		if(MaxPos.y > m_Max.y)
+			m_Max.y = MaxPos.y;
+	}
+};
+
+class CPathContainer
+{
+private:
+	static constexpr int MAX_QUADS_PER_CONTAINER = 512; // Don't crash on OGL
+	std::vector<int> m_vQuadContainerIndexes;
+	int m_QuadCount = 0;
+	IGraphics &m_Graphics;
+	void Clear()
+	{
+		for(int QuadContainerIndex : m_vQuadContainerIndexes)
+			m_Graphics.DeleteQuadContainer(QuadContainerIndex);
+		m_vQuadContainerIndexes.clear();
+		m_QuadCount = 0;
+	}
+	void Upload()
+	{
+		int &QuadContainerIndex = *(m_vQuadContainerIndexes.end() - 1);
+		m_Graphics.QuadContainerUpload(QuadContainerIndex);
+	}
+	void AddQuads(IGraphics::CFreeformItem *pFreeformItem, int Count, ColorRGBA Color)
+	{
+		m_QuadCount += Count;
+		if(m_vQuadContainerIndexes.size() == 0)
+		{
+			m_vQuadContainerIndexes.push_back(m_Graphics.CreateQuadContainer(false));
+		}
+		else if(m_QuadCount > MAX_QUADS_PER_CONTAINER)
+		{
+			int &QuadContainerIndex = *(m_vQuadContainerIndexes.end() - 1);
+			m_Graphics.QuadContainerUpload(QuadContainerIndex);
+			m_vQuadContainerIndexes.push_back(m_Graphics.CreateQuadContainer(false));
+			m_QuadCount = 0;
+		}
+		int &QuadContainerIndex = *(m_vQuadContainerIndexes.end() - 1);
+		m_Graphics.SetColor(Color);
+		m_Graphics.QuadContainerAddQuads(QuadContainerIndex, pFreeformItem, Count);
 	}
 	void AddCircle(vec2 Pos, float Angle1, float Angle2, float Width, ColorRGBA Color)
 	{
 		const float Radius = Width / 2.0f;
-		const int Segments = (int)(std::fabs(Angle2 - Angle1) / (pi * 2.0f) * 20.0f);
+		const int Segments = (int)(std::fabs(Angle2 - Angle1) / (pi / 8.0f));
 		const float SegmentAngle = (Angle2 - Angle1) / Segments;
 		IGraphics::CFreeformItem FreeformItems[20];
 		for(int i = 0; i < Segments; ++i)
@@ -76,23 +119,66 @@ private:
 			const vec2 P2 = Pos + direction(A2) * Radius;
 			FreeformItems[i] = IGraphics::CFreeformItem(P1.x, P1.y, P2.x, P2.y, Pos.x, Pos.y, Pos.x, Pos.y);
 		}
-		m_This.Graphics()->SetColor(Color);
-		m_This.Graphics()->QuadContainerAddQuads(m_QuadContainerIndex, FreeformItems, Segments);
-		m_QuadCount += Segments;
+		AddQuads(FreeformItems, Segments, Color);
 	}
-	void AddLine(vec2 Pos, vec2 LastPos, float Width, ColorRGBA Color)
+
+public:
+	CPathContainer(IGraphics &Graphics) :
+		m_Graphics(Graphics) {}
+	void Update(const CBgDrawItemData &Data)
 	{
-		const float Angle = angle(LastPos - Pos);
-		const vec2 Offset = direction(Angle + pi / 2.0f) * (Width / 2.0f);
-		const vec2 P1 = LastPos + Offset;
-		const vec2 P2 = LastPos - Offset;
-		const vec2 P3 = Pos + Offset;
-		const vec2 P4 = Pos - Offset;
-		IGraphics::CFreeformItem FreeformItem(P1.x, P1.y, P2.x, P2.y, P3.x, P3.y, P4.x, P4.y);
-		m_This.Graphics()->SetColor(Color);
-		m_This.Graphics()->QuadContainerAddQuads(m_QuadContainerIndex, &FreeformItem, 1);
-		m_QuadCount += 1;
+		Clear();
+		if(Data.size() == 0)
+		{
+			return;
+		}
+		size_t i = 0;
+		auto SPTGetPt = [&](SPT_pt *pPt) {
+			if(i >= Data.size())
+				return false;
+			pPt->color = {Data[i].r, Data[i].g, Data[i].b, Data[i].a};
+			pPt->pos = {Data[i].x, Data[i].y};
+			pPt->w = Data[i].w;
+			i += 1;
+			return true;
+		};
+		auto SPTAddQuad = [&](SPT_quad Quad, SPT_color Color) {
+			IGraphics::CFreeformItem FreeformItem(
+				Quad.a.x, Quad.a.y,
+				Quad.b.x, Quad.b.y,
+				Quad.d.x, Quad.d.y,
+				Quad.c.x, Quad.c.y);
+			AddQuads(&FreeformItem, 1, {Color.r, Color.g, Color.b, Color.a});
+			return true;
+		};
+		auto SPTAddArc = [&](SPT_vec2 Pos, float A1, float A2, float R, SPT_color Color) {
+			AddCircle({Pos.x, Pos.y}, A1, A2, R * 2.0f, {Color.r, Color.g, Color.b, Color.a});
+			return true;
+		};
+		SPT_prims(SPTGetPt, SPTAddQuad, SPTAddArc);
+		Upload();
 	}
+	void Render()
+	{
+		for(int QuadContainerIndex : m_vQuadContainerIndexes)
+			m_Graphics.RenderQuadContainer(QuadContainerIndex, -1);
+	}
+	~CPathContainer()
+	{
+		Clear();
+	}
+};
+
+class CBgDrawItem
+{
+private:
+	CGameClient &m_This;
+
+	int m_Drawing = true;
+
+	CBoundingBox m_BoundingBox;
+	CPathContainer m_PathContainer;
+	CBgDrawItemData m_Data;
 
 	float CurrentWidth() const
 	{
@@ -108,49 +194,19 @@ public:
 	float m_SecondsAge = 0.0f;
 
 	const CBgDrawItemData &Data() const { return m_Data; }
-	const vec2 &BoundingBoxMin() const { return m_BoundingBoxMin; }
-	const vec2 &BoundingBoxMax() const { return m_BoundingBoxMax; }
+	const CBoundingBox &BoundingBox() const { return m_BoundingBox; }
 
 	bool PenUp(const CBgDrawItemDataPoint &Point)
 	{
 		if(!m_Drawing)
 			return false;
 		m_Drawing = false;
-		const vec2 LastPos = m_Data.empty() ? Point.Pos() : m_Data.back().Pos();
-		const float Distance = distance(LastPos, Point.Pos());
-		if(Distance < Point.w / 2.0f)
-		{
-			// Draw only a circle for a tiny segment
-			AddCircle(m_Data.size() <= 1 ? Point.Pos() : LastPos, 0.0f, pi * 2.0f, Point.w, Point.Color());
-		}
-		else
-		{
-			const float Angle = angle(LastPos - Point.Pos());
-			if(m_Data.size() <= 1)
-			{
-				// Start round cap
-				AddCircle(LastPos, Angle + pi / 2.0f, Angle - pi / 2.0f, Point.w, Point.Color());
-				// Join last position to position
-				AddLine(LastPos, Point.Pos(), Point.w, Point.Color());
-				// End round cap
-				AddCircle(Point.Pos(), Angle + pi / 2.0f, Angle + pi * 1.5f, Point.w, Point.Color());
-			}
-			else
-			{
-				// Lazy round bevel
-				AddCircle(LastPos, 0.0f, pi * 2.0f, Point.w, Point.Color());
-				// Join from last position to end
-				AddLine(LastPos, Point.Pos(), Point.w, Point.Color());
-				// End round cap
-				AddCircle(Point.Pos(), Angle + pi / 2.0f, Angle + pi * 1.5f, Point.w, Point.Color());
-			}
-		}
-		m_Data.emplace_back(Point.Pos(), Point.w, Point.Color());
+		m_PathContainer.Update(m_Data);
 		return true;
 	}
 	bool PenUp(vec2 Pos)
 	{
-		return PenUp(CBgDrawItemDataPoint(Pos, CurrentWidth(), CurrentColor()));
+		return PenUp({Pos, CurrentWidth(), CurrentColor()});
 	}
 	bool MoveTo(const CBgDrawItemDataPoint &Point)
 	{
@@ -158,26 +214,11 @@ public:
 			return false;
 		if(m_Data.size() > BG_DRAW_MAX_POINTS_PER_ITEM)
 			return PenUp(Point.Pos());
-		const vec2 LastPos = m_Data.empty() ? Point.Pos() : m_Data.back().Pos();
-		const float Distance = distance(LastPos, Point.Pos());
-		// Don't draw short segments
-		if(Distance < Point.w * 1.25f)
-			return true;
-		// Draw cap or bevel
-		if(m_Data.size() <= 1)
-		{
-			// Start round cap
-			const float Angle = angle(LastPos - Point.Pos());
-			AddCircle(LastPos, Angle + pi / 2.0f, Angle - pi / 2.0f, Point.w, Point.Color());
-		}
+		if(m_Data.size() >= 2 && distance((m_Data.end() - 2)->Pos(), (m_Data.end() - 1)->Pos()) < Point.w * 0.75f)
+			*(m_Data.end() - 1) = Point;
 		else
-		{
-			// Lazy round bevel
-			AddCircle(LastPos, 0.0f, pi * 2.0f, Point.w, Point.Color());
-		}
-		// Join last position to position
-		AddLine(LastPos, Point.Pos(), Point.w, Point.Color());
-		m_Data.emplace_back(Point);
+			m_Data.emplace_back(Point);
+		m_PathContainer.Update(m_Data);
 		return true;
 	}
 	bool MoveTo(vec2 Pos)
@@ -227,15 +268,16 @@ public:
 		}
 		return false;
 	}
-	void Render() const
+	void Render()
 	{
-		m_This.Graphics()->RenderQuadContainer(m_QuadContainerIndex, m_QuadCount);
+		m_PathContainer.Render();
 	}
 
 	CBgDrawItem() = delete;
 	CBgDrawItem(CGameClient &This, vec2 StartPos) :
-		m_This(This), m_QuadContainerIndex(m_This.Graphics()->CreateQuadContainer()), m_BoundingBoxMin(StartPos), m_BoundingBoxMax(StartPos)
+		m_This(This), m_PathContainer(*This.Graphics())
 	{
+		m_BoundingBox.ExtendBoundingBox(StartPos, CurrentWidth());
 		m_Data.emplace_back(StartPos, CurrentWidth(), CurrentColor());
 	}
 	CBgDrawItem(CGameClient &This, CBgDrawItemDataPoint StartPoint) :
@@ -254,10 +296,6 @@ public:
 				MoveTo(Point);
 			}
 		PenUp(Data.back());
-	}
-	~CBgDrawItem()
-	{
-		m_This.Graphics()->DeleteQuadContainer(m_QuadContainerIndex);
 	}
 };
 
@@ -289,13 +327,13 @@ void CBgDraw::ConBgDrawReset(IConsole::IResult *pResult, void *pUserData)
 void CBgDraw::ConBgDrawSave(IConsole::IResult *pResult, void *pUserData)
 {
 	CBgDraw *pThis = (CBgDraw *)pUserData;
-	pThis->Save(pResult->GetString(0));
+	pThis->Save(pResult->GetString(0), true);
 }
 
 void CBgDraw::ConBgDrawLoad(IConsole::IResult *pResult, void *pUserData)
 {
 	CBgDraw *pThis = (CBgDraw *)pUserData;
-	pThis->Load(pResult->GetString(0));
+	pThis->Load(pResult->GetString(0), true);
 }
 
 static IOHANDLE BgDrawOpenFile(CGameClient &This, const char *pFilename, int Flags)
@@ -322,34 +360,32 @@ static IOHANDLE BgDrawOpenFile(CGameClient &This, const char *pFilename, int Fla
 		if(!This.Storage()->CreateFolder("bgdraw", IStorage::TYPE_SAVE))
 			This.Echo(TCLocalize("Failed to create bgdraw folder", "bgdraw"));
 	}
-	IOHANDLE Handle = This.Storage()->OpenFile(aFilename, Flags, IStorage::TYPE_SAVE);
-	char aMsg[IO_MAX_PATH_LENGTH + 32];
-	if(Handle)
-	{
-		str_format(aMsg, sizeof(aMsg), TCLocalize("Opening %s for %s", "bgdraw"), aFilename, Flags == IOFLAG_WRITE ? TCLocalize("writing", "bgdraw") : TCLocalize("reading", "bgdraw"));
-		dbg_msg("bgdraw", "Opening %s for %s", aFilename, Flags == IOFLAG_WRITE ? "writing" : "reading");
-	}
-	else
-	{
-		str_format(aMsg, sizeof(aMsg), TCLocalize("Failed to open %s for %s", "bgdraw"), aFilename, Flags == IOFLAG_WRITE ? TCLocalize("writing", "bgdraw") : TCLocalize("reading", "bgdraw"));
-		dbg_msg("bgdraw", "Failed to open %s for %s", aFilename, Flags == IOFLAG_WRITE ? "writing" : "reading");
-	}
-	This.Echo(aMsg);
-	return Handle;
+	return This.Storage()->OpenFile(aFilename, Flags, IStorage::TYPE_SAVE);
 }
 
-bool CBgDraw::Save(const char *pFilename)
+bool CBgDraw::Save(const char *pFilename, bool Verbose)
 {
-	if(Client()->State() != IClient::STATE_ONLINE && Client()->State() != IClient::STATE_DEMOPLAYBACK)
+	if(m_pvItems->size() == 0)
+	{
+		if(Verbose)
+			GameClient()->Echo(TCLocalize("No items to write", "bgdraw"));
 		return false;
+	}
+	if(!m_Dirty)
+	{
+		if(Verbose)
+			GameClient()->Echo(TCLocalize("No changes since last save", "bgdraw"));
+		return false;
+	}
+	m_Dirty = false;
 	IOHANDLE Handle = BgDrawOpenFile(*GameClient(), pFilename, IOFLAG_WRITE);
 	if(!Handle)
 		return false;
 	size_t Written = 0;
 	bool Success = true;
+	char aMsg[256];
 	for(const CBgDrawItem &Item : *m_pvItems)
 	{
-		char aMsg[256];
 		if(!BgDrawFile::Write(Handle, Item.Data()))
 		{
 			str_format(aMsg, sizeof(aMsg), TCLocalize("Writing item %zu failed", "bgdraw"), Written);
@@ -359,14 +395,16 @@ bool CBgDraw::Save(const char *pFilename)
 		}
 		Written += 1;
 	}
-	char aMsg[256];
-	str_format(aMsg, sizeof(aMsg), TCLocalize("Written %zu items", "bgdraw"), Written);
-	GameClient()->Echo(aMsg);
+	if(Verbose || !Success)
+	{
+		str_format(aMsg, sizeof(aMsg), TCLocalize("Written %zu items", "bgdraw"), Written);
+		GameClient()->Echo(aMsg);
+	}
 	io_close(Handle);
 	return Success;
 }
 
-bool CBgDraw::Load(const char *pFilename)
+bool CBgDraw::Load(const char *pFilename, bool Verbose)
 {
 	if(Client()->State() != IClient::STATE_ONLINE && Client()->State() != IClient::STATE_DEMOPLAYBACK)
 		return false;
@@ -392,12 +430,15 @@ bool CBgDraw::Load(const char *pFilename)
 	MakeSpaceFor(Queue.size());
 	for(const CBgDrawItemData &Data : Queue)
 		AddItem(*GameClient(), Data);
-	char aInfo[256];
-	if(ItemsDiscarded == 0)
-		str_format(aInfo, sizeof(aInfo), TCLocalize("Loaded %zu items", "bgdraw"), ItemsLoaded);
-	else
-		str_format(aInfo, sizeof(aInfo), TCLocalize("Loaded %zu items (discarded %zu items)", "bgdraw"), ItemsLoaded - ItemsDiscarded, ItemsDiscarded);
-	GameClient()->Echo(aInfo);
+	if(Verbose)
+	{
+		char aInfo[256];
+		if(ItemsDiscarded == 0)
+			str_format(aInfo, sizeof(aInfo), TCLocalize("Loaded %zu items", "bgdraw"), ItemsLoaded);
+		else
+			str_format(aInfo, sizeof(aInfo), TCLocalize("Loaded %zu items (discarded %zu items)", "bgdraw"), ItemsLoaded - ItemsDiscarded, ItemsDiscarded);
+		GameClient()->Echo(aInfo);
+	}
 
 	return true;
 }
@@ -409,6 +450,7 @@ CBgDrawItem *CBgDraw::AddItem(Args &&... args)
 	if(g_Config.m_TcBgDrawMaxItems == 0)
 		return nullptr;
 	m_pvItems->emplace_back(std::forward<Args>(args)...);
+	m_Dirty = true;
 	return &m_pvItems->back();
 }
 
@@ -452,6 +494,14 @@ void CBgDraw::OnRender()
 
 	float Delta = Client()->RenderFrameTime();
 
+	m_NextAutoSave -= Delta;
+	if(m_NextAutoSave < 0)
+	{
+		if(g_Config.m_TcBgDrawAutoSaveLoad)
+			Save(nullptr, false);
+		m_NextAutoSave = AUTO_SAVE_INTERVAL;
+	}
+
 	for(int Dummy = 0; Dummy < NUM_DUMMIES; ++Dummy)
 	{
 		// Handle updating active item
@@ -468,6 +518,7 @@ void CBgDraw::OnRender()
 				(*ActiveItem)->MoveTo(Pos);
 			else
 				ActiveItem = AddItem(*GameClient(), Pos);
+			m_Dirty = true;
 		}
 		else if(ActiveItem.has_value())
 		{
@@ -515,13 +566,14 @@ void CBgDraw::OnRender()
 			if(g_Config.m_TcBgDrawFadeTime > 0 && Item.m_SecondsAge > (float)g_Config.m_TcBgDrawFadeTime)
 				Item.m_Killed = true;
 		}
-		const bool InRangeX = Item.BoundingBoxMin().x < ScreenX1 || Item.BoundingBoxMax().x > ScreenX0;
-		const bool InRangeY = Item.BoundingBoxMin().y < ScreenY1 || Item.BoundingBoxMax().y > ScreenY0;
+		const bool InRangeX = Item.BoundingBox().m_Min.x < ScreenX1 || Item.BoundingBox().m_Max.x > ScreenX0;
+		const bool InRangeY = Item.BoundingBox().m_Min.y < ScreenY1 || Item.BoundingBox().m_Max.y > ScreenY0;
 		if(InRangeX && InRangeY)
 			Item.Render();
 	}
 	// Remove killed items
-	m_pvItems->remove_if([&](CBgDrawItem &Item) { return Item.m_Killed; });
+	if(m_pvItems->remove_if([&](CBgDrawItem &Item) { return Item.m_Killed; }))
+		m_Dirty = true;
 	Graphics()->SetColor(ColorRGBA(1.0f, 1.0f, 1.0f, 1.0f));
 }
 
@@ -535,7 +587,23 @@ void CBgDraw::Reset()
 
 void CBgDraw::OnMapLoad()
 {
+}
+
+void CBgDraw::OnStateChange(int NewState, int OldState)
+{
+	log_info("hI", "Old: %d, New: %d", OldState, NewState);
+	if(OldState == IClient::STATE_ONLINE || OldState == IClient::STATE_DEMOPLAYBACK)
+	{
+		if(g_Config.m_TcBgDrawAutoSaveLoad > 0)
+			Save(nullptr, true);
+	}
 	Reset();
+	m_NextAutoSave = AUTO_SAVE_INTERVAL;
+	if(NewState == IClient::STATE_ONLINE || OldState == IClient::STATE_DEMOPLAYBACK)
+	{
+		if(g_Config.m_TcBgDrawAutoSaveLoad > 0)
+			Load(nullptr, false);
+	}
 }
 
 void CBgDraw::OnShutdown()

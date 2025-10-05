@@ -1,7 +1,7 @@
+#include "dm.h"
+
 #include <game/server/entities/character.h>
 #include <game/server/player.h>
-
-#include "dm.h"
 
 CGameControllerDM::CGameControllerDM(class CGameContext *pGameServer) :
 	CGameControllerVanilla(pGameServer)

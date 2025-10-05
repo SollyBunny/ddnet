@@ -1,8 +1,15 @@
+#include "zcatch.h"
+
 #include <base/log.h>
 #include <base/system.h>
+
 #include <engine/server.h>
 #include <engine/shared/config.h>
 #include <engine/shared/protocol.h>
+
+#include <generated/protocol.h>
+#include <generated/protocol7.h>
+
 #include <game/mapitems.h>
 #include <game/server/entities/character.h>
 #include <game/server/entities/flag.h>
@@ -12,10 +19,6 @@
 #include <game/server/player.h>
 #include <game/server/score.h>
 #include <game/version.h>
-#include <generated/protocol.h>
-#include <generated/protocol7.h>
-
-#include "zcatch.h"
 
 CGameControllerZcatch::CGameControllerZcatch(class CGameContext *pGameServer) :
 	CGameControllerInstagib(pGameServer)

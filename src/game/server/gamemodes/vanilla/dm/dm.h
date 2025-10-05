@@ -1,9 +1,9 @@
 #ifndef GAME_SERVER_GAMEMODES_VANILLA_DM_DM_H
 #define GAME_SERVER_GAMEMODES_VANILLA_DM_DM_H
 
-#include <game/server/instagib/extra_columns.h>
-
 #include "../base_vanilla.h"
+
+#include <game/server/instagib/extra_columns.h>
 
 class CDmColumns : public CExtraColumns
 {

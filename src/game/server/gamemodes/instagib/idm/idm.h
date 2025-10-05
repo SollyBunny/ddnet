@@ -1,9 +1,8 @@
 #ifndef GAME_SERVER_GAMEMODES_INSTAGIB_IDM_IDM_H
 #define GAME_SERVER_GAMEMODES_INSTAGIB_IDM_IDM_H
 
-#include <game/server/instagib/extra_columns.h>
-
 #include <game/server/gamemodes/instagib/dm.h>
+#include <game/server/instagib/extra_columns.h>
 
 class CIdmColumns : public CExtraColumns
 {

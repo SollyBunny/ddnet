@@ -1,10 +1,9 @@
 #ifndef GAME_SERVER_GAMEMODES_INSTAGIB_ICTF_ICTF_H
 #define GAME_SERVER_GAMEMODES_INSTAGIB_ICTF_ICTF_H
 
+#include <game/server/gamemodes/instagib/ctf.h>
 #include <game/server/instagib/extra_columns.h>
 #include <game/server/instagib/sql_stats_player.h>
-
-#include <game/server/gamemodes/instagib/ctf.h>
 
 class CICTFColumns : public CExtraColumns
 {

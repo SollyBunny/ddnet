@@ -1,16 +1,19 @@
+#include "sql_stats.h"
+
 #include <base/log.h>
 #include <base/system.h>
-#include <cstdlib>
+
 #include <engine/server/databases/connection.h>
 #include <engine/server/databases/connection_pool.h>
 #include <engine/shared/config.h>
+
 #include <game/server/gamecontext.h>
 #include <game/server/gamecontroller.h>
 #include <game/server/instagib/extra_columns.h>
 #include <game/server/instagib/sql_stats_player.h>
 #include <game/server/player.h>
 
-#include "sql_stats.h"
+#include <cstdlib>
 
 class IDbConnection;
 

@@ -2,6 +2,7 @@
 #define GAME_SERVER_INSTAGIB_SQL_STATS_PLAYER_H
 
 #include <base/system.h>
+
 #include <game/server/instagib/extra_columns.h>
 
 enum

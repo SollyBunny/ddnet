@@ -1,12 +1,11 @@
 #ifndef GAME_CLIENT_COMPONENTS_TCLIENT_TCLIENT_H
 #define GAME_CLIENT_COMPONENTS_TCLIENT_TCLIENT_H
 
-#include <game/client/component.h>
-
 #include <engine/client/enums.h>
-
 #include <engine/shared/console.h>
 #include <engine/shared/http.h>
+
+#include <game/client/component.h>
 
 #include <deque>
 
@@ -61,6 +60,7 @@ public:
 
 	void RenderMiniVoteHud();
 	void RenderCenterLines();
+	void RenderCtfFlag(vec2 Pos, float Alpha);
 
 	bool ChatDoSpecId(const char *pInput);
 	bool InfoTaskDone() { return m_pTClientInfoTask && m_pTClientInfoTask->State() == EHttpState::DONE; }
@@ -78,6 +78,7 @@ private:
 	vec2 m_SquishVel = vec2(0.0f, 0.0f);
 	float m_RenderDir = 0.0f;
 	float m_RenderLength = 1.0f;
+
 public:
 	/**
 	 * Render a squishy, set texture beforehand

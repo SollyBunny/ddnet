@@ -1,7 +1,7 @@
+#include "itdm.h"
+
 #include <game/server/entities/character.h>
 #include <game/server/gamemodes/instagib/idm/idm.h>
-
-#include "itdm.h"
 
 CGameControllerITDM::CGameControllerITDM(class CGameContext *pGameServer) :
 	CGameControllerInstaTDM(pGameServer)

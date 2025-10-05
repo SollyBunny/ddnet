@@ -5,11 +5,11 @@
 #ifndef IN_CLASS_IGAMECONTROLLER
 
 #include <base/vmath.h>
-#include <engine/map.h>
-#include <engine/shared/protocol.h>
-#include <game/server/teams.h>
 
+#include <engine/map.h>
 #include <engine/shared/http.h> // ddnet-insta
+#include <engine/shared/protocol.h>
+
 #include <generated/protocol.h>
 #include <generated/protocol7.h>
 
@@ -18,6 +18,7 @@
 #include <game/server/instagib/sql_stats.h>
 #include <game/server/instagib/sql_stats_player.h>
 #include <game/server/instagib/structs.h>
+#include <game/server/teams.h>
 
 struct CScoreLoadBestTimeResult;
 

@@ -1,7 +1,8 @@
-#include <engine/shared/config.h>
-#include <game/server/entities/character.h>
-
 #include "gdm.h"
+
+#include <engine/shared/config.h>
+
+#include <game/server/entities/character.h>
 
 CGameControllerGDM::CGameControllerGDM(class CGameContext *pGameServer) :
 	CGameControllerInstaBaseDM(pGameServer)

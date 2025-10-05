@@ -1,11 +1,12 @@
 #include "webhook.h"
 
 #include <base/log.h>
+
 #include <engine/client.h>
 #include <engine/console.h>
 #include <engine/shared/config.h>
-
 #include <engine/shared/http.h>
+
 #include <game/client/gameclient.h>
 
 #include <optional>

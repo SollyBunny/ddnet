@@ -1,11 +1,11 @@
+#include "trails.h"
+
 #include <engine/graphics.h>
 #include <engine/shared/config.h>
 
 #include <game/client/animstate.h>
 #include <game/client/gameclient.h>
 #include <game/client/render.h>
-
-#include "trails.h"
 
 bool CTrails::ShouldPredictPlayer(int ClientId)
 {
@@ -309,7 +309,7 @@ void CTrails::OnRender()
 		if(LineMode)
 			Graphics()->LinesBegin();
 		else
-			Graphics()->TrianglesBegin();
+			Graphics()->QuadsBegin();
 
 		// Draw the trail
 		for(int i = 0; i < (int)s_Trail.size() - 1; i++)
@@ -339,12 +339,9 @@ void CTrails::OnRender()
 					Bot = Part.m_Bot;
 				}
 
-				vec2 NextTop = NextPart.m_Top;
-				vec2 NextBot = NextPart.m_Bot;
-
 				Graphics()->SetColor4(NextPart.m_Col, NextPart.m_Col, Part.m_Col, Part.m_Col);
-				// IGraphics::CFreeformItem FreeformItem(Top.x, Top.y, Bot.x, Bot.y, NextTop.x, NextTop.y, NextBot.x, NextBot.y);
-				IGraphics::CFreeformItem FreeformItem(NextTop.x, NextTop.y, NextBot.x, NextBot.y, Top.x, Top.y, Bot.x, Bot.y);
+				// IGraphics::CFreeformItem FreeformItem(Top, Bot, NextPart.m_Top, NextPart.m_Bot);
+				IGraphics::CFreeformItem FreeformItem(NextPart.m_Top, NextPart.m_Bot, Top, Bot);
 
 				Graphics()->QuadsDrawFreeform(&FreeformItem, 1);
 			}
@@ -352,6 +349,6 @@ void CTrails::OnRender()
 		if(LineMode)
 			Graphics()->LinesEnd();
 		else
-			Graphics()->TrianglesEnd();
+			Graphics()->QuadsEnd();
 	}
 }

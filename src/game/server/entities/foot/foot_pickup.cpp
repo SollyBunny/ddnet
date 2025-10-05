@@ -1,4 +1,9 @@
+#include "foot_pickup.h"
+
 #include <engine/shared/config.h>
+
+#include <generated/protocol.h>
+
 #include <game/mapitems.h>
 #include <game/server/entities/character.h>
 #include <game/server/entities/pickup.h>
@@ -6,9 +11,6 @@
 #include <game/server/gamecontroller.h>
 #include <game/server/gamemodes/ball/base_foot.h>
 #include <game/server/player.h>
-#include <generated/protocol.h>
-
-#include "foot_pickup.h"
 
 CFootPickup::CFootPickup(CGameWorld *pGameWorld, int Layer, int Number) :
 	CEntity(pGameWorld, CGameWorld::ENTTYPE_PICKUP, vec2(0.0f, 0.0f), gs_PickupPhysSize)

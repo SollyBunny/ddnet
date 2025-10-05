@@ -1,10 +1,12 @@
 #include <base/log.h>
 #include <base/system.h>
 #include <base/types.h>
+
 #include <engine/shared/config.h>
 #include <engine/shared/network.h>
 #include <engine/shared/packer.h>
 #include <engine/shared/protocol.h>
+
 #include <game/server/entities/character.h>
 #include <game/server/gamecontext.h>
 #include <game/server/gamecontroller.h>

@@ -1,15 +1,13 @@
 // ddnet-insta specific gamecontroller methods
 #include <base/log.h>
 #include <base/system.h>
+
 #include <engine/shared/config.h>
 #include <engine/shared/protocolglue.h>
-#include <game/mapitems.h>
-#include <game/server/gamecontext.h>
-#include <game/server/player.h>
-#include <game/server/score.h>
-#include <game/teamscore.h>
+
 #include <generated/protocol.h>
 
+#include <game/mapitems.h>
 #include <game/server/entities/character.h>
 #include <game/server/entities/door.h>
 #include <game/server/entities/dragger.h>
@@ -18,8 +16,11 @@
 #include <game/server/entities/light.h>
 #include <game/server/entities/pickup.h>
 #include <game/server/entities/projectile.h>
-
+#include <game/server/gamecontext.h>
 #include <game/server/gamecontroller.h>
+#include <game/server/player.h>
+#include <game/server/score.h>
+#include <game/teamscore.h>
 
 void IGameController::OnCharacterDeathImpl(CCharacter *pVictim, int Killer, int Weapon, bool SendKillMsg)
 {

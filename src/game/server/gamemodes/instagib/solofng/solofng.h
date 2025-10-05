@@ -1,9 +1,9 @@
 #ifndef GAME_SERVER_GAMEMODES_INSTAGIB_SOLOFNG_SOLOFNG_H
 #define GAME_SERVER_GAMEMODES_INSTAGIB_SOLOFNG_SOLOFNG_H
 
-#include <game/server/instagib/extra_columns.h>
-
 #include "../base_fng.h"
+
+#include <game/server/instagib/extra_columns.h>
 
 class CSolofngColumns : public CExtraColumns
 {
