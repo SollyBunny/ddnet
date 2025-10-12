@@ -13,7 +13,7 @@
 #include <game/server/player.h>
 
 CFootPickup::CFootPickup(CGameWorld *pGameWorld, int Layer, int Number) :
-	CEntity(pGameWorld, CGameWorld::ENTTYPE_PICKUP, vec2(0.0f, 0.0f), gs_PickupPhysSize)
+	CEntity(pGameWorld, CGameWorld::ENTTYPE_PICKUP, vec2(0.0f, 0.0f), PICKUP_PHYS_SIZE)
 {
 	m_Type = POWERUP_WEAPON;
 	m_Subtype = WEAPON_GRENADE;

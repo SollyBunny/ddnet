@@ -1180,7 +1180,6 @@ public:
 	bool m_AllowSkinColorChange = true;
 
 	// protected:
-public:
 	struct CGameInfo
 	{
 		int m_MatchCurrent;
@@ -1216,7 +1215,6 @@ public:
 	void PublishRoundEndStats();
 	void SendRoundTopMessage(int ClientId);
 
-public:
 	enum
 	{
 		TIMER_INFINITE = -1,

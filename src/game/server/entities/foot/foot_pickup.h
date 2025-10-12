@@ -6,7 +6,7 @@
 class CFootPickup : public CEntity
 {
 public:
-	static constexpr int gs_PickupPhysSize = 14;
+	static constexpr int PICKUP_PHYS_SIZE = 14;
 
 	CFootPickup(CGameWorld *pGameWorld, int Layer = 0, int Number = 0);
 

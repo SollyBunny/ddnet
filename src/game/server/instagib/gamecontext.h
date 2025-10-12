@@ -149,6 +149,7 @@ public:
 #undef MACRO_RANK_COLUMN
 #undef MACRO_TOP_COLUMN
 
+private:
 public:
 #ifndef IN_CLASS_IGAMECONTEXT
 };
