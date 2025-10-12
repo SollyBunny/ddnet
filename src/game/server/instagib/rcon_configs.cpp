@@ -32,7 +32,7 @@ void CGameContext::RegisterInstagibCommands()
 	Console()->Register("rank_" #sql_name, "?r[player name]", CFGFLAG_CHAT | CFGFLAG_SERVER, ConInstaRank##name, this, "Shows the all time " #sql_name " rank of player name (your stats by default)");
 #define MACRO_TOP_COLUMN(name, sql_name, display_name, order_by) \
 	Console()->Register("top5" #sql_name, "?i[rank to start with]", CFGFLAG_CHAT | CFGFLAG_SERVER, ConInstaTop##name, this, "Shows the all time best ranks by " #sql_name);
-#include <game/server/instagib/sql_colums_all.h>
+#include <game/server/instagib/sql_columns_all.h>
 #undef MACRO_ADD_COLUMN
 #undef MACRO_RANK_COLUMN
 #undef MACRO_TOP_COLUMN
