@@ -22,7 +22,6 @@
 
 #include <map>
 #include <memory>
-#include <string> // ddnet-insta map pool
 #include <string>
 #include <vector> // ddnet-insta map pool
 
@@ -201,7 +200,7 @@ class CGameContext : public IGameServer
 		int m_LastWhisperTo;
 	};
 
-public:
+	// public:
 	IServer *Server() const { return m_pServer; }
 	IConfigManager *ConfigManager() const { return m_pConfigManager; }
 	CConfig *Config() { return m_pConfig; }
