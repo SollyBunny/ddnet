@@ -636,6 +636,7 @@ void CGameContext::ConTopSpikeColors(IConsole::IResult *pResult, void *pUserData
 	}
 }
 
+// NOLINTBEGIN(misc-definitions-in-headers)
 #define MACRO_ADD_COLUMN(name, sql_name, sql_type, bind_type, default, merge_method) ;
 #define MACRO_RANK_COLUMN(name, sql_name, display_name, order_by) \
 	void CGameContext::ConInstaRank##name(IConsole::IResult *pResult, void *pUserData) \
@@ -676,3 +677,4 @@ void CGameContext::ConTopSpikeColors(IConsole::IResult *pResult, void *pUserData
 #undef MACRO_ADD_COLUMN
 #undef MACRO_RANK_COLUMN
 #undef MACRO_TOP_COLUMN
+// NOLINTEND(misc-definitions-in-headers)
