@@ -1,12 +1,14 @@
+/*
+#include "censor.h"
+
 #include <base/log.h>
+
 #include <engine/engine.h>
 #include <engine/external/json-parser/json.h>
 #include <engine/shared/config.h>
 
 #include <optional>
 #include <utility>
-
-#include "censor.h"
 
 static void ReplaceWords(char *pBuffer, const std::vector<std::string> &vWords, char Replacement)
 {
@@ -254,3 +256,4 @@ void CCensor::CCensorListDownloadJob::Run()
 		m_vLoadedWords = std::move(vLoadedWords);
 	}
 }
+*/

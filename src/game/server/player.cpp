@@ -1,6 +1,7 @@
 /* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #include "player.h"
+
 #include "entities/character.h"
 #include "gamecontext.h"
 #include "gamecontroller.h"
@@ -110,7 +111,7 @@ void CPlayer::Reset()
 
 	GameServer()->Score()->PlayerData(m_ClientId)->Reset();
 
-	m_Last_KickVote = 0;
+	m_LastKickVote = 0;
 	m_LastDDRaceTeamChange = 0;
 	m_ShowOthers = g_Config.m_SvShowOthersDefault;
 	m_ShowAll = g_Config.m_SvShowAllDefault;

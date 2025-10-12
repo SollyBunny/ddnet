@@ -3,13 +3,28 @@
 #ifndef GAME_EDITOR_EDITOR_H
 #define GAME_EDITOR_EDITOR_H
 
+#include "editor_history.h"
+#include "editor_server_settings.h"
+#include "editor_trackers.h"
+#include "editor_ui.h"
+#include "font_typer.h"
+#include "layer_selector.h"
+#include "map_view.h"
+#include "quadart.h"
+#include "smooth_value.h"
+
 #include <base/bezier.h>
 #include <base/system.h>
 
+#include <engine/console.h>
+#include <engine/editor.h>
+#include <engine/engine.h>
+#include <engine/graphics.h>
+#include <engine/shared/datafile.h>
+#include <engine/shared/jobs.h>
+
 #include <game/client/ui.h>
 #include <game/client/ui_listbox.h>
-#include <game/mapitems.h>
-
 #include <game/editor/enums.h>
 #include <game/editor/file_browser.h>
 #include <game/editor/mapitems/envelope.h>
@@ -25,27 +40,10 @@
 #include <game/editor/mapitems/layer_tiles.h>
 #include <game/editor/mapitems/layer_tune.h>
 #include <game/editor/mapitems/map.h>
-
-#include <game/map/render_interfaces.h>
-
-#include <engine/console.h>
-#include <engine/editor.h>
-#include <engine/engine.h>
-#include <engine/graphics.h>
-#include <engine/shared/datafile.h>
-#include <engine/shared/jobs.h>
-
-#include "editor_history.h"
-#include "editor_server_settings.h"
-#include "editor_trackers.h"
-#include "editor_ui.h"
-#include "font_typer.h"
-#include "layer_selector.h"
-#include "map_view.h"
-#include "quadart.h"
-#include "smooth_value.h"
 #include <game/editor/prompt.h>
 #include <game/editor/quick_action.h>
+#include <game/map/render_interfaces.h>
+#include <game/mapitems.h>
 
 #include <deque>
 #include <functional>
@@ -334,6 +332,13 @@ public:
 		Horizontal,
 		Vertical
 	} m_MouseAxisLockState = EAxisLock::Start;
+
+	/**
+	 * Global time when the autosave was last updated in the @link HandleAutosave @endlink function.
+	 * This is used so that the autosave does not immediately activate when reopening the editor after
+	 * a longer time of inactivity, as autosaves are only updated while the editor is open.
+	 */
+	float m_LastAutosaveUpdateTime = -1.0f;
 	void HandleAutosave();
 	bool PerformAutosave();
 	void HandleWriterFinishJobs();
@@ -535,8 +540,6 @@ public:
 	std::vector<std::pair<int, int>> m_vSelectedEnvelopePoints;
 	int m_SelectedQuadEnvelope;
 	int m_CurrentQuadIndex;
-	int m_SelectedImage;
-	int m_SelectedSound;
 	int m_SelectedSource;
 	std::pair<int, int> m_SelectedTangentInPoint;
 	std::pair<int, int> m_SelectedTangentOutPoint;
@@ -752,7 +755,6 @@ public:
 	static bool ReplaceSoundCallback(const char *pFileName, int StorageType, void *pUser);
 	static bool AddImage(const char *pFilename, int StorageType, void *pUser);
 	static bool AddSound(const char *pFileName, int StorageType, void *pUser);
-	static bool IsAssetUsed(CFileBrowser::EFileType FileType, int Index, void *pUser);
 
 	bool IsEnvelopeUsed(int EnvelopeIndex) const;
 	void RemoveUnusedEnvelopes();
@@ -761,7 +763,7 @@ public:
 
 	void RenderLayers(CUIRect LayersBox);
 	void RenderImagesList(CUIRect Toolbox);
-	void RenderSelectedImage(CUIRect View);
+	void RenderSelectedImage(CUIRect View) const;
 	void RenderSounds(CUIRect Toolbox);
 	void RenderModebar(CUIRect View);
 	void RenderStatusbar(CUIRect View, CUIRect *pTooltipRect);
@@ -790,7 +792,6 @@ public:
 	void RenderMenubar(CUIRect Menubar);
 
 	void SelectGameLayer();
-	std::vector<int> SortImages();
 
 	void DoAudioPreview(CUIRect View, const void *pPlayPauseButtonId, const void *pStopButtonId, const void *pSeekBarId, int SampleId);
 
@@ -850,8 +851,8 @@ private:
 
 // make sure to inline this function
 inline const class IGraphics *CLayer::Graphics() const { return m_pEditor->Graphics(); }
-inline class IGraphics *CLayer::Graphics() { return m_pEditor->Graphics(); }
+inline class IGraphics *CLayer::Graphics() { return m_pEditor->Graphics(); } // NOLINT(readability-make-member-function-const)
 inline const class ITextRender *CLayer::TextRender() const { return m_pEditor->TextRender(); }
-inline class ITextRender *CLayer::TextRender() { return m_pEditor->TextRender(); }
+inline class ITextRender *CLayer::TextRender() { return m_pEditor->TextRender(); } // NOLINT(readability-make-member-function-const)
 
 #endif

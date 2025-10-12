@@ -1,10 +1,6 @@
 #ifndef GAME_CLIENT_COMPONENTS_CENSOR_H
 #define GAME_CLIENT_COMPONENTS_CENSOR_H
-#include <memory>
-#include <optional>
-#include <string>
-#include <vector>
-
+/*
 #include <base/lock.h>
 
 #include <engine/console.h>
@@ -13,6 +9,11 @@
 #include <engine/shared/jobs.h>
 
 #include <game/client/component.h>
+
+#include <memory>
+#include <optional>
+#include <string>
+#include <vector>
 
 class CCensor : public CComponent
 {
@@ -56,6 +57,15 @@ public:
 	std::optional<std::vector<std::string>> LoadCensorListFromFile(const char *pFilePath) const;
 	std::optional<std::vector<std::string>> LoadCensorList(const void *pListText, size_t ListTextLen) const;
 	void CensorMessage(char *pMessage) const;
+};
+*/
+
+#include <game/client/component.h>
+
+class CCensor : public CComponent
+{
+public:
+	int Sizeof() const override { return sizeof(*this); }
 };
 
 #endif // GAME_CLIENT_COMPONENTS_CENSOR_H

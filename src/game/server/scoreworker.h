@@ -1,18 +1,19 @@
 #ifndef GAME_SERVER_SCOREWORKER_H
 #define GAME_SERVER_SCOREWORKER_H
 
+#include <engine/map.h>
+#include <engine/server/databases/connection_pool.h>
+#include <engine/shared/protocol.h>
+#include <engine/shared/uuid_manager.h>
+
+#include <game/server/save.h>
+#include <game/voting.h>
+
 #include <memory>
 #include <optional>
 #include <string>
 #include <utility>
 #include <vector>
-
-#include <engine/map.h>
-#include <engine/server/databases/connection_pool.h>
-#include <engine/shared/protocol.h>
-#include <engine/shared/uuid_manager.h>
-#include <game/server/save.h>
-#include <game/voting.h>
 
 class IDbConnection;
 class IGameController;
@@ -123,7 +124,8 @@ struct CSqlRandomMapRequest : ISqlData
 	char m_aServerType[32];
 	char m_aCurrentMap[MAX_MAP_LENGTH];
 	char m_aRequestingPlayer[MAX_NAME_LENGTH];
-	int m_Stars;
+	int m_MinStars;
+	int m_MaxStars;
 };
 
 struct CSqlScoreData : ISqlData
@@ -148,16 +150,22 @@ struct CSqlScoreData : ISqlData
 
 struct CScoreSaveResult : ISqlResult
 {
-	CScoreSaveResult(int PlayerId) :
+	CScoreSaveResult(int PlayerId, const char *pPlayerName, const char *pServer) :
 		m_Status(SAVE_FAILED),
 		m_RequestingPlayer(PlayerId)
 	{
 		m_aMessage[0] = '\0';
 		m_aBroadcast[0] = '\0';
+		m_aCode[0] = '\0';
+		m_aGeneratedCode[0] = '\0';
+		str_copy(m_aRequestingPlayer, pPlayerName);
+		str_copy(m_aServer, pServer);
 	}
 	enum
 	{
 		SAVE_SUCCESS,
+		SAVE_WARNING,
+		SAVE_FALLBACKFILE,
 		// load team in the following two cases
 		SAVE_FAILED,
 		LOAD_SUCCESS,
@@ -167,7 +175,11 @@ struct CScoreSaveResult : ISqlResult
 	char m_aBroadcast[512];
 	CSaveTeam m_SavedTeam;
 	int m_RequestingPlayer;
+	char m_aRequestingPlayer[MAX_NAME_LENGTH];
 	CUuid m_SaveId;
+	char m_aServer[5];
+	char m_aCode[128];
+	char m_aGeneratedCode[128];
 };
 
 struct CSqlTeamScoreData : ISqlData

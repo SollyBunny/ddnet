@@ -1,46 +1,7 @@
 /* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
 
-#include <chrono>
-#include <limits>
-
-#include <engine/client/checksum.h>
-#include <engine/client/enums.h>
-#include <engine/demo.h>
-#include <engine/discord.h>
-#include <engine/editor.h>
-#include <engine/engine.h>
-#include <engine/favorites.h>
-#include <engine/friends.h>
-#include <engine/graphics.h>
-#include <engine/map.h>
-#include <engine/serverbrowser.h>
-#include <engine/shared/config.h>
-#include <engine/sound.h>
-#include <engine/storage.h>
-#include <engine/textrender.h>
-#include <engine/updater.h>
-
-#include <generated/client_data.h>
-#include <generated/client_data7.h>
-#include <generated/protocol.h>
-#include <generated/protocol7.h>
-#include <generated/protocolglue.h>
-
-#include <base/log.h>
-#include <base/math.h>
-#include <base/system.h>
-#include <base/vmath.h>
-
 #include "gameclient.h"
-#include "lineinput.h"
-#include "race.h"
-#include "render.h"
-
-#include <game/client/projectile_data.h>
-#include <game/localization.h>
-#include <game/mapitems.h>
-#include <game/version.h>
 
 #include "components/background.h"
 #include "components/binds.h"
@@ -76,8 +37,48 @@
 #include "components/spectator.h"
 #include "components/statboard.h"
 #include "components/voting.h"
+#include "lineinput.h"
 #include "prediction/entities/character.h"
 #include "prediction/entities/projectile.h"
+#include "race.h"
+#include "render.h"
+
+#include <base/log.h>
+#include <base/math.h>
+#include <base/system.h>
+#include <base/vmath.h>
+
+#include <engine/client/checksum.h>
+#include <engine/client/enums.h>
+#include <engine/demo.h>
+#include <engine/discord.h>
+#include <engine/editor.h>
+#include <engine/engine.h>
+#include <engine/favorites.h>
+#include <engine/friends.h>
+#include <engine/graphics.h>
+#include <engine/map.h>
+#include <engine/serverbrowser.h>
+#include <engine/shared/config.h>
+#include <engine/shared/csv.h>
+#include <engine/sound.h>
+#include <engine/storage.h>
+#include <engine/textrender.h>
+#include <engine/updater.h>
+
+#include <generated/client_data.h>
+#include <generated/client_data7.h>
+#include <generated/protocol.h>
+#include <generated/protocol7.h>
+#include <generated/protocolglue.h>
+
+#include <game/client/projectile_data.h>
+#include <game/localization.h>
+#include <game/mapitems.h>
+#include <game/version.h>
+
+#include <chrono>
+#include <limits>
 
 using namespace std::chrono_literals;
 
@@ -155,12 +156,12 @@ void CGameClient::OnConsoleInit()
 					      &m_Motd,
 					      &m_Menus,
 					      &m_Tooltips,
-					      &m_Menus.m_Binder,
+					      &m_KeyBinder,
 					      &m_GameConsole,
 					      &m_MenuBackground});
 
 	// build the input stack
-	m_vpInput.insert(m_vpInput.end(), {&m_Menus.m_Binder, // this will take over all input when we want to bind a key
+	m_vpInput.insert(m_vpInput.end(), {&m_KeyBinder, // this will take over all input when we want to bind a key
 						  &m_Binds.m_SpecialBinds,
 						  &m_GameConsole,
 						  &m_Chat, // chat has higher prio, due to that you can quit it by pressing esc
@@ -1200,6 +1201,11 @@ void CGameClient::OnMessage(int MsgId, CUnpacker *pUnpacker, int Conn, bool Dumm
 		CNetMsg_Sv_PreInput *pMsg = (CNetMsg_Sv_PreInput *)pRawMsg;
 		m_aClients[pMsg->m_Owner].m_aPreInputs[pMsg->m_IntendedTick % 200] = *pMsg;
 	}
+	else if(MsgId == NETMSGTYPE_SV_SAVECODE)
+	{
+		const CNetMsg_Sv_SaveCode *pMsg = (CNetMsg_Sv_SaveCode *)pRawMsg;
+		OnSaveCodeNetMessage(pMsg);
+	}
 }
 
 void CGameClient::OnStateChange(int NewState, int OldState)
@@ -1692,6 +1698,7 @@ void CGameClient::OnNewSnapshot()
 					m_aClients[pInfo->m_ClientId].m_Team = pInfo->m_Team;
 					m_aClients[pInfo->m_ClientId].m_Active = true;
 					m_Snap.m_apPlayerInfos[pInfo->m_ClientId] = pInfo;
+					m_Snap.m_apPrevPlayerInfos[pInfo->m_ClientId] = static_cast<const CNetObj_PlayerInfo *>(Client()->SnapFindItem(IClient::SNAP_PREV, Item.m_Type, pInfo->m_ClientId));
 					m_Snap.m_NumPlayers++;
 
 					if(pInfo->m_Local)
@@ -2798,7 +2805,7 @@ void CGameClient::CClientData::Reset()
 	m_aName[0] = '\0';
 	m_aClan[0] = '\0';
 	m_Country = -1;
-	m_aSkinName[0] = '\0';
+	str_copy(m_aSkinName, "default");
 
 	m_Team = 0;
 	m_Emoticon = 0;
@@ -4961,4 +4968,99 @@ int CGameClient::FindFirstMultiViewId()
 			return i;
 	}
 	return ClientId;
+}
+
+void CGameClient::OnSaveCodeNetMessage(const CNetMsg_Sv_SaveCode *pMsg)
+{
+	char aBuf[512];
+	if(pMsg->m_pError[0] != '\0')
+		m_Chat.AddLine(-1, TEAM_ALL, pMsg->m_pError);
+
+	int State = pMsg->m_State;
+	if(State == SAVESTATE_PENDING)
+	{
+		if(pMsg->m_pCode[0] == '\0')
+		{
+			str_format(aBuf,
+				sizeof(aBuf),
+				Localize("Team save in progress. You'll be able to load with '/load %s'"),
+				Config()->m_ClStreamerMode == 1 ? "*** *** ***" : pMsg->m_pGeneratedCode);
+		}
+		else
+		{
+			str_format(aBuf,
+				sizeof(aBuf),
+				Localize("Team save in progress. You'll be able to load with '/load %s' if save is successful or with '/load %s' if it fails"),
+				Config()->m_ClStreamerMode == 1 ? "***" : pMsg->m_pCode,
+				Config()->m_ClStreamerMode == 1 ? "*** *** ***" : pMsg->m_pGeneratedCode);
+		}
+		m_Chat.AddLine(-1, TEAM_ALL, aBuf);
+	}
+	else if(State == SAVESTATE_FALLBACKFILE)
+	{
+		if(pMsg->m_pServerName[0] == '\0')
+		{
+			str_format(
+				aBuf,
+				sizeof(aBuf),
+				Localize("Team successfully saved by %s. The database connection failed, using generated save code instead to avoid collisions. Use '/load %s' to continue"),
+				pMsg->m_pSaveRequester,
+				Config()->m_ClStreamerMode == 1 ? "*** *** ***" : pMsg->m_pGeneratedCode);
+		}
+		else
+		{
+			str_format(
+				aBuf,
+				sizeof(aBuf),
+				Localize("Team successfully saved by %s. The database connection failed, using generated save code instead to avoid collisions. Use '/load %s' on %s to continue"),
+				pMsg->m_pSaveRequester,
+				Config()->m_ClStreamerMode == 1 ? "*** *** ***" : pMsg->m_pGeneratedCode,
+				pMsg->m_pServerName);
+		}
+		m_Chat.AddLine(-1, TEAM_ALL, aBuf);
+	}
+	else if(State == SAVESTATE_ERROR)
+	{
+		m_Chat.AddLine(-1, TEAM_ALL, Localize("Save failed!"));
+	}
+
+	if(State != SAVESTATE_PENDING && State != SAVESTATE_ERROR && Client()->State() != IClient::STATE_DEMOPLAYBACK)
+	{
+		StoreSave(pMsg->m_pTeamMembers, pMsg->m_pGeneratedCode);
+	}
+}
+
+void CGameClient::StoreSave(const char *pTeamMembers, const char *pGeneratedCode) const
+{
+	static constexpr const char *SAVES_HEADER[] = {
+		"Time",
+		"Players",
+		"Map",
+		"Code",
+	};
+
+	char aTimestamp[20];
+	str_timestamp_format(aTimestamp, sizeof(aTimestamp), FORMAT_SPACE);
+
+	const bool SavesFileExists = Storage()->FileExists(SAVES_FILE, IStorage::TYPE_SAVE);
+	IOHANDLE File = Storage()->OpenFile(SAVES_FILE, IOFLAG_APPEND, IStorage::TYPE_SAVE);
+	if(!File)
+	{
+		log_error("saves", "Failed to open the saves file '%s'", SAVES_FILE);
+		return;
+	}
+
+	const char *apColumns[std::size(SAVES_HEADER)] = {
+		aTimestamp,
+		pTeamMembers,
+		Client()->GetCurrentMap(),
+		pGeneratedCode,
+	};
+
+	if(!SavesFileExists)
+	{
+		CsvWrite(File, std::size(SAVES_HEADER), SAVES_HEADER);
+	}
+	CsvWrite(File, std::size(SAVES_HEADER), apColumns);
+	io_close(File);
 }

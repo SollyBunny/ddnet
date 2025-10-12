@@ -1,11 +1,12 @@
 #ifndef GAME_EDITOR_MAPITEMS_LAYER_TILES_H
 #define GAME_EDITOR_MAPITEMS_LAYER_TILES_H
 
+#include "layer.h"
+
 #include <game/editor/editor_trackers.h>
 #include <game/editor/enums.h>
-#include <map>
 
-#include "layer.h"
+#include <map>
 
 struct STileStateChange
 {
@@ -29,8 +30,9 @@ enum class EShiftDirection : int
 	DOWN,
 };
 
-struct RECTi
+class CIntRect
 {
+public:
 	int x, y;
 	int w, h;
 };
@@ -120,19 +122,19 @@ public:
 
 	int ConvertX(float x) const;
 	int ConvertY(float y) const;
-	void Convert(CUIRect Rect, RECTi *pOut) const;
+	void Convert(CUIRect Rect, CIntRect *pOut) const;
 	void Snap(CUIRect *pRect) const;
-	void Clamp(RECTi *pRect) const;
+	void Clamp(CIntRect *pRect) const;
 
 	bool IsEntitiesLayer() const override;
 
 	[[nodiscard]] virtual bool IsEmpty() const;
 	void BrushSelecting(CUIRect Rect) override;
-	int BrushGrab(std::shared_ptr<CLayerGroup> pBrush, CUIRect Rect) override;
-	void FillSelection(bool Empty, std::shared_ptr<CLayer> pBrush, CUIRect Rect) override;
+	int BrushGrab(CLayerGroup *pBrush, CUIRect Rect) override;
+	void FillSelection(bool Empty, CLayer *pBrush, CUIRect Rect) override;
 	void FillGameTiles(EGameTileOp Fill);
 	bool CanFillGameTiles() const;
-	void BrushDraw(std::shared_ptr<CLayer> pBrush, vec2 WorldPos) override;
+	void BrushDraw(CLayer *pBrush, vec2 WorldPos) override;
 	void BrushFlipX() override;
 	void BrushFlipY() override;
 	void BrushRotate(float Amount) override;

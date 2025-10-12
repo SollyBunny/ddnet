@@ -3,8 +3,9 @@
 #ifndef ENGINE_SHARED_PROTOCOL_H
 #define ENGINE_SHARED_PROTOCOL_H
 
-#include <bitset>
 #include <engine/shared/protocol7.h>
+
+#include <bitset>
 
 /*
 	Connection diagram - How the initialization works.
@@ -132,6 +133,7 @@ enum
 	VERSION_DDNET_RECONNECT = 18090,
 	VERSION_DDNET_128_PLAYERS = 19000,
 	VERSION_DDNET_PREINPUT = 19040,
+	VERSION_DDNET_SAVE_CODE = 19060,
 };
 
 enum

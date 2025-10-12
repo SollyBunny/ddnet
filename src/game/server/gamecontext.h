@@ -8,6 +8,9 @@
 #include <game/server/instagib/ip_storage.h> // ddnet-insta
 #include <string> // ddnet-insta map pool
 #include <vector> // ddnet-insta map pool
+#include "eventhandler.h"
+#include "gameworld.h"
+#include "teehistorian.h"
 
 #include <engine/console.h>
 #include <engine/server.h>
@@ -18,10 +21,6 @@
 #include <game/layers.h>
 #include <game/mapbugs.h>
 #include <game/voting.h>
-
-#include "eventhandler.h"
-#include "gameworld.h"
-#include "teehistorian.h"
 
 #include <map>
 #include <memory>
@@ -415,7 +414,7 @@ public:
 	bool RateLimitPlayerVote(int ClientId);
 	bool RateLimitPlayerMapVote(int ClientId) const;
 
-	void OnUpdatePlayerServerInfo(CJsonStringWriter *pJSonWriter, int Id) override;
+	void OnUpdatePlayerServerInfo(CJsonWriter *pJsonWriter, int ClientId) override;
 	void ReadCensorList();
 
 	bool PracticeByDefault() const;
@@ -645,6 +644,7 @@ public:
 
 	void SendRecord(int ClientId);
 	void SendFinish(int ClientId, float Time, float PreviousBestTime);
+	void SendSaveCode(int Team, int TeamSize, int State, const char *pError, const char *pSaveRequester, const char *pServerName, const char *pGeneratedCode, const char *pCode);
 	void OnSetAuthed(int ClientId, int Level) override;
 
 	void ResetTuning();

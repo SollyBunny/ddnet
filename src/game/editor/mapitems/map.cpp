@@ -3,12 +3,14 @@
 #include <base/system.h>
 
 #include <game/editor/editor.h>
+#include <game/editor/mapitems/image.h>
 #include <game/editor/mapitems/layer_front.h>
 #include <game/editor/mapitems/layer_game.h>
 #include <game/editor/mapitems/layer_group.h>
 #include <game/editor/mapitems/layer_quads.h>
 #include <game/editor/mapitems/layer_sounds.h>
 #include <game/editor/mapitems/layer_tiles.h>
+#include <game/editor/mapitems/sound.h>
 
 void CEditorMap::CMapInfo::Reset()
 {
@@ -30,15 +32,33 @@ void CEditorMap::OnModify()
 {
 	m_Modified = true;
 	m_ModifiedAuto = true;
-	m_LastModifiedTime = m_pEditor->Client()->GlobalTime();
+	m_LastModifiedTime = Editor()->Client()->GlobalTime();
+}
+
+void CEditorMap::ResetModifiedState()
+{
+	m_Modified = false;
+	m_ModifiedAuto = false;
+	m_LastModifiedTime = -1.0f;
+	m_LastSaveTime = Editor()->Client()->GlobalTime();
 }
 
 std::shared_ptr<CEnvelope> CEditorMap::NewEnvelope(CEnvelope::EType Type)
 {
 	OnModify();
-	std::shared_ptr<CEnvelope> pEnv = std::make_shared<CEnvelope>(Type);
-	m_vpEnvelopes.push_back(pEnv);
-	return pEnv;
+	std::shared_ptr<CEnvelope> pEnvelope = std::make_shared<CEnvelope>(Type);
+	if(Type == CEnvelope::EType::COLOR)
+	{
+		pEnvelope->AddPoint(CFixedTime::FromSeconds(0.0f), {f2fx(1.0f), f2fx(1.0f), f2fx(1.0f), f2fx(1.0f)});
+		pEnvelope->AddPoint(CFixedTime::FromSeconds(1.0f), {f2fx(1.0f), f2fx(1.0f), f2fx(1.0f), f2fx(1.0f)});
+	}
+	else
+	{
+		pEnvelope->AddPoint(CFixedTime::FromSeconds(0.0f), {0, 0, 0, 0});
+		pEnvelope->AddPoint(CFixedTime::FromSeconds(1.0f), {0, 0, 0, 0});
+	}
+	m_vpEnvelopes.push_back(pEnvelope);
+	return pEnvelope;
 }
 
 void CEditorMap::InsertEnvelope(int Index, std::shared_ptr<CEnvelope> &pEnvelope)
@@ -218,6 +238,8 @@ void CEditorMap::ModifySoundIndex(const FIndexModifyFunction &IndexModifyFunctio
 
 void CEditorMap::Clean()
 {
+	ResetModifiedState();
+
 	m_vpGroups.clear();
 	m_vpEnvelopes.clear();
 	m_vpImages.clear();
@@ -235,13 +257,13 @@ void CEditorMap::Clean()
 	m_MapInfo.Reset();
 	m_MapInfoTmp.Reset();
 
-	m_Modified = false;
-	m_ModifiedAuto = false;
+	m_SelectedImage = 0;
+	m_SelectedSound = 0;
 }
 
-void CEditorMap::CreateDefault(IGraphics::CTextureHandle EntitiesTexture)
+void CEditorMap::CreateDefault()
 {
-	// add background
+	// Add default background group, quad layer and quad
 	std::shared_ptr<CLayerGroup> pGroup = NewGroup();
 	pGroup->m_ParallaxX = 0;
 	pGroup->m_ParallaxY = 0;
@@ -255,10 +277,12 @@ void CEditorMap::CreateDefault(IGraphics::CTextureHandle EntitiesTexture)
 	pQuad->m_aColors[2].b = pQuad->m_aColors[3].b = 255;
 	pGroup->AddLayer(pLayer);
 
-	// add game layer and reset front, tele, speedup, tune and switch layer pointers
+	// Add game group and layer
 	MakeGameGroup(NewGroup());
 	MakeGameLayer(std::make_shared<CLayerGame>(m_pEditor, 50, 50));
 	m_pGameGroup->AddLayer(m_pGameLayer);
+
+	ResetModifiedState();
 }
 
 void CEditorMap::MakeGameLayer(const std::shared_ptr<CLayer> &pLayer)
@@ -302,4 +326,188 @@ void CEditorMap::MakeTuneLayer(const std::shared_ptr<CLayer> &pLayer)
 {
 	m_pTuneLayer = std::static_pointer_cast<CLayerTune>(pLayer);
 	m_pTuneLayer->m_pEditor = m_pEditor;
+}
+
+std::shared_ptr<CEditorImage> CEditorMap::SelectedImage() const
+{
+	if(m_SelectedImage < 0 || (size_t)m_SelectedImage >= m_vpImages.size())
+	{
+		return nullptr;
+	}
+	return m_vpImages[m_SelectedImage];
+}
+
+void CEditorMap::SelectImage(const std::shared_ptr<CEditorImage> &pImage)
+{
+	for(size_t i = 0; i < m_vpImages.size(); ++i)
+	{
+		if(m_vpImages[i] == pImage)
+		{
+			m_SelectedImage = i;
+			break;
+		}
+	}
+}
+
+void CEditorMap::SelectNextImage()
+{
+	const int OldImage = m_SelectedImage;
+	m_SelectedImage = std::clamp(m_SelectedImage, 0, (int)m_vpImages.size() - 1);
+	for(size_t i = m_SelectedImage + 1; i < m_vpImages.size(); i++)
+	{
+		if(m_vpImages[i]->m_External == m_vpImages[m_SelectedImage]->m_External)
+		{
+			m_SelectedImage = i;
+			break;
+		}
+	}
+	if(m_SelectedImage == OldImage && !m_vpImages[m_SelectedImage]->m_External)
+	{
+		for(size_t i = 0; i < m_vpImages.size(); i++)
+		{
+			if(m_vpImages[i]->m_External)
+			{
+				m_SelectedImage = i;
+				break;
+			}
+		}
+	}
+}
+
+void CEditorMap::SelectPreviousImage()
+{
+	const int OldImage = m_SelectedImage;
+	m_SelectedImage = std::clamp(m_SelectedImage, 0, (int)m_vpImages.size() - 1);
+	for(int i = m_SelectedImage - 1; i >= 0; i--)
+	{
+		if(m_vpImages[i]->m_External == m_vpImages[m_SelectedImage]->m_External)
+		{
+			m_SelectedImage = i;
+			break;
+		}
+	}
+	if(m_SelectedImage == OldImage && m_vpImages[m_SelectedImage]->m_External)
+	{
+		for(int i = (int)m_vpImages.size() - 1; i >= 0; i--)
+		{
+			if(!m_vpImages[i]->m_External)
+			{
+				m_SelectedImage = i;
+				break;
+			}
+		}
+	}
+}
+
+bool CEditorMap::IsImageUsed(int ImageIndex) const
+{
+	for(const auto &pGroup : m_vpGroups)
+	{
+		for(const auto &pLayer : pGroup->m_vpLayers)
+		{
+			if(pLayer->m_Type == LAYERTYPE_TILES)
+			{
+				const std::shared_ptr<CLayerTiles> pTiles = std::static_pointer_cast<CLayerTiles>(pLayer);
+				if(pTiles->m_Image == ImageIndex)
+				{
+					return true;
+				}
+			}
+			else if(pLayer->m_Type == LAYERTYPE_QUADS)
+			{
+				const std::shared_ptr<CLayerQuads> pQuads = std::static_pointer_cast<CLayerQuads>(pLayer);
+				if(pQuads->m_Image == ImageIndex)
+				{
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+
+std::vector<int> CEditorMap::SortImages()
+{
+	static const auto &&s_ImageNameComparator = [](const std::shared_ptr<CEditorImage> &pLhs, const std::shared_ptr<CEditorImage> &pRhs) {
+		return str_comp(pLhs->m_aName, pRhs->m_aName) < 0;
+	};
+	if(std::is_sorted(m_vpImages.begin(), m_vpImages.end(), s_ImageNameComparator))
+	{
+		return std::vector<int>();
+	}
+
+	const std::vector<std::shared_ptr<CEditorImage>> vpTemp = m_vpImages;
+	std::vector<int> vSortedIndex;
+	vSortedIndex.resize(vpTemp.size());
+
+	std::sort(m_vpImages.begin(), m_vpImages.end(), s_ImageNameComparator);
+	for(size_t OldIndex = 0; OldIndex < vpTemp.size(); OldIndex++)
+	{
+		for(size_t NewIndex = 0; NewIndex < m_vpImages.size(); NewIndex++)
+		{
+			if(vpTemp[OldIndex] == m_vpImages[NewIndex])
+			{
+				vSortedIndex[OldIndex] = NewIndex;
+				break;
+			}
+		}
+	}
+	ModifyImageIndex([vSortedIndex](int *pIndex) {
+		if(*pIndex >= 0)
+		{
+			*pIndex = vSortedIndex[*pIndex];
+		}
+	});
+
+	return vSortedIndex;
+}
+
+std::shared_ptr<CEditorSound> CEditorMap::SelectedSound() const
+{
+	if(m_SelectedSound < 0 || (size_t)m_SelectedSound >= m_vpSounds.size())
+	{
+		return nullptr;
+	}
+	return m_vpSounds[m_SelectedSound];
+}
+
+void CEditorMap::SelectSound(const std::shared_ptr<CEditorSound> &pSound)
+{
+	for(size_t i = 0; i < m_vpSounds.size(); ++i)
+	{
+		if(m_vpSounds[i] == pSound)
+		{
+			m_SelectedSound = i;
+			break;
+		}
+	}
+}
+
+void CEditorMap::SelectNextSound()
+{
+	m_SelectedSound = (m_SelectedSound + 1) % m_vpSounds.size();
+}
+
+void CEditorMap::SelectPreviousSound()
+{
+	m_SelectedSound = (m_SelectedSound + m_vpSounds.size() - 1) % m_vpSounds.size();
+}
+
+bool CEditorMap::IsSoundUsed(int SoundIndex) const
+{
+	for(const auto &pGroup : m_vpGroups)
+	{
+		for(const auto &pLayer : pGroup->m_vpLayers)
+		{
+			if(pLayer->m_Type == LAYERTYPE_SOUNDS)
+			{
+				std::shared_ptr<CLayerSounds> pSounds = std::static_pointer_cast<CLayerSounds>(pLayer);
+				if(pSounds->m_Sound == SoundIndex)
+				{
+					return true;
+				}
+			}
+		}
+	}
+	return false;
 }

@@ -3,12 +3,14 @@
 #ifndef GAME_SERVER_PLAYER_H
 #define GAME_SERVER_PLAYER_H
 
+#include "teeinfo.h"
+
 #include <base/vmath.h>
+
 #include <engine/shared/protocol.h>
+
 #include <game/alloc.h>
 #include <game/server/save.h>
-
-#include "teeinfo.h"
 
 #include <memory>
 #include <optional>
@@ -185,7 +187,7 @@ public:
 	bool CanSpec() const;
 
 	bool IsPlaying() const;
-	int64_t m_Last_KickVote;
+	int64_t m_LastKickVote;
 	int64_t m_LastDDRaceTeamChange;
 	int m_ShowOthers;
 	bool m_ShowAll;

@@ -1,11 +1,11 @@
 #ifndef BASE_TYPES_H
 #define BASE_TYPES_H
 
+#include <base/detect.h>
+
 #include <cstdint>
 #include <ctime>
 #include <functional>
-
-#include <base/detect.h>
 
 #if defined(CONF_FAMILY_UNIX)
 #include <sys/types.h> // pid_t
@@ -108,7 +108,7 @@ typedef void *PROCESS;
  *
  * @ingroup Shell
  */
-constexpr PROCESS INVALID_PROCESS = nullptr;
+constexpr PROCESS INVALID_PROCESS = nullptr; // NOLINT(misc-misplaced-const)
 #else
 /**
  * A handle for a process.

@@ -5,6 +5,7 @@
 #include <game/server/gamecontroller.h>
 
 #include "entity.h"
+
 #include "gamecontext.h"
 #include "player.h"
 
