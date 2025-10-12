@@ -1,4 +1,8 @@
+#include "foot_projectile.h"
+
 #include <engine/shared/config.h>
+
+#include <generated/protocol.h>
 
 #include <game/mapitems.h>
 #include <game/server/entities/character.h>
@@ -6,9 +10,6 @@
 #include <game/server/gamecontext.h>
 #include <game/server/gamecontroller.h>
 #include <game/server/player.h>
-#include <generated/protocol.h>
-
-#include "foot_projectile.h"
 
 CFootProjectile::CFootProjectile(
 	CGameWorld *pGameWorld,

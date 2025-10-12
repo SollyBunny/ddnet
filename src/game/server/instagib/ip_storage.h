@@ -2,6 +2,7 @@
 #define GAME_SERVER_INSTAGIB_IP_STORAGE_H
 
 #include <base/types.h>
+
 #include <vector>
 
 // This class tracks player state on an ip address.

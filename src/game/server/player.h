@@ -10,17 +10,16 @@
 #include <engine/shared/protocol.h>
 
 #include <game/alloc.h>
-#include <game/server/save.h>
-
-#include <memory>
-#include <optional>
-
 #include <game/server/instagib/enums.h>
 #include <game/server/instagib/ip_storage.h>
 #include <game/server/instagib/sql_stats.h>
 #include <game/server/instagib/sql_stats_player.h>
 #include <game/server/instagib/structs.h>
+#include <game/server/save.h>
 #include <game/server/teeinfo.h>
+
+#include <memory>
+#include <optional>
 
 class CCharacter;
 class CGameContext;

@@ -1,18 +1,20 @@
+#include "../entities/character.h"
+#include "../gamecontext.h"
+#include "../gamecontroller.h"
+#include "../player.h"
+
 #include <base/logger.h>
+#include <base/system.h>
+
 #include <engine/shared/config.h>
 #include <engine/shared/http.h>
 #include <engine/shared/json.h>
 #include <engine/shared/jsonwriter.h>
 #include <engine/shared/protocol.h>
-#include <game/server/instagib/strhelpers.h>
+
 #include <generated/protocol.h>
 
-#include <base/system.h>
-
-#include "../entities/character.h"
-#include "../gamecontext.h"
-#include "../gamecontroller.h"
-#include "../player.h"
+#include <game/server/instagib/strhelpers.h>
 
 float IGameController::CalcKillDeathRatio(int Kills, int Deaths) const
 {

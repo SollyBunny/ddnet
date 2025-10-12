@@ -1,16 +1,16 @@
 /* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
+#include "vanilla_projectile.h"
+
 #include <engine/shared/config.h>
 
-#include <game/mapitems.h>
 #include <generated/protocol.h>
 
+#include <game/mapitems.h>
 #include <game/server/entities/character.h>
 #include <game/server/entities/projectile.h>
 #include <game/server/gamecontext.h>
 #include <game/server/gamemodes/DDRace.h>
-
-#include "vanilla_projectile.h"
 
 CVanillaProjectile::CVanillaProjectile(
 	CGameWorld *pGameWorld,

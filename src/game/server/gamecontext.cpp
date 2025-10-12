@@ -35,12 +35,6 @@
 #include <game/mapitems.h>
 #include <game/version.h>
 
-#include <generated/protocol7.h>
-#include <generated/protocolglue.h>
-
-#include "entities/character.h"
-#include "player.h"
-#include "score.h"
 #include <vector>
 
 // ddnet-insta

@@ -1,9 +1,9 @@
 #ifndef GAME_SERVER_GAMEMODES_BALL_BASE_FOOT_H
 #define GAME_SERVER_GAMEMODES_BALL_BASE_FOOT_H
 
-#include <game/server/entities/foot/foot_projectile.h>
-
 #include "../instagib/base_instagib.h"
+
+#include <game/server/entities/foot/foot_projectile.h>
 
 #endif
 class CGameControllerBaseFoot : public CGameControllerPvp

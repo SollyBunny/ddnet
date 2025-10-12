@@ -1,7 +1,7 @@
+#include "tdm.h"
+
 #include <game/server/entities/character.h>
 #include <game/server/player.h>
-
-#include "tdm.h"
 
 CGameControllerInstaTDM::CGameControllerInstaTDM(class CGameContext *pGameServer) :
 	CGameControllerInstaBaseDM(pGameServer)

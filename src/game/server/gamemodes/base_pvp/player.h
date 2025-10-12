@@ -5,13 +5,15 @@
 #ifndef IN_CLASS_PLAYER
 
 #include <base/vmath.h>
-#include <cstdint>
+
 #include <game/server/instagib/enums.h>
 #include <game/server/instagib/ip_storage.h>
 #include <game/server/instagib/sql_stats.h>
 #include <game/server/instagib/sql_stats_player.h>
 #include <game/server/instagib/structs.h>
 #include <game/server/teeinfo.h>
+
+#include <cstdint>
 #include <optional>
 #include <vector>
 

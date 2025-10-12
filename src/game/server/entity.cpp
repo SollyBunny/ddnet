@@ -2,12 +2,12 @@
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
 
 // ddnet-insta
-#include <game/server/gamecontroller.h>
-
 #include "entity.h"
 
 #include "gamecontext.h"
 #include "player.h"
+
+#include <game/server/gamecontroller.h>
 
 //////////////////////////////////////////////////
 // Entity

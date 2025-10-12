@@ -2,7 +2,9 @@
 #define GAME_SERVER_INSTAGIB_STRUCTS_H
 
 #include <base/vmath.h>
+
 #include <engine/shared/protocol.h>
+
 #include <generated/protocol.h>
 
 // ddnet-insta specific "structs"

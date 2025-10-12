@@ -1,7 +1,8 @@
-#include <engine/shared/config.h>
-#include <game/server/entities/character.h>
-
 #include "gtdm.h"
+
+#include <engine/shared/config.h>
+
+#include <game/server/entities/character.h>
 
 CGameControllerGTDM::CGameControllerGTDM(class CGameContext *pGameServer) :
 	CGameControllerInstaTDM(pGameServer)

@@ -1,8 +1,9 @@
+#include "antibob.h"
+
 #include <base/log.h>
+
 #include <engine/console.h>
 #include <engine/server.h>
-
-#include "antibob.h"
 
 CAntibobContext g_AntibobContext;
 

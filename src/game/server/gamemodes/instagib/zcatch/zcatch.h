@@ -1,10 +1,10 @@
 #ifndef GAME_SERVER_GAMEMODES_INSTAGIB_ZCATCH_ZCATCH_H
 #define GAME_SERVER_GAMEMODES_INSTAGIB_ZCATCH_ZCATCH_H
 
+#include "../base_instagib.h"
+
 #include <game/server/instagib/extra_columns.h>
 #include <game/server/instagib/sql_stats_player.h>
-
-#include "../base_instagib.h"
 
 class CZCatchColumns : public CExtraColumns
 {

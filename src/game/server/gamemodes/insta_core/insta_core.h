@@ -1,11 +1,11 @@
 #ifndef GAME_SERVER_GAMEMODES_INSTA_CORE_INSTA_CORE_H
 #define GAME_SERVER_GAMEMODES_INSTA_CORE_INSTA_CORE_H
 
+#include "../DDRace.h"
+
 #include <game/server/instagib/extra_columns.h>
 #include <game/server/instagib/sql_stats.h>
 #include <game/server/player.h>
-
-#include "../DDRace.h"
 
 // base functionallity of the ddnet-insta server
 // should be inherited from in all gametypes

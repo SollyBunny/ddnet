@@ -1,9 +1,9 @@
+#include "ip_storage.h"
+
 #include <base/log.h>
 #include <base/system.h>
 
 #include <cstdint>
-
-#include "ip_storage.h"
 
 CIpStorage::CIpStorage(const NETADDR *pAddr, int EntryId, uint32_t UniqueClientId) :
 	m_Addr(*pAddr), m_EntryId(EntryId), m_UniqueClientId(UniqueClientId)

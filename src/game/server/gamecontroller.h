@@ -6,18 +6,17 @@
 #include <base/vmath.h>
 
 #include <engine/map.h>
+#include <engine/shared/http.h> // ddnet-insta
 #include <engine/shared/protocol.h>
 
-#include <game/server/teams.h>
+#include <generated/protocol.h>
+#include <generated/protocol7.h>
 
-#include <engine/shared/http.h> // ddnet-insta
 #include <game/server/gamecontext.h> // ddnet-insta
 #include <game/server/instagib/enums.h> // ddnet-insta
 #include <game/server/instagib/sql_stats.h> // ddnet-insta
 #include <game/server/instagib/structs.h> // ddnet-insta
-
-#include <generated/protocol.h>
-#include <generated/protocol7.h>
+#include <game/server/teams.h>
 
 struct CScoreLoadBestTimeResult;
 

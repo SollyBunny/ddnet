@@ -1,11 +1,13 @@
+#include "ctf.h"
+
 #include <engine/shared/config.h>
+
+#include <generated/protocol.h>
+
 #include <game/mapitems.h>
 #include <game/server/entities/character.h>
 #include <game/server/entities/ddnet_pvp/vanilla_pickup.h>
 #include <game/server/player.h>
-#include <generated/protocol.h>
-
-#include "ctf.h"
 
 CGameControllerCTF::CGameControllerCTF(class CGameContext *pGameServer) :
 	CGameControllerBaseCTF(pGameServer)
