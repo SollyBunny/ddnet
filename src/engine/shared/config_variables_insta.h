@@ -139,3 +139,4 @@ MACRO_CONFIG_INT(SvBallExplode, sv_ball_explode, 0, 0, 1, CFGFLAG_SERVER, "Shoul
 MACRO_CONFIG_INT(SvBallRespawnDelay, sv_ball_respawn_delay, 4, 0, 1000, CFGFLAG_SERVER, "Respawn time of the ball (only foot)")
 MACRO_CONFIG_INT(SvScoreDiff, sv_score_diff, 1, 0, 1000, CFGFLAG_SERVER, "Difference between the team-scores before a team can win (only foot)")
 MACRO_CONFIG_INT(SvSuddenDeathScoreDiff, sv_sudden_death_score_diff, 2, 0, 1000, CFGFLAG_SERVER, "Difference between the team-scores before a team can win in sudden death (only foot)")
+MACRO_CONFIG_INT(SvSuicidePenalty, sv_suicide_penalty, 1, 0, 1, CFGFLAG_SERVER, "Indicates if score is decremented on suicide")

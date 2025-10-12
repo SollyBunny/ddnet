@@ -636,7 +636,8 @@ int CGameControllerPvp::OnCharacterDeath(class CCharacter *pVictim, class CPlaye
 
 	if(SuicideOrWorld)
 	{
-		pVictim->GetPlayer()->DecrementScore();
+		if(g_Config.m_SvSuicidePenalty)
+			pVictim->GetPlayer()->DecrementScore();
 	}
 	else
 	{

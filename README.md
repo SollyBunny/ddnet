@@ -382,6 +382,7 @@ Below is a list of all the settings that were added in ddnet-insta.
 + `sv_ball_respawn_delay` Respawn time of the ball (only foot)
 + `sv_score_diff` Difference between the team-scores before a team can win (only foot)
 + `sv_sudden_death_score_diff` Difference between the team-scores before a team can win in sudden death (only foot)
++ `sv_suicide_penalty` Indicates if score is decremented on suicide
 + `sv_spawn_weapons` possible values: grenade, laser
 + `sv_zcatch_colors` Color scheme for zCatch options: teetime, savander
 + `sv_display_score` values: points, round_points, spree, current_spree, win_points, wins, kills, round_kills
