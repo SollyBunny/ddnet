@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12...3.27.4)
+cmake_minimum_required(VERSION 3.14...3.27.4)
 
 set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15 CACHE INTERNAL "Minimum macOS deployment version")
 if(CMAKE_OSX_DEPLOYMENT_TARGET VERSION_LESS 10.15)
@@ -24,10 +24,48 @@ endif()
 
 # <TClient>
 
+# re2
+
+find_package(PkgConfig QUIET)
+if(PkgConfig_FOUND)
+  pkg_check_modules(RE2 QUIET re2)
+else()
+  find_package(re2 REQUIRED)
+  message(STATUS "PkgConfig not found")
+  message(STATUS "    RE2 will probably be built even if installed")
+endif()
+if (NOT RE2_FOUND)
+  message(STATUS "RE2 not found")
+  message(STATUS "    building RE2 2025-08-12 and absl 2025-08-14.1 instead")
+  message(STATUS "    you should install RE2 for a faster build")
+  set(ABSL_ENABLE_INSTALL FALSE CACHE BOOL "" FORCE)
+  set(RE2_INSTALL OFF CACHE BOOL "" FORCE)
+  include(FetchContent)
+  FetchContent_Declare(
+    absl
+    GIT_REPOSITORY https://github.com/abseil/abseil-cpp.git
+    GIT_TAG 20250814.1
+    GIT_SHALLOW TRUE
+  )
+  FetchContent_MakeAvailable(absl)
+  FetchContent_Declare(
+    re2
+    GIT_REPOSITORY https://github.com/google/re2.git
+    GIT_TAG 2025-08-12
+    GIT_SHALLOW TRUE
+  )
+  FetchContent_MakeAvailable(re2)
+  set(RE2_LIBRARIES, re2::re2)
+endif()
+
+# data_version.txt
+
 set(DATA_VERSION_FILE "${CMAKE_BINARY_DIR}/data/data_version.txt")
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/data")
 
 file(WRITE "${DATA_VERSION_FILE}" "DDNet ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}\n")
+
+# tclient version
 
 file(STRINGS src/game/version.h TCLIENT_VERSION_LINE
   LIMIT_COUNT 1
@@ -2264,7 +2302,6 @@ set_src(ENGINE_SHARED GLOB_RECURSE src/engine/shared
   websockets.h
 )
 set_src(ENGINE_EXTERNAL GLOB src/engine/external
-  remimu.h
   spt.cpp
   spt.h
   tinyexpr.cpp
@@ -2500,6 +2537,8 @@ if(CLIENT)
     components/infomessages.h
     components/items.cpp
     components/items.h
+    components/key_binder.cpp
+    components/key_binder.h
     components/local_server.cpp
     components/local_server.h
     components/mapimages.cpp
@@ -2520,6 +2559,8 @@ if(CLIENT)
     components/menus_settings.cpp
     components/menus_settings7.cpp
     components/menus_settings_assets.cpp
+    components/menus_settings_controls.cpp
+    components/menus_settings_controls.h
     components/menus_start.cpp
     components/menus_start.h
     components/motd.cpp
@@ -2742,6 +2783,7 @@ if(CLIENT)
 
   # Libraries
   set(LIBS_CLIENT
+    ${RE2_LIBRARIES} # TClient
     ${FREETYPE_LIBRARIES}
     ${GLEW_LIBRARIES}
     ${PNG_LIBRARIES}
