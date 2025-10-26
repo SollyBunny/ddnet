@@ -216,8 +216,8 @@ public:
 
 		m_BrushColorEnabled = true;
 
-		m_aFileName[0] = '\0';
-		m_aFileNamePending[0] = '\0';
+		m_aFilename[0] = '\0';
+		m_aFilenamePending[0] = '\0';
 		m_ValidSaveFilename = false;
 
 		m_PopupEventActivated = false;
@@ -273,10 +273,10 @@ public:
 		m_TeleCheckpointNumber = 1;
 		m_ViewTeleNumber = 0;
 
-		m_TuningNum = 1;
+		m_TuningNumber = 1;
 		m_ViewTuning = 0;
 
-		m_SwitchNum = 1;
+		m_SwitchNumber = 1;
 		m_SwitchDelay = 0;
 		m_SpeedupForce = 50;
 		m_SpeedupMaxSpeed = 0;
@@ -420,8 +420,8 @@ public:
 
 	bool m_BrushColorEnabled;
 
-	char m_aFileName[IO_MAX_PATH_LENGTH];
-	char m_aFileNamePending[IO_MAX_PATH_LENGTH];
+	char m_aFilename[IO_MAX_PATH_LENGTH];
+	char m_aFilenamePending[IO_MAX_PATH_LENGTH];
 	bool m_ValidSaveFilename;
 
 	enum
@@ -657,15 +657,15 @@ public:
 	static CUi::EPopupMenuFunctionResult PopupEnvelopeCurvetype(void *pContext, CUIRect View, bool Active);
 	static CUi::EPopupMenuFunctionResult PopupQuadArt(void *pContext, CUIRect View, bool Active);
 
-	static bool CallbackOpenMap(const char *pFileName, int StorageType, void *pUser);
-	static bool CallbackAppendMap(const char *pFileName, int StorageType, void *pUser);
-	static bool CallbackSaveMap(const char *pFileName, int StorageType, void *pUser);
-	static bool CallbackSaveCopyMap(const char *pFileName, int StorageType, void *pUser);
+	static bool CallbackOpenMap(const char *pFilename, int StorageType, void *pUser);
+	static bool CallbackAppendMap(const char *pFilename, int StorageType, void *pUser);
+	static bool CallbackSaveMap(const char *pFilename, int StorageType, void *pUser);
+	static bool CallbackSaveCopyMap(const char *pFilename, int StorageType, void *pUser);
 	static bool CallbackAddTileart(const char *pFilepath, int StorageType, void *pUser);
 	static bool CallbackAddQuadArt(const char *pFilepath, int StorageType, void *pUser);
-	static bool CallbackSaveImage(const char *pFileName, int StorageType, void *pUser);
-	static bool CallbackSaveSound(const char *pFileName, int StorageType, void *pUser);
-	static bool CallbackCustomEntities(const char *pFileName, int StorageType, void *pUser);
+	static bool CallbackSaveImage(const char *pFilename, int StorageType, void *pUser);
+	static bool CallbackSaveSound(const char *pFilename, int StorageType, void *pUser);
+	static bool CallbackCustomEntities(const char *pFilename, int StorageType, void *pUser);
 
 	void PopupSelectImageInvoke(int Current, float x, float y);
 	int PopupSelectImageResult();
@@ -751,10 +751,10 @@ public:
 
 	bool ReplaceImage(const char *pFilename, int StorageType, bool CheckDuplicate);
 	static bool ReplaceImageCallback(const char *pFilename, int StorageType, void *pUser);
-	bool ReplaceSound(const char *pFileName, int StorageType, bool CheckDuplicate);
-	static bool ReplaceSoundCallback(const char *pFileName, int StorageType, void *pUser);
+	bool ReplaceSound(const char *pFilename, int StorageType, bool CheckDuplicate);
+	static bool ReplaceSoundCallback(const char *pFilename, int StorageType, void *pUser);
 	static bool AddImage(const char *pFilename, int StorageType, void *pUser);
-	static bool AddSound(const char *pFileName, int StorageType, void *pUser);
+	static bool AddSound(const char *pFilename, int StorageType, void *pUser);
 
 	bool IsEnvelopeUsed(int EnvelopeIndex) const;
 	void RemoveUnusedEnvelopes();
@@ -823,14 +823,14 @@ public:
 	unsigned char m_TeleCheckpointNumber;
 	unsigned char m_ViewTeleNumber;
 
-	unsigned char m_TuningNum;
+	unsigned char m_TuningNumber;
 	unsigned char m_ViewTuning;
 
 	unsigned char m_SpeedupForce;
 	unsigned char m_SpeedupMaxSpeed;
 	short m_SpeedupAngle;
 
-	unsigned char m_SwitchNum;
+	unsigned char m_SwitchNumber;
 	unsigned char m_SwitchDelay;
 	unsigned char m_ViewSwitch;
 

@@ -380,6 +380,7 @@ class CGameContext : public IGameServer
 	void TeehistorianRecordPlayerName(int ClientId, const char *pName) override;
 	void TeehistorianRecordPlayerFinish(int ClientId, int TimeTicks) override;
 	void TeehistorianRecordTeamFinish(int TeamId, int TimeTicks) override;
+	void TeehistorianRecordAuthLogin(int ClientId, int Level, const char *pAuthName) override;
 
 	bool IsClientReady(int ClientId) const override;
 	bool IsClientPlayer(int ClientId) const override;
