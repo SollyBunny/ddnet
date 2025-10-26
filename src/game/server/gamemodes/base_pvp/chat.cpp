@@ -197,12 +197,12 @@ static int Match1v1ChatCommand(const char *pCmd, int TeamSlots)
 	const char aaVs[][16] = {"on", "n", "vs", "v"};
 	for(const auto *pVs : aaVs)
 	{
-		char a1on1[32];
-		str_format(a1on1, sizeof(a1on1), "%d%s%d", TeamSlots, pVs, TeamSlots);
-		if(!str_comp_nocase(pCmd, a1on1))
+		char aXvsX[32];
+		str_format(aXvsX, sizeof(aXvsX), "%d%s%d", TeamSlots, pVs, TeamSlots);
+		if(!str_comp_nocase(pCmd, aXvsX))
 			return true;
-		str_format(a1on1, sizeof(a1on1), "%s%d", pVs, TeamSlots);
-		if(!str_comp_nocase(pCmd, a1on1))
+		str_format(aXvsX, sizeof(aXvsX), "%s%d", pVs, TeamSlots);
+		if(!str_comp_nocase(pCmd, aXvsX))
 			return true;
 	}
 	return false;
