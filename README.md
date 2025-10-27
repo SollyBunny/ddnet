@@ -347,7 +347,7 @@ Below is a list of all the settings that were added in ddnet-insta.
 + `sv_reload_time_on_hit` 0=default/off ticks it takes to shoot again after a shot was hit (see also sv_fast_hit_full_auto)
 + `sv_fast_hit_full_auto` require fire button repress when sv_reload_time_on_hit is set
 + `sv_punish_freeze_disconnect` freeze player for 20 seconds on rejoin when leaving server while being frozen
-+ `sv_self_damage_respawn_delay_ms` time in miliseconds it takes to respawn after dieing by self damage
++ `sv_self_damage_respawn_delay_ms` time in miliseconds it takes to respawn after dying by self damage
 + `sv_self_kill_respawn_delay_ms` time in miliseconds it takes to respawn after sending kill bind
 + `sv_enemy_kill_respawn_delay_ms` time in miliseconds it takes to respawn after getting killed by enemies
 + `sv_world_kill_respawn_delay_ms` time in miliseconds it takes to respawn after touching a deathtile
@@ -430,7 +430,7 @@ ddnet-insta then added a bunch of own slash chat commands and also bang (!) chat
 + `!settings` show current game settings in the message of the day. It will show if spray protection is on or off and similar game relevant settings.
 + `!1v1` `!2v2` `!v1` `!v2` `!1on1` ... call vote to change in game slots
 + `!restart ?(seconds)` call vote to restart game with optional parameter of warmup seconds (default: 10)
-+ `/drop flag` if it is a CTF gametype the flagger can drop the flag without dieing if either `sv_drop_flag_on_selfkill` or `sv_drop_flag_on_vote` is set
++ `/drop flag` if it is a CTF gametype the flagger can drop the flag without dying if either `sv_drop_flag_on_selfkill` or `sv_drop_flag_on_vote` is set
 + `/credits` Shows the credits of the current ddnet-insta mode"
 + `/credits_insta` Shows the credits of the entire ddnet-insta project"
 + `/credits_ddnet` Shows the credits of the DDNet mod"
