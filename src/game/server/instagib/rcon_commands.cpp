@@ -210,7 +210,7 @@ void CGameContext::ConDeepJailIp(IConsole::IResult *pResult, void *pUserData)
 void CGameContext::ConDeepJails(IConsole::IResult *pResult, void *pUserData)
 {
 	CGameContext *pSelf = (CGameContext *)pUserData;
-	pSelf->ListDeepJails();
+	pSelf->ListDeepJails(pResult->m_ClientId);
 }
 
 void CGameContext::ConUndeepJail(IConsole::IResult *pResult, void *pUserData)

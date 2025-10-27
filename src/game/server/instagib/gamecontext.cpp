@@ -507,7 +507,7 @@ void CGameContext::DeepJailIp(int AdminId, const char *pAddrStr, int Minutes)
 
 	int MinutesInTicks = Minutes * Server()->TickSpeed() * 60;
 	int UndeepTick = Server()->Tick() + MinutesInTicks;
-	CIpStorage *pEntry = m_IpStorageController.FindOrCreateEntry(&Addr);
+	CIpStorage *pEntry = m_IpStorageController.FindOrCreateEntry(&Addr, "");
 	pEntry->SetDeepUntilTick(UndeepTick);
 
 	for(CPlayer *pPlayer : m_apPlayers)
@@ -568,7 +568,7 @@ void CGameContext::UndeepJail(CIpStorage *pEntry)
 	}
 }
 
-void CGameContext::ListDeepJails() const
+void CGameContext::ListDeepJails(int RequesterId) const
 {
 	bool GotEntries = false;
 	for(const CIpStorage &Entry : m_IpStorageController.Entries())
@@ -576,13 +576,14 @@ void CGameContext::ListDeepJails() const
 		if(Entry.DeepUntilTick() < Server()->Tick())
 			continue;
 
-		char aAddr[512];
-		net_addr_str(Entry.Addr(), aAddr, sizeof(aAddr), false);
+		char aAddr[512] = "XXX";
+		if(Server()->HasShowIpsOn(RequesterId))
+			net_addr_str(Entry.Addr(), aAddr, sizeof(aAddr), false);
 
 		int TicksLeft = Entry.DeepUntilTick() - Server()->Tick();
 		int MinutesLeft = (TicksLeft / Server()->TickSpeed()) / 60;
 
-		log_info("deep_jail", "#%d ip=%s minutes=%d", Entry.EntryId(), aAddr, MinutesLeft);
+		log_info("deep_jail", "#%d name='%s' ip=%s minutes=%d", Entry.EntryId(), Entry.Name(), aAddr, MinutesLeft);
 		GotEntries = true;
 	}
 	for(CPlayer *pPlayer : m_apPlayers)

@@ -5,9 +5,10 @@
 
 #include <cstdint>
 
-CIpStorage::CIpStorage(const NETADDR *pAddr, int EntryId, uint32_t UniqueClientId) :
+CIpStorage::CIpStorage(const NETADDR *pAddr, int EntryId, uint32_t UniqueClientId, const char *pName) :
 	m_Addr(*pAddr), m_EntryId(EntryId), m_UniqueClientId(UniqueClientId)
 {
+	str_copy(m_aName, pName);
 }
 
 bool CIpStorage::IsEmpty(int ServerTick) const
@@ -51,13 +52,13 @@ CIpStorage *CIpStorageController::FindEntry(int EntryId)
 	return nullptr;
 }
 
-CIpStorage *CIpStorageController::FindOrCreateEntry(const NETADDR *pAddr)
+CIpStorage *CIpStorageController::FindOrCreateEntry(const NETADDR *pAddr, const char *pName)
 {
 	CIpStorage *pEntry = FindEntry(pAddr);
 	if(pEntry)
 		return pEntry;
 
-	m_vEntries.emplace_back(pAddr, GetNextEntryId(), -1);
+	m_vEntries.emplace_back(pAddr, GetNextEntryId(), -1, pName);
 	pEntry = FindEntry(pAddr);
 	dbg_assert(pEntry != nullptr, "failed to find newly created entry");
 	return pEntry;

@@ -3,6 +3,8 @@
 
 #include <base/types.h>
 
+#include <engine/shared/protocol.h>
+
 #include <vector>
 
 // This class tracks player state on an ip address.
@@ -24,13 +26,21 @@ class CIpStorage
 	int m_UniqueClientId = -1;
 
 	int64_t m_DeepUntilTick = 0;
+	char m_aName[MAX_NAME_LENGTH];
 
 public:
-	CIpStorage(const NETADDR *pAddr, int EntryId, uint32_t UniqueClientId);
+	CIpStorage(const NETADDR *pAddr, int EntryId, uint32_t UniqueClientId, const char *pName);
 
 	const NETADDR *Addr() const { return &m_Addr; };
 	int EntryId() const { return m_EntryId; };
 	int UniqueClientId() const { return m_UniqueClientId; }
+
+	// display name of the user when the entry was created
+	// does not sync on name change and in general is not
+	// a good source of truth
+	// only a hint ant the players identity
+	const char *Name() const { return m_aName; }
+
 	bool IsEmpty(int ServerTick) const;
 
 	// merge other ip storage entry int our self
@@ -63,7 +73,7 @@ public:
 	const std::vector<CIpStorage> &Entries() const { return m_vEntries; }
 	CIpStorage *FindEntry(const NETADDR *pAddr);
 	CIpStorage *FindEntry(int EntryId);
-	CIpStorage *FindOrCreateEntry(const NETADDR *pAddr);
+	CIpStorage *FindOrCreateEntry(const NETADDR *pAddr, const char *pName);
 	void OnTick(int ServerTick);
 };
 

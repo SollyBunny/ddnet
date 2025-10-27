@@ -138,3 +138,10 @@ bool CServer::SixupUsernameAuth(int ClientId, const char *pCredentials)
 	GameServer()->OnSetAuthed(ClientId, AuthLevel);
 	return true;
 }
+
+bool CServer::HasShowIpsOn(int ClientId) const
+{
+	if(ClientId < 0 || ClientId >= MAX_CLIENTS)
+		return true;
+	return m_aClients[ClientId].m_ShowIps;
+}

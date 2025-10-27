@@ -174,7 +174,7 @@ void CGameControllerInstaCore::InstaCoreDisconnect(CPlayer *pPlayer, const char 
 	if(pPlayer->m_IpStorage.has_value() && !pPlayer->m_IpStorage.value().IsEmpty(Server()->Tick()))
 	{
 		const NETADDR *pAddr = Server()->ClientAddr(pPlayer->GetCid());
-		CIpStorage *pStorage = GameServer()->m_IpStorageController.FindOrCreateEntry(pAddr);
+		CIpStorage *pStorage = GameServer()->m_IpStorageController.FindOrCreateEntry(pAddr, Server()->ClientName(pPlayer->GetCid()));
 		pStorage->OnPlayerDisconnect(&pPlayer->m_IpStorage.value(), Server()->Tick());
 	}
 }

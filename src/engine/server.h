@@ -46,6 +46,7 @@ public:
 	// returns false otherwise
 	virtual bool SixupUsernameAuth(int ClientId, const char *pCredentials) = 0;
 	virtual CAuthManager *AuthManager() = 0;
+	virtual bool HasShowIpsOn(int ClientId) const = 0;
 
 	MACRO_INTERFACE("server")
 protected:
