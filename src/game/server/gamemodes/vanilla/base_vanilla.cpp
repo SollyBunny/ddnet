@@ -10,6 +10,7 @@
 #include <game/mapitems.h>
 #include <game/server/entities/character.h>
 #include <game/server/entities/ddnet_pvp/vanilla_pickup.h>
+#include <game/server/instagib/protocol.h>
 #include <game/server/player.h>
 #include <game/server/score.h>
 #include <game/version.h>
@@ -28,10 +29,7 @@ CGameControllerVanilla::~CGameControllerVanilla() = default;
 int CGameControllerVanilla::SnapGameInfoExFlags(int SnappingClient, int DDRaceFlags)
 {
 	int Flags = CGameControllerPvp::SnapGameInfoExFlags(SnappingClient, DDRaceFlags);
-	// TODO: 19030 is not correct. Wait until next ddnet release.
-	//       and give this a proper constant like VERSION_DDNET_PICKUPFLAG_NO_PREDICT
-	//       https://github.com/ddnet-insta/ddnet-insta/issues/353
-	if(Server()->GetClientVersion(SnappingClient) <= 19030)
+	if(Server()->GetClientVersion(SnappingClient) < VERSION_DDNET_PICKUPFLAG_NO_PREDICT)
 		Flags &= ~(GAMEINFOFLAG_PREDICT_DDRACE); // https://github.com/ddnet-insta/ddnet-insta/issues/120
 	Flags &= ~(GAMEINFOFLAG_PREDICT_DDRACE_TILES); // https://github.com/ddnet-insta/ddnet-insta/issues/181
 	Flags &= ~(GAMEINFOFLAG_UNLIMITED_AMMO);
