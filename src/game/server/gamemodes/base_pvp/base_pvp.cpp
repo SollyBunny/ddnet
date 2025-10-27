@@ -1255,7 +1255,7 @@ bool CGameControllerPvp::OnSetDDRaceTeam(int ClientId, int Team)
 	CCharacter *pChr = GameServer()->GetPlayerChar(ClientId);
 	if(pChr && pChr->IsAlive())
 	{
-		// the /team chat command is block for in game players
+		// the /team chat command is blocked for in game players
 		// so only death should move you to team 0
 		// any other cases is unexpected and should be investigated.
 		//
@@ -1263,12 +1263,18 @@ bool CGameControllerPvp::OnSetDDRaceTeam(int ClientId, int Team)
 		// but we might be able to recover using SetTeam so this is not an assert
 		//
 		// UPDATE: I saw this log in production. Can not reproduce yet.
-		log_error(
-			"ddnet-insta",
+
+		// log_error(
+		// 	"ddnet-insta",
+		// 	"cid=%d changed from ddrace team %d to ddrace team 0 but is still alive",
+		// 	ClientId,
+		// 	OldDDRaceTeam);
+		// pPlayer->SetTeam(TEAM_SPECTATORS);
+
+		dbg_assert(false,
 			"cid=%d changed from ddrace team %d to ddrace team 0 but is still alive",
 			ClientId,
 			OldDDRaceTeam);
-		pPlayer->SetTeam(TEAM_SPECTATORS);
 	}
 	else
 	{
