@@ -1,4 +1,5 @@
 #include "translate.h"
+#include <base/log.h>
 
 #include <engine/shared/json.h>
 #include <engine/shared/jsonwriter.h>
@@ -59,13 +60,13 @@ class ITranslateBackendHttp : public ITranslateBackend
 protected:
 	std::shared_ptr<CHttpRequest> m_pHttpRequest = nullptr;
 	virtual bool ParseResponse(CTranslateResponse &Out) = 0;
+	virtual bool ParseHttpError() const { return false; }
 
 	void CreateHttpRequest(IHttp &Http, const char *pUrl)
 	{
 		auto pGet = std::make_shared<CHttpRequest>(pUrl);
 		pGet->LogProgress(HTTPLOG::FAILURE);
 		pGet->FailOnErrorStatus(false);
-		pGet->HeaderString("Content-Type", "application/json");
 		pGet->Timeout(CTimeout{10000, 0, 500, 10});
 
 		m_pHttpRequest = pGet;
@@ -88,7 +89,7 @@ public:
 			str_copy(Out.m_Text, "Curl error, see console");
 			return false;
 		}
-		if(m_pHttpRequest->StatusCode() != 200)
+		if(m_pHttpRequest->StatusCode() != 200 && !ParseHttpError())
 		{
 			str_format(Out.m_Text, sizeof(Out.m_Text), "Got http code %d", m_pHttpRequest->StatusCode());
 			return false;
@@ -107,6 +108,11 @@ class CTranslateBackendLibretranslate : public ITranslateBackendHttp
 private:
 	bool ParseResponseJson(const json_value *pObj, CTranslateResponse &Out)
 	{
+		if(!pObj) {
+			str_copy(Out.m_Text, "Response is not JSON");
+			return false;
+		}
+
 		if(pObj->type != json_object)
 		{
 			str_copy(Out.m_Text, "Response is not object");
@@ -119,7 +125,7 @@ private:
 			if(pError->type != json_string)
 				str_copy(Out.m_Text, "Error is not string");
 			else
-				str_format(Out.m_Text, sizeof(Out.m_Text), "Error from server: %s", pError->u.string.ptr);
+				str_copy(Out.m_Text, pError->u.string.ptr);
 			return false;
 		}
 
@@ -151,7 +157,7 @@ private:
 		if(pConfidence == &json_value_none || ((pConfidence->type == json_double && pConfidence->u.dbl == 0.0f) ||
 							      (pConfidence->type == json_integer && pConfidence->u.integer == 0)))
 		{
-			str_copy(Out.m_Text, "Language unknown, not detected or not installed");
+			str_copy(Out.m_Text, "Unknown language");
 			return false;
 		}
 
@@ -181,6 +187,7 @@ protected:
 		json_value_free(pObj);
 		return Res;
 	}
+	bool ParseHttpError() const override { return true; }
 
 public:
 	const char *Name() const override
@@ -206,7 +213,8 @@ public:
 		}
 		Json.EndObject();
 		CreateHttpRequest(Http, g_Config.m_TcTranslateEndpoint[0] == '\0' ? "localhost:5000/translate" : g_Config.m_TcTranslateEndpoint);
-		m_pHttpRequest->PostJson(Json.GetOutputString().c_str());
+		const char *pJson = Json.GetOutputString().c_str();
+		m_pHttpRequest->PostJson(pJson);
 	}
 };
 
@@ -215,6 +223,11 @@ class CTranslateBackendFtapi : public ITranslateBackendHttp
 private:
 	bool ParseResponseJson(const json_value *pObj, CTranslateResponse &Out)
 	{
+		if(!pObj) {
+			str_copy(Out.m_Text, "Response is not JSON");
+			return false;
+		}
+
 		if(pObj->type != json_object)
 		{
 			str_copy(Out.m_Text, "Response is not object");
@@ -378,7 +391,7 @@ void CTranslate::Translate(CChat::CLine &Line, bool ShowProgress)
 		return;
 	}
 
-	CTranslateJob &Job = m_vJobs.emplace_back();
+	CTranslateJob Job;
 	Job.m_pLine = &Line;
 	Job.m_pTranslateResponse = std::make_shared<CTranslateResponse>();
 	Job.m_pLine->m_pTranslateResponse = Job.m_pTranslateResponse;
@@ -395,14 +408,18 @@ void CTranslate::Translate(CChat::CLine &Line, bool ShowProgress)
 
 	if(ShowProgress)
 	{
-		str_format(Job.m_pTranslateResponse->m_Text, sizeof(Job.m_pTranslateResponse->m_Text), TCLocalize("[%s translating to %s]", "translate"), Job.m_pBackend->Name(), g_Config.m_TcTranslateTarget);
+		str_format(Job.m_pTranslateResponse->m_Text, sizeof(Job.m_pTranslateResponse->m_Text), TCLocalize("%s translating to %s", "translate"), Job.m_pBackend->Name(), g_Config.m_TcTranslateTarget);
 		Job.m_pLine->m_Time = time();
-		GameClient()->m_Chat.RebuildChat();
 	}
 	else
 	{
 		Job.m_pTranslateResponse->m_Text[0] = '\0';
 	}
+
+	m_vJobs.emplace_back(std::move(Job));
+
+	if(ShowProgress)
+		GameClient()->m_Chat.RebuildChat();
 }
 
 void CTranslate::OnRender()
@@ -411,21 +428,20 @@ void CTranslate::OnRender()
 	auto ForEach = [&](CTranslateJob &Job) {
 		if(Job.m_pLine->m_pTranslateResponse != Job.m_pTranslateResponse)
 			return true; // Not the same line anymore
-		auto &Out = *Job.m_pTranslateResponse;
-		const std::optional<bool> Done = Job.m_pBackend->Update(Out);
+		const std::optional<bool> Done = Job.m_pBackend->Update(*Job.m_pTranslateResponse);
 		if(!Done.has_value())
 			return false; // Keep ongoing tasks
 		if(*Done)
 		{
-			if(str_comp_nocase(Job.m_pLine->m_aText, Out.m_Text) == 0) // Check for no translation difference
+			if(str_comp_nocase(Job.m_pLine->m_aText, Job.m_pTranslateResponse->m_Text) == 0) // Check for no translation difference
 				Job.m_pTranslateResponse->m_Text[0] = '\0';
 		}
 		else
 		{
-			char aBuf[1024];
-			str_format(aBuf, sizeof(aBuf), TCLocalize("[%s to %s failed: %s]", "translate"), Job.m_pBackend->Name(), g_Config.m_TcTranslateTarget, Out.m_Text);
-			GameClient()->m_Chat.Echo(aBuf);
-			Job.m_pTranslateResponse->m_Text[0] = '\0';
+			char aBuf[sizeof(Job.m_pTranslateResponse->m_Text)];
+			str_format(aBuf, sizeof(aBuf), TCLocalize("%s to %s failed: %s", "translate"), Job.m_pBackend->Name(), g_Config.m_TcTranslateTarget, Job.m_pTranslateResponse->m_Text);
+			Job.m_pTranslateResponse->m_Error = true;
+			str_copy(Job.m_pTranslateResponse->m_Text, aBuf);
 		}
 		Job.m_pLine->m_Time = Time;
 		GameClient()->m_Chat.RebuildChat();

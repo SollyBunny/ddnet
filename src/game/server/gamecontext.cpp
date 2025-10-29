@@ -27,6 +27,7 @@
 #include <engine/shared/protocolglue.h>
 #include <engine/storage.h>
 
+#include <generated/protocol.h>
 #include <generated/protocol7.h>
 #include <generated/protocolglue.h>
 
@@ -1913,6 +1914,14 @@ void CGameContext::TeehistorianRecordTeamFinish(int TeamId, int TimeTicks)
 	}
 }
 
+void CGameContext::TeehistorianRecordAuthLogin(int ClientId, int Level, const char *pAuthName)
+{
+	if(m_TeeHistorianActive)
+	{
+		m_TeeHistorian.RecordAuthLogin(ClientId, Level, pAuthName);
+	}
+}
+
 bool CGameContext::OnClientDDNetVersionKnown(int ClientId)
 {
 	IServer::CClientInfo Info;
@@ -2085,18 +2094,23 @@ void *CGameContext::PreProcessMsg(int *pMsgId, CUnpacker *pUnpacker, int ClientI
 		else if(*pMsgId == protocol7::NETMSGTYPE_CL_CALLVOTE)
 		{
 			protocol7::CNetMsg_Cl_CallVote *pMsg7 = (protocol7::CNetMsg_Cl_CallVote *)pRawMsg;
-			::CNetMsg_Cl_CallVote *pMsg = (::CNetMsg_Cl_CallVote *)s_aRawMsg;
 
-			int Authed = Server()->GetAuthedState(ClientId);
 			if(pMsg7->m_Force)
 			{
-				str_format(s_aRawMsg, sizeof(s_aRawMsg), "force_vote \"%s\" \"%s\" \"%s\"", pMsg7->m_pType, pMsg7->m_pValue, pMsg7->m_pReason);
+				const int Authed = Server()->GetAuthedState(ClientId);
+				if(Authed == AUTHED_NO)
+				{
+					return nullptr;
+				}
+				char aCommand[IConsole::CMDLINE_LENGTH];
+				str_format(aCommand, sizeof(aCommand), "force_vote \"%s\" \"%s\" \"%s\"", pMsg7->m_pType, pMsg7->m_pValue, pMsg7->m_pReason);
 				Console()->SetAccessLevel(Authed == AUTHED_ADMIN ? IConsole::EAccessLevel::ADMIN : Authed == AUTHED_MOD ? IConsole::EAccessLevel::MODERATOR : IConsole::EAccessLevel::HELPER);
-				Console()->ExecuteLine(s_aRawMsg, ClientId, false);
+				Console()->ExecuteLine(aCommand, ClientId, false);
 				Console()->SetAccessLevel(IConsole::EAccessLevel::ADMIN);
 				return nullptr;
 			}
 
+			::CNetMsg_Cl_CallVote *pMsg = (::CNetMsg_Cl_CallVote *)s_aRawMsg;
 			pMsg->m_pValue = pMsg7->m_pValue;
 			pMsg->m_pReason = pMsg7->m_pReason;
 			pMsg->m_pType = pMsg7->m_pType;
@@ -4128,7 +4142,7 @@ void CGameContext::OnInit(const void *pPersistentData)
 
 	m_pConfigManager->SetGameSettingsReadOnly(false);
 
-	Console()->ExecuteFile(g_Config.m_SvResetFile, -1);
+	Console()->ExecuteFile(g_Config.m_SvResetFile, IConsole::CLIENT_ID_UNSPECIFIED);
 
 	LoadMapSettings();
 
@@ -4230,20 +4244,6 @@ void CGameContext::OnInit(const void *pPersistentData)
 		}
 
 		m_TeeHistorian.Reset(&GameInfo, TeeHistorianWrite, this);
-
-		for(int i = 0; i < MAX_CLIENTS; i++)
-		{
-			if(Server()->ClientSlotEmpty(i))
-			{
-				continue;
-			}
-			const int Level = Server()->GetAuthedState(i);
-			if(Level == AUTHED_NO)
-			{
-				continue;
-			}
-			m_TeeHistorian.RecordAuthInitial(i, Level, Server()->GetAuthName(i));
-		}
 	}
 
 	Server()->DemoRecorder_HandleAutoStart();
@@ -4594,7 +4594,7 @@ void CGameContext::OnSnap(int ClientId, bool GlobalSnap)
 		int *pParams = (int *)&m_Tuning;
 		for(unsigned i = 0; i < sizeof(m_Tuning) / sizeof(int); i++)
 			Msg.AddInt(pParams[i]);
-		Server()->SendMsg(&Msg, MSGFLAG_RECORD | MSGFLAG_NOSEND, ClientId);
+		Server()->SendMsg(&Msg, MSGFLAG_NOSEND, ClientId);
 	}
 
 	m_pController->Snap(ClientId);
@@ -4752,8 +4752,8 @@ void CGameContext::SendRecord(int ClientId)
 {
 	CNetMsg_Sv_Record Msg;
 	CNetMsg_Sv_RecordLegacy MsgLegacy;
-	MsgLegacy.m_PlayerTimeBest = Msg.m_PlayerTimeBest = Score()->PlayerData(ClientId)->m_BestTime * 100.0f;
-	MsgLegacy.m_ServerTimeBest = Msg.m_ServerTimeBest = m_pController->m_CurrentRecord * 100.0f; //TODO: finish this
+	MsgLegacy.m_PlayerTimeBest = Msg.m_PlayerTimeBest = round_to_int(Score()->PlayerData(ClientId)->m_BestTime * 100.0f);
+	MsgLegacy.m_ServerTimeBest = Msg.m_ServerTimeBest = m_pController->m_CurrentRecord.has_value() ? round_to_int(m_pController->m_CurrentRecord.value() * 100.0f) : 0; //TODO: finish this
 	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, ClientId);
 	if(!Server()->IsSixup(ClientId) && GetClientVersion(ClientId) < VERSION_DDNET_MSG_LEGACY)
 	{
@@ -4851,20 +4851,61 @@ void CGameContext::SendSaveCode(int Team, int TeamSize, int State, const char *p
 		}
 		else
 		{
-			if(pCode[0] == '\0')
+			switch(State)
 			{
-				str_format(aBuf,
-					sizeof(aBuf),
-					"Team save in progress. You'll be able to load with '/load %s'",
-					pGeneratedCode);
-			}
-			else
-			{
-				str_format(aBuf,
-					sizeof(aBuf),
-					"Team save in progress. You'll be able to load with '/load %s' if save is successful or with '/load %s' if it fails",
-					pCode,
-					pGeneratedCode);
+			case SAVESTATE_PENDING:
+				if(pCode[0] == '\0')
+				{
+					str_format(aBuf,
+						sizeof(aBuf),
+						"Team save in progress. You'll be able to load with '/load %s'",
+						pGeneratedCode);
+				}
+				else
+				{
+					str_format(aBuf,
+						sizeof(aBuf),
+						"Team save in progress. You'll be able to load with '/load %s' if save is successful or with '/load %s' if it fails",
+						pCode,
+						pGeneratedCode);
+				}
+				break;
+			case SAVESTATE_DONE:
+				if(str_comp(pServerName, g_Config.m_SvSqlServerName) == 0)
+				{
+					str_format(aBuf, sizeof(aBuf),
+						"Team successfully saved by %s. Use '/load %s' to continue",
+						pSaveRequester, pCode[0] ? pCode : pGeneratedCode);
+				}
+				else
+				{
+					str_format(aBuf, sizeof(aBuf),
+						"Team successfully saved by %s. Use '/load %s' on %s to continue",
+						pSaveRequester, pCode[0] ? pCode : pGeneratedCode, pServerName);
+				}
+				break;
+			case SAVESTATE_FALLBACKFILE:
+				SendBroadcast("Database connection failed, teamsave written to a file instead. On official DDNet servers this will automatically be inserted into the database every full hour.", MemberId);
+				if(str_comp(pServerName, g_Config.m_SvSqlServerName) == 0)
+				{
+					str_format(aBuf, sizeof(aBuf),
+						"Team successfully saved by %s. The database connection failed, using generated save code instead to avoid collisions. Use '/load %s' to continue",
+						pSaveRequester, pCode[0] ? pCode : pGeneratedCode);
+				}
+				else
+				{
+					str_format(aBuf, sizeof(aBuf),
+						"Team successfully saved by %s. The database connection failed, using generated save code instead to avoid collisions. Use '/load %s' on %s to continue",
+						pSaveRequester, pCode[0] ? pCode : pGeneratedCode, pServerName);
+				}
+				break;
+			case SAVESTATE_ERROR:
+			case SAVESTATE_WARNING:
+				str_copy(aBuf, pError);
+				break;
+			default:
+				dbg_assert(false, "Unexpected save state %d", State);
+				break;
 			}
 			SendChatTarget(MemberId, aBuf);
 		}

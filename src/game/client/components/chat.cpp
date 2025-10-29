@@ -2,9 +2,9 @@
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
 
 #include "chat.h"
-#include <base/log.h>
 
 #include <engine/editor.h>
+#include <engine/external/remimu.h>
 #include <engine/graphics.h>
 #include <engine/keys.h>
 #include <engine/shared/config.h>
@@ -23,8 +23,6 @@
 #include <game/localization.h>
 
 #include <variant>
-
-#include <re2/re2.h>
 
 char CChat::ms_aDisplayText[MAX_LINE_LENGTH] = "";
 
@@ -323,8 +321,8 @@ bool CChat::OnInput(const IInput::CEvent &Event)
 				}
 			}
 			std::stable_sort(m_aPlayerCompletionList, m_aPlayerCompletionList + m_PlayerCompletionListLength,
-				[](const CRateablePlayer &p1, const CRateablePlayer &p2) -> bool {
-					return p1.m_Score < p2.m_Score;
+				[](const CRateablePlayer &Player1, const CRateablePlayer &Player2) -> bool {
+					return Player1.m_Score < Player2.m_Score;
 				});
 		}
 
@@ -563,19 +561,12 @@ void CChat::OnMessage(int MsgType, void *pRawMsg)
 
 		if(g_Config.m_TcRegexChatIgnore[0])
 		{
-			RE2 Regex(g_Config.m_TcRegexChatIgnore);
-			if(Regex.ok())
-			{
-				if(RE2::PartialMatch(pMsg->m_pMessage, Regex))
-					return;
-			}
-			else
-			{
-				char aBuf[256];
-				str_format(aBuf, sizeof(aBuf), TCLocalize("Invalid regex: %s"), Regex.error());
-				log_error("regex", "Invalid regex: %s", Regex.error().c_str());
-				// Fail open
-			}
+			RegexToken aTokens[512];
+			int16_t TokenCount = 512;
+			if(regex_parse(g_Config.m_TcRegexChatIgnore, aTokens, &TokenCount, 0))
+				GameClient()->Echo("Regex error");
+			else if(regex_match(aTokens, pMsg->m_pMessage, 0, 0, 0, 0) != -1)
+				return;
 		}
 
 		/*
@@ -959,6 +950,20 @@ void CChat::AddLine(int ClientId, int Team, const char *pLine)
 			}
 		}
 	}
+
+	// TClient
+	if(g_Config.m_TcTranslateAuto && CurrentLine.m_ClientId != CLIENT_MSG)
+	{
+		bool AllowAutoTranslate = true;
+		if(str_comp(g_Config.m_TcTranslateBackend, "ftapi") == 0)
+		{
+			// FTAPI quickly gets overloaded, please do not disable this
+			// It may shut down if we spam it too hard
+			AllowAutoTranslate = false;
+		}
+		if(AllowAutoTranslate)
+			GameClient()->m_Translate.Translate(CurrentLine, false);
+	}
 }
 
 void CChat::OnPrepareLines(float y)
@@ -1136,6 +1141,7 @@ void CChat::OnPrepareLines(float y)
 			ColoredParts.m_vParts.emplace_back(pText);
 		}
 
+		const char *pTranslatedError = nullptr;
 		const char *pTranslatedText = nullptr;
 		const char *pTranslatedLanguage = nullptr;
 		if(Line.m_pTranslateResponse != nullptr && Line.m_pTranslateResponse->m_Text[0])
@@ -1143,7 +1149,11 @@ void CChat::OnPrepareLines(float y)
 			// If hidden and there is translated text
 			if(pText != Line.m_aText)
 			{
-				pTranslatedText = TCLocalize("Translated text hidden due to streamer mode");
+				pTranslatedError = TCLocalize("Translated text hidden due to streamer mode");
+			}
+			else if(Line.m_pTranslateResponse->m_Error)
+			{
+				pTranslatedError = Line.m_pTranslateResponse->m_Text;
 			}
 			else
 			{
@@ -1202,6 +1212,14 @@ void CChat::OnPrepareLines(float y)
 				TextRender()->TextEx(&AppendCursor, "\n");
 				AppendCursor.m_FontSize *= 0.8f;
 				TextRender()->TextEx(&AppendCursor, pText);
+				AppendCursor.m_FontSize /= 0.8f;
+			}
+			else if(pTranslatedError)
+			{
+				TextRender()->TextEx(&AppendCursor, pText);
+				TextRender()->TextEx(&AppendCursor, "\n");
+				AppendCursor.m_FontSize *= 0.8f;
+				TextRender()->TextEx(&AppendCursor, pTranslatedError);
 				AppendCursor.m_FontSize /= 0.8f;
 			}
 			else
@@ -1311,23 +1329,37 @@ void CChat::OnPrepareLines(float y)
 			TextRender()->CreateOrAppendTextContainer(Line.m_TextContainerIndex, &AppendCursor, pTranslatedText);
 			if(pTranslatedLanguage)
 			{
-				ColorRGBA Color80 = Color;
-				Color80.r *= 0.8f;
-				Color80.g *= 0.8f;
-				Color80.b *= 0.8f;
-				TextRender()->TextColor(Color80);
+				ColorRGBA ColorLang = Color;
+				ColorLang.r *= 0.8f;
+				ColorLang.g *= 0.8f;
+				ColorLang.b *= 0.8f;
+				TextRender()->TextColor(ColorLang);
 				TextRender()->CreateOrAppendTextContainer(Line.m_TextContainerIndex, &AppendCursor, " [");
 				TextRender()->CreateOrAppendTextContainer(Line.m_TextContainerIndex, &AppendCursor, pTranslatedLanguage);
 				TextRender()->CreateOrAppendTextContainer(Line.m_TextContainerIndex, &AppendCursor, "]");
 			}
-			ColorRGBA Color70 = Color;
-			Color70.r *= 0.7f;
-			Color70.g *= 0.7f;
-			Color70.b *= 0.7f;
-			TextRender()->TextColor(Color70);
+			ColorRGBA ColorSub = Color;
+			ColorSub.r *= 0.7f;
+			ColorSub.g *= 0.7f;
+			ColorSub.b *= 0.7f;
+			TextRender()->TextColor(ColorSub);
 			TextRender()->CreateOrAppendTextContainer(Line.m_TextContainerIndex, &AppendCursor, "\n");
 			AppendCursor.m_FontSize *= 0.8f;
 			TextRender()->CreateOrAppendTextContainer(Line.m_TextContainerIndex, &AppendCursor, pText);
+			AppendCursor.m_FontSize /= 0.8f;
+			TextRender()->TextColor(Color);
+		}
+		else if(pTranslatedError)
+		{
+			TextRender()->CreateOrAppendTextContainer(Line.m_TextContainerIndex, &AppendCursor, pText);
+			ColorRGBA ColorSub = Color;
+			ColorSub.r *= 0.8f;
+			ColorSub.g *= 0.4f;
+			ColorSub.b *= 0.4f;
+			TextRender()->TextColor(ColorSub);
+			TextRender()->CreateOrAppendTextContainer(Line.m_TextContainerIndex, &AppendCursor, "\n");
+			AppendCursor.m_FontSize *= 0.8f;
+			TextRender()->CreateOrAppendTextContainer(Line.m_TextContainerIndex, &AppendCursor, pTranslatedError);
 			AppendCursor.m_FontSize /= 0.8f;
 			TextRender()->TextColor(Color);
 		}

@@ -1,6 +1,7 @@
 # Solly's Client
 
 A combination of
+
 * [DDNet](https://github.com/ddnet/ddnet/)
 * [TClient](https://github.com/sjrc6/TaterClient-ddnet/)
 * [DDNet Insta](https://github.com/ddnet-insta/ddnet-insta/)
@@ -30,6 +31,7 @@ Solly's Client has the ability to send all console lines to a remote HTTP server
 It is up to users to not do anything illegal such as any input modification
 
 Here is a few uses for this:
+
 * Link up with external moderation tools
 * Shutdown your computer when you swear
 

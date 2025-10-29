@@ -83,6 +83,8 @@ IGameController::IGameController(class CGameContext *pGameServer) :
 	m_GameInfo.m_MatchNum = 0;
 	m_GameInfo.m_ScoreLimit = Config()->m_SvScorelimit;
 	m_GameInfo.m_TimeLimit = Config()->m_SvTimelimit;
+
+	m_CurrentRecord.reset();
 }
 
 IGameController::~IGameController() = default;
@@ -800,7 +802,7 @@ void IGameController::Snap(int SnappingClient)
 		if(!pRaceData)
 			return;
 
-		pRaceData->m_BestTime = round_to_int(m_CurrentRecord * 1000);
+		pRaceData->m_BestTime = m_CurrentRecord.has_value() ? round_to_int(m_CurrentRecord.value() * 1000) : -1;
 		pRaceData->m_Precision = 2;
 		pRaceData->m_RaceFlags = protocol7::RACEFLAG_KEEP_WANTED_WEAPON;
 
