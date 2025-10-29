@@ -37,7 +37,7 @@ public:
 	void DeepJailId(int AdminId, int ClientId, int Minutes);
 	void DeepJailIp(int AdminId, const char *pAddrStr, int Minutes);
 	void UndeepJail(CIpStorage *pEntry);
-	void ListDeepJails() const;
+	void ListDeepJails(int RequesterId) const;
 
 	// prints not allowed message in chat for ClientId and returns false
 	// if calling votes with chat commands such as !shuffle or /shuffle
@@ -144,11 +144,12 @@ public:
 	static void ConInstaRank##name(IConsole::IResult *pResult, void *pUserData);
 #define MACRO_TOP_COLUMN(name, sql_name, display_name, order_by) \
 	static void ConInstaTop##name(IConsole::IResult *pResult, void *pUserData);
-#include <game/server/instagib/sql_colums_all.h>
+#include <game/server/instagib/sql_columns_all.h>
 #undef MACRO_ADD_COLUMN
 #undef MACRO_RANK_COLUMN
 #undef MACRO_TOP_COLUMN
 
+private:
 public:
 #ifndef IN_CLASS_IGAMECONTEXT
 };

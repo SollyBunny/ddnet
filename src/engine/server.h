@@ -22,7 +22,6 @@
 #include <type_traits>
 
 class CAuthManager; // ddnet-insta
-
 struct CAntibotRoundData;
 
 // When recording a demo on the server, the ClientId -1 is used
@@ -47,6 +46,7 @@ public:
 	// returns false otherwise
 	virtual bool SixupUsernameAuth(int ClientId, const char *pCredentials) = 0;
 	virtual CAuthManager *AuthManager() = 0;
+	virtual bool HasShowIpsOn(int ClientId) const = 0;
 
 	MACRO_INTERFACE("server")
 protected:

@@ -3073,7 +3073,7 @@ if(SERVER)
     instagib/round_stats_ascii.cpp
     instagib/round_stats_csv.cpp
     instagib/round_stats_player.h
-    instagib/sql_colums_all.h
+    instagib/sql_columns_all.h
     instagib/sql_stats.cpp
     instagib/sql_stats.h
     instagib/sql_stats_player.h

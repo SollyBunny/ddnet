@@ -636,6 +636,7 @@ void CGameContext::ConTopSpikeColors(IConsole::IResult *pResult, void *pUserData
 	}
 }
 
+// NOLINTBEGIN(misc-definitions-in-headers)
 #define MACRO_ADD_COLUMN(name, sql_name, sql_type, bind_type, default, merge_method) ;
 #define MACRO_RANK_COLUMN(name, sql_name, display_name, order_by) \
 	void CGameContext::ConInstaRank##name(IConsole::IResult *pResult, void *pUserData) \
@@ -672,7 +673,8 @@ void CGameContext::ConTopSpikeColors(IConsole::IResult *pResult, void *pUserData
 		int Offset = pResult->NumArguments() ? pResult->GetInteger(0) : 1; \
 		pSelf->m_pController->m_pSqlStats->ShowTop(pResult->m_ClientId, pName, display_name, #sql_name, pSelf->m_pController->StatsTable(), order_by, Offset); \
 	}
-#include <game/server/instagib/sql_colums_all.h>
+#include <game/server/instagib/sql_columns_all.h>
 #undef MACRO_ADD_COLUMN
 #undef MACRO_RANK_COLUMN
 #undef MACRO_TOP_COLUMN
+// NOLINTEND(misc-definitions-in-headers)

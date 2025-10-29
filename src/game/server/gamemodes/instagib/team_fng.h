@@ -7,7 +7,7 @@ class CGameControllerTeamFng : public CGameControllerBaseFng
 {
 public:
 	CGameControllerTeamFng(class CGameContext *pGameServer);
-	~CGameControllerTeamFng();
+	~CGameControllerTeamFng() override;
 
 	void Tick() override;
 	void Snap(int SnappingClient) override;

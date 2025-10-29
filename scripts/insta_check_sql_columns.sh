@@ -2,8 +2,8 @@
 
 errors=0
 while read -r header; do
-	if ! grep -q "$header" src/game/server/instagib/sql_colums_all.h; then
-		echo "Error: header $header is missing in src/game/server/instagib/sql_colums_all.h"
+	if ! grep -q "$header" src/game/server/instagib/sql_columns_all.h; then
+		echo "Error: header $header is missing in src/game/server/instagib/sql_columns_all.h"
 		errors="$((errors + 1))"
 	fi
 done < <(find . -name "sql_columns.h" | cut -c 7-)

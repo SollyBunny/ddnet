@@ -297,6 +297,8 @@ public:
 	// to figure out which players score the least
 	int m_ScoreStartTick = 0;
 
+	// needed for clang to avoid redundant access specifier
+private:
 #ifndef IN_CLASS_PLAYER
 };
 #endif

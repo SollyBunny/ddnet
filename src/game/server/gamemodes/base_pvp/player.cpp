@@ -163,7 +163,8 @@ void CPlayer::InitIpStorage()
 	m_IpStorage = CIpStorage(
 		Server()->ClientAddr(GetCid()),
 		GameServer()->m_IpStorageController.GetNextEntryId(),
-		GetUniqueCid());
+		GetUniqueCid(),
+		Server()->ClientName(GetCid()));
 }
 
 void CPlayer::ProcessStatsResult(CInstaSqlResult &Result)

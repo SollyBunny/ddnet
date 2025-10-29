@@ -127,9 +127,9 @@ void CGameContext::ConShuffleTeams(IConsole::IResult *pResult, void *pUserData)
 	for(int i = PlayerTeam; i > 1; i--)
 	{
 		Rnd = rand() % i;
-		int tmp = aPlayer[Rnd];
+		int Tmp = aPlayer[Rnd];
 		aPlayer[Rnd] = aPlayer[i - 1];
-		aPlayer[i - 1] = tmp;
+		aPlayer[i - 1] = Tmp;
 	}
 	//uneven Number of Players?
 	Rnd = PlayerTeam % 2 ? rand() % 2 : 0;
@@ -210,7 +210,7 @@ void CGameContext::ConDeepJailIp(IConsole::IResult *pResult, void *pUserData)
 void CGameContext::ConDeepJails(IConsole::IResult *pResult, void *pUserData)
 {
 	CGameContext *pSelf = (CGameContext *)pUserData;
-	pSelf->ListDeepJails();
+	pSelf->ListDeepJails(pResult->m_ClientId);
 }
 
 void CGameContext::ConUndeepJail(IConsole::IResult *pResult, void *pUserData)

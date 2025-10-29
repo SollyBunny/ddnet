@@ -126,7 +126,7 @@ public:
 	int GetHighestSpreeClientId();
 
 	/*
-		m_pExtraColums
+		m_pExtraColumns
 
 		Should be allocated in the gamemmodes constructor and will be freed by the base constructor.
 		It holds a few methods that describe the extension of the base database layout.

@@ -37,7 +37,7 @@ IGameController::IGameController(class CGameContext *pGameServer) :
 	m_GameFlags = 0;
 	m_aMapWish[0] = 0;
 
-	m_CurrentRecord = 0;
+	m_CurrentRecord.reset();
 
 	// ddnet-insta
 	m_apFlags[0] = nullptr;
@@ -83,8 +83,6 @@ IGameController::IGameController(class CGameContext *pGameServer) :
 	m_GameInfo.m_MatchNum = 0;
 	m_GameInfo.m_ScoreLimit = Config()->m_SvScorelimit;
 	m_GameInfo.m_TimeLimit = Config()->m_SvTimelimit;
-
-	m_CurrentRecord.reset();
 }
 
 IGameController::~IGameController() = default;

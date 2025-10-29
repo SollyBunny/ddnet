@@ -555,7 +555,7 @@ public:
 		Function: OnSetDDRaceTeam
 			Called every time a player changes team
 			Either by explicitly using the /teams command sucessfully
-			or implicitly by dieing or similar
+			or implicitly by dying or similar
 
 		Returns:
 			return true to not run the ddnet code
@@ -1180,7 +1180,6 @@ public:
 	bool m_AllowSkinColorChange = true;
 
 	// protected:
-public:
 	struct CGameInfo
 	{
 		int m_MatchCurrent;
@@ -1216,7 +1215,6 @@ public:
 	void PublishRoundEndStats();
 	void SendRoundTopMessage(int ClientId);
 
-public:
 	enum
 	{
 		TIMER_INFINITE = -1,

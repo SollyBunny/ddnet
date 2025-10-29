@@ -103,6 +103,7 @@ Checks: >
   -readability-suspicious-call-argument,
   -readability-uppercase-literal-suffix,
   -readability-use-std-min-max,
+  -readability-make-member-function-const,
   performance-*,
   -performance-enum-size,
   -performance-no-int-to-ptr,

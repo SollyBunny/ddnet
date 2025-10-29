@@ -465,7 +465,7 @@ int CGameControllerZcatch::OnCharacterDeath(class CCharacter *pVictim, class CPl
 		// https://github.com/ddnet-insta/ddnet-insta/issues/274#issuecomment-2668575613
 		if(pVictim->GetPlayer()->m_Spree && pKiller != pVictim->GetPlayer())
 			pKiller->IncrementScore();
-		// -2 extra score punishment in zCatch for dieing in world
+		// -2 extra score punishment in zCatch for dying in world
 		// or suicide
 		//
 		// this is also called on disconnect but it is fine

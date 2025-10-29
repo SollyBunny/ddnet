@@ -80,7 +80,7 @@ MACRO_CONFIG_INT(SvReloadTimeOnHit, sv_reload_time_on_hit, 0, 0, 500, CFGFLAG_SE
 MACRO_CONFIG_INT(SvFastHitFullAuto, sv_fast_hit_full_auto, 0, 0, 1, CFGFLAG_SERVER, "require fire button repress when sv_reload_time_on_hit is set")
 MACRO_CONFIG_INT(SvPunishFreezeDisconnect, sv_punish_freeze_disconnect, 1, 0, 1, CFGFLAG_SERVER, "freeze player for 20 seconds on rejoin when leaving server while being frozen")
 MACRO_CONFIG_STR(SvDisplayScore, sv_display_score, 512, "round_points", CFGFLAG_SERVER, "values: points, round_points, spree, current_spree, win_points, wins, kills, round_kills")
-MACRO_CONFIG_INT(SvSelfDamageRespawnDelayMs, sv_self_damage_respawn_delay_ms, 500, 0, 10000, CFGFLAG_SERVER, "time in miliseconds it takes to respawn after dieing by self damage")
+MACRO_CONFIG_INT(SvSelfDamageRespawnDelayMs, sv_self_damage_respawn_delay_ms, 500, 0, 10000, CFGFLAG_SERVER, "time in miliseconds it takes to respawn after dying by self damage")
 MACRO_CONFIG_INT(SvSelfKillRespawnDelayMs, sv_self_kill_respawn_delay_ms, 3000, 0, 10000, CFGFLAG_SERVER, "time in miliseconds it takes to respawn after sending kill bind")
 MACRO_CONFIG_INT(SvEnemyKillRespawnDelayMs, sv_enemy_kill_respawn_delay_ms, 500, 0, 10000, CFGFLAG_SERVER, "time in miliseconds it takes to respawn after getting killed by enemies")
 MACRO_CONFIG_INT(SvWorldKillRespawnDelayMs, sv_world_kill_respawn_delay_ms, 500, 0, 10000, CFGFLAG_SERVER, "time in miliseconds it takes to respawn after touching a deathtile")
@@ -139,3 +139,4 @@ MACRO_CONFIG_INT(SvBallExplode, sv_ball_explode, 0, 0, 1, CFGFLAG_SERVER, "Shoul
 MACRO_CONFIG_INT(SvBallRespawnDelay, sv_ball_respawn_delay, 4, 0, 1000, CFGFLAG_SERVER, "Respawn time of the ball (only foot)")
 MACRO_CONFIG_INT(SvScoreDiff, sv_score_diff, 1, 0, 1000, CFGFLAG_SERVER, "Difference between the team-scores before a team can win (only foot)")
 MACRO_CONFIG_INT(SvSuddenDeathScoreDiff, sv_sudden_death_score_diff, 2, 0, 1000, CFGFLAG_SERVER, "Difference between the team-scores before a team can win in sudden death (only foot)")
+MACRO_CONFIG_INT(SvSuicidePenalty, sv_suicide_penalty, 1, 0, 1, CFGFLAG_SERVER, "Indicates if score is decremented on suicide")
