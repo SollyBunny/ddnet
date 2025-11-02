@@ -165,6 +165,7 @@ void CGameClient::OnConsoleInit()
 					      &m_InfoMessages,
 					      &m_Chat,
 					      &m_Broadcast,
+					      &m_ImportantAlert,
 					      &m_DebugHud,
 					      &m_TouchControls,
 					      &m_Scoreboard,
@@ -186,6 +187,7 @@ void CGameClient::OnConsoleInit()
 						  &m_Spectator,
 						  &m_BindWheel,
 						  &m_Emoticon,
+						  &m_ImportantAlert,
 						  &m_Menus,
 						  &m_Controls,
 						  &m_TouchControls,
@@ -356,11 +358,11 @@ void CGameClient::OnInit()
 
 	if(GIT_SHORTREV_HASH)
 	{
-		str_format(m_aDDNetVersionStr, sizeof(m_aDDNetVersionStr), "%s %s (%s)", CLIENT_NAME, GAME_RELEASE_VERSION, GIT_SHORTREV_HASH);
+		str_format(m_aDDNetVersionStr, sizeof(m_aDDNetVersionStr), "%s %s (%s)", CLIENT_NAME, CLIENT_RELEASE_VERSION, GIT_SHORTREV_HASH);
 	}
 	else
 	{
-		str_format(m_aDDNetVersionStr, sizeof(m_aDDNetVersionStr), "%s %s", CLIENT_NAME, GAME_RELEASE_VERSION);
+		str_format(m_aDDNetVersionStr, sizeof(m_aDDNetVersionStr), "%s %s", CLIENT_NAME, CLIENT_RELEASE_VERSION);
 	}
 
 	// TODO: this should be different
@@ -3771,78 +3773,96 @@ void CGameClient::UpdateSpectatorCursor()
 
 	const vec2 Target = vec2(CharInfo.m_ExtendedData.m_TargetX, CharInfo.m_ExtendedData.m_TargetY);
 
-	// interpolate cursor positions when not in debug mode
-	const double Tick = Client()->GameTick(g_Config.m_ClDummy);
-
-	const bool HasSample = m_CursorInfo.m_NumSamples > 0;
-	const vec2 LastInput = HasSample ? m_CursorInfo.m_aTargetSamplesData[m_CursorInfo.m_NumSamples - 1] : vec2(0.0f, 0.0f);
-	const double LastTime = HasSample ? m_CursorInfo.m_aTargetSamplesTime[m_CursorInfo.m_NumSamples - 1] : 0.0;
-	bool NewSample = LastInput != Target || LastTime + CCursorInfo::REST_THRESHOLD < Tick;
-
-	if(LastTime > Tick)
+	if(Client()->State() == IClient::STATE_DEMOPLAYBACK && DemoPlayer()->BaseInfo()->m_Paused)
 	{
-		// clear samples when time flows backwards
+		m_CursorInfo.m_CursorOwnerId = -1;
 		m_CursorInfo.m_NumSamples = 0;
-		NewSample = true;
-	}
-
-	if(m_CursorInfo.m_NumSamples == 0)
-	{
-		m_CursorInfo.m_aTargetSamplesTime[0] = Tick - CCursorInfo::INTERP_DELAY;
-		m_CursorInfo.m_aTargetSamplesData[0] = Target;
-	}
-
-	if(NewSample)
-	{
-		if(m_CursorInfo.m_NumSamples == CCursorInfo::CURSOR_SAMPLES)
+		const vec2 TargetNew = vec2(CharInfo.m_ExtendedData.m_TargetX, CharInfo.m_ExtendedData.m_TargetY);
+		if(CharInfo.m_pPrevExtendedData)
 		{
-			m_CursorInfo.m_NumSamples--;
-			mem_move(m_CursorInfo.m_aTargetSamplesTime, m_CursorInfo.m_aTargetSamplesTime + 1, m_CursorInfo.m_NumSamples * sizeof(double));
-			mem_move(m_CursorInfo.m_aTargetSamplesData, m_CursorInfo.m_aTargetSamplesData + 1, m_CursorInfo.m_NumSamples * sizeof(vec2));
-		}
-		m_CursorInfo.m_aTargetSamplesTime[m_CursorInfo.m_NumSamples] = Tick;
-		m_CursorInfo.m_aTargetSamplesData[m_CursorInfo.m_NumSamples] = Target;
-		m_CursorInfo.m_NumSamples++;
-	}
-
-	// using double to avoid precision loss when converting int tick to decimal type
-	const double DisplayTime = Tick - CCursorInfo::INTERP_DELAY + double(Client()->IntraGameTickSincePrev(g_Config.m_ClDummy));
-	double aTime[CCursorInfo::SAMPLE_FRAME_WINDOW];
-	vec2 aData[CCursorInfo::SAMPLE_FRAME_WINDOW];
-
-	// find the available sample timing
-	int Index = m_CursorInfo.m_NumSamples;
-	for(int i = 0; i < m_CursorInfo.m_NumSamples; i++)
-	{
-		if(m_CursorInfo.m_aTargetSamplesTime[i] > DisplayTime)
-		{
-			Index = i;
-			break;
-		}
-	}
-
-	for(int i = 0; i < CCursorInfo::SAMPLE_FRAME_WINDOW; i++)
-	{
-		const int Offset = i - CCursorInfo::SAMPLE_FRAME_OFFSET;
-		const int SampleIndex = Index + Offset;
-		if(SampleIndex < 0)
-		{
-			aTime[i] = m_CursorInfo.m_aTargetSamplesTime[0] + CCursorInfo::REST_THRESHOLD * Offset;
-			aData[i] = m_CursorInfo.m_aTargetSamplesData[0];
-		}
-		else if(SampleIndex >= m_CursorInfo.m_NumSamples)
-		{
-			aTime[i] = m_CursorInfo.m_aTargetSamplesTime[m_CursorInfo.m_NumSamples - 1] + CCursorInfo::REST_THRESHOLD * (Offset + 1);
-			aData[i] = m_CursorInfo.m_aTargetSamplesData[m_CursorInfo.m_NumSamples - 1];
+			const vec2 TargetOld = vec2(CharInfo.m_pPrevExtendedData->m_TargetX, CharInfo.m_pPrevExtendedData->m_TargetY);
+			m_CursorInfo.m_Target = mix(TargetOld, TargetNew, Client()->IntraGameTick(g_Config.m_ClDummy));
 		}
 		else
 		{
-			aTime[i] = m_CursorInfo.m_aTargetSamplesTime[SampleIndex];
-			aData[i] = m_CursorInfo.m_aTargetSamplesData[SampleIndex];
+			m_CursorInfo.m_Target = TargetNew;
 		}
 	}
+	else
+	{
+		// interpolate cursor positions
+		const double Tick = Client()->GameTick(g_Config.m_ClDummy);
 
-	m_CursorInfo.m_Target = mix_polynomial(aTime, aData, CCursorInfo::SAMPLE_FRAME_WINDOW, DisplayTime, vec2(0.0f, 0.0f));
+		const bool HasSample = m_CursorInfo.m_NumSamples > 0;
+		const vec2 LastInput = HasSample ? m_CursorInfo.m_aTargetSamplesData[m_CursorInfo.m_NumSamples - 1] : vec2(0.0f, 0.0f);
+		const double LastTime = HasSample ? m_CursorInfo.m_aTargetSamplesTime[m_CursorInfo.m_NumSamples - 1] : 0.0;
+		bool NewSample = LastInput != Target || LastTime + CCursorInfo::REST_THRESHOLD < Tick;
+
+		if(LastTime > Tick)
+		{
+			// clear samples when time flows backwards
+			m_CursorInfo.m_NumSamples = 0;
+			NewSample = true;
+		}
+
+		if(m_CursorInfo.m_NumSamples == 0)
+		{
+			m_CursorInfo.m_aTargetSamplesTime[0] = Tick - CCursorInfo::INTERP_DELAY;
+			m_CursorInfo.m_aTargetSamplesData[0] = Target;
+		}
+
+		if(NewSample)
+		{
+			if(m_CursorInfo.m_NumSamples == CCursorInfo::CURSOR_SAMPLES)
+			{
+				m_CursorInfo.m_NumSamples--;
+				mem_move(m_CursorInfo.m_aTargetSamplesTime, m_CursorInfo.m_aTargetSamplesTime + 1, m_CursorInfo.m_NumSamples * sizeof(double));
+				mem_move(m_CursorInfo.m_aTargetSamplesData, m_CursorInfo.m_aTargetSamplesData + 1, m_CursorInfo.m_NumSamples * sizeof(vec2));
+			}
+			m_CursorInfo.m_aTargetSamplesTime[m_CursorInfo.m_NumSamples] = Tick;
+			m_CursorInfo.m_aTargetSamplesData[m_CursorInfo.m_NumSamples] = Target;
+			m_CursorInfo.m_NumSamples++;
+		}
+
+		// using double to avoid precision loss when converting int tick to decimal type
+		const double DisplayTime = Tick - CCursorInfo::INTERP_DELAY + double(Client()->IntraGameTickSincePrev(g_Config.m_ClDummy));
+		double aTime[CCursorInfo::SAMPLE_FRAME_WINDOW];
+		vec2 aData[CCursorInfo::SAMPLE_FRAME_WINDOW];
+
+		// find the available sample timing
+		int Index = m_CursorInfo.m_NumSamples;
+		for(int i = 0; i < m_CursorInfo.m_NumSamples; i++)
+		{
+			if(m_CursorInfo.m_aTargetSamplesTime[i] > DisplayTime)
+			{
+				Index = i;
+				break;
+			}
+		}
+
+		for(int i = 0; i < CCursorInfo::SAMPLE_FRAME_WINDOW; i++)
+		{
+			const int Offset = i - CCursorInfo::SAMPLE_FRAME_OFFSET;
+			const int SampleIndex = Index + Offset;
+			if(SampleIndex < 0)
+			{
+				aTime[i] = m_CursorInfo.m_aTargetSamplesTime[0] + CCursorInfo::REST_THRESHOLD * Offset;
+				aData[i] = m_CursorInfo.m_aTargetSamplesData[0];
+			}
+			else if(SampleIndex >= m_CursorInfo.m_NumSamples)
+			{
+				aTime[i] = m_CursorInfo.m_aTargetSamplesTime[m_CursorInfo.m_NumSamples - 1] + CCursorInfo::REST_THRESHOLD * (Offset + 1);
+				aData[i] = m_CursorInfo.m_aTargetSamplesData[m_CursorInfo.m_NumSamples - 1];
+			}
+			else
+			{
+				aTime[i] = m_CursorInfo.m_aTargetSamplesTime[SampleIndex];
+				aData[i] = m_CursorInfo.m_aTargetSamplesData[SampleIndex];
+			}
+		}
+
+		m_CursorInfo.m_Target = mix_polynomial(aTime, aData, CCursorInfo::SAMPLE_FRAME_WINDOW, DisplayTime, vec2(0.0f, 0.0f));
+	}
 
 	vec2 TargetCameraOffset(0, 0);
 	float l = length(m_CursorInfo.m_Target);

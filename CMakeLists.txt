@@ -2330,9 +2330,6 @@ list(REMOVE_ITEM GAME_SHARED ${ENGINE_UUID_SHARED})
 set(GAME_GENERATED_SHARED
   src/generated/data_types.h
   src/generated/git_revision.cpp
-  src/generated/protocol.h
-  src/generated/protocol7.h
-  src/generated/protocolglue.h
 )
 set(DEPS ${DEP_JSON} ${DEP_MD5} ${ZLIB_DEP})
 
@@ -2496,6 +2493,8 @@ if(CLIENT)
     components/ghost.h
     components/hud.cpp
     components/hud.h
+    components/important_alert.cpp
+    components/important_alert.h
     components/infomessages.cpp
     components/infomessages.h
     components/items.cpp
