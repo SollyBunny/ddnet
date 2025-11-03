@@ -1079,8 +1079,13 @@ bool CSqlStats::CreateTableThread(IDbConnection *pSqlServer, const ISqlData *pGa
 	if(pfnAddInt)
 	{
 		pfnAddInt(pSqlServer, pData->m_aName, "win_points", pError, ErrorSize);
-		pfnAddInt(pSqlServer, pData->m_aName, "steals_from_others", pError, ErrorSize);
-		pfnAddInt(pSqlServer, pData->m_aName, "steals_by_others", pError, ErrorSize);
+
+		// "solofng", "bolofng", "fng", "boomfng"
+		if(str_find(pData->m_aName, "fng"))
+		{
+			pfnAddInt(pSqlServer, pData->m_aName, "steals_from_others", pError, ErrorSize);
+			pfnAddInt(pSqlServer, pData->m_aName, "steals_by_others", pError, ErrorSize);
+		}
 	}
 
 	return true;
