@@ -233,7 +233,7 @@ void CGameControllerBaseFng::OnWrongSpike(class CPlayer *pPlayer, int RemoveScor
 	if(!pChr)
 		return;
 
-	pPlayer->UpdateLastToucher(-1);
+	pPlayer->UpdateLastToucher(-1, -1);
 	if(g_Config.m_SvWrongSpikeFreeze)
 		pChr->Freeze(g_Config.m_SvWrongSpikeFreeze);
 }
@@ -474,7 +474,7 @@ bool CGameControllerBaseFng::OnCharacterTakeDamage(vec2 &Force, int &Dmg, int &F
 
 	GameServer()->CreateDeath(Character.m_Pos, Character.GetPlayer()->GetCid(), Character.TeamMask());
 
-	Character.GetPlayer()->UpdateLastToucher(From);
+	Character.GetPlayer()->UpdateLastToucher(From, Weapon);
 	Character.GetPlayer()->m_OriginalFreezerId = From;
 	Character.Freeze(g_Config.m_SvHitFreezeDelay);
 	return false;

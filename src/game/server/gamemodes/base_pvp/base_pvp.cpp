@@ -1019,14 +1019,14 @@ void CGameControllerPvp::OnAnyDamage(vec2 &Force, int &Dmg, int &From, int &Weap
 	if(Weapon != WEAPON_GUN && Weapon != WEAPON_LASER)
 	{
 		if(!HasVanillaShotgun(pPlayer) || Weapon != WEAPON_SHOTGUN)
-			pPlayer->UpdateLastToucher(From);
+			pPlayer->UpdateLastToucher(From, Weapon);
 	}
 
 	if(IsTeamPlay() && pKiller && pPlayer->GetTeam() == pKiller->GetTeam())
 	{
 		// interaction from team mates protects from spikes in fng
 		// and from counting as enemy kill in fly
-		pPlayer->UpdateLastToucher(-1);
+		pPlayer->UpdateLastToucher(-1, -1);
 	}
 
 	if(From == pPlayer->GetCid() && Weapon != WEAPON_LASER)

@@ -345,7 +345,7 @@ void CPlayer::SetTeamRaw(int Team)
 	m_Team = Team;
 }
 
-void CPlayer::UpdateLastToucher(int ClientId)
+void CPlayer::UpdateLastToucher(int ClientId, int Weapon)
 {
 	if(ClientId == GetCid())
 		return;
@@ -383,6 +383,7 @@ void CPlayer::UpdateLastToucher(int ClientId)
 		ClientId,
 		pPlayer->GetUniqueCid(),
 		pPlayer->GetTeam(),
+		Weapon,
 		Server()->Tick());
 }
 
@@ -394,7 +395,7 @@ void CPlayer::ResetLastToucherAfterSeconds(int Seconds)
 	int TicksSinceTouch = Server()->Tick() - m_LastToucher.value().m_TouchTick;
 	int SecsSinceTouch = TicksSinceTouch / Server()->TickSpeed();
 	if(SecsSinceTouch > Seconds)
-		UpdateLastToucher(-1);
+		UpdateLastToucher(-1, -1);
 }
 
 void CPlayer::ResetOwnLastTouchOnAllOtherPlayers()

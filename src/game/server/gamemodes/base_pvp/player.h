@@ -162,7 +162,16 @@ public:
 	// for example selfkill in freeze in block
 	// spikes in fly or fng
 	std::optional<CLastToucher> m_LastToucher;
-	void UpdateLastToucher(int ClientId);
+
+	// Marks *this* player to be touched by *ClientId*
+	// using *Weapon*
+	// That is used for tracking fly and block kills.
+	void UpdateLastToucher(int ClientId, int Weapon);
+
+	// Has to be called on tick to work.
+	// Resets the information about anyone having
+	// touched *this* player. That is used for tracking
+	// fly and block kills.
 	void ResetLastToucherAfterSeconds(int Seconds);
 
 	// resets all m_LastToucher states of OTHER players

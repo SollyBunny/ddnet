@@ -232,7 +232,7 @@ void CGameControllerTsmash::OnAnyDamage(vec2 &Force, int &Dmg, int &From, int &W
 	auto *pKiller = GetPlayerOrNullptr(From);
 	// Set last toucher
 	if(pKiller)
-		pCharacter->GetPlayer()->UpdateLastToucher(pKiller->GetCid());
+		pCharacter->GetPlayer()->UpdateLastToucher(pKiller->GetCid(), Weapon);
 	// Everything does 1 dmg
 	Dmg = 1;
 	// Check for super smash

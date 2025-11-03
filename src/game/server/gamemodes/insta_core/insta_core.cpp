@@ -234,7 +234,7 @@ void CGameControllerInstaCore::OnCharacterSpawn(class CCharacter *pChr)
 	// default health
 	pChr->IncreaseHealth(10);
 
-	pPlayer->UpdateLastToucher(-1);
+	pPlayer->UpdateLastToucher(-1, -1);
 
 	if(pPlayer->m_IpStorage.has_value() && pPlayer->m_IpStorage.value().DeepUntilTick() > Server()->Tick())
 	{
@@ -665,7 +665,7 @@ void CGameControllerInstaCore::OnPlayerTick(class CPlayer *pPlayer)
 			CPlayer *pHooked = GameServer()->m_apPlayers[HookedId];
 			if(pHooked)
 			{
-				pHooked->UpdateLastToucher(pChr->GetPlayer()->GetCid());
+				pHooked->UpdateLastToucher(pChr->GetPlayer()->GetCid(), WEAPON_HOOK);
 			}
 		}
 	}

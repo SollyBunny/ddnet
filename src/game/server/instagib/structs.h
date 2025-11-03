@@ -103,13 +103,16 @@ public:
 	// TEAM_RED, TEAM_BLUE maybe also TEAM_SPECTATORS
 	int m_Team;
 
+	// The weapon that caused the touch
+	int m_Weapon;
+
 	// the server tick of when this interaction happend
 	// can be used to determin the touch interaction age
 	// only used in block mode for now
 	int m_TouchTick;
 
-	CLastToucher(int ClientId, uint32_t UniqueClientId, int Team, int ServerTick) :
-		m_ClientId(ClientId), m_UniqueClientId(UniqueClientId), m_Team(Team), m_TouchTick(ServerTick)
+	CLastToucher(int ClientId, uint32_t UniqueClientId, int Team, int Weapon, int ServerTick) :
+		m_ClientId(ClientId), m_UniqueClientId(UniqueClientId), m_Team(Team), m_Weapon(Weapon), m_TouchTick(ServerTick)
 	{
 	}
 };

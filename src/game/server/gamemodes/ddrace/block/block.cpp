@@ -16,6 +16,8 @@
 #include <game/server/score.h>
 #include <game/version.h>
 
+#include <optional>
+
 CGameControllerBlock::CGameControllerBlock(class CGameContext *pGameServer) :
 	CGameControllerPvp(pGameServer)
 {
@@ -75,12 +77,13 @@ int CGameControllerBlock::OnCharacterDeath(class CCharacter *pVictim, class CPla
 	{
 		return CGameControllerPvp::OnCharacterDeath(pVictim, pKiller, Weapon);
 	}
+	std::optional<CLastToucher> &LastToucher = pVictim->GetPlayer()->m_LastToucher;
 
 	// died alone without any killer
-	if(!pVictim->GetPlayer()->m_LastToucher.has_value())
+	if(!LastToucher.has_value())
 		return 0; // do not count the kill
 
-	int LastToucherId = pVictim->GetPlayer()->m_LastToucher.value().m_ClientId;
+	int LastToucherId = LastToucher.value().m_ClientId;
 	if(LastToucherId >= 0 && LastToucherId < MAX_CLIENTS)
 		pKiller = GameServer()->m_apPlayers[LastToucherId];
 
@@ -90,11 +93,15 @@ int CGameControllerBlock::OnCharacterDeath(class CCharacter *pVictim, class CPla
 
 		// TODO: the kill message will also be sent in CCharacter::Die which is a bit annoying
 
+		int KillMsgWeapon = LastToucher.value().m_Weapon;
+		if(KillMsgWeapon == WEAPON_HOOK)
+			KillMsgWeapon = WEAPON_NINJA;
+
 		// kill message
 		CNetMsg_Sv_KillMsg Msg;
 		Msg.m_Killer = pKiller->GetCid();
 		Msg.m_Victim = pVictim->GetPlayer()->GetCid();
-		Msg.m_Weapon = WEAPON_NINJA; // TODO: track last touch weapon
+		Msg.m_Weapon = KillMsgWeapon;
 		Msg.m_ModeSpecial = 0;
 		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
 
