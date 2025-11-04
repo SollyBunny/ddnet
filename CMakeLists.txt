@@ -2834,6 +2834,10 @@ if(CLIENT)
     target_link_options(game-client PRIVATE /ENTRY:mainCRTStartup)
   endif()
 
+  if(WIN32 AND NOT MSVC)
+    target_compile_options(game-client PRIVATE -Wa,-mbig-obj) # TClient, required for ChaiScript
+  endif()
+
   # Silence warnings from ChaiScript
   target_include_directories(game-client SYSTEM PRIVATE
     ${PROJECT_SOURCE_DIR}/src/engine/external/chaiscript)
