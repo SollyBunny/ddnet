@@ -6,7 +6,7 @@
 
 #include <game/client/gameclient.h>
 
-#include <engine/external/chaiscript/chaiscript.hpp>
+#include <chaiscript.hpp>
 
 #include <string>
 

@@ -2834,6 +2834,10 @@ if(CLIENT)
     target_link_options(game-client PRIVATE /ENTRY:mainCRTStartup)
   endif()
 
+  # Silence warnings from ChaiScript
+  target_include_directories(game-client SYSTEM PRIVATE
+    ${PROJECT_SOURCE_DIR}/src/engine/external/chaiscript)
+
   target_include_directories(game-client SYSTEM PRIVATE
     ${FREETYPE_INCLUDE_DIRS}
     ${GLEW_INCLUDE_DIRS}
