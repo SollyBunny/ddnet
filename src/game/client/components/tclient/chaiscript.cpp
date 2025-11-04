@@ -265,5 +265,5 @@ bool CChaiScript::ExecScript(const char *pFilename, const char *pArgs)
 
 void CChaiScript::OnConsoleInit()
 {
-	Console()->Register("chai", "s[file] r[args]", CFGFLAG_CLIENT, ConExecScript, this, "Execute a ChaiScript");
+	Console()->Register("chai", "s[file] ?r[args]", CFGFLAG_CLIENT, ConExecScript, this, "Execute a ChaiScript");
 }
