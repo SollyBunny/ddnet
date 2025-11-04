@@ -1,13 +1,14 @@
 #include "chaiscript.h"
 
+#include <base/log.h>
+
 #include <engine/console.h>
-#include <engine/storage.h>
 #include <engine/shared/config.h>
+#include <engine/storage.h>
 
 #include <game/client/gameclient.h>
 
 #include <chaiscript.hpp>
-
 #include <string>
 
 void CChaiScript::OnConsoleInit()
@@ -29,9 +30,7 @@ bool CChaiScript::ExecScript(const char *pFilename)
 	char *pScript = Storage()->ReadFileStr(pFilename, IStorage::TYPE_ALL);
 	if(!pScript)
 	{
-		char aBuf[256];
-		str_format(aBuf, sizeof(aBuf), "failed to open script '%s'", pFilename);
-		Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chaiscript", aBuf);
+		log_error("chaiscript", "Failed to open script '%s'", pFilename);
 		return false;
 	}
 
@@ -41,40 +40,35 @@ bool CChaiScript::ExecScript(const char *pFilename)
 	try
 	{
 		using namespace chaiscript;
-		ChaiScript chai(/*modulepaths*/{}, /*usepaths*/{}, {Options::No_Load_Modules, Options::No_External_Scripts});
+		ChaiScript Chai(/*modulepaths*/ {}, /*usepaths*/ {}, {Options::No_Load_Modules, Options::No_External_Scripts});
 
-		chai.add(fun([this](const std::string &s) {
-			Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chaiscript", s.c_str());
-		}), "echo");
+		Chai.add(fun([](const std::string &Str) {
+			log_info("chaiscript/print", "%s", Str.c_str());
+		}),
+			"print");
 
-		chai.add(fun([this](const std::string &cmd) {
-			Console()->ExecuteLine(cmd.c_str());
-		}), "exec");
+		Chai.add(fun([this](const std::string &Cmd) {
+			Console()->ExecuteLine(Cmd.c_str());
+		}),
+			"exec");
 
-		chai.eval(Script);
+		Chai.eval(Script);
 	}
 	catch(const chaiscript::exception::eval_error &e)
 	{
-		char aBuf[512];
-		str_format(aBuf, sizeof(aBuf), "eval error in '%s': %s", pFilename, e.pretty_print().c_str());
-		Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chaiscript", aBuf);
+		log_error("chaiscript", "Eval error in '%s': %s", pFilename, e.pretty_print().c_str());
 		return false;
 	}
 	catch(const std::exception &e)
 	{
-		char aBuf[512];
-		str_format(aBuf, sizeof(aBuf), "exception in '%s': %s", pFilename, e.what());
-		Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chaiscript", aBuf);
+		log_error("chaiscript", "Exception in '%s': %s", pFilename, e.what());
 		return false;
 	}
 	catch(...)
 	{
-		char aBuf[256];
-		str_format(aBuf, sizeof(aBuf), "unknown exception in '%s'", pFilename);
-		Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chaiscript", aBuf);
+		log_error("chaiscript", "Unknown exception in '%s'", pFilename);
 		return false;
 	}
 
 	return true;
 }
-
