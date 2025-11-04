@@ -9,7 +9,6 @@
 #include <game/client/gameclient.h>
 
 #include <chaiscript.hpp>
-#include <string>
 
 void CChaiScript::OnConsoleInit()
 {
@@ -34,13 +33,10 @@ bool CChaiScript::ExecScript(const char *pFilename)
 		return false;
 	}
 
-	std::string Script(pScript);
-	free(pScript);
-
 	try
 	{
 		using namespace chaiscript;
-		ChaiScript Chai(/*modulepaths*/ {}, /*usepaths*/ {}, {Options::No_Load_Modules, Options::No_External_Scripts});
+		ChaiScript Chai({}, {}, {Options::No_Load_Modules, Options::No_External_Scripts});
 
 		Chai.add(fun([](const std::string &Str) {
 			log_info("chaiscript/print", "%s", Str.c_str());
@@ -52,7 +48,8 @@ bool CChaiScript::ExecScript(const char *pFilename)
 		}),
 			"exec");
 
-		Chai.eval(Script);
+		Chai.eval(pScript);
+		free(pScript);
 	}
 	catch(const chaiscript::exception::eval_error &e)
 	{
