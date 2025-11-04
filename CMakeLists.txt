@@ -2268,6 +2268,13 @@ set_src(ENGINE_EXTERNAL GLOB src/engine/external
   tinyexpr.cpp
   tinyexpr.h
 )
+
+# ChaiScript for tclient
+file(GLOB_RECURSE ENGINE_EXTERNAL_CHAISCRIPT
+  "${PROJECT_SOURCE_DIR}/src/engine/external/chaiscript/*.hpp"
+)
+list(APPEND ENGINE_EXTERNAL ${ENGINE_EXTERNAL_CHAISCRIPT})
+
 set_src(ENGINE_GFX GLOB src/engine/gfx
   image.cpp
   image_loader.cpp
@@ -2554,6 +2561,8 @@ if(CLIENT)
     components/tclient/bindwheel.h
     components/tclient/conditional.cpp
     components/tclient/conditional.h
+    components/tclient/chaiscript.cpp
+    components/tclient/chaiscript.h
     components/tclient/custom_communities.cpp
     components/tclient/custom_communities.h
     components/tclient/data_version.h
@@ -2820,6 +2829,7 @@ if(CLIENT)
   target_link_libraries(game-client ${LIBS_CLIENT})
 
   if(MSVC)
+    target_compile_options(game-client PRIVATE /bigobj) # TClient, required for ChaiScript
     target_link_options(game-client PRIVATE /ENTRY:mainCRTStartup)
   endif()
 
