@@ -168,34 +168,8 @@ void CMod::ModWeapon(int Id)
 	str_format(aBuf, sizeof(aBuf), TCLocalize("Activating mod weapon on %d: %s\n"), Player.ClientId(), Player.m_aName);
 	GameClient()->Echo(aBuf);
 
-	class CResultModFire : public CConsole::IResult
-	{
-	public:
-		const char *m_pBuf;
-		CResultModFire(const char *pBuf) :
-			IResult(0), m_pBuf(pBuf) {}
-		int NumArguments() const
-		{
-			return 1;
-		}
-		const char *GetString(unsigned Index) const override
-		{
-			if(Index == 0)
-				return m_pBuf;
-			return "";
-		}
-		int GetInteger(unsigned Index) const override { return 0; };
-		float GetFloat(unsigned Index) const override { return 0.0f; };
-		std::optional<ColorHSLA> GetColor(unsigned Index, float DarkestLighting) const override { return std::nullopt; };
-		void RemoveArgument(unsigned Index) override{};
-		int GetVictim() const override { return -1; };
-	};
-
-	str_format(aBuf, sizeof(aBuf), "%d", Id);
-	CResultModFire ResultModFire(aBuf);
-	GameClient()->m_Conditional.m_pResult = &ResultModFire;
-	Console()->ExecuteLine(g_Config.m_TcModWeaponCommand);
-	GameClient()->m_Conditional.m_pResult = nullptr;
+	str_format(aBuf, sizeof(aBuf), "%s %d", g_Config.m_TcModWeaponCommand, Id);
+	Console()->ExecuteLine(aBuf);
 }
 
 void CMod::OnFire(bool Pressed)

@@ -425,15 +425,6 @@ bool CConsole::LineIsValid(const char *pStr)
 	if(!pStr || *pStr == 0)
 		return false;
 
-	// TClient
-	char aComposedBuf[CONSOLE_MAX_STR_LENGTH];
-	if(m_FConditionalCompose)
-	{
-		str_copy(aComposedBuf, pStr);
-		m_FConditionalCompose(aComposedBuf, sizeof(aComposedBuf));
-		pStr = aComposedBuf;
-	}
-
 	do
 	{
 		CResult Result(IConsole::CLIENT_ID_UNSPECIFIED);
@@ -479,15 +470,6 @@ bool CConsole::LineIsValid(const char *pStr)
 
 void CConsole::ExecuteLineStroked(int Stroke, const char *pStr, int ClientId, bool InterpretSemicolons)
 {
-	// TClient
-	char aComposedBuf[CONSOLE_MAX_STR_LENGTH];
-	if(m_FConditionalCompose)
-	{
-		str_copy(aComposedBuf, pStr);
-		m_FConditionalCompose(aComposedBuf, sizeof(aComposedBuf));
-		pStr = aComposedBuf;
-	}
-
 	const char *pWithoutPrefix = str_startswith(pStr, "mc;");
 	if(pWithoutPrefix)
 	{
@@ -662,8 +644,6 @@ void CConsole::ExecuteLineStroked(int Stroke, const char *pStr, int ClientId, bo
 
 int CConsole::PossibleCommands(const char *pStr, int FlagMask, bool Temp, FPossibleCallback pfnCallback, void *pUser)
 {
-	// TClient
-	bool ClearCommandAdded = false;
 	int Index = 0;
 	for(CCommand *pCommand = m_pFirstCommand; pCommand; pCommand = pCommand->Next())
 	{
@@ -673,16 +653,6 @@ int CConsole::PossibleCommands(const char *pStr, int FlagMask, bool Temp, FPossi
 			{
 				pfnCallback(Index, pCommand->m_pName, pUser);
 				Index++;
-			}
-			// TClient
-			if(!ClearCommandAdded && Temp && str_comp("clear", pCommand->m_pName) > 0)
-			{
-				ClearCommandAdded = true;
-				if(str_find_nocase("clear", pStr))
-				{
-					pfnCallback(Index, "clear", pUser);
-					Index++;
-				}
 			}
 		}
 	}
@@ -747,16 +717,9 @@ bool CConsole::ExecuteFile(const char *pFilename, int ClientId, bool LogFailure,
 		str_format(aBuf, sizeof(aBuf), "executing '%s'", pFilename);
 		Print(IConsole::OUTPUT_LEVEL_STANDARD, "console", aBuf);
 
-		m_Return = false; // TClient
 		while(const char *pLine = LineReader.Get())
 		{
 			ExecuteLine(pLine, ClientId);
-			// TClient
-			if(m_Return)
-			{
-				m_Return = false;
-				break;
-			}
 		}
 
 		Success = true;
