@@ -2563,8 +2563,6 @@ if(CLIENT)
     components/tclient/bindwheel.h
     components/tclient/chaiscript.cpp
     components/tclient/chaiscript.h
-    components/tclient/conditional.cpp
-    components/tclient/conditional.h
     components/tclient/custom_communities.cpp
     components/tclient/custom_communities.h
     components/tclient/data_version.h

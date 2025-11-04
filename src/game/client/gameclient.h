@@ -69,7 +69,6 @@
 #include "components/tclient/bindchat.h"
 #include "components/tclient/bindwheel.h"
 #include "components/tclient/chaiscript.h"
-#include "components/tclient/conditional.h"
 #include "components/tclient/custom_communities.h"
 #include "components/tclient/mod.h"
 #include "components/tclient/outlines.h"
@@ -223,7 +222,6 @@ public:
 	CRainbow m_Rainbow;
 	CWarList m_WarList;
 	CChaiScript m_ChaiScript;
-	CConditional m_Conditional;
 	CMod m_Mod;
 	CCustomCommunities m_CustomCommunities;
 
