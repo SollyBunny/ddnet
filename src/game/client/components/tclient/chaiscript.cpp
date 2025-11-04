@@ -14,7 +14,8 @@
 #include <chaiscript.hpp>
 #include <exception>
 
-class CChaiScriptRunner : CComponentInterfaces {
+class CChaiScriptRunner : CComponentInterfaces
+{
 private:
 	const char *m_pFilename;
 	const char *m_pArgs;
@@ -199,12 +200,15 @@ private:
 
 		Chai.add(chaiscript::const_var(std::string(m_pArgs)), "args");
 	}
+
 public:
-	CChaiScriptRunner(CGameClient *pClient, const char *pFilename, const char *pArgs) : m_pFilename(pFilename), m_pArgs(pArgs)
+	CChaiScriptRunner(CGameClient *pClient, const char *pFilename, const char *pArgs) :
+		m_pFilename(pFilename), m_pArgs(pArgs)
 	{
 		OnInterfacesInit(pClient);
 	}
-	bool Run() {
+	bool Run()
+	{
 		if(!m_pFilename || !*m_pFilename)
 			return false;
 
