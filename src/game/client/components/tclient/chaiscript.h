@@ -9,9 +9,9 @@ class CChaiScript : public CComponent
 {
 private:
 	static void ConExecScript(IConsole::IResult *pResult, void *pUserData);
-	bool ExecScript(const char *pFilename);
-
+	
 public:
+	bool ExecScript(const char *pFilename, const char *pArgs);
 	void OnConsoleInit() override;
 	int Sizeof() const override { return sizeof(*this); }
 };

@@ -9,12 +9,15 @@
 #include <game/client/component.h>
 #include <game/client/gameclient.h>
 
+#define CHAISCRIPT_NO_THREADS
+#define CHAISCRIPT_NO_THREADS_WARNING
 #include <chaiscript.hpp>
 #include <exception>
 
 class CChaiScriptRunner : CComponentInterfaces {
 private:
 	const char *m_pFilename;
+	const char *m_pArgs;
 	const CServerInfo *GetServerInfo()
 	{
 		if(Client()->State() == IClient::STATE_ONLINE || Client()->State() == IClient::STATE_DEMOPLAYBACK)
@@ -193,9 +196,11 @@ private:
 			return State(Str);
 		}),
 			"state");
+
+		Chai.add(chaiscript::const_var(std::string(m_pArgs)), "args");
 	}
 public:
-	CChaiScriptRunner(CGameClient *pClient, const char *pFilename) : m_pFilename(pFilename)
+	CChaiScriptRunner(CGameClient *pClient, const char *pFilename, const char *pArgs) : m_pFilename(pFilename), m_pArgs(pArgs)
 	{
 		OnInterfacesInit(pClient);
 	}
@@ -230,6 +235,11 @@ public:
 			log_error("chaiscript", "Exception in '%s': %s", m_pFilename, e.what());
 			Success = false;
 		}
+		catch(const std::string &e)
+		{
+			log_error("chaiscript", "Exception in '%s': %s", m_pFilename, e.c_str());
+			Success = false;
+		}
 		catch(...)
 		{
 			log_error("chaiscript", "Unknown exception in '%s'", m_pFilename);
@@ -244,16 +254,16 @@ public:
 void CChaiScript::ConExecScript(IConsole::IResult *pResult, void *pUserData)
 {
 	CChaiScript *pThis = static_cast<CChaiScript *>(pUserData);
-	pThis->ExecScript(pResult->GetString(0));
+	pThis->ExecScript(pResult->GetString(0), pResult->GetString(1));
 }
 
-bool CChaiScript::ExecScript(const char *pFilename)
+bool CChaiScript::ExecScript(const char *pFilename, const char *pArgs)
 {
-	CChaiScriptRunner Runner(GameClient(), pFilename);
+	CChaiScriptRunner Runner(GameClient(), pFilename, pArgs);
 	return Runner.Run();
 }
 
 void CChaiScript::OnConsoleInit()
 {
-	Console()->Register("chai", "r[file]", CFGFLAG_CLIENT, ConExecScript, this, "Execute a ChaiScript");
+	Console()->Register("chai", "s[file] r[args]", CFGFLAG_CLIENT, ConExecScript, this, "Execute a ChaiScript");
 }
