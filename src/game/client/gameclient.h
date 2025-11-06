@@ -68,13 +68,13 @@
 #include "components/tclient/bg_draw.h"
 #include "components/tclient/bindchat.h"
 #include "components/tclient/bindwheel.h"
-#include "components/tclient/chaiscript.h"
 #include "components/tclient/custom_communities.h"
 #include "components/tclient/mod.h"
 #include "components/tclient/outlines.h"
 #include "components/tclient/pet.h"
 #include "components/tclient/player_indicator.h"
 #include "components/tclient/rainbow.h"
+#include "components/tclient/scripting.h"
 #include "components/tclient/skinprofiles.h"
 #include "components/tclient/statusbar.h"
 #include "components/tclient/tclient.h"
@@ -221,7 +221,7 @@ public:
 	COutlines m_Outlines;
 	CRainbow m_Rainbow;
 	CWarList m_WarList;
-	CChaiScript m_ChaiScript;
+	CScripting m_Scripting;
 	CMod m_Mod;
 	CCustomCommunities m_CustomCommunities;
 

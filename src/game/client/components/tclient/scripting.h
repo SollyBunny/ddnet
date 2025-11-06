@@ -5,13 +5,13 @@
 
 #include <game/client/component.h>
 
-class CChaiScript : public CComponent
+class CScripting : public CComponent
 {
 private:
 	static void ConExecScript(IConsole::IResult *pResult, void *pUserData);
 
 public:
-	bool ExecScript(const char *pFilename, const char *pArgs);
+	void ExecScript(const char *pFilename, const char *pArgs);
 	void OnConsoleInit() override;
 	int Sizeof() const override { return sizeof(*this); }
 };

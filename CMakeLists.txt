@@ -2561,8 +2561,6 @@ if(CLIENT)
     components/tclient/bindchat.h
     components/tclient/bindwheel.cpp
     components/tclient/bindwheel.h
-    components/tclient/chaiscript.cpp
-    components/tclient/chaiscript.h
     components/tclient/custom_communities.cpp
     components/tclient/custom_communities.h
     components/tclient/data_version.h
@@ -2577,6 +2575,10 @@ if(CLIENT)
     components/tclient/player_indicator.h
     components/tclient/rainbow.cpp
     components/tclient/rainbow.h
+    components/tclient/scripting.cpp
+    components/tclient/scripting.h
+    components/tclient/scripting/impl.cpp
+    components/tclient/scripting/impl.h
     components/tclient/skinprofiles.cpp
     components/tclient/skinprofiles.h
     components/tclient/statusbar.cpp
