@@ -19,7 +19,7 @@
 static const char *ReadScript(IStorage *pStorage, const char *pFilename)
 {
 	const char *pScript;
-	pScript = pStorage->ReadFileStr(pFilename, IStorage::TYPE_SAVE);
+	pScript = pStorage->ReadFileStr(pFilename, IStorage::TYPE_ALL);
 	if(!pScript || !*pScript)
 		throw std::format("Failed to open script '{}'", pFilename);
 	return pScript;
@@ -58,7 +58,7 @@ CScriptingCtx::CScriptingCtx()
 	}),
 		"include");
 	m_pData->m_Chai.add(chaiscript::fun([&](const std::string &Path) {
-		return m_pData->m_pStorage->FileExists(Path.c_str(), IStorage::TYPE_SAVE);
+		return m_pData->m_pStorage->FileExists(Path.c_str(), IStorage::TYPE_ALL);
 	}),
 		"file_exists");
 	m_pData->m_Chai.add(chaiscript::fun([&](const std::string &Pattern, const std::string &String) {
