@@ -23,55 +23,51 @@ Thanks to tela for the logo design, and solly for svg <3
 * Download a [nightly (dev/unstable) build](https://github.com/sjrc6/TaterClient-ddnet/actions/workflows/fast-build.yml?query=branch%3Amaster)
 * [Clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) this repo and build using the [guide from DDNet](https://github.com/ddnet/ddnet?tab=readme-ov-file#cloning)
 
-### Conditional Tutorial
+### Scripting
 
-There are certain vars you can write which get substituted before execution, these are wrapped in `{` and `)`  
-These are limited to not let you do things like adding extra control capabilities  
-Here is a list of variables which are available:  
+TClient supports the [ChaiScript](https://chaiscript.com/) language for simple tasks
+
+Add scripts to your config dir then run them with `chai [scriptname] [args]`
+
+```js
+var a // Declare a variable
+a = 1 // Set it
+var b = 2 // Do both at once
+var c = "strings"
+var d = ["lists", 2] // not strongly typed
+// var e, f = d // no list deconstruction
+print(d[0] + to_string(d[1])) // explicit to_string required for string concat
+var bass = "ba" + "s" + "s"
+var ass = bass.substr(1, -1) // both indecies required, use -1 for end
+if (a == b) { // brackets required
+	print("this will never happen") // output
+} else if (c == "strings") { // string comparison
+	exec("echo hello world") // run console stuff
+}
+var current_game_mode = state("game_mode") // Get the current game mode, all states you can get are listed below
+def myfunc(a, b, c) { // yeah it uses def for function definition idk
+	print(a, b, c)
+	if (a == b) { return "early" }
+	c // last statement returns like in rust
+}
+print(myfunc(1, 2, 3)) // prints "early"
+for (var i = 0; i < 10; i++) { // for loops (c style)
+	print(i) // auto converts to string, will throw if it cant
+}
+return "top level return"
+```
+
+Here is a list of states which are available:  
 `game_mode`, `game_mode_pvp`, `game_mode_race`, `eye_wheel_allowed`, `zoom_allowed`, `dummy_allowed`, `dummy_connected`, `rcon_authed`, `map`, `server_ip`, `players_connected`, `players_cap`, `server_name`, `community`, `location`  
 
-| Name | Args | Description |
-| --- | --- | --- |
-| `ifeq` | `s[a] s[b] r[command]` | Comapre 2 values, if equal run the command |
-| `ifneq` | `s[a] s[b] r[command]` | Comapre 2 values, if not equal run the command |
-| `ifreq` | `s[a] s[b] r[command]` | Comapre 2 values, if a matches the regex b run the command |
-| `ifrneq` | `s[a] s[b] r[command]` | Comapre 2 values, if a doesnt match the regex b run the command |
+Some may be bools or ints, be aware
 
-(Note the regex engine is [Remimu](https://github.com/wareya/Remimu))
-
-With the commands listed above and the substitutions you can create simple comparisons, here is a few examples.
-
-```
-echo There are {players_connected} players connected
-I chat/client: — There are 7 players connected
-```
-
-```
-ifreq {server_ip} "^(49\.13\.73\.199|188\.245\.101\.41|188\.245\.66\.93|20\.215\.41\.104):\d+$" say /login AWB CODE
-ifeq {community} kog say /login KOG CODE
-```
-
-```
-ifeq "$(community) $(game_mode)" "ddnet DDraceNetwork" rcon_login USER PASS
-```
-
-```
-exec scripts/sewerslide_off.cfg
-ifeq {game_mode_pvp} 1 exec scripts/sewerslide_on.cfg
-ifeq {map} Linear exec scripts/sewerslide_on.cfg
-ifreq {map} "^.*?Copy Love Box.*?$" exec scripts/sewerslide_on.cfg
-ifeq {game_mode} 0XF exec scripts/sewerslide_on.cfg
-```
-
-There is also a `return` which lets you early return from scripts.
-* Have "elses" without spamming `ifeq`
-* Have early returns while still remaining compatible with DDNet
-
-Here is an example which I use for dummy connecting
-```
-ifneq {dummy_connected} 0 return
-dummy_connect
-exec "scripts/dummy/reset.cfg"
+```js
+var wha = include("thatscript.chai") // you can include other scripts, they use absolute paths from config dir
+print(what) // prints "top level return"
+if (!file_exists("file")) { // check if a file exists, also absolute from config dir
+	throw("why doesn't this file exist")
+}
 ```
 
 ### Settings Page
