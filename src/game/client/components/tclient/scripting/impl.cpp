@@ -9,6 +9,7 @@
 #include <dispatchkit/proxy_functions.hpp>
 #include <format>
 #include <variant>
+#include <engine/external/regex.h>
 
 #define CHAISCRIPT_NO_THREADS
 #define CHAISCRIPT_NO_THREADS_WARNING
@@ -60,6 +61,14 @@ CScriptingCtx::CScriptingCtx()
 		return m_pData->m_pStorage->FileExists(Path.c_str(), IStorage::TYPE_SAVE);
 	}),
 		"file_exists");
+	m_pData->m_Chai.add(chaiscript::fun([&](const std::string &Pattern, const std::string &String) {
+		auto Re = Regex(Pattern);
+		if(Re.error().empty())
+			return Re.match(String.c_str());
+		else
+			throw std::runtime_error(Re.error());
+	}),
+		"re_match");
 }
 
 CScriptingCtx::~CScriptingCtx()

@@ -424,6 +424,22 @@ void CTClient::OnConsoleInit()
 			((CTClient *)pUserData)->SetForcedAspect();
 		},
 		this);
+
+	Console()->Chain(
+		"tc_regex_chat_ignore", [](IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData) {
+			if(pResult->NumArguments() == 1)
+			{
+				auto Re = Regex(pResult->GetString(0));
+				if(!Re.error().empty())
+				{
+					log_error("tclient", "Invalid regex: %s", Re.error().c_str());
+					return;
+				}
+				((CTClient *)pUserData)->m_RegexChatIgnore = std::move(Re);
+			}
+			pfnCallback(pResult, pCallbackUserData);
+		},
+		this);
 }
 
 void CTClient::RandomBodyColor()

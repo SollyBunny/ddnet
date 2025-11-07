@@ -2,6 +2,7 @@
 #define GAME_CLIENT_COMPONENTS_TCLIENT_TCLIENT_H
 
 #include <engine/client/enums.h>
+#include <engine/external/regex.h>
 #include <engine/shared/console.h>
 #include <engine/shared/http.h>
 
@@ -66,6 +67,8 @@ public:
 	bool InfoTaskDone() { return m_pTClientInfoTask && m_pTClientInfoTask->State() == EHttpState::DONE; }
 	bool m_FetchedTClientInfo = false;
 	char m_aVersionStr[10] = "0";
+
+	Regex m_RegexChatIgnore;
 };
 
 #endif

@@ -2264,7 +2264,8 @@ set_src(ENGINE_SHARED GLOB_RECURSE src/engine/shared
   websockets.h
 )
 set_src(ENGINE_EXTERNAL GLOB src/engine/external
-  remimu.h
+  regex.cpp
+  regex.h
   spt.cpp
   spt.h
   tinyexpr.cpp
