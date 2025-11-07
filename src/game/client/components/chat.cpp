@@ -4,13 +4,12 @@
 #include "chat.h"
 
 #include <engine/editor.h>
+#include <engine/external/regex.h>
 #include <engine/graphics.h>
 #include <engine/keys.h>
 #include <engine/shared/config.h>
 #include <engine/shared/csv.h>
 #include <engine/textrender.h>
-
-#include <engine/external/regex.h>
 
 #include <generated/protocol.h>
 #include <generated/protocol7.h>

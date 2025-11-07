@@ -2,6 +2,7 @@
 
 #include <base/log.h>
 
+#include <engine/external/regex.h>
 #include <engine/storage.h>
 
 #include <dispatchkit/bad_boxed_cast.hpp>
@@ -9,7 +10,6 @@
 #include <dispatchkit/proxy_functions.hpp>
 #include <format>
 #include <variant>
-#include <engine/external/regex.h>
 
 #define CHAISCRIPT_NO_THREADS
 #define CHAISCRIPT_NO_THREADS_WARNING
