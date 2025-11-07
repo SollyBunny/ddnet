@@ -85,9 +85,10 @@ static chaiscript::Boxed_Value Any2Boxed(const CScriptingCtx::Any &Any)
 template<>
 void CScriptingCtx::AddFunction(const char *pName, const std::function<CScriptingCtx::Any(const std::string &Str)> &Function)
 {
-	m_pData->m_Chai.add(chaiscript::fun([&](const std::string &Str){
+	m_pData->m_Chai.add(chaiscript::fun([&](const std::string &Str) {
 		return Any2Boxed(Function(Str));
-	}), pName);
+	}),
+		pName);
 }
 
 template<>
@@ -102,12 +103,13 @@ void CScriptingCtx::AddGlobal(const char *pName, const std::string &Object)
 	m_pData->m_Chai.add_global_const(chaiscript::const_var(Object), pName);
 }
 
-void CScriptingCtx::Run(IStorage *pStorage, const char *pFilename, const char *pArg)
+void CScriptingCtx::Run(IStorage *pStorage, const char *pFilename, const char *pArgs)
 {
 	m_pData->m_pStorage = pStorage;
 	const char *pScript = nullptr;
 	try
 	{
+		m_pData->m_Chai.add_global_const(chaiscript::const_var(std::string(pArgs)), "args");
 		pScript = ReadScript(pStorage, pFilename);
 		m_pData->m_Chai.eval(pScript, chaiscript::Exception_Handler(), pFilename);
 	}
