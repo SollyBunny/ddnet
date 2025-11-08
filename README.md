@@ -117,7 +117,6 @@ math.abs(1)
 
 ```js
 import("re")
-import("re")
 
 if(re.test(re.compile(".+?ello.+?"), "hello")) { // re.test(r, string)
 	print("hi")
