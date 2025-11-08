@@ -26,11 +26,11 @@ bool CBindChat::CBind::CompContent(const CBind &Other) const
 
 decltype(CBindChat::BIND_DEFAULTS) CBindChat::BIND_DEFAULTS = {
 	{TCLocalizable("Kaomoji"), {
-					   {TCLocalizable("Shrug:"), {"!shrug", "chai builtinscripts/sayemoticon.chai ¯\\_(ツ)_/¯D"}},
-					   {TCLocalizable("Flip:"), {"!flip", "chai builtinscripts/sayemoticon.chai (╯°□°)╯︵ ┻━┻D"}},
-					   {TCLocalizable("Unflip:"), {"!unflip", "chai builtinscripts/sayemoticon.chai ┬─┬ノ( º _ ºノ)D"}},
-					   {TCLocalizable("Cute:"), {"!cute", "chai builtinscripts/sayemoticon.chai ૮ ˶ᵔ ᵕ ᵔ˶ აD"}},
-					   {TCLocalizable("Lenny:"), {"!lenny", "chai builtinscripts/sayemoticon.chai ( ͡° ͜ʖ ͡°)D"}},
+					   {TCLocalizable("Shrug:"), {"!shrug", "chai tclient/builtinscripts/sayemoticon.chai ¯\\_(ツ)_/¯D"}},
+					   {TCLocalizable("Flip:"), {"!flip", "chai tclient/builtinscripts/sayemoticon.chai (╯°□°)╯︵ ┻━┻D"}},
+					   {TCLocalizable("Unflip:"), {"!unflip", "chai tclient/builtinscripts/sayemoticon.chai ┬─┬ノ( º _ ºノ)D"}},
+					   {TCLocalizable("Cute:"), {"!cute", "chai tclient/builtinscripts/sayemoticon.chai ૮ ˶ᵔ ᵕ ᵔ˶ აD"}},
+					   {TCLocalizable("Lenny:"), {"!lenny", "chai tclient/builtinscripts/sayemoticon.chai ( ͡° ͜ʖ ͡°)D"}},
 				   }},
 	{TCLocalizable("Warlist"), {
 					   {TCLocalizable("Add war name:"), {"!war", "war_name_index 1"}},

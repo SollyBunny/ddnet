@@ -1175,7 +1175,6 @@ set(EXPECTED_DATA
   autoexec_server.cfg
   background_noise.png
   blob.png
-  builtinscripts/sayemoticon.chai
   censorlist.txt
   communityicons/none.png
   countryflags/AD.png
@@ -1902,6 +1901,7 @@ set(EXPECTED_DATA
   skins7/x_ninja.json
   skins7/xmas_hat.png
   strong_weak.png
+  tclient/builtinscripts/sayemoticon.chai
   tclient/fonts/Cabin-Regular.ttf
   tclient/fonts/FreeSansBold.ttf
   tclient/fonts/GoogleSans-Regular.ttf
