@@ -207,11 +207,26 @@ int str_comp_filenames(const char *a, const char *b);
  *
  * @ingroup Strings
  *
+ * @param str Input string to clean up.
+ * @param out Where to write the cleaned up string.
+ *
+ * @remark The strings are treated as null-terminated strings.
+ */
+void str_clean_whitespaces(const char *str, const char *out);
+
+/**
+ * Removes leading and trailing spaces and limits the use of multiple spaces.
+ *
+ * @ingroup Strings
+ *
  * @param str String to clean up.
  *
  * @remark The strings are treated as null-terminated strings.
  */
-void str_clean_whitespaces(char *str);
+inline void str_clean_whitespaces(char *str)
+{
+	str_clean_whitespaces(str, str);
+}
 
 /**
  * Skips leading non-whitespace characters.
