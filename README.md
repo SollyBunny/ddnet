@@ -57,10 +57,31 @@ for (var i = 0; i < 10; i++) { // for loops (c style)
 return "top level return"
 ```
 
-Here is a list of states which are available:  
-`game_mode`, `game_mode_pvp`, `game_mode_race`, `eye_wheel_allowed`, `zoom_allowed`, `dummy_allowed`, `dummy_connected`, `rcon_authed`, `map`, `server_ip`, `players_connected`, `players_cap`, `server_name`, `community`, `location`  
+Here is a list of states which are available:
 
-Some may be bools or ints, be aware
+| Return type | Call | Description |
+| --- | -- | --- |
+| `string` | `state("game_mode")` | Returns the current game mode name (e.g., “DM”, “TDM”, “CTF”). |
+| `bool` | `state("game_mode_pvp")` | Whether the current mode is PvP. |
+| `bool` | `state("game_mode_race")` | Whether the current mode is a race mode. |
+| `bool` | `state("eye_wheel_allowed")` | Whether the “eye wheel” feature is allowed on this server. |
+| `bool` | `state("zoom_allowed")` | Whether camera zoom is allowed. |
+| `bool` | `state("dummy_allowed")` | Whether using a dummy client is allowed. |
+| `bool` | `state("dummy_connected")` | Whether the dummy client is currently connected. |
+| `bool` | `state("rcon_authed")` | Whether the client is authenticated with RCON (admin access). |
+| `int` | `state("team")` | The player’s current team number. |
+| `int` | `state("ddnet_team")` | The player’s DDNet team number. |
+| `string` | `state("map")` | The name of the current or connecting map. |
+| `string` | `state("server_ip")` | The IP address of the connected or connecting server. |
+| `int` | `state("players_connected")` | Number of currently connected players. |
+| `int` | `state("players_cap")` | Maximum number of players the server supports. |
+| `string` | `state("server_name")` | The server’s name. |
+| `string` | `state("community")` | The server’s community identifier. |
+| `string` | `state("location")` | The player’s approximate map location (“NW”, “C”, “SE”, etc.). |
+| `string` | `state("state")` | The client’s connection state (e.g., “online”, “offline”, “loading”, “demo”). |
+| `int` | `state("id", string Name)` | Finds and returns a client ID by player name (exact or case-insensitive match). |
+| `string` | `state("name", int Id)` | Returns the name of a player given their client ID. |
+| `string` | `state("clan", int Id)` | Returns the clan name of a player given their client ID. |
 
 ```js
 var wha = include("thatscript.chai") // you can include other scripts, they use absolute paths from config dir
