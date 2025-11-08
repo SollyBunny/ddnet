@@ -460,25 +460,53 @@ protected:
 	static constexpr float FLAG_WIDTH = 128.0f;
 	static constexpr float FLAG_HEIGHT = 64.0f;
 	static constexpr float FLAG_RATIO = FLAG_HEIGHT / FLAG_WIDTH;
-	int m_CountryCode = -1;
+	const CCountryFlags::CCountryFlag *m_pCountryFlag = nullptr;
 	float m_Alpha = 1.0f;
 
 public:
 	friend class CGameClient;
 	void Update(CGameClient &This, const CNamePlateData &Data) override
 	{
-		m_CountryCode = This.m_aClients[Data.m_ClientId].m_Country;
-		m_Visible = g_Config.m_TcNameplateCountry // The config
-			    && !Data.m_Local // Not local player
-			    && m_CountryCode != 0 && m_CountryCode != -1 && m_CountryCode != -2; // No default flags
-		if(!m_Visible)
+		m_Visible = true;
+		if(g_Config.m_TcNameplateCountry == 0)
+		{
+			m_Visible = false;
 			return;
+		}
+		if(Data.m_InGame)
+		{
+			// Check for us and dummy, Data.m_Local only does current char
+			for(const auto Id : This.m_aLocalIds)
+			{
+				if(Id == Data.m_ClientId)
+				{
+					m_Visible = false;
+					return;
+				}
+			}
+			m_pCountryFlag = &This.m_CountryFlags.GetByCountryCode(This.m_aClients[Data.m_ClientId].m_Country);
+		}
+		else
+		{
+			if(Data.m_ClientId == 1)
+				m_pCountryFlag = &This.m_CountryFlags.GetByCountryCode(g_Config.m_PlayerCountry);
+			else
+				m_pCountryFlag = &This.m_CountryFlags.GetByCountryCode(g_Config.m_ClDummyCountry);
+		}
+		// Do not show default flags
+		if(m_pCountryFlag == &This.m_CountryFlags.GetByIndex(0))
+		{
+			m_Visible = false;
+			return;
+		}
 		m_Alpha = Data.m_Color.a;
 		m_Size = vec2(Data.m_FontSize / FLAG_RATIO, Data.m_FontSize);
 	}
 	void Render(CGameClient &This, vec2 Pos) const override
 	{
-		This.m_CountryFlags.Render(m_CountryCode, ColorRGBA(1.0f, 1.0f, 1.0f, m_Alpha),
+		if(!m_pCountryFlag)
+			return;
+		This.m_CountryFlags.Render(*m_pCountryFlag, ColorRGBA(1.0f, 1.0f, 1.0f, m_Alpha),
 			Pos.x - m_Size.x / 2.0f, Pos.y - m_Size.y / 2.0f,
 			m_Size.x, m_Size.y);
 	}
