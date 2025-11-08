@@ -1164,17 +1164,11 @@ TEST(Str, ValidFilename)
 
 TEST(Str, CleanWhitespaces)
 {
-	auto TestCleanWhitespaces = [](const char *pStr, const char *pExpected) {
-		TestInplace<str_clean_whitespaces>(pStr, pExpected);
-		char aOut[128];
-		str_clean_whitespaces(pStr, aOut);
-		EXPECT_STREQ(aOut, pExpected);
-	};
-	TestCleanWhitespaces("aa bb ccc dddd eeeee", "aa bb ccc dddd eeeee");
-	TestCleanWhitespaces("     ", "");
-	TestCleanWhitespaces("     aa", "aa");
-	TestCleanWhitespaces("aa     ", "aa");
-	TestCleanWhitespaces("  aa   bb    ccc     dddd       eeeee    ", "aa bb ccc dddd eeeee");
+	TestInplace<str_clean_whitespaces>("aa bb ccc dddd eeeee", "aa bb ccc dddd eeeee");
+	TestInplace<str_clean_whitespaces>("     ", "");
+	TestInplace<str_clean_whitespaces>("     aa", "aa");
+	TestInplace<str_clean_whitespaces>("aa     ", "aa");
+	TestInplace<str_clean_whitespaces>("  aa   bb    ccc     dddd       eeeee    ", "aa bb ccc dddd eeeee");
 }
 
 TEST(Str, SkipToWhitespace)
