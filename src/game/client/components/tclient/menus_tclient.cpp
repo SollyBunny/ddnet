@@ -86,6 +86,48 @@ static bool IsFlagSet(int32_t Flags, int n)
 	return (Flags & (1 << n)) != 0;
 }
 
+bool CMenus::DoLine_KeyReader(CUIRect &View, CButtonContainer &ReaderButton, CButtonContainer &ClearButton, const char *pName, const char *pCommand)
+{
+	CBindSlot Bind(0, 0);
+	for(int Mod = 0; Mod < KeyModifier::COMBINATION_COUNT; Mod++)
+	{
+		for(int KeyId = 0; KeyId < KEY_LAST; KeyId++)
+		{
+			const char *pBind = GameClient()->m_Binds.Get(KeyId, Mod);
+			if(!pBind[0])
+				continue;
+
+			if(str_comp(pBind, pCommand) == 0)
+			{
+				Bind.m_Key = KeyId;
+				Bind.m_ModifierMask = Mod;
+				break;
+			}
+		}
+	}
+
+	CUIRect KeyButton, KeyLabel;
+	View.HSplitTop(LineSize, &KeyButton, &View);
+	KeyButton.VSplitMid(&KeyLabel, &KeyButton);
+
+	char aBuf[128];
+	str_format(aBuf, sizeof(aBuf), "%s:", pName);
+	Ui()->DoLabel(&KeyLabel, aBuf, FontSize, TEXTALIGN_ML);
+
+	View.HSplitTop(MarginExtraSmall, nullptr, &View);
+
+	const auto Result = GameClient()->m_KeyBinder.DoKeyReader(&ReaderButton, &ClearButton, &KeyButton, Bind, false);
+	if(Result.m_Bind != Bind)
+	{
+		if(Bind.m_Key != KEY_UNKNOWN)
+			GameClient()->m_Binds.Bind(Bind.m_Key, "", false, Bind.m_ModifierMask);
+		if(Result.m_Bind.m_Key != KEY_UNKNOWN)
+			GameClient()->m_Binds.Bind(Result.m_Bind.m_Key, pCommand, false, Result.m_Bind.m_ModifierMask);
+		return true;
+	}
+	return false;
+}
+
 bool CMenus::DoSliderWithScaledValue(const void *pId, int *pOption, const CUIRect *pRect, const char *pStr, int Min, int Max, int Scale, const IScrollbarScale *pScale, unsigned Flags, const char *pSuffix)
 {
 	const bool NoClampValue = Flags & CUi::SCROLLBAR_OPTION_NOCLAMPVALUE;
@@ -858,43 +900,9 @@ void CMenus::RenderSettingsTClientSettngs(CUIRect MainView)
 	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_TcHideFrozenGhosts, TCLocalize("Hide ghosts of frozen players"), &g_Config.m_TcHideFrozenGhosts, &Column, LineSize);
 	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_TcRenderGhostAsCircle, TCLocalize("Render ghosts as circles"), &g_Config.m_TcRenderGhostAsCircle, &Column, LineSize);
 
-	{
-		static CKeyInfo s_Key = CKeyInfo{TCLocalize("Toggle ghosts key"), "toggle tc_show_others_ghosts 0 1", 0, 0};
-		s_Key.m_ModifierCombination = s_Key.m_KeyId = 0;
-		for(int Mod = 0; Mod < KeyModifier::COMBINATION_COUNT; Mod++)
-		{
-			for(int KeyId = 0; KeyId < KEY_LAST; KeyId++)
-			{
-				const char *pBind = GameClient()->m_Binds.Get(KeyId, Mod);
-				if(!pBind[0])
-					continue;
+	static CButtonContainer s_ReaderButtonGhost, s_ClearButtonGhost;
+	DoLine_KeyReader(Column, s_ReaderButtonGhost, s_ClearButtonGhost, TCLocalize("Toggle ghosts key"), "toggle tc_show_others_ghosts 0 1");
 
-				if(str_comp(pBind, s_Key.m_pCommand) == 0)
-				{
-					s_Key.m_KeyId = KeyId;
-					s_Key.m_ModifierCombination = Mod;
-					break;
-				}
-			}
-		}
-
-		CUIRect KeyButton, KeyLabel;
-		Column.HSplitTop(LineSize, &KeyButton, &Column);
-		KeyButton.VSplitMid(&KeyLabel, &KeyButton);
-		char aBuf[64];
-		str_format(aBuf, sizeof(aBuf), "%s:", TCLocalize(s_Key.m_pName));
-		Ui()->DoLabel(&KeyLabel, aBuf, 12.0f, TEXTALIGN_ML);
-		int OldId = s_Key.m_KeyId, OldModifierCombination = s_Key.m_ModifierCombination, NewModifierCombination;
-		int NewId = GameClient()->m_KeyBinder.DoKeyReader(&s_Key, &KeyButton, OldId, OldModifierCombination, &NewModifierCombination);
-		if(NewId != OldId || NewModifierCombination != OldModifierCombination)
-		{
-			if(OldId != 0 || NewId == 0)
-				GameClient()->m_Binds.Bind(OldId, "", false, OldModifierCombination);
-			if(NewId != 0)
-				GameClient()->m_Binds.Bind(NewId, s_Key.m_pCommand, false, NewModifierCombination);
-		}
-		Column.HSplitTop(MarginExtraSmall, nullptr, &Column);
-	}
 	s_SectionBoxes.back().h = Column.y - s_SectionBoxes.back().y;
 
 	// ***** Rainbow ***** //
@@ -993,44 +1001,9 @@ void CMenus::RenderSettingsTClientSettngs(CUIRect MainView)
 	Column.HSplitTop(LineSize * 2.0f, &Button, &Column);
 	Ui()->DoScrollbarOption(&g_Config.m_TcBgDrawWidth, &g_Config.m_TcBgDrawWidth, &Button, TCLocalize("Width"), 1, 50, &CUi::ms_LinearScrollbarScale, CUi::SCROLLBAR_OPTION_MULTILINE);
 
-	{
-		Column.HSplitTop(MarginSmall, nullptr, &Column);
-		static CKeyInfo s_Key = CKeyInfo{TCLocalize("Draw where mouse is"), "+bg_draw", 0, 0};
-		s_Key.m_ModifierCombination = s_Key.m_KeyId = 0;
-		for(int Mod = 0; Mod < KeyModifier::COMBINATION_COUNT; Mod++)
-		{
-			for(int KeyId = 0; KeyId < KEY_LAST; KeyId++)
-			{
-				const char *pBind = GameClient()->m_Binds.Get(KeyId, Mod);
-				if(!pBind[0])
-					continue;
+	static CButtonContainer s_ReaderButtonDraw, s_ClearButtonDraw;
+	DoLine_KeyReader(Column, s_ReaderButtonDraw, s_ClearButtonDraw, TCLocalize("Draw where mouse is"), "+bg_draw");
 
-				if(str_comp(pBind, s_Key.m_pCommand) == 0)
-				{
-					s_Key.m_KeyId = KeyId;
-					s_Key.m_ModifierCombination = Mod;
-					break;
-				}
-			}
-		}
-
-		CUIRect KeyButton, KeyLabel;
-		Column.HSplitTop(LineSize, &KeyButton, &Column);
-		KeyButton.VSplitMid(&KeyLabel, &KeyButton);
-		char aBuf[64];
-		str_format(aBuf, sizeof(aBuf), "%s:", TCLocalize(s_Key.m_pName));
-		Ui()->DoLabel(&KeyLabel, aBuf, 12.0f, TEXTALIGN_ML);
-		int OldId = s_Key.m_KeyId, OldModifierCombination = s_Key.m_ModifierCombination, NewModifierCombination;
-		int NewId = GameClient()->m_KeyBinder.DoKeyReader(&s_Key, &KeyButton, OldId, OldModifierCombination, &NewModifierCombination);
-		if(NewId != OldId || NewModifierCombination != OldModifierCombination)
-		{
-			if(OldId != 0 || NewId == 0)
-				GameClient()->m_Binds.Bind(OldId, "", false, OldModifierCombination);
-			if(NewId != 0)
-				GameClient()->m_Binds.Bind(NewId, s_Key.m_pCommand, false, NewModifierCombination);
-		}
-		Column.HSplitTop(MarginExtraSmall, nullptr, &Column);
-	}
 	s_SectionBoxes.back().h = Column.y - s_SectionBoxes.back().y;
 	Column.HSplitTop(MarginSmall, nullptr, &Column);
 
@@ -1207,44 +1180,9 @@ void CMenus::RenderSettingsTClientBindWheel(CUIRect MainView)
 	LeftView.HSplitTop(LineSize, &Label, &LeftView);
 	Ui()->DoLabel(&Label, TCLocalize("Use middle mouse select without copy"), FontSize, TEXTALIGN_ML);
 
-	// Do Settings Key
-	CKeyInfo Key = CKeyInfo{TCLocalize("Bind Wheel Key"), "+bindwheel", 0, 0};
-	for(int Mod = 0; Mod < KeyModifier::COMBINATION_COUNT; Mod++)
-	{
-		for(int KeyId = 0; KeyId < KEY_LAST; KeyId++)
-		{
-			const char *pBind = GameClient()->m_Binds.Get(KeyId, Mod);
-			if(!pBind[0])
-				continue;
+	static CButtonContainer s_ReaderButtonWheel, s_ClearButtonWheel;
+	DoLine_KeyReader(LeftView, s_ReaderButtonWheel, s_ClearButtonWheel, TCLocalize("Bind Wheel Key"), "+bindwheel");
 
-			if(str_comp(pBind, Key.m_pCommand) == 0)
-			{
-				Key.m_KeyId = KeyId;
-				Key.m_ModifierCombination = Mod;
-				break;
-			}
-		}
-	}
-
-	CUIRect KeyLabel;
-	LeftView.HSplitBottom(LineSize, &LeftView, &Button);
-	Button.VSplitLeft(120.0f, &KeyLabel, &Button);
-	Button.VSplitLeft(100.0f, &Button, nullptr);
-	char aBuf[64];
-	str_format(aBuf, sizeof(aBuf), "%s:", TCLocalize(Key.m_pName));
-
-	Ui()->DoLabel(&KeyLabel, aBuf, FontSize, TEXTALIGN_ML);
-	int OldId = Key.m_KeyId, OldModifierCombination = Key.m_ModifierCombination, NewModifierCombination;
-	int NewId = GameClient()->m_KeyBinder.DoKeyReader((void *)&Key.m_pName, &Button, OldId, OldModifierCombination, &NewModifierCombination);
-	if(NewId != OldId || NewModifierCombination != OldModifierCombination)
-	{
-		if(OldId != 0 || NewId == 0)
-			GameClient()->m_Binds.Bind(OldId, "", false, OldModifierCombination);
-		if(NewId != 0)
-			GameClient()->m_Binds.Bind(NewId, Key.m_pCommand, false, NewModifierCombination);
-	}
-	LeftView.HSplitBottom(LineSize, &LeftView, &Button);
-	Button.w = MainView.w;
 	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_TcResetBindWheelMouse, TCLocalize("Reset position of mouse when opening bindwheel"), &g_Config.m_TcResetBindWheelMouse, &Button, LineSize);
 }
 
