@@ -245,33 +245,29 @@ int str_comp_filenames(const char *a, const char *b)
 	return *a - *b;
 }
 
-/* removes leading and trailing spaces and limits the use of multiple spaces */
-void str_clean_whitespaces(char *str_in)
+void str_clean_whitespaces(const char *str, char *out)
 {
-	char *read = str_in;
-	char *write = str_in;
-
 	/* skip initial whitespace */
-	while(*read == ' ')
-		read++;
+	while(*str == ' ')
+		str++;
 
 	/* end of read string is detected in the loop */
 	while(true)
 	{
 		/* skip whitespace */
 		int found_whitespace = 0;
-		for(; *read == ' '; read++)
+		for(; *str == ' '; str++)
 			found_whitespace = 1;
 		/* if not at the end of the string, put a found whitespace here */
-		if(*read)
+		if(*str)
 		{
 			if(found_whitespace)
-				*write++ = ' ';
-			*write++ = *read++;
+				*out++ = ' ';
+			*out++ = *str++;
 		}
 		else
 		{
-			*write = 0;
+			*out = 0;
 			break;
 		}
 	}
