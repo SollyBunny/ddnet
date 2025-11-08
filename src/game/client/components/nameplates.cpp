@@ -1,4 +1,5 @@
 #include "nameplates.h"
+
 #include <base/str.h>
 
 #include <engine/graphics.h>
@@ -386,7 +387,7 @@ protected:
 	void UpdateText(CGameClient &This, const CNamePlateData &Data) override
 	{
 		m_FontSize = Data.m_FontSizeClan;
-		str_copy(m_aText, Data.m_pClan, sizeof(m_aText));
+		str_clean_whitespaces(Data.m_pClan, m_aText);
 		CTextCursor Cursor;
 		Cursor.m_FontSize = m_FontSize;
 		This.TextRender()->CreateOrAppendTextContainer(m_TextContainerIndex, &Cursor, m_aText);
