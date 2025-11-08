@@ -145,6 +145,9 @@ print(re.replace(re.compile("\\d"), "h3ll0", true, fun[](str, match, group) { //
 
 ### Settings Page
 
+> [!NOTE]
+> This is out of date
+
 ![image](https://github.com/user-attachments/assets/a6ccb206-9fed-48be-a2d2-8fc50a6be882)
 ![image](https://github.com/user-attachments/assets/9251509a-d852-41ac-bf6b-9a610db08945)
 ![image](https://github.com/user-attachments/assets/47dab977-1311-4963-a11a-81b78005b12b)
@@ -155,6 +158,9 @@ print(re.replace(re.compile("\\d"), "h3ll0", true, fun[](str, match, group) { //
 ![image](https://user-images.githubusercontent.com/22122579/182528700-4c8238c3-836e-49c3-9996-68025e7f5d58.png)
 
 ### Features
+
+> [!NOTE]
+> This is out of date
 
 ```
 tc_run_on_join_console
