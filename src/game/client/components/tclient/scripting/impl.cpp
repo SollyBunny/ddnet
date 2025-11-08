@@ -5,16 +5,11 @@
 #include <engine/external/regex.h>
 #include <engine/storage.h>
 
-#include <dispatchkit/any.hpp>
-#include <dispatchkit/bad_boxed_cast.hpp>
-#include <dispatchkit/boxed_cast.hpp>
-#include <dispatchkit/proxy_functions.hpp>
 #include <variant>
 
 #define CHAISCRIPT_NO_THREADS
 #define CHAISCRIPT_NO_THREADS_WARNING
 #include <chaiscript.hpp>
-#include <dispatchkit/boxed_value.hpp>
 
 static const auto NAMESPACE_RE = [](chaiscript::Namespace &Re) {
 	Re["compile"] = chaiscript::var(chaiscript::fun([](const std::string &s) {
@@ -29,8 +24,8 @@ static const auto NAMESPACE_RE = [](chaiscript::Namespace &Re) {
 };
 
 static const auto NAMESPACE_MATH = [](chaiscript::Namespace &Math) {
-	Math["pi"] = chaiscript::const_var(M_PI);
-	Math["e"] = chaiscript::const_var(M_E);
+	Math["pi"] = chaiscript::const_var(3.14159265358979323846);
+	Math["e"] = chaiscript::const_var(2.7182818284590452354);
 	Math["pow"] = chaiscript::var(chaiscript::fun([](double x, double y) { return pow(x, y); }));
 	Math["sqrt"] = chaiscript::var(chaiscript::fun([](double x) { return sqrt(x); }));
 	Math["sin"] = chaiscript::var(chaiscript::fun([](double x) { return sin(x); }));
@@ -115,7 +110,7 @@ static chaiscript::Boxed_Value Any2Boxed(const CScriptingCtx::Any &Any)
 		return chaiscript::const_var(std::get<int>(Any));
 	if(std::holds_alternative<float>(Any))
 		return chaiscript::const_var(std::get<float>(Any));
-	throw chaiscript::exception::bad_boxed_cast("Cannot convert Any to Boxed_Value");
+	throw "Cannot convert Any to Boxed_Value";
 }
 
 template<>
