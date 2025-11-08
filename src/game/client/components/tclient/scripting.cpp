@@ -3,6 +3,7 @@
 #include "scripting/impl.h"
 
 #include <base/log.h>
+#include <base/str.h>
 
 #include <engine/console.h>
 #include <engine/shared/config.h>
@@ -29,7 +30,7 @@ private:
 		}
 		return nullptr;
 	}
-	CScriptingCtx::Any State(const std::string &Str)
+	CScriptingCtx::Any State(const std::string &Str, const CScriptingCtx::Any &Arg)
 	{
 		if(Str == "game_mode")
 		{
@@ -169,6 +170,55 @@ private:
 			}
 			return pState;
 		}
+		else if(Str == "id")
+		{
+			if(Client()->State() != IClient::STATE_ONLINE && Client()->State() != IClient::STATE_DEMOPLAYBACK)
+				return nullptr;
+			if(!std::holds_alternative<std::string>(Arg))
+				return nullptr;
+			const std::string &Name = std::get<std::string>(Arg);
+			for(const auto &Client : GameClient()->m_aClients)
+			{
+				if(!Client.m_Active)
+					continue;
+				if(str_comp(Name.c_str(), Client.m_aName) == 0)
+					return Client.ClientId();
+			}
+			for(const auto &Client : GameClient()->m_aClients)
+			{
+				if(!Client.m_Active)
+					continue;
+				if(str_comp_nocase(Name.c_str(), Client.m_aName) == 0)
+					return Client.ClientId();
+			}
+			return nullptr;
+		}
+		else if(Str == "name")
+		{
+			if(Client()->State() != IClient::STATE_ONLINE && Client()->State() != IClient::STATE_DEMOPLAYBACK)
+				return nullptr;
+			if(!std::holds_alternative<int>(Arg))
+				return nullptr;
+			int Id = std::get<int>(Arg);
+			if(Id < 0 || Id > MAX_CLIENTS)
+				return nullptr;
+			if(!GameClient()->m_aClients[Id].m_Active)
+				return nullptr;
+			return GameClient()->m_aClients[Id].m_aName;
+		}
+		else if(Str == "clan")
+		{
+			if(Client()->State() != IClient::STATE_ONLINE && Client()->State() != IClient::STATE_DEMOPLAYBACK)
+				return nullptr;
+			if(!std::holds_alternative<int>(Arg))
+				return nullptr;
+			int Id = std::get<int>(Arg);
+			if(Id < 0 || Id > MAX_CLIENTS)
+				return nullptr;
+			if(!GameClient()->m_aClients[Id].m_Active)
+				return nullptr;
+			return GameClient()->m_aClients[Id].m_aClan;
+		}
 		throw std::invalid_argument(std::format("No state with name {}", Str));
 	}
 
@@ -180,8 +230,8 @@ public:
 			log_info(SCRIPTING_IMPL "/exec", "%s", Str.c_str());
 			Console()->ExecuteLine(Str.c_str());
 		});
-		m_ScriptingCtx.AddFunction("state", [this](const std::string &Str) {
-			return State(Str);
+		m_ScriptingCtx.AddFunction("state", [this](const std::string &Str, const CScriptingCtx::Any &Arg) {
+			return State(Str, Arg);
 		});
 	}
 	void Run(const char *pFilename, const char *pArgs)

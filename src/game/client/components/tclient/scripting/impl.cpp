@@ -5,6 +5,7 @@
 #include <engine/external/regex.h>
 #include <engine/storage.h>
 
+#include <dispatchkit/any.hpp>
 #include <dispatchkit/bad_boxed_cast.hpp>
 #include <dispatchkit/boxed_cast.hpp>
 #include <dispatchkit/proxy_functions.hpp>
@@ -119,16 +120,32 @@ static chaiscript::Boxed_Value Any2Boxed(const CScriptingCtx::Any &Any)
 }
 
 template<>
-void CScriptingCtx::AddFunction(const char *pName, const std::function<CScriptingCtx::Any(const std::string &Str)> &Function)
+void CScriptingCtx::AddFunctionInternal(const char *pName, const std::function<CScriptingCtx::Any(const std::string &Str, const CScriptingCtx::Any &Any)> &Function)
 {
 	m_pData->m_Chai.add(chaiscript::fun([&](const std::string &Str) {
-		return Any2Boxed(Function(Str));
+		return Any2Boxed(Function(Str, nullptr));
+	}),
+		pName);
+	m_pData->m_Chai.add(chaiscript::fun([&](const std::string &Str, int Int) {
+		return Any2Boxed(Function(Str, Int));
+	}),
+		pName);
+	m_pData->m_Chai.add(chaiscript::fun([&](const std::string &Str, float Float) {
+		return Any2Boxed(Function(Str, Float));
+	}),
+		pName);
+	m_pData->m_Chai.add(chaiscript::fun([&](const std::string &Str, bool Bool) {
+		return Any2Boxed(Function(Str, Bool));
+	}),
+		pName);
+	m_pData->m_Chai.add(chaiscript::fun([&](const std::string &Str, const std::string &Str2) {
+		return Any2Boxed(Function(Str, Str2));
 	}),
 		pName);
 }
 
 template<>
-void CScriptingCtx::AddFunction(const char *pName, const std::function<void(const std::string &Str)> &Function)
+void CScriptingCtx::AddFunctionInternal(const char *pName, const std::function<void(const std::string &Str)> &Function)
 {
 	m_pData->m_Chai.add(chaiscript::fun(Function), pName);
 }
