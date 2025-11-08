@@ -70,6 +70,56 @@ if (!file_exists("file")) { // check if a file exists, also absolute from config
 }
 ```
 
+There is also `math` and `re` modules
+
+```js
+import("math")
+math.pi
+math.e
+math.pow(1, 2)
+math.sqrt(3)
+math.sin(1)
+math.cos(1)
+math.tan(1)
+math.asin(1)
+math.acos(1)
+math.atan(1)
+math.atan2(1, 1)
+math.log(1)
+math.log10(1)
+math.log2(1)
+math.ceil(1)
+math.floor(1)
+math.round(1)
+math.abs(1)
+```
+
+```js
+import("re")
+import("re")
+
+if(re.test(re.compile(".+?ello.+?"), "hello")) { // re.test(r, string)
+	print("hi")
+}
+re.match(re.compile("\\d"), "h3ll0", false, fun[](str, match, group) { // re.match(r, string, global, callback)
+	print("not global: " + to_string(match) + " " + str)
+})
+re.match(re.compile("\\d"), "h3ll0", true, fun[](str, match, group) {
+	print("global: " + to_string(match) + " " + str)
+})
+re.match(re.compile("(h3)l(l0)"), "h3ll0", false, fun[](str, match, group) {
+	print("groups: " + to_string(match) + " " + to_string(group) + " " + str)
+})
+print(re.replace(re.compile("\\d"), "h3ll0", true, fun[](str, match, group) { // re.replace(r, string, global, callback)
+	if (str == "3") {
+		return "e"
+	} else if (str == "0") {
+		return "o"
+	}
+	return str
+}))
+```
+
 ### Settings Page
 
 ![image](https://github.com/user-attachments/assets/a6ccb206-9fed-48be-a2d2-8fc50a6be882)

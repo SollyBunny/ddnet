@@ -16,6 +16,39 @@
 #include <chaiscript.hpp>
 #include <dispatchkit/boxed_value.hpp>
 
+static const auto NAMESPACE_RE = [](chaiscript::Namespace &Re) {
+	Re["compile"] = chaiscript::var(chaiscript::fun([](const std::string &s) {
+		const auto R = Regex(s);
+		if(!R.error().empty())
+			throw std::format("Failed to compile regex: {}", R.error());
+		return R;
+	}));
+	Re["test"] = chaiscript::var(chaiscript::fun(&Regex::test));
+	Re["match"] = chaiscript::var(chaiscript::fun(&Regex::match));
+	Re["replace"] = chaiscript::var(chaiscript::fun(&Regex::replace));
+};
+
+static const auto NAMESPACE_MATH = [](chaiscript::Namespace &Math) {
+	Math["pi"] = chaiscript::const_var(M_PI);
+	Math["e"] = chaiscript::const_var(M_E);
+	Math["pow"] = chaiscript::var(chaiscript::fun([](double x, double y) { return pow(x, y); }));
+	Math["sqrt"] = chaiscript::var(chaiscript::fun([](double x) { return sqrt(x); }));
+	Math["sin"] = chaiscript::var(chaiscript::fun([](double x) { return sin(x); }));
+	Math["cos"] = chaiscript::var(chaiscript::fun([](double x) { return cos(x); }));
+	Math["tan"] = chaiscript::var(chaiscript::fun([](double x) { return tan(x); }));
+	Math["asin"] = chaiscript::var(chaiscript::fun([](double x) { return asin(x); }));
+	Math["acos"] = chaiscript::var(chaiscript::fun([](double x) { return acos(x); }));
+	Math["atan"] = chaiscript::var(chaiscript::fun([](double x) { return atan(x); }));
+	Math["atan2"] = chaiscript::var(chaiscript::fun([](double y, double x) { return atan2(y, x); }));
+	Math["log"] = chaiscript::var(chaiscript::fun([](double x) { return log(x); }));
+	Math["log2"] = chaiscript::var(chaiscript::fun([](double x) { return log2(x); }));
+	Math["log10"] = chaiscript::var(chaiscript::fun([](double x) { return log10(x); }));
+	Math["ceil"] = chaiscript::var(chaiscript::fun([](double x) { return ceil(x); }));
+	Math["floor"] = chaiscript::var(chaiscript::fun([](double x) { return floor(x); }));
+	Math["round"] = chaiscript::var(chaiscript::fun([](double x) { return round(x); }));
+	Math["abs"] = chaiscript::var(chaiscript::fun([](double x) { return fabs(x); }));
+};
+
 static const char *ReadScript(IStorage *pStorage, const char *pFilename)
 {
 	const char *pScript;
@@ -61,14 +94,8 @@ CScriptingCtx::CScriptingCtx()
 		return m_pData->m_pStorage->FileExists(Path.c_str(), IStorage::TYPE_ALL);
 	}),
 		"file_exists");
-	m_pData->m_Chai.add(chaiscript::fun([&](const std::string &Pattern, const std::string &String) {
-		auto Re = Regex(Pattern);
-		if(Re.error().empty())
-			return Re.match(String.c_str());
-		else
-			throw std::runtime_error(Re.error());
-	}),
-		"re_match");
+	m_pData->m_Chai.register_namespace(NAMESPACE_RE, "re");
+	m_pData->m_Chai.register_namespace(NAMESPACE_MATH, "math");
 }
 
 CScriptingCtx::~CScriptingCtx()

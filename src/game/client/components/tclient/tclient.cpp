@@ -6,6 +6,7 @@
 
 #include <engine/client/enums.h>
 #include <engine/external/tinyexpr.h>
+#include <engine/external/regex.h>
 #include <engine/graphics.h>
 #include <engine/shared/config.h>
 #include <engine/shared/json.h>

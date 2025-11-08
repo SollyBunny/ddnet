@@ -2,6 +2,7 @@
 
 // Small CPP regex wrapper
 
+#include <functional>
 #include <string>
 
 class Regex {
@@ -20,5 +21,8 @@ public:
 	~Regex();
 
 	std::string error() const;
-	bool match(const char* str);
+	
+	bool test(const std::string &str);
+	void match(const std::string &str, bool global, std::function<void(const std::string &str, int match, int group)> func);
+	std::string replace(const std::string &str, bool global, std::function<std::string(const std::string &str, int match, int group)> func);
 };
