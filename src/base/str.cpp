@@ -789,8 +789,7 @@ void str_escape(char **dst, const char *src, const char *end)
 {
 	while(*src && *dst + 1 < end)
 	{
-		// TClient wants { and } to be escaped
-		if(*src == '"' || *src == '\\' || *src == '{' || *src == '}') // escape \ and "
+		if(*src == '"' || *src == '\\') // escape \ and "
 		{
 			if(*dst + 2 < end)
 				*(*dst)++ = '\\';

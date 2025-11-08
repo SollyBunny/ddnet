@@ -12,6 +12,7 @@
 #include <engine/updater.h>
 
 #include <game/client/animstate.h>
+#include <game/client/components/binds.h>
 #include <game/client/components/chat.h>
 #include <game/client/components/countryflags.h>
 #include <game/client/components/menu_background.h>
@@ -860,7 +861,7 @@ void CMenus::RenderSettingsTClientSettngs(CUIRect MainView)
 	{
 		static CKeyInfo s_Key = CKeyInfo{TCLocalize("Toggle ghosts key"), "toggle tc_show_others_ghosts 0 1", 0, 0};
 		s_Key.m_ModifierCombination = s_Key.m_KeyId = 0;
-		for(int Mod = 0; Mod < CBinds::MODIFIER_COMBINATION_COUNT; Mod++)
+		for(int Mod = 0; Mod < KeyModifier::COMBINATION_COUNT; Mod++)
 		{
 			for(int KeyId = 0; KeyId < KEY_LAST; KeyId++)
 			{
@@ -996,7 +997,7 @@ void CMenus::RenderSettingsTClientSettngs(CUIRect MainView)
 		Column.HSplitTop(MarginSmall, nullptr, &Column);
 		static CKeyInfo s_Key = CKeyInfo{TCLocalize("Draw where mouse is"), "+bg_draw", 0, 0};
 		s_Key.m_ModifierCombination = s_Key.m_KeyId = 0;
-		for(int Mod = 0; Mod < CBinds::MODIFIER_COMBINATION_COUNT; Mod++)
+		for(int Mod = 0; Mod < KeyModifier::COMBINATION_COUNT; Mod++)
 		{
 			for(int KeyId = 0; KeyId < KEY_LAST; KeyId++)
 			{
@@ -1208,7 +1209,7 @@ void CMenus::RenderSettingsTClientBindWheel(CUIRect MainView)
 
 	// Do Settings Key
 	CKeyInfo Key = CKeyInfo{TCLocalize("Bind Wheel Key"), "+bindwheel", 0, 0};
-	for(int Mod = 0; Mod < CBinds::MODIFIER_COMBINATION_COUNT; Mod++)
+	for(int Mod = 0; Mod < KeyModifier::COMBINATION_COUNT; Mod++)
 	{
 		for(int KeyId = 0; KeyId < KEY_LAST; KeyId++)
 		{

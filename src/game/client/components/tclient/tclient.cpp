@@ -4,7 +4,9 @@
 
 #include "data_version.h"
 
+#include <engine/client.h>
 #include <engine/client/enums.h>
+#include <engine/external/regex.h>
 #include <engine/external/tinyexpr.h>
 #include <engine/graphics.h>
 #include <engine/shared/config.h>
@@ -312,25 +314,25 @@ bool CTClient::ChatDoSpecId(const char *pInput)
 
 void CTClient::SpecId(int ClientId)
 {
-	char aBuf[256];
-	if(ClientId < 0 || ClientId > (int)std::size(GameClient()->m_aClients))
+	if(Client()->State() != IClient::STATE_ONLINE && Client()->State() != IClient::STATE_DEMOPLAYBACK)
+		return;
+
+	if(Client()->State() == IClient::STATE_DEMOPLAYBACK || GameClient()->m_Snap.m_SpecInfo.m_Active)
 	{
-		str_format(aBuf, sizeof(aBuf), "Invalid Id '%d'", ClientId);
-		GameClient()->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp", aBuf);
+		GameClient()->m_Spectator.Spectate(ClientId);
 		return;
 	}
+
+	if(ClientId < 0 || ClientId > (int)std::size(GameClient()->m_aClients))
+		return;
 	const auto &Player = GameClient()->m_aClients[ClientId];
 	if(!Player.m_Active)
-	{
-		str_format(aBuf, sizeof(aBuf), "Id '%d' is not connected", ClientId);
-		GameClient()->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp", aBuf);
 		return;
-	}
+	char aBuf[256];
 	str_copy(aBuf, "/spec \"");
 	char *pDst = aBuf + strlen(aBuf);
 	str_escape(&pDst, Player.m_aName, aBuf + sizeof(aBuf));
 	str_append(aBuf, "\"");
-	dbg_msg("tclient", "sending '%s'", aBuf);
 	GameClient()->m_Chat.SendChat(0, aBuf);
 }
 
@@ -422,6 +424,22 @@ void CTClient::OnConsoleInit()
 		"tc_allow_any_resolution", [](IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData) {
 			pfnCallback(pResult, pCallbackUserData);
 			((CTClient *)pUserData)->SetForcedAspect();
+		},
+		this);
+
+	Console()->Chain(
+		"tc_regex_chat_ignore", [](IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData) {
+			if(pResult->NumArguments() == 1)
+			{
+				auto Re = Regex(pResult->GetString(0));
+				if(!Re.error().empty())
+				{
+					log_error("tclient", "Invalid regex: %s", Re.error().c_str());
+					return;
+				}
+				((CTClient *)pUserData)->m_RegexChatIgnore = std::move(Re);
+			}
+			pfnCallback(pResult, pCallbackUserData);
 		},
 		this);
 }

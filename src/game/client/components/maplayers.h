@@ -17,7 +17,7 @@ class ColorRGBA;
 class CMapLayers : public CComponent, public IEnvelopeEval
 {
 	// TClient
-	friend class CConditional;
+	friend class CScriptRunner;
 	friend class COutlines;
 
 	friend class CBackground;
