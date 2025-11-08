@@ -230,6 +230,9 @@ public:
 			log_info(SCRIPTING_IMPL "/exec", "%s", Str.c_str());
 			Console()->ExecuteLine(Str.c_str());
 		});
+		m_ScriptingCtx.AddFunction("echo", [this](const std::string &Str) {
+			GameClient()->Echo(Str.c_str());
+		});
 		m_ScriptingCtx.AddFunction("state", [this](const std::string &Str, const CScriptingCtx::Any &Arg) {
 			return State(Str, Arg);
 		});
