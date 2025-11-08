@@ -177,6 +177,20 @@ void CScriptingCtx::Run(IStorage *pStorage, const char *pFilename, const char *p
 	{
 		log_error(SCRIPTING_IMPL, "Exception in '%s': %s", pFilename, e.c_str());
 	}
+	catch(const chaiscript::Boxed_Value &e)
+	{
+		try
+		{
+			chaiscript::Boxed_Value ToStringRaw = m_pData->m_Chai.eval("to_string");
+			std::function<std::string(chaiscript::Boxed_Value)> ToString =
+				chaiscript::boxed_cast<std::function<std::string(chaiscript::Boxed_Value)>>(ToStringRaw);
+			log_error(SCRIPTING_IMPL, "Exception in '%s': %s", pFilename, ToString(e).c_str());
+		}
+		catch(...)
+		{
+			log_error(SCRIPTING_IMPL, "Unknown exception while trying to print an error in '%s'", pFilename);
+		}
+	}
 	catch(...)
 	{
 		log_error(SCRIPTING_IMPL, "Unknown exception in '%s'", pFilename);
