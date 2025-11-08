@@ -29,6 +29,9 @@ TClient supports the [ChaiScript](https://chaiscript.com/) language for simple t
 
 Add scripts to your config dir then run them with `chai [scriptname] [args]`
 
+> [!CAUTION]
+> There are no runtime restrictions, you can easily `while (true) {}` yourself or run out of memory, be careful!
+
 ```js
 var a // Declare a variable
 a = 1 // Set it
