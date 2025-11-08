@@ -121,8 +121,8 @@ private:
 		}
 		else if(Str == "location")
 		{
-			if(GameClient()->m_GameInfo.m_Race)
-				return nullptr;
+			// if(GameClient()->m_GameInfo.m_Race)
+			// 	return nullptr;
 			float w = 100.0f, h = 100.0;
 			float x = 50.0f, y = 50.0f;
 			const CLayers *pLayers = GameClient()->m_MapLayersForeground.m_pLayers;
