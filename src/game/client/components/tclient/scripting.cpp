@@ -219,7 +219,7 @@ private:
 				return nullptr;
 			return GameClient()->m_aClients[Id].m_aClan;
 		}
-		throw std::invalid_argument(std::format("No state with name {}", Str));
+		throw std::string("No state with name '") + Str + std::string("'");
 	}
 
 public:

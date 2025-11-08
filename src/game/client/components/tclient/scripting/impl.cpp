@@ -9,7 +9,6 @@
 #include <dispatchkit/bad_boxed_cast.hpp>
 #include <dispatchkit/boxed_cast.hpp>
 #include <dispatchkit/proxy_functions.hpp>
-#include <format>
 #include <variant>
 
 #define CHAISCRIPT_NO_THREADS
@@ -21,7 +20,7 @@ static const auto NAMESPACE_RE = [](chaiscript::Namespace &Re) {
 	Re["compile"] = chaiscript::var(chaiscript::fun([](const std::string &s) {
 		const auto R = Regex(s);
 		if(!R.error().empty())
-			throw std::format("Failed to compile regex: {}", R.error());
+			throw std::string("Failed to compile regex: ") + R.error();
 		return R;
 	}));
 	Re["test"] = chaiscript::var(chaiscript::fun(&Regex::test));
@@ -55,7 +54,7 @@ static const char *ReadScript(IStorage *pStorage, const char *pFilename)
 	const char *pScript;
 	pScript = pStorage->ReadFileStr(pFilename, IStorage::TYPE_ALL);
 	if(!pScript || !*pScript)
-		throw std::format("Failed to open script '{}'", pFilename);
+		throw std::string("Failed to open script '") + std::string(pFilename) + std::string("'");
 	return pScript;
 }
 
