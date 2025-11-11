@@ -1033,44 +1033,6 @@ void CChat::OnPrepareLines(float y)
 		} ColoredParts;
 		if(Line.m_ClientId == CLIENT_MSG)
 		{
-			// TODO: extract from src/engine/shared/console.cpp
-			auto GetColor = [](const char *pStr) -> std::optional<ColorHSLA> {
-				if(str_isallnum(pStr) || ((pStr[0] == '-' || pStr[0] == '+') && str_isallnum(pStr + 1))) // Teeworlds Color (Packed HSL)
-				{
-					unsigned long Value = str_toulong_base(pStr, 10);
-					if(Value == std::numeric_limits<unsigned long>::max())
-						return std::nullopt;
-					return ColorHSLA(Value, true);
-				}
-				else if(*pStr == '$') // Hex RGB/RGBA
-				{
-					auto ParsedColor = color_parse<ColorRGBA>(pStr + 1);
-					if(ParsedColor)
-						return color_cast<ColorHSLA>(ParsedColor.value());
-					else
-						return std::nullopt;
-				}
-				else if(!str_comp_nocase(pStr, "red"))
-					return ColorHSLA(0.0f / 6.0f, 1, .5f);
-				else if(!str_comp_nocase(pStr, "yellow"))
-					return ColorHSLA(1.0f / 6.0f, 1, .5f);
-				else if(!str_comp_nocase(pStr, "green"))
-					return ColorHSLA(2.0f / 6.0f, 1, .5f);
-				else if(!str_comp_nocase(pStr, "cyan"))
-					return ColorHSLA(3.0f / 6.0f, 1, .5f);
-				else if(!str_comp_nocase(pStr, "blue"))
-					return ColorHSLA(4.0f / 6.0f, 1, .5f);
-				else if(!str_comp_nocase(pStr, "magenta"))
-					return ColorHSLA(5.0f / 6.0f, 1, .5f);
-				else if(!str_comp_nocase(pStr, "white"))
-					return ColorHSLA(0, 0, 1);
-				else if(!str_comp_nocase(pStr, "gray"))
-					return ColorHSLA(0, 0, .5f);
-				else if(!str_comp_nocase(pStr, "black"))
-					return ColorHSLA(0, 0, 0);
-				return std::nullopt;
-			};
-
 			char *pFinder = new char[strlen(pText) + 1];
 			mem_copy(pFinder, pText, strlen(pText) + 1);
 			ColoredParts.m_pStringStorage = pFinder;
@@ -1094,7 +1056,7 @@ void CChat::OnPrepareLines(float y)
 				}
 				// Check if the marker is valid
 				*pMarkerEnd = '\0';
-				const auto Color = GetColor(pMarkerStart + 2);
+				const auto Color = CConsole::ColorParse(pMarkerStart + 2, 0.0f);
 				if(Color.has_value())
 				{
 					// Add text before the marker, if any
