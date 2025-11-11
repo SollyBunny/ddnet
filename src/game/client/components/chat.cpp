@@ -1336,9 +1336,9 @@ void CChat::OnPrepareLines(float y)
 		{
 			TextRender()->CreateOrAppendTextContainer(Line.m_TextContainerIndex, &AppendCursor, pText);
 			ColorRGBA ColorSub = Color;
-			ColorSub.r *= 0.8f;
-			ColorSub.g *= 0.4f;
-			ColorSub.b *= 0.4f;
+			ColorSub.r = 0.7f;
+			ColorSub.g = 0.6f;
+			ColorSub.b = 0.6f;
 			TextRender()->TextColor(ColorSub);
 			TextRender()->CreateOrAppendTextContainer(Line.m_TextContainerIndex, &AppendCursor, "\n");
 			AppendCursor.m_FontSize *= 0.8f;

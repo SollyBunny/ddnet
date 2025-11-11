@@ -96,7 +96,7 @@ void CGameContext::Construct(int Resetting)
 		pPlayer = nullptr;
 
 	mem_zero(&m_aLastPlayerInput, sizeof(m_aLastPlayerInput));
-	mem_zero(&m_aPlayerHasInput, sizeof(m_aPlayerHasInput));
+	std::fill(std::begin(m_aPlayerHasInput), std::end(m_aPlayerHasInput), false);
 
 	m_pController = nullptr;
 
@@ -488,7 +488,7 @@ void CGameContext::SnapSwitchers(int SnappingClient)
 		return;
 
 	pSwitchState->m_HighestSwitchNumber = std::clamp((int)Switchers().size() - 1, 0, 255);
-	mem_zero(pSwitchState->m_aStatus, sizeof(pSwitchState->m_aStatus));
+	std::fill(std::begin(pSwitchState->m_aStatus), std::end(pSwitchState->m_aStatus), 0);
 
 	std::vector<std::pair<int, int>> vEndTicks; // <EndTick, SwitchNumber>
 
@@ -506,8 +506,8 @@ void CGameContext::SnapSwitchers(int SnappingClient)
 	}
 
 	// send the endtick of switchers that are about to toggle back (up to four, prioritizing those with the earliest endticks)
-	mem_zero(pSwitchState->m_aSwitchNumbers, sizeof(pSwitchState->m_aSwitchNumbers));
-	mem_zero(pSwitchState->m_aEndTicks, sizeof(pSwitchState->m_aEndTicks));
+	std::fill(std::begin(pSwitchState->m_aSwitchNumbers), std::end(pSwitchState->m_aSwitchNumbers), 0);
+	std::fill(std::begin(pSwitchState->m_aEndTicks), std::end(pSwitchState->m_aEndTicks), 0);
 
 	std::sort(vEndTicks.begin(), vEndTicks.end());
 	const int NumTimedSwitchers = minimum((int)vEndTicks.size(), (int)std::size(pSwitchState->m_aEndTicks));
@@ -1331,6 +1331,9 @@ void CGameContext::OnTick()
 				Console()->ExecuteLine(m_aVoteCommand, m_VoteCreator);
 				SendChat(-1, TEAM_ALL, "Vote passed enforced by authorized player", -1, FLAG_SIX);
 				EndVote();
+
+				if(m_VoteCreator != -1 && m_apPlayers[m_VoteCreator])
+					m_apPlayers[m_VoteCreator]->m_LastVoteCall = 0;
 			}
 			else if(m_VoteEnforce == VOTE_ENFORCE_NO_ADMIN)
 			{
@@ -4173,8 +4176,7 @@ void CGameContext::OnInit(const void *pPersistentData)
 
 	m_Layers.Init(Kernel()->RequestInterface<IMap>(), false);
 	m_Collision.Init(&m_Layers);
-	m_World.m_pTuningList = m_aTuningList;
-	m_World.m_Core.InitSwitchers(m_Collision.m_HighestSwitchNumber);
+	m_World.Init(&m_Collision, m_aTuningList);
 
 	char aMapName[IO_MAX_PATH_LENGTH];
 	int MapSize;
