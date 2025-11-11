@@ -648,7 +648,6 @@ void CPlayers::RenderPlayer(
 	if(!InAir && WantOtherDir && length(Vel * 50) > 500.0f)
 		GameClient()->m_Effects.SkidTrail(Position, Vel, Player.m_Direction, Alpha, Volume);
 
-	vec2 GhostWeaponPos = vec2(0, 0);
 	// draw gun
 	if(Player.m_Weapon >= 0)
 	{
@@ -870,16 +869,12 @@ void CPlayers::RenderPlayer(
 			Graphics()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 			Graphics()->QuadsSetRotation(0.0f);
 
-			if(g_Config.m_TcRainbowTees && !DontOthers)
-				Graphics()->SetColor(GameClient()->m_Rainbow.m_RainbowColor.WithAlpha(Alpha));
-
 			switch(Player.m_Weapon)
 			{
 			case WEAPON_GUN: RenderHand(&RenderInfo, WeaponPosition, Direction, -3.0f * pi / 4.0f, vec2(-15.0f, 4.0f), Alpha); break;
 			case WEAPON_SHOTGUN: RenderHand(&RenderInfo, WeaponPosition, Direction, -pi / 2.0f, vec2(-5.0f, 4.0f), Alpha); break;
 			case WEAPON_GRENADE: RenderHand(&RenderInfo, WeaponPosition, Direction, -pi / 2.0f, vec2(-4.0f, 7.0f), Alpha); break;
 			}
-			GhostWeaponPos = WeaponPosition;
 		}
 	}
 
@@ -895,7 +890,9 @@ void CPlayers::RenderPlayer(
 
 		RenderTools()->RenderTee(&State, &RenderInfo, Player.m_Emote, Direction, ShadowPosition, 0.5f); // render ghost
 	}
+
 	RenderTools()->RenderTee(&State, &RenderInfo, Player.m_Emote, Direction, Position, Alpha);
+
 	float TeeAnimScale, TeeBaseSize;
 	CRenderTools::GetRenderTeeAnimScaleAndBaseSize(&RenderInfo, TeeAnimScale, TeeBaseSize);
 	vec2 BodyPos = Position + vec2(State.GetBody()->m_X, State.GetBody()->m_Y) * TeeAnimScale;
@@ -972,6 +969,7 @@ void CPlayers::RenderPlayer(
 	}
 }
 
+// TClient: TODO remove this
 void CPlayers::RenderPlayerGhost(
 	const CNetObj_Character *pPrevChar,
 	const CNetObj_Character *pPlayerChar,
@@ -1132,7 +1130,7 @@ void CPlayers::RenderPlayerGhost(
 
 	// do skidding
 	if(!InAir && WantOtherDir && length(Vel * 50) > 500.0f)
-		GameClient()->m_Effects.SkidTrail(Position, Vel, Player.m_Direction, Alpha);
+		GameClient()->m_Effects.SkidTrail(Position, Vel, Player.m_Direction, Alpha, 1.0f);
 
 	vec2 GhostWeaponPos = vec2(0, 0);
 	// draw gun
