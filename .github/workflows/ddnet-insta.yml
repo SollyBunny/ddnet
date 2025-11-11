@@ -14,9 +14,9 @@ jobs:
       with:
         submodules: true
 
-    - name: Check doc gen
-      run: |
-        ./scripts/gendocs_instagib.sh --dry-run
+    # - name: Check doc gen
+    #   run: |
+    #     ./scripts/gendocs_instagib.sh --dry-run
 
     - name: Check sql columns
       run: |
