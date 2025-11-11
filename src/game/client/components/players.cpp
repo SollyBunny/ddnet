@@ -1132,7 +1132,6 @@ void CPlayers::RenderPlayerGhost(
 	if(!InAir && WantOtherDir && length(Vel * 50) > 500.0f)
 		GameClient()->m_Effects.SkidTrail(Position, Vel, Player.m_Direction, Alpha, 1.0f);
 
-	vec2 GhostWeaponPos = vec2(0, 0);
 	// draw gun
 	{
 		if(!(RenderInfo.m_TeeRenderFlags & TEE_NO_WEAPON))
@@ -1313,7 +1312,6 @@ void CPlayers::RenderPlayerGhost(
 			case WEAPON_SHOTGUN: RenderHand(&RenderInfo, WeaponPosition, Direction, -pi / 2, vec2(-5, 4), Alpha); break;
 			case WEAPON_GRENADE: RenderHand(&RenderInfo, WeaponPosition, Direction, -pi / 2, vec2(-4, 7), Alpha); break;
 			}
-			GhostWeaponPos = WeaponPosition;
 		}
 	}
 
