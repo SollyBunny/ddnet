@@ -532,7 +532,7 @@ public:
 				m_pCountryFlag = &This.m_CountryFlags.GetByCountryCode(g_Config.m_ClDummyCountry);
 		}
 		// Do not show default flags
-		if(m_pCountryFlag == &This.m_CountryFlags.GetByIndex(0))
+		if(m_pCountryFlag == &This.m_CountryFlags.GetByCountryCode(0))
 		{
 			m_Visible = false;
 			return;
