@@ -1793,7 +1793,7 @@ void CMenus::RenderSettingsTClientStatusBar(CUIRect MainView)
 	RightView.HSplitTop(LineSize, &Label, &RightView);
 	Ui()->DoLabel(&Label, TCLocalize("z = Zoom"), FontSize, TEXTALIGN_ML);
 	RightView.HSplitTop(LineSize, &Label, &RightView);
-	Ui()->DoLabel(&Label, TCLocalize("_ or \' \' = Space"), FontSize, TEXTALIGN_ML);
+	Ui()->DoLabel(&Label, TCLocalize("_ or ' ' = Space"), FontSize, TEXTALIGN_ML);
 	static int s_SelectedItem = -1;
 	static int s_TypeSelectedOld = -1;
 
