@@ -1249,7 +1249,7 @@ void CChat::OnPrepareLines(float y)
 		}
 		else
 		{
-			ColoredParts.AddSplitsToCursor(AppendCursor)
+			ColoredParts.AddSplitsToCursor(AppendCursor);
 			TextRender()->CreateOrAppendTextContainer(Line.m_TextContainerIndex, &AppendCursor, pText);
 			AppendCursor.m_vColorSplits.clear();
 		}
