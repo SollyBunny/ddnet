@@ -1249,17 +1249,7 @@ void CChat::OnPrepareLines(float y)
 		}
 		else
 		{
-			AppendCursor.m_vColorSplits.reserve(AppendCursor.m_vColorSplits.size() + ColoredParts.Colors().size());
-			for(int PartIndex = 0; PartIndex < (int)ColoredParts.Colors().size(); ++PartIndex)
-			{
-				const auto &Part = ColoredParts.Colors()[PartIndex];
-				int Length;
-				if(PartIndex == (int)ColoredParts.Colors().size() - 1)
-					Length = MAX_LINE_LENGTH;
-				else
-					Length = ColoredParts.Colors()[PartIndex + 1].m_Index - Part.m_Index;
-				AppendCursor.m_vColorSplits.emplace_back(AppendCursor.m_CharCount + Part.m_Index, Length, Part.m_Color);
-			}
+			ColoredParts.AddSplitsToCursor(AppendCursor)
 			TextRender()->CreateOrAppendTextContainer(Line.m_TextContainerIndex, &AppendCursor, pText);
 			AppendCursor.m_vColorSplits.clear();
 		}
