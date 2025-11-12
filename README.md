@@ -111,7 +111,7 @@ And it will log them in if those are valid credentials.
 
 ## Lots of little fun opt in features
 
-By default ddnet-insta tries to be ready to be used in competetive games. Being as close to prior implementations
+By default ddnet-insta tries to be ready to be used in competitive games. Being as close to prior implementations
 of the gametypes as possible. With that being said there are lots of opt in configurations to customize the gameplay.
 
 
@@ -269,7 +269,7 @@ By default it is loaded from reset.cfg and it can be set to a custom location
 using the config ``sv_reset_file``
 
 
-In this **reset.cfg** it is recommeded to set the following configs
+In this **reset.cfg** it is recommended to set the following configs
 to get a more classic pvp experience.
 
 ```
@@ -320,7 +320,7 @@ Below is a list of all the settings that were added in ddnet-insta.
 + `sv_laser_text_points` display laser text in the world on scoring (only fng for now)
 + `sv_announce_steals` show in chat when someone stole a kill (only fng for now)
 + `sv_grenade_ammo_regen` Activate or deactivate grenade ammo regeneration in general
-+ `sv_grenade_ammo_regen_time` Grenade ammo regeneration time in miliseconds
++ `sv_grenade_ammo_regen_time` Grenade ammo regeneration time in milliseconds
 + `sv_grenade_ammo_regen_num` Maximum number of grenades if ammo regeneration on
 + `sv_grenade_ammo_regen_speed` Give grenades back that push own player
 + `sv_grenade_ammo_regen_on_kill` Refill nades on kill (0=off, 1=1, 2=all)
@@ -347,11 +347,11 @@ Below is a list of all the settings that were added in ddnet-insta.
 + `sv_reload_time_on_hit` 0=default/off ticks it takes to shoot again after a shot was hit (see also sv_fast_hit_full_auto)
 + `sv_fast_hit_full_auto` require fire button repress when sv_reload_time_on_hit is set
 + `sv_punish_freeze_disconnect` freeze player for 20 seconds on rejoin when leaving server while being frozen
-+ `sv_self_damage_respawn_delay_ms` time in miliseconds it takes to respawn after dying by self damage
-+ `sv_self_kill_respawn_delay_ms` time in miliseconds it takes to respawn after sending kill bind
-+ `sv_enemy_kill_respawn_delay_ms` time in miliseconds it takes to respawn after getting killed by enemies
-+ `sv_world_kill_respawn_delay_ms` time in miliseconds it takes to respawn after touching a deathtile
-+ `sv_game_kill_respawn_delay_ms` time in miliseconds it takes to respawn after team change, round start and so on
++ `sv_self_damage_respawn_delay_ms` time in milliseconds it takes to respawn after dying by self damage
++ `sv_self_kill_respawn_delay_ms` time in milliseconds it takes to respawn after sending kill bind
++ `sv_enemy_kill_respawn_delay_ms` time in milliseconds it takes to respawn after getting killed by enemies
++ `sv_world_kill_respawn_delay_ms` time in milliseconds it takes to respawn after touching a deathtile
++ `sv_game_kill_respawn_delay_ms` time in milliseconds it takes to respawn after team change, round start and so on
 + `sv_chat_ratelimit_long_messages` Needs sv_spamprotection 0 (0=off, 1=only messages longer than 12 chars are limited)
 + `sv_chat_ratelimit_spectators` Needs sv_spamprotection 0 (0=off, 1=specs have slow chat)
 + `sv_chat_ratelimit_public_chat` Needs sv_spamprotection 0 (0=off, 1=non team chat is slow)
@@ -464,7 +464,7 @@ The following configs determine which format the stats will be represented in.
 + `sv_round_stats_format_http` 0=csv 1=psv 2=ascii table 3=markdown table 4=json
 + `sv_round_stats_format_file` 0=csv 1=psv 2=ascii table 3=markdown table 4=json
 
-And these configs determin where the stats will be sent to.
+And these configs determine where the stats will be sent to.
 
 + `sv_round_stats_discord_webhooks` Will do a discord webhook POST request to that url. The url has to look like this: `https://discord.com/api/webhooks/1232962289217568799/8i_a89XXXXXXXXXXXXXXXXXXXXXXX`
   If you don't know how to setup a discord webhook, don't worry its quite simple. You need to have admin access to a discord server and then you can follow this [1 minute youtube tutorial](https://www.youtube.com/watch?v=fKksxz2Gdnc).

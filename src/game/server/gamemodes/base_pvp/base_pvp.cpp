@@ -54,7 +54,7 @@ CGameControllerPvp::CGameControllerPvp(class CGameContext *pGameServer) :
 	// https://github.com/ddnet-insta/ddnet-insta/issues/253
 	// always umute spectators on map change or "reload" command
 	//
-	// this contructor is not called on "restart" commands
+	// this constructor is not called on "restart" commands
 	if(g_Config.m_SvTournamentChatSmart)
 		g_Config.m_SvTournamentChat = 0;
 
@@ -229,7 +229,7 @@ int CGameControllerPvp::SnapPlayerScore(int SnappingClient, CPlayer *pPlayer, in
 
 	int Score = pPlayer->m_Score.value_or(0);
 
-	// alawys force display round score if the game ended
+	// always force display round score if the game ended
 	// otherwise you can not see who actually won
 	//
 	// in zCatch you do win by score
@@ -1013,7 +1013,7 @@ void CGameControllerPvp::OnAnyDamage(vec2 &Force, int &Dmg, int &From, int &Weap
 	CPlayer *pPlayer = pCharacter->GetPlayer();
 	CPlayer *pKiller = GetPlayerOrNullptr(From);
 
-	// only weapons that push the tee around are considerd a touch
+	// only weapons that push the tee around are considered a touch
 	// gun and laser do not push (as long as there is no explosive guns/lasers)
 	// and shotgun only pushes in ddrace gametypes
 	if(Weapon != WEAPON_GUN && Weapon != WEAPON_LASER)
@@ -1222,7 +1222,7 @@ bool CGameControllerPvp::OnSetDDRaceTeam(int ClientId, int Team)
 {
 	// only joining team 0
 	// forces players to spectators
-	// to avoid players interrrupting gameplay
+	// to avoid players interrupting gameplay
 	if(Team != TEAM_FLOCK)
 		return false;
 
@@ -1248,7 +1248,7 @@ bool CGameControllerPvp::OnSetDDRaceTeam(int ClientId, int Team)
 	// and later we again call SetTeam which sends the team change
 	// net message so clients are aware of the correct team
 	//
-	// TODO: revist this and check if 0.7 works correctly
+	// TODO: revisit this and check if 0.7 works correctly
 	//       see https://github.com/ddnet-insta/ddnet-insta/issues/362
 	pPlayer->SetTeamRawAndUnsafe(TEAM_SPECTATORS);
 
@@ -1279,7 +1279,7 @@ bool CGameControllerPvp::OnSetDDRaceTeam(int ClientId, int Team)
 	else
 	{
 		// this is the expected branch
-		// the players death triggerd the team change
+		// the players death triggered the team change
 		// so we have to use the NoKill version of set team
 		// otherwise the player is killed twice
 		// which causes nullptr issues
@@ -1361,7 +1361,7 @@ void CGameControllerPvp::DoTeamChange(CPlayer *pPlayer, int Team, bool DoChatMsg
 	// ddnet-insta
 
 	// https://github.com/ddnet-insta/ddnet-insta/issues/388
-	// makes sure changing team during a fng sacrafice does not give the
+	// makes sure changing team during a fng sacrifice does not give the
 	// player a wrong shire punishment
 	//
 	// also invalidates block or fly kills when the killer joined spectators between starting the kill (hooking, shooting)

@@ -203,7 +203,7 @@ int IGameController::WinPointsForWin(const CPlayer *pPlayer)
 	// So the zCatch mode overwrites this method.
 	//
 	// I decided the players score on round end is the best metric
-	// and it works suprisingly well for all current gamemodes team based
+	// and it works surprisingly well for all current gamemodes team based
 	// or not.
 	// The players score (can vary from the scorelimit!) best reflects
 	// how much was contributed to the win in a team mode. More or less at least, team play can be complex ofc.
@@ -578,7 +578,7 @@ void IGameController::SetGameState(EGameState GameState, int Timer)
 				}
 				else if(Timer > 0)
 				{
-					// run warmup for a specific time intervall
+					// run warmup for a specific time interval
 					m_GameState = GameState;
 					m_GameStateTimer = Timer * Server()->TickSpeed(); // TODO: this is vanilla timer
 					m_Warmup = Timer * Server()->TickSpeed(); // TODO: this is ddnet timer

@@ -582,7 +582,7 @@ void IGameController::DoWarmup(int Seconds)
 {
 	// gets overwritten by SetGameState
 	// but SetGameState might not set it
-	// and then it is unitialized
+	// and then it is uninitialized
 	m_Warmup = 0;
 	SetGameState(IGS_WARMUP_USER, Seconds);
 }

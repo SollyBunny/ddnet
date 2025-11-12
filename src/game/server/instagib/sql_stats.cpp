@@ -982,7 +982,7 @@ bool CSqlStats::SaveRoundStatsThread(IDbConnection *pSqlServer, const ISqlData *
 			// and someone else can always break the spree record on another server
 			//
 			// if this branch is confirmed to be harmless we can even remove the warning log
-			log_warn("sql-thread", "no rows changed for player '%s' whos only stat was a spree of %d kills", pData->m_aName, pData->m_Stats.m_BestSpree);
+			log_warn("sql-thread", "no rows changed for player '%s' whose only stat was a spree of %d kills", pData->m_aName, pData->m_Stats.m_BestSpree);
 			log_warn("sql-thread", "the current spree high score in the db for player '%s' is %d", pData->m_aName, MergeStats.m_BestSpree);
 		}
 		else if(NumUpdated > 1)
@@ -1030,7 +1030,7 @@ bool CSqlStats::CreateTableThread(IDbConnection *pSqlServer, const ISqlData *pGa
 	const CSqlCreateTableRequest *pData = dynamic_cast<const CSqlCreateTableRequest *>(pGameData);
 
 	// autoincrement not recommended by sqlite3
-	// also its hard to be portable accross mysql and sqlite3
+	// also its hard to be portable across mysql and sqlite3
 	// ddnet also uses any kind of unicode playername in the points update query
 
 	char aBuf[4096];

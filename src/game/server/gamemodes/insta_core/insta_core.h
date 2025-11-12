@@ -7,7 +7,7 @@
 #include <game/server/instagib/sql_stats.h>
 #include <game/server/player.h>
 
-// base functionallity of the ddnet-insta server
+// base functionality of the ddnet-insta server
 // should be inherited from in all gametypes
 // it aims to be more generic than the base pvp controller
 // and makes no assumption about your gameplay

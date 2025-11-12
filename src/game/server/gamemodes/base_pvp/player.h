@@ -291,7 +291,7 @@ public:
 	// get whitelisted
 	bool m_VerifiedForChat = false;
 
-	// Similiar to ddnets IsAfk()
+	// Similar to ddnets IsAfk()
 	// but with a much shorter timer
 	// this is used to quickly detect if someone
 	// goes afk during a high pace non casual game
@@ -302,7 +302,7 @@ public:
 	// so it also works when the world is paused
 	int64_t m_JoinTime = 0;
 
-	// used for balacing
+	// used for balancing
 	// to figure out which players score the least
 	int m_ScoreStartTick = 0;
 

@@ -44,7 +44,7 @@ public:
 		Arguments:
 			Force - Reference to force. Set this vector and it will be applied to the target characters velocity
 			Dmg - Input and outoput damage that was applied. You can read and write it.
-			From - Client Id of the player who delt the damage
+			From - Client Id of the player who dealt the damage
 			Weapon - Weapon id that was causing the damage see the WEAPON_* enums
 			Character - Character that was damaged
 
@@ -68,7 +68,7 @@ public:
 
 		Arguments:
 			pVictim - The CCharacter that died.
-			Killer - The client id of the killer. Can be negativ!
+			Killer - The client id of the killer. Can be negative!
 			Weapon - What weapon that killed it. Can be -1 for undefined
 				weapon when switching team or player suicides.
 			SendKillMsg - if the kill infomessage for the death event should be sent to clients
@@ -171,7 +171,7 @@ public:
 
 		Arguments:
 			Dmg - Input and outoput damage that was applied. You can read and write it.
-			From - Client Id of the player who delt the damage
+			From - Client Id of the player who dealt the damage
 			Weapon - Weapon id that was causing the damage see the WEAPON_* enums
 			Character - Character that was damaged
 			ApplyForce - Output boolean if set to false will not apply force to the damaged target
@@ -200,7 +200,7 @@ public:
 		Arguments:
 			Force - Reference to force. Set this vector and it will be applied to the target characters velocity
 			Dmg - Input and outoput damage that was applied. You can read and write it.
-			From - Client Id of the player who delt the damage
+			From - Client Id of the player who dealt the damage
 			Weapon - Weapon id that was causing the damage see the WEAPON_* enums
 			Character - Character that was damaged
 	*/
@@ -210,14 +210,14 @@ public:
 		Function: OnAppliedDamage
 			Side effect only function. That will be called for all actually applied damage.
 			It is only called once per caused damage.
-			Any blocked damage is excluded such as hitting team mates if firendly
+			Any blocked damage is excluded such as hitting team mates if friendly
 			fire is off.
 
 			If you also need hits that do not cause actual damage checkout OnAnyDamage()
 
 		Arguments:
 			Dmg - Input and outoput damage that was applied. You can read and write it.
-			From - Client Id of the player who delt the damage
+			From - Client Id of the player who dealt the damage
 			Weapon - Weapon id that was causing the damage see the WEAPON_* enums
 			Character - Character that was damaged
 	*/
@@ -229,12 +229,12 @@ public:
 			Plays the pain and hit sounds.
 			Decreases the armor.
 			But DOES NOT DECREASE HEALTH OR KILL.
-			You have to applay the remaining Dmg to the characters health.
+			You have to apply the remaining Dmg to the characters health.
 			It is recommended to use DecreaseHealthAndKill() for that
 
 		Arguments:
 			Dmg - Input and outoput damage. It might be decreased if it is self damage or hits armor.
-			From - Client Id of the player who delt the damage
+			From - Client Id of the player who dealt the damage
 			Weapon - Weapon id that was causing the damage see the WEAPON_* enums
 			Character - Character that was damaged
 	*/
@@ -251,7 +251,7 @@ public:
 
 		Arguments:
 			Dmg - Damage to be applied
-			From - Client Id of the player who delt the damage
+			From - Client Id of the player who dealt the damage
 			Weapon - Weapon id that was causing the damage see the WEAPON_* enums
 			Character - Character that was damaged
 
@@ -295,7 +295,7 @@ public:
 			pEntity - entity that will or will not be included in the snapshot
 			SnappingClient - ClientId of the player receiving the snapshot
 			StartPos - start position of the line the entity is located at
-			EndPos - end position of the line the enitity is located at
+			EndPos - end position of the line the entity is located at
 
 		Returns:
 			true - to not include this entity in the snapshot for SnappingClient
@@ -387,7 +387,7 @@ public:
 	/*
 		Function: OnHammerHit
 			Similar to CAntibot::OnHammerHit() called from the same spot.
-			With same argument order with the aditional argument Force which
+			With same argument order with the additional argument Force which
 			can inform you about the Force that would be applied on hit.
 			You can also overwrite that value to change the hammer knockback.
 
@@ -413,7 +413,7 @@ public:
 		Function: OnExplosionHits
 			Will be called after every explosion.
 			When all hit targets are known.
-			At this point damage has already been delt
+			At this point damage has already been dealt
 			And players might have already been killed.
 			All of that happens in CGameController::OnCharacterTakeDamage().
 
@@ -434,7 +434,7 @@ public:
 
 	/*
 		Function: ApplyFngHammerForce
-			Hammers in fng have differnt tuning.
+			Hammers in fng have different tuning.
 			If sv_fng_hammer is set the hammer is a bit stronger.
 			This method applies this custom knock back.
 
@@ -554,7 +554,7 @@ public:
 	/*
 		Function: OnSetDDRaceTeam
 			Called every time a player changes team
-			Either by explicitly using the /teams command sucessfully
+			Either by explicitly using the /teams command successfully
 			or implicitly by dying or similar
 
 		Returns:
@@ -744,7 +744,7 @@ public:
 			and not participating in the game at all.
 
 			This replaces the pPlayer->m_Team == TEAM_SPECTATORS check because it supports
-			also dead players and any other situtations where players that are technically not
+			also dead players and any other situations where players that are technically not
 			just watching the game end up in the spectator team for a short period of time.
 
 		Arguments:
@@ -835,7 +835,7 @@ public:
 		Function: IsStatTrack
 			Called before stats changed.
 			If this returns false the stats will not be updated.
-			This is used to protect against farming. Define for example a minium amount of in game players
+			This is used to protect against farming. Define for example a minimum amount of in game players
 			required to count the stats.
 
 		Arguments:
@@ -1226,7 +1226,7 @@ public:
 	virtual void OnFlagGrab(class CFlag *pFlag); // ddnet-insta
 	virtual void OnFlagCapture(class CFlag *pFlag, float Time, int TimeTicks); // ddnet-insta
 	// return true to consume the event
-	// and supress default ddnet selfkill behavior
+	// and suppress default ddnet selfkill behavior
 	virtual bool OnSelfkill(int ClientId) { return false; };
 	virtual void OnUpdateZcatchColorConfig() {};
 	virtual void OnUpdateSpectatorVotesConfig() {};

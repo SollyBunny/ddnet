@@ -144,7 +144,7 @@ void CGameControllerInstaCore::OnPlayerDisconnect(class CPlayer *pPlayer, const 
 }
 
 // Holds all core logic. Should not contain code that can be possibly unwanted
-// by custom controllers inherting.
+// by custom controllers inheriting.
 // Code that other controllers might want to change or drop should go into
 // extra methods such as PrintDisconnect
 void CGameControllerInstaCore::InstaCoreDisconnect(CPlayer *pPlayer, const char *pReason)

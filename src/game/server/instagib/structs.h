@@ -107,7 +107,7 @@ public:
 	int m_Weapon;
 
 	// the server tick of when this interaction happend
-	// can be used to determin the touch interaction age
+	// can be used to determine the touch interaction age
 	// only used in block mode for now
 	int m_TouchTick;
 
