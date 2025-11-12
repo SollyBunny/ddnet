@@ -629,10 +629,6 @@ void CGameWorld::CopyWorldClean(CGameWorld *pFrom)
 	m_GameTick = pFrom->m_GameTick;
 	m_pCollision = pFrom->m_pCollision;
 	m_WorldConfig = pFrom->m_WorldConfig;
-	for(int i = 0; i < 2; i++)
-	{
-		m_Core.m_aTuning[i] = pFrom->m_Core.m_aTuning[i];
-	}
 	m_pTuningList = pFrom->m_pTuningList;
 	m_Teams = pFrom->m_Teams;
 	m_Core.m_vSwitchers = pFrom->m_Core.m_vSwitchers;
