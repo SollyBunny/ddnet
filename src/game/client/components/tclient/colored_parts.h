@@ -2,71 +2,83 @@
 #define GAME_CLIENT_COMPONENTS_TCLIENT_COLORED_PARTS_H
 
 #include <base/color.h>
+#include <base/str.h>
 
 #include <engine/shared/console.h>
 
-#include <variant>
 #include <vector>
 
-using ColoredPart = std::variant<const char *, ColorRGBA>;
-class CColoredParts
+class CColoredPart
 {
 public:
-	char *m_pStringStorage = nullptr;
-	std::vector<ColoredPart> m_vParts;
-	~CColoredParts() { delete[] m_pStringStorage; }
-	CColoredParts(const char *pText, bool Parse)
+	int m_Index;
+	ColorRGBA m_Color;
+};
+
+class CColoredParts
+{
+	char *m_pBuffer = nullptr; // Owned buffer if allocated
+	const char *m_pText = nullptr; // Points to valid string (owned or original)
+	std::vector<CColoredPart> m_vParts;
+
+public:
+	const char *Text() const { return m_pText; }
+	const std::vector<CColoredPart> &Colors() const { return m_vParts; }
+
+	~CColoredParts()
 	{
-		if(Parse)
+		delete[] m_pBuffer;
+	}
+	CColoredParts(const char *pInput, bool Parse)
+	{
+		if(!Parse || !str_find(pInput, "[["))
 		{
-			m_pStringStorage = new char[str_length(pText) + 1];
-			mem_copy(m_pStringStorage, pText, str_length(pText) + 1);
-			char *pFinder = m_pStringStorage;
-			char *pWritten = m_pStringStorage;
-			while(*pFinder)
-			{
-				char *pMarkerStart = strstr(pFinder, "[[");
-				if(!pMarkerStart)
-				{
-					// No more markers, add the rest of the string
-					m_vParts.emplace_back(pWritten);
-					break;
-				}
-				// From the start of just after the marker found in pMarkerStart, find the end marker
-				char *pMarkerEnd = strstr(pMarkerStart + 2, "]]");
-				if(!pMarkerEnd)
-				{
-					// No marker end, add the rest of the string
-					m_vParts.emplace_back(pWritten);
-					break;
-				}
-				// Check if the marker is valid
-				*pMarkerEnd = '\0';
-				const auto Color = CConsole::ColorParse(pMarkerStart + 2, 0.0f);
-				if(Color.has_value())
-				{
-					// Add text before the marker, if any
-					if(pMarkerStart != pWritten)
-					{
-						*pMarkerStart = '\0';
-						m_vParts.emplace_back(pWritten);
-					}
-					// Add the color
-					m_vParts.emplace_back(color_cast<ColorRGBA>(*Color));
-					// Move written to end
-					pWritten = pMarkerEnd + 2;
-				}
-				else
-				{
-					// Restore ']'
-					*pMarkerEnd = ']';
-				}
-				// Move finder to end
-				pFinder = pMarkerEnd + 2;
-			}
+			m_pText = pInput;
 			return;
 		}
-		m_vParts.emplace_back(pText);
+
+		// Allocate a writable buffer
+		const int Length = str_length(pInput);
+		m_pBuffer = new char[Length + 1];
+		m_pText = m_pBuffer;
+
+		char *pWrite = m_pBuffer;
+		const char *pRead = pInput;
+		while(*pRead)
+		{
+			const char *pMarkerStart = str_find(pRead, "[[");
+			if(!pMarkerStart)
+			{
+				while((*pWrite++ = *pRead++))
+					;
+				break;
+			}
+
+			// Copy plain text before the marker
+			while(pRead < pMarkerStart)
+				*pWrite++ = *pRead++;
+
+			const char *pMarkerEnd = str_find(pMarkerStart + 2, "]]");
+			if(!pMarkerEnd)
+			{
+				// No closing marker, copy rest
+				while((*pWrite++ = *pRead++))
+					;
+				break;
+			}
+
+			// Extract marker content
+			char aBuf[128];
+			str_copy(aBuf, pMarkerStart + 2, std::min<int>(sizeof(aBuf), pMarkerEnd - pMarkerStart - 2 + 1));
+			const auto Color = CConsole::ColorParse(aBuf, 0.0f);
+			if(Color.has_value())
+				m_vParts.emplace_back(pWrite - m_pBuffer, color_cast<ColorRGBA>(*Color));
+
+			// Skip over marker
+			pRead = pMarkerEnd + 2;
+		}
+
+		*pWrite = '\0';
 	}
 };
 

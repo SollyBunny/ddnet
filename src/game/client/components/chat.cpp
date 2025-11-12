@@ -1021,9 +1021,11 @@ void CChat::OnPrepareLines(float y)
 				pText = "Team successfully saved by ***. Use '/load ***' to continue";
 			}
 		}
-		CColoredParts ColoredParts(pText, Line.m_ClientId == CLIENT_MSG);
-		if(!ColoredParts.m_vParts.empty() && std::holds_alternative<ColorRGBA>(ColoredParts.m_vParts[0]))
-			Line.m_CustomColor = std::get<ColorRGBA>(ColoredParts.m_vParts[0]);
+
+		const CColoredParts ColoredParts(pText, Line.m_ClientId == CLIENT_MSG);
+		if(!ColoredParts.Colors().empty() && ColoredParts.Colors()[0].m_Index == 0)
+			Line.m_CustomColor = ColoredParts.Colors()[0].m_Color;
+		pText = ColoredParts.Text();
 
 		const char *pTranslatedError = nullptr;
 		const char *pTranslatedText = nullptr;
@@ -1108,9 +1110,7 @@ void CChat::OnPrepareLines(float y)
 			}
 			else
 			{
-				for(const auto &Part : ColoredParts.m_vParts)
-					if(std::holds_alternative<const char *>(Part))
-						TextRender()->TextEx(&AppendCursor, std::get<const char *>(Part));
+				TextRender()->TextEx(&AppendCursor, pText);
 			}
 
 			Line.m_aYOffset[OffsetType] = AppendCursor.Height() + RealMsgPaddingY;
@@ -1249,14 +1249,19 @@ void CChat::OnPrepareLines(float y)
 		}
 		else
 		{
-			for(const auto &Part : ColoredParts.m_vParts)
+			AppendCursor.m_vColorSplits.reserve(AppendCursor.m_vColorSplits.size() + ColoredParts.Colors().size());
+			for(int PartIndex = 0; PartIndex < (int)ColoredParts.Colors().size(); ++PartIndex)
 			{
-				if(std::holds_alternative<const char *>(Part))
-					TextRender()->CreateOrAppendTextContainer(Line.m_TextContainerIndex, &AppendCursor, std::get<const char *>(Part));
+				const auto &Part = ColoredParts.Colors()[PartIndex];
+				int Length;
+				if(PartIndex == (int)ColoredParts.Colors().size() - 1)
+					Length = MAX_LINE_LENGTH;
 				else
-					TextRender()->TextColor(std::get<ColorRGBA>(Part));
+					Length = ColoredParts.Colors()[PartIndex + 1].m_Index - Part.m_Index;
+				AppendCursor.m_vColorSplits.emplace_back(AppendCursor.m_CharCount + Part.m_Index, Length, Part.m_Color);
 			}
-			TextRender()->TextColor(TextRender()->DefaultTextColor());
+			TextRender()->CreateOrAppendTextContainer(Line.m_TextContainerIndex, &AppendCursor, pText);
+			AppendCursor.m_vColorSplits.clear();
 		}
 
 		if(!g_Config.m_ClChatOld && (Line.m_aText[0] != '\0' || Line.m_aName[0] != '\0'))
