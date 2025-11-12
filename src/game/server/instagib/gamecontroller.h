@@ -86,7 +86,7 @@ public:
 			Weapon - What weapon that killed it. Can be -1 for undefined
 				weapon when switching team or player suicides.
 			ModeSpecial - 0 in most cases can hold information if a flagger made a kill or was killed
-			              see https://github.com/MilkeeyCat/ddnet_protocol/issues/143 for more details
+				      see https://github.com/MilkeeyCat/ddnet_protocol/issues/143 for more details
 	*/
 	void SendDeathInfoMessage(CCharacter *pVictim, int Killer, int Weapon, int ModeSpecial);
 
@@ -102,7 +102,7 @@ public:
 			Weapon - What weapon that killed it. Can be -1 for undefined
 				weapon when switching team or player suicides.
 			ModeSpecial - 0 in most cases can hold information if a flagger made a kill or was killed
-			              see https://github.com/MilkeeyCat/ddnet_protocol/issues/143 for more details
+				      see https://github.com/MilkeeyCat/ddnet_protocol/issues/143 for more details
 	*/
 	void SendDeathEvent(CCharacter *pVictim, int Killer, int Weapon);
 
@@ -117,7 +117,7 @@ public:
 			Weapon - What weapon that killed it. Can be -1 for undefined
 				weapon when switching team or player suicides.
 			ModeSpecial - 0 in most cases can hold information if a flagger made a kill or was killed
-			              see https://github.com/MilkeeyCat/ddnet_protocol/issues/143 for more details
+				      see https://github.com/MilkeeyCat/ddnet_protocol/issues/143 for more details
 	*/
 	virtual void LogKillMessage(class CCharacter *pVictim, int Killer, int Weapon, int ModeSpecial);
 
@@ -149,10 +149,10 @@ public:
 		Arguments:
 			pVictim - Player that died. Its character should be still alive but might die in this tick (depending on the gametype)
 			pKiller - Player that causes the kill. Will never be nullptr. We need a killer for it to count as a kill.
-			          Which means this method is not called if the killer left the game and his projectile hits after that.
+				  Which means this method is not called if the killer left the game and his projectile hits after that.
 			Weapon - Weapon id that was causing the damage see the WEAPON_* enums
 	*/
-	virtual void OnKill(class CPlayer *pVictim, class CPlayer *pKiller, int Weapon){};
+	virtual void OnKill(class CPlayer *pVictim, class CPlayer *pKiller, int Weapon) {};
 
 	/*
 		Function: SkipDamage
@@ -204,7 +204,7 @@ public:
 			Weapon - Weapon id that was causing the damage see the WEAPON_* enums
 			Character - Character that was damaged
 	*/
-	virtual void OnAnyDamage(vec2 &Force, int &Dmg, int &From, int &Weapon, CCharacter *pCharacter){};
+	virtual void OnAnyDamage(vec2 &Force, int &Dmg, int &From, int &Weapon, CCharacter *pCharacter) {};
 
 	/*
 		Function: OnAppliedDamage
@@ -221,7 +221,7 @@ public:
 			Weapon - Weapon id that was causing the damage see the WEAPON_* enums
 			Character - Character that was damaged
 	*/
-	virtual void OnAppliedDamage(int &Dmg, int &From, int &Weapon, CCharacter *pCharacter){};
+	virtual void OnAppliedDamage(int &Dmg, int &From, int &Weapon, CCharacter *pCharacter) {};
 
 	/*
 		Function: ApplyVanillaDamage
@@ -238,7 +238,7 @@ public:
 			Weapon - Weapon id that was causing the damage see the WEAPON_* enums
 			Character - Character that was damaged
 	*/
-	virtual void ApplyVanillaDamage(int &Dmg, int From, int Weapon, CCharacter *pCharacter){};
+	virtual void ApplyVanillaDamage(int &Dmg, int From, int Weapon, CCharacter *pCharacter) {};
 
 	/*
 		Function: DecreaseHealthAndKill
@@ -268,7 +268,7 @@ public:
 
 			Its main use case is running code in a base controller after its child constructor
 	*/
-	virtual void OnInit(){};
+	virtual void OnInit() {};
 
 	/*
 		Function: ForceNetworkClipping
@@ -318,7 +318,7 @@ public:
 			pPlayer - the player that is about to be destroyed (read from here)
 			pData - the struct that can store the values across map changes (write to this)
 	*/
-	virtual void OnClientDataPersist(CPlayer *pPlayer, CGameContext::CPersistentClientData *pData){};
+	virtual void OnClientDataPersist(CPlayer *pPlayer, CGameContext::CPersistentClientData *pData) {};
 
 	/*
 		Function: OnClientDataRestore
@@ -338,7 +338,7 @@ public:
 			pPlayer - the player that is about to be destroyed (write to this)
 			pData - the struct that can store the values across map changes (read from here)
 	*/
-	virtual void OnClientDataRestore(CPlayer *pPlayer, const CGameContext::CPersistentClientData *pData){};
+	virtual void OnClientDataRestore(CPlayer *pPlayer, const CGameContext::CPersistentClientData *pData) {};
 
 	/*
 		Function: OnRoundStart
@@ -355,7 +355,7 @@ public:
 				- 10 seconds world is paused and there is a final countdown
 				- all tees will be respawned and the game starts
 	*/
-	virtual void OnRoundStart(){};
+	virtual void OnRoundStart() {};
 
 	/*
 		Function: OnRoundEnd
@@ -363,7 +363,7 @@ public:
 			If you need to run code after the waiting time in the death screen
 			consider using `OnRoundStart()`
 	*/
-	virtual void OnRoundEnd(){};
+	virtual void OnRoundEnd() {};
 
 	/*
 		Function: OnLaserHit
@@ -399,15 +399,15 @@ public:
 
 		Arguments:
 			pPlayer - The player that landed the hammer hit. Can be dead already. `pPlayer->GetCharacter()` can be `nullptr`.
-			          If you still need information about the character that landed the hit.
+				  If you still need information about the character that landed the hit.
 				  Use `pPlayer->GetCharacterDeadOrAlive()` but be careful!
 			pTarget - The player that got hit with the hammer
 			Force - The force that will be applied to the hit character.
-			        It is already set to the default once this method is called.
+				It is already set to the default once this method is called.
 				And you can overwrite the value if you want to apply
 				a different velocity to the hit character.
 	*/
-	virtual void OnHammerHit(CPlayer *pPlayer, CPlayer *pTarget, vec2 &Force){};
+	virtual void OnHammerHit(CPlayer *pPlayer, CPlayer *pTarget, vec2 &Force) {};
 
 	/*
 		Function: OnExplosionHits
@@ -430,7 +430,7 @@ public:
 			OwnerId - Client Id of the player that triggered the explosion. Might be -1 if its not coming from a player but from the world.
 			ExplosionHits - Characters that got hit by the explosion. They are not filtered yet by SkipDamage() you have to do that!
 	*/
-	virtual void OnExplosionHits(int OwnerId, CExplosionTarget *pTargets, int NumTargets){};
+	virtual void OnExplosionHits(int OwnerId, CExplosionTarget *pTargets, int NumTargets) {};
 
 	/*
 		Function: ApplyFngHammerForce
@@ -440,15 +440,15 @@ public:
 
 		Arguments:
 			pPlayer - The player that landed the hammer hit. Can be dead already. `pPlayer->GetCharacter()` can be `nullptr`.
-			          If you still need information about the character that landed the hit.
+				  If you still need information about the character that landed the hit.
 				  Use `pPlayer->GetCharacterDeadOrAlive()` but be careful!
 			pTarget - The player that got hit with the hammer
 			Force - The force that will be applied to the hit character.
-			        It is already set to the default once this method is called.
+				It is already set to the default once this method is called.
 				And you can overwrite the value if you want to apply
 				a different velocity to the hit character.
 	*/
-	virtual void ApplyFngHammerForce(CPlayer *pPlayer, CPlayer *pTarget, vec2 &Force){};
+	virtual void ApplyFngHammerForce(CPlayer *pPlayer, CPlayer *pTarget, vec2 &Force) {};
 
 	/*
 		Function: ApplyFngHammerForce
@@ -460,11 +460,11 @@ public:
 
 		Arguments:
 			pPlayer - The player that landed the hammer hit. Can be dead already. `pPlayer->GetCharacter()` can be `nullptr`.
-			          If you still need information about the character that landed the hit.
+				  If you still need information about the character that landed the hit.
 				  Use `pPlayer->GetCharacterDeadOrAlive()` but be careful!
 			pTarget - The player that got hit with the hammer
 			Force - The force that will be applied to the hit character.
-			        It is already set to the default once this method is called.
+				It is already set to the default once this method is called.
 				And you can overwrite the value if you want to apply
 				a different velocity to the hit character.
 
@@ -472,7 +472,7 @@ public:
 				can be used to implement your own freeze hammer that depends on how
 				how far the hammer would throw for example
 	*/
-	virtual void FngUnmeltHammerHit(CPlayer *pPlayer, CPlayer *pTarget, vec2 &Force){};
+	virtual void FngUnmeltHammerHit(CPlayer *pPlayer, CPlayer *pTarget, vec2 &Force) {};
 
 	/*
 		Function: OnFireWeapon
@@ -682,7 +682,7 @@ public:
 			All gamemodes that allow different type of spawn weapons should call SetSpawnWeapons()
 			in their OnCharacterSpawn() hook and also set the default weapon to GetDefaultWeaponBasedOnSpawnWeapons()
 	*/
-	virtual void SetSpawnWeapons(class CCharacter *pChr){};
+	virtual void SetSpawnWeapons(class CCharacter *pChr) {};
 
 	/*
 		Function: UpdateSpawnWeapons
@@ -693,7 +693,7 @@ public:
 			Silent - if false it might print warnings to the admin console
 			Apply - if false it has no effect. Used to make sure spawn weapons only get changed on reload.
 	*/
-	virtual void UpdateSpawnWeapons(bool Silent = false, bool Apply = false){};
+	virtual void UpdateSpawnWeapons(bool Silent = false, bool Apply = false) {};
 
 	/*
 		Function: IsWinner
@@ -761,7 +761,7 @@ public:
 			pRequestingPlayer - player who initiated the stats request (might differ from the requested player)
 			pRequestedName - player name the stats belong to
 	*/
-	virtual void OnShowStatsAll(const CSqlStatsPlayer *pStats, class CPlayer *pRequestingPlayer, const char *pRequestedName){};
+	virtual void OnShowStatsAll(const CSqlStatsPlayer *pStats, class CPlayer *pRequestingPlayer, const char *pRequestedName) {};
 
 	/*
 		Function: OnShowRoundStats
@@ -773,7 +773,7 @@ public:
 			pRequestingPlayer - player who initiated the stats request (might differ from the requested player)
 			pRequestedName - player name the stats belong to
 	*/
-	virtual void OnShowRoundStats(const CSqlStatsPlayer *pStats, class CPlayer *pRequestingPlayer, const char *pRequestedName){};
+	virtual void OnShowRoundStats(const CSqlStatsPlayer *pStats, class CPlayer *pRequestingPlayer, const char *pRequestedName) {};
 
 	/*
 		Function: OnShowMultis
@@ -785,7 +785,7 @@ public:
 			pRequestingPlayer - player who initiated the stats request (might differ from the requested player)
 			pRequestedName - player name the stats belong to
 	*/
-	virtual void OnShowMultis(const CSqlStatsPlayer *pStats, class CPlayer *pRequestingPlayer, const char *pRequestedName){};
+	virtual void OnShowMultis(const CSqlStatsPlayer *pStats, class CPlayer *pRequestingPlayer, const char *pRequestedName) {};
 
 	/*
 		Function: OnShowSteals
@@ -797,7 +797,7 @@ public:
 			pRequestingPlayer - player who initiated the stats request (might differ from the requested player)
 			pRequestedName - player name the stats belong to
 	*/
-	virtual void OnShowSteals(const CSqlStatsPlayer *pStats, class CPlayer *pRequestingPlayer, const char *pRequestedName){};
+	virtual void OnShowSteals(const CSqlStatsPlayer *pStats, class CPlayer *pRequestingPlayer, const char *pRequestedName) {};
 
 	/*
 		Function: OnLoadedNameStats
@@ -811,7 +811,7 @@ public:
 			pStats - stats struct that was loaded
 			pPlayer - player the stats are from
 	*/
-	virtual void OnLoadedNameStats(const CSqlStatsPlayer *pStats, class CPlayer *pPlayer){};
+	virtual void OnLoadedNameStats(const CSqlStatsPlayer *pStats, class CPlayer *pPlayer) {};
 
 	/*
 		Function: OnShowRank
@@ -829,7 +829,7 @@ public:
 		int RankedScore,
 		const char *pRankType,
 		class CPlayer *pRequestingPlayer,
-		const char *pRequestedName){};
+		const char *pRequestedName) {};
 
 	/*
 		Function: IsStatTrack
@@ -864,7 +864,7 @@ public:
 		Arguments:
 			pPlayer - player to save stats for
 	*/
-	virtual void SaveStatsOnRoundEnd(CPlayer *pPlayer){};
+	virtual void SaveStatsOnRoundEnd(CPlayer *pPlayer) {};
 
 	/*
 		Function: SaveStatsOnDisconnect
@@ -875,7 +875,7 @@ public:
 		Arguments:
 			pPlayer - player to save stats for
 	*/
-	virtual void SaveStatsOnDisconnect(CPlayer *pPlayer){};
+	virtual void SaveStatsOnDisconnect(CPlayer *pPlayer) {};
 	/*
 		Function: LoadNewPlayerNameData
 			Similar to ddnets LoadPlayerData()
@@ -921,7 +921,7 @@ public:
 			pClientInfo - (in and output) info that is being snappend which is already pre filled by ddnet and can be altered.
 			pPlayerInfo - (in and output) info that is being snappend which is already pre filled by ddnet and can be altered.
 	*/
-	virtual void SnapPlayer6(int SnappingClient, CPlayer *pPlayer, CNetObj_ClientInfo *pClientInfo, CNetObj_PlayerInfo *pPlayerInfo){};
+	virtual void SnapPlayer6(int SnappingClient, CPlayer *pPlayer, CNetObj_ClientInfo *pClientInfo, CNetObj_PlayerInfo *pPlayerInfo) {};
 
 	/*
 		Function: SnapPlayerScore
@@ -936,8 +936,8 @@ public:
 			return the new score value that will be included in the snapshot
 	*/
 	virtual int SnapPlayerScore(int SnappingClient, CPlayer *pPlayer, int DDRaceScore);
-	virtual void SnapDDNetCharacter(int SnappingClient, CCharacter *pChr, CNetObj_DDNetCharacter *pDDNetCharacter){};
-	virtual void SnapDDNetPlayer(int SnappingClient, CPlayer *pPlayer, CNetObj_DDNetPlayer *pDDNetPlayer){};
+	virtual void SnapDDNetCharacter(int SnappingClient, CCharacter *pChr, CNetObj_DDNetCharacter *pDDNetCharacter) {};
+	virtual void SnapDDNetPlayer(int SnappingClient, CPlayer *pPlayer, CNetObj_DDNetPlayer *pDDNetPlayer) {};
 	virtual int SnapRoundStartTick(int SnappingClient);
 	virtual int SnapTimeLimit(int SnappingClient);
 
@@ -966,7 +966,7 @@ public:
 		Arguments:
 			pPlayer - newly joined player
 	*/
-	virtual void InitPlayer(class CPlayer *pPlayer){};
+	virtual void InitPlayer(class CPlayer *pPlayer) {};
 
 	/*
 		Function: RoundInitPlayer
@@ -977,7 +977,7 @@ public:
 		Arguments:
 			pPlayer - player that was connected on round start
 	*/
-	virtual void RoundInitPlayer(class CPlayer *pPlayer){};
+	virtual void RoundInitPlayer(class CPlayer *pPlayer) {};
 
 	/*
 		Function: DoTeamBalance
@@ -1228,8 +1228,8 @@ public:
 	// return true to consume the event
 	// and supress default ddnet selfkill behavior
 	virtual bool OnSelfkill(int ClientId) { return false; };
-	virtual void OnUpdateZcatchColorConfig(){};
-	virtual void OnUpdateSpectatorVotesConfig(){};
+	virtual void OnUpdateZcatchColorConfig() {};
+	virtual void OnUpdateSpectatorVotesConfig() {};
 	virtual bool DropFlag(class CCharacter *pChr) { return false; };
 	virtual bool HasWinningScore(const CPlayer *pPlayer) const;
 

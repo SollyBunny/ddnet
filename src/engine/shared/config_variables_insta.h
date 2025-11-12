@@ -86,6 +86,7 @@ MACRO_CONFIG_INT(SvEnemyKillRespawnDelayMs, sv_enemy_kill_respawn_delay_ms, 500,
 MACRO_CONFIG_INT(SvWorldKillRespawnDelayMs, sv_world_kill_respawn_delay_ms, 500, 0, 10000, CFGFLAG_SERVER, "time in miliseconds it takes to respawn after touching a deathtile")
 MACRO_CONFIG_INT(SvGameKillRespawnDelayMs, sv_game_kill_respawn_delay_ms, 500, 0, 10000, CFGFLAG_SERVER, "time in miliseconds it takes to respawn after team change, round start and so on")
 
+// clang-format off
 /*
 
 sv_chat_ratelimit_long_messages
@@ -103,6 +104,7 @@ come base  |
 need help  |
 
 */
+// clang-format on
 MACRO_CONFIG_INT(SvChatRatelimitLongMessages, sv_chat_ratelimit_long_messages, 1, 0, 1, CFGFLAG_SERVER, "Needs sv_spamprotection 0 (0=off, 1=only messages longer than 12 chars are limited)")
 MACRO_CONFIG_INT(SvChatRatelimitSpectators, sv_chat_ratelimit_spectators, 1, 0, 1, CFGFLAG_SERVER, "Needs sv_spamprotection 0 (0=off, 1=specs have slow chat)")
 MACRO_CONFIG_INT(SvChatRatelimitPublicChat, sv_chat_ratelimit_public_chat, 1, 0, 1, CFGFLAG_SERVER, "Needs sv_spamprotection 0 (0=off, 1=non team chat is slow)")

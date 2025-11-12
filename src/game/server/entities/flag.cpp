@@ -107,7 +107,7 @@ void CFlag::TickDeferred()
 				}
 
 				// Gravity
-				m_Vel.y += GameWorld()->m_Core.m_aTuning[0].m_Gravity;
+				m_Vel.y += GameServer()->GlobalTuning()->m_Gravity;
 				GameServer()->Collision()->MoveBox(&m_Pos, &m_Vel, vec2(ms_PhysSize, ms_PhysSize), vec2(0.5, 0.5));
 			}
 		}

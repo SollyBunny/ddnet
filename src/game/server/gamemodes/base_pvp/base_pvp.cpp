@@ -37,11 +37,11 @@ CGameControllerPvp::CGameControllerPvp(class CGameContext *pGameServer) :
 {
 	m_GameFlags = GAMEFLAG_TEAMS | GAMEFLAG_FLAGS;
 
-	GameServer()->Tuning()->Set("gun_curvature", 1.25f);
-	GameServer()->Tuning()->Set("gun_speed", 2200);
-	GameServer()->Tuning()->Set("shotgun_curvature", 1.25f);
-	GameServer()->Tuning()->Set("shotgun_speed", 2750);
-	GameServer()->Tuning()->Set("shotgun_speeddiff", 0.8f);
+	GameServer()->GlobalTuning()->Set("gun_curvature", 1.25f);
+	GameServer()->GlobalTuning()->Set("gun_speed", 2200);
+	GameServer()->GlobalTuning()->Set("shotgun_curvature", 1.25f);
+	GameServer()->GlobalTuning()->Set("shotgun_speed", 2750);
+	GameServer()->GlobalTuning()->Set("shotgun_speeddiff", 0.8f);
 
 	log_info("ddnet-insta", "connecting to database ...");
 	// set the stats table to the gametype name in all lowercase
@@ -1529,7 +1529,7 @@ bool CGameControllerPvp::OnFireWeapon(CCharacter &Character, int &Weapon, vec2 &
 			float Angle = angle(Direction);
 			Angle += Spreading[i + 2];
 			float v = 1 - (absolute(i) / (float)ShotSpread);
-			float Speed = mix((float)GameServer()->Tuning()->m_ShotgunSpeeddiff, 1.0f, v);
+			float Speed = mix((float)GameServer()->GlobalTuning()->m_ShotgunSpeeddiff, 1.0f, v);
 
 			// TODO: not sure about Dir and InitDir and prediction
 
@@ -1539,7 +1539,7 @@ bool CGameControllerPvp::OnFireWeapon(CCharacter &Character, int &Weapon, vec2 &
 				Character.GetPlayer()->GetCid(), // Owner
 				ProjStartPos, // Pos
 				direction(Angle) * Speed, // Dir
-				(int)(Server()->TickSpeed() * GameServer()->Tuning()->m_ShotgunLifetime), // Span
+				(int)(Server()->TickSpeed() * GameServer()->GlobalTuning()->m_ShotgunLifetime), // Span
 				false, // Freeze
 				false, // Explosive
 				-1, // SoundImpact

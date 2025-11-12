@@ -239,7 +239,6 @@ public:
 	IEngineMap *m_pMap;
 
 	int64_t m_GameStartTime;
-	//int m_CurrentGameTick;
 
 	enum
 	{
@@ -319,9 +318,7 @@ public:
 
 	void DemoRecorder_HandleAutoStart() override;
 
-	//int Tick()
 	int64_t TickStartTime(int Tick);
-	//int TickSpeed()
 
 	int Init();
 

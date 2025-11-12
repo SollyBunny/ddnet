@@ -36,7 +36,7 @@ GamemodesType &Gamemodes();
 			Game World (GAMEWORLD::tick)
 				Reset world if requested (GAMEWORLD::reset)
 				All entities in the world (ENTITY::tick)
-				All entities in the world (ENTITY::tick_defered)
+				All entities in the world (ENTITY::tick_deferred)
 				Remove entities marked for deletion (GAMEWORLD::remove_entities)
 			Game Controller (GAMECONTROLLER::tick)
 			All players (CPlayer::tick)
@@ -128,7 +128,6 @@ class CGameContext : public IGameServer
 	CCollision m_Collision;
 	protocol7::CNetObjHandler m_NetObjHandler7;
 	CNetObjHandler m_NetObjHandler;
-	CTuningParams m_Tuning;
 	CTuningParams m_aTuningList[NUM_TUNEZONES];
 	std::vector<std::string> m_vCensorlist;
 
@@ -210,8 +209,8 @@ class CGameContext : public IGameServer
 	IEngine *Engine() { return m_pEngine; }
 	IStorage *Storage() { return m_pStorage; }
 	CCollision *Collision() { return &m_Collision; }
-	CTuningParams *Tuning() { return &m_Tuning; }
-	CTuningParams *TuningList() { return &m_aTuningList[0]; }
+	CTuningParams *GlobalTuning() { return &m_aTuningList[0]; }
+	CTuningParams *TuningList() { return m_aTuningList; }
 	IAntibot *Antibot() { return m_pAntibot; }
 	CTeeHistorian *TeeHistorian() { return &m_TeeHistorian; }
 	bool TeeHistorianActive() const { return m_TeeHistorianActive; }

@@ -39,9 +39,9 @@ CFootProjectile::CFootProjectile(
 		Number)
 {
 	if((Dir.x < 0 ? -Dir.x : Dir.x) > (Dir.y < 0 ? -Dir.y : Dir.y))
-		m_FootPickupDistance = std::abs(Dir.x * static_cast<float>(Server()->TickSpeed()) * GameServer()->Tuning()->m_GrenadeSpeed / 4000.0);
+		m_FootPickupDistance = std::abs(Dir.x * static_cast<float>(Server()->TickSpeed()) * GameServer()->GlobalTuning()->m_GrenadeSpeed / 4000.0);
 	else
-		m_FootPickupDistance = std::abs(Dir.y * static_cast<float>(Server()->TickSpeed()) * GameServer()->Tuning()->m_GrenadeSpeed / 4000.0);
+		m_FootPickupDistance = std::abs(Dir.y * static_cast<float>(Server()->TickSpeed()) * GameServer()->GlobalTuning()->m_GrenadeSpeed / 4000.0);
 
 	if((m_Owner < 0) || (m_Owner >= MAX_CLIENTS) || !GameServer()->m_apPlayers[m_Owner])
 	{
@@ -178,7 +178,7 @@ void CFootProjectile::Tick()
 			CollidedY = true;
 
 		const float BounceFactor = g_Config.m_SvBallBounceFriction + 100.0f;
-		const float GrenadeEffect = 2.0f * GameServer()->Tuning()->m_GrenadeCurvature / 10000.0f * GameServer()->Tuning()->m_GrenadeSpeed * (Server()->Tick() - m_StartTick) / TickSpeed;
+		const float GrenadeEffect = 2.0f * GameServer()->GlobalTuning()->m_GrenadeCurvature / 10000.0f * GameServer()->GlobalTuning()->m_GrenadeSpeed * (Server()->Tick() - m_StartTick) / TickSpeed;
 
 		if(CollidedX)
 		{
