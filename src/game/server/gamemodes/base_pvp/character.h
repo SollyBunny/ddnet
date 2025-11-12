@@ -33,7 +33,7 @@ public:
 	// before full auto weapons actually are full auto
 	// and can be fired again by holding the mouse
 	//
-	// if Server()->Tick() is greated than this value it expires as well
+	// if Server()->Tick() is greater than this value it expires as well
 	// and holding will fire again
 	int m_BlockFullAutoUntilReleaseOrTick = 0;
 

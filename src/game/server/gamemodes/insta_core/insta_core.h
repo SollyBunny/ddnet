@@ -26,7 +26,7 @@ public:
 	CGameControllerInstaCore(class CGameContext *pGameServer);
 	~CGameControllerInstaCore() override;
 
-	// convience accessors to copy code from gamecontext to the instagib controller
+	// convenience accessors to copy code from gamecontext to the instagib controller
 	class IServer *Server() const { return GameServer()->Server(); }
 	class CConfig *Config() { return GameServer()->Config(); }
 	class IConsole *Console() { return GameServer()->Console(); }

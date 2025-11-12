@@ -54,14 +54,14 @@ IGameController::IGameController(class CGameContext *pGameServer) :
 	// if new game starts with warmup
 	// then ready change wont kick in
 	// because it only pauses running games
-	// think about wether we want warump with timer infinite at all?
+	// think about whether we want warump with timer infinite at all?
 	// if yes it should also be active when a round finishes
 	// until a new restart is triggered
 	// then we also have to indicate to users
 	// that there is currently no game running
 	// also nice for tournaments to activate public chat again
 	//
-	// i drafted out a sv_casual_rounds config that decides wether
+	// i drafted out a sv_casual_rounds config that decides whether
 	// games do go into state warmup infinite or running after match ends
 	// and then decided to not fully implement the idea
 	// because even for pro games it is confusing that rounds do not auto start

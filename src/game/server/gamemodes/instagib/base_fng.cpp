@@ -188,7 +188,7 @@ void CGameControllerBaseFng::OnPlayerDisconnect(class CPlayer *pPlayer, const ch
 		if(!pOther)
 			continue;
 
-		// if someone leaves a frozen tee behing on disconnect
+		// if someone leaves a frozen tee behind on disconnect
 		// and a teammates spikes him this is not considered a steal
 		if(pOther->m_OriginalFreezerId == pPlayer->GetCid())
 			pOther->m_OriginalFreezerId = -1;

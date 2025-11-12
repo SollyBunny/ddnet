@@ -1008,7 +1008,7 @@ void CCharacter::Die(int Killer, int Weapon, bool SendKillMsg)
 
 	// WARNING: all code in this method has been removed in ddnet-insta
 	//          if you get a git conflict here while merging into ddnet make sure to apply all ddnet code changes that
-	//          happend in this method to the `IGameController::OnCharacterDeathImpl`
+	//          happened in this method to the `IGameController::OnCharacterDeathImpl`
 }
 
 bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)

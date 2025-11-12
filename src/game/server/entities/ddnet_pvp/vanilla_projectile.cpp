@@ -172,7 +172,7 @@ void CVanillaProjectile::Tick()
 		}
 		else if(m_Type == WEAPON_GUN)
 		{
-			// ddnet-insta commeted out dmg indicators
+			// ddnet-insta commented out dmg indicators
 			// GameServer()->CreateDamageInd(CurPos, -std::atan2(m_Direction.x, m_Direction.y), 10, (m_Owner != -1) ? TeamMask : CClientMask().set());
 			m_MarkedForDestroy = true;
 			return;
