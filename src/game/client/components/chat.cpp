@@ -1079,11 +1079,9 @@ void CChat::OnPrepareLines(float y)
 						// Move finder to end
 						pFinder = pMarkerEnd + 2;
 					}
+					return;
 				}
-				else
-				{
-					m_vParts.emplace_back(pText);
-				}
+				m_vParts.emplace_back(pText);
 			}
 		};
 		CColoredParts ColoredParts(pText, Line.m_ClientId == CLIENT_MSG);
