@@ -1174,17 +1174,19 @@ void CMenus::RenderSettingsTClientBindWheel(CUIRect MainView)
 	LeftView.HSplitTop(MarginSmall, nullptr, &LeftView);
 	LeftView.HSplitTop(LineSize, &Label, &LeftView);
 	Ui()->DoLabel(&Label, TCLocalize("The command is ran in console not chat"), FontSize, TEXTALIGN_ML);
-	LeftView.HSplitTop(LineSize, &Label, &LeftView);
-	Ui()->DoLabel(&Label, TCLocalize("Use left mouse to select"), FontSize, TEXTALIGN_ML);
-	LeftView.HSplitTop(LineSize, &Label, &LeftView);
-	Ui()->DoLabel(&Label, TCLocalize("Use right mouse to swap with selected"), FontSize, TEXTALIGN_ML);
-	LeftView.HSplitTop(LineSize, &Label, &LeftView);
-	Ui()->DoLabel(&Label, TCLocalize("Use middle mouse select without copy"), FontSize, TEXTALIGN_ML);
+	LeftView.HSplitTop(LineSize * 0.8f, &Label, &LeftView);
+	Ui()->DoLabel(&Label, TCLocalize("Use left mouse to select"), FontSize * 0.8f, TEXTALIGN_ML);
+	LeftView.HSplitTop(LineSize * 0.8f, &Label, &LeftView);
+	Ui()->DoLabel(&Label, TCLocalize("Use right mouse to swap with selected"), FontSize * 0.8f, TEXTALIGN_ML);
+	LeftView.HSplitTop(LineSize * 0.8f, &Label, &LeftView);
+	Ui()->DoLabel(&Label, TCLocalize("Use middle mouse select without copy"), FontSize * 0.8f, TEXTALIGN_ML);
 
+	LeftView.HSplitBottom(LineSize, &LeftView, &Label);
 	static CButtonContainer s_ReaderButtonWheel, s_ClearButtonWheel;
-	DoLine_KeyReader(LeftView, s_ReaderButtonWheel, s_ClearButtonWheel, TCLocalize("Bind Wheel Key"), "+bindwheel");
+	DoLine_KeyReader(Label, s_ReaderButtonWheel, s_ClearButtonWheel, TCLocalize("Bind Wheel Key"), "+bindwheel");
 
-	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_TcResetBindWheelMouse, TCLocalize("Reset position of mouse when opening bindwheel"), &g_Config.m_TcResetBindWheelMouse, &Button, LineSize);
+	LeftView.HSplitBottom(LineSize, &LeftView, &Label);
+	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_TcResetBindWheelMouse, TCLocalize("Reset position of mouse when opening bindwheel"), &g_Config.m_TcResetBindWheelMouse, &Label, LineSize);
 }
 
 void CMenus::RenderSettingsTClientChatBinds(CUIRect MainView)
