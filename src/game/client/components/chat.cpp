@@ -19,10 +19,9 @@
 #include <game/client/components/scoreboard.h>
 #include <game/client/components/skins.h>
 #include <game/client/components/sounds.h>
+#include <game/client/components/tclient/colored_parts.h>
 #include <game/client/gameclient.h>
 #include <game/localization.h>
-
-#include <variant>
 
 char CChat::ms_aDisplayText[MAX_LINE_LENGTH] = "";
 
@@ -1022,68 +1021,6 @@ void CChat::OnPrepareLines(float y)
 				pText = "Team successfully saved by ***. Use '/load ***' to continue";
 			}
 		}
-
-		using ColoredPart = std::variant<const char *, ColorRGBA>;
-		class CColoredParts
-		{
-		public:
-			char *m_pStringStorage = nullptr;
-			std::vector<ColoredPart> m_vParts;
-			~CColoredParts() { delete[] m_pStringStorage; }
-			CColoredParts(const char *pText, bool Parse)
-			{
-				if(Parse)
-				{
-					m_pStringStorage = new char[strlen(pText) + 1];
-					mem_copy(m_pStringStorage, pText, strlen(pText) + 1);
-					char *pFinder = m_pStringStorage;
-					char *pWritten = m_pStringStorage;
-					while(*pFinder)
-					{
-						char *pMarkerStart = strstr(pFinder, "[[");
-						if(!pMarkerStart)
-						{
-							// No more markers, add the rest of the string
-							m_vParts.emplace_back(pWritten);
-							break;
-						}
-						// From the start of just after the marker found in pMarkerStart, find the end marker
-						char *pMarkerEnd = strstr(pMarkerStart + 2, "]]");
-						if(!pMarkerEnd)
-						{
-							// No marker end, add the rest of the string
-							m_vParts.emplace_back(pWritten);
-							break;
-						}
-						// Check if the marker is valid
-						*pMarkerEnd = '\0';
-						const auto Color = CConsole::ColorParse(pMarkerStart + 2, 0.0f);
-						if(Color.has_value())
-						{
-							// Add text before the marker, if any
-							if(pMarkerStart != pWritten)
-							{
-								*pMarkerStart = '\0';
-								m_vParts.emplace_back(pWritten);
-							}
-							// Add the color
-							m_vParts.emplace_back(color_cast<ColorRGBA>(*Color));
-							// Move written to end
-							pWritten = pMarkerEnd + 2;
-						}
-						else
-						{
-							// Restore ']'
-							*pMarkerEnd = ']';
-						}
-						// Move finder to end
-						pFinder = pMarkerEnd + 2;
-					}
-					return;
-				}
-				m_vParts.emplace_back(pText);
-			}
-		};
 		CColoredParts ColoredParts(pText, Line.m_ClientId == CLIENT_MSG);
 		if(!ColoredParts.m_vParts.empty() && std::holds_alternative<ColorRGBA>(ColoredParts.m_vParts[0]))
 			Line.m_CustomColor = std::get<ColorRGBA>(ColoredParts.m_vParts[0]);
