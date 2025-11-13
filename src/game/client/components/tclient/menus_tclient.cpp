@@ -1,6 +1,7 @@
 #include <base/log.h>
 #include <base/math.h>
 #include <base/system.h>
+#include <base/types.h>
 
 #include <engine/graphics.h>
 #include <engine/shared/config.h>
@@ -439,9 +440,11 @@ void CMenus::RenderSettingsTClientSettngs(CUIRect MainView)
 	static CButtonContainer s_FontDirectoryId;
 	if(Ui()->DoButton_FontIcon(&s_FontDirectoryId, FONT_ICON_FOLDER, 0, &FontDirectory, IGraphics::CORNER_ALL))
 	{
-		Storage()->CreateFolder("data/tclient", IStorage::TYPE_ABSOLUTE);
-		Storage()->CreateFolder("data/tclient/fonts", IStorage::TYPE_ABSOLUTE);
-		Client()->ViewFile("data/tclient/fonts");
+		Storage()->CreateFolder("tclient", IStorage::TYPE_SAVE);
+		Storage()->CreateFolder("tclient/fonts", IStorage::TYPE_SAVE);
+		char aBuf[IO_MAX_PATH_LENGTH];
+		Storage()->GetCompletePath(IStorage::TYPE_SAVE, "tclient/fonts", aBuf, sizeof(aBuf));
+		Client()->ViewFile(aBuf);
 	}
 
 	CUIRect TinyTeeConfig;
