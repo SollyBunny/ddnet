@@ -1,8 +1,8 @@
-﻿#include <base/log.h>
-
-#include "tclient.h"
+﻿#include "tclient.h"
 
 #include "data_version.h"
+
+#include <base/log.h>
 
 #include <engine/client.h>
 #include <engine/client/enums.h>

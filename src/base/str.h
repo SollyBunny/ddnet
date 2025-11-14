@@ -442,7 +442,7 @@ const char *str_next_token(const char *str, const char *delim, char *buffer, int
  * @return `1` - Item is in list.
  * @return `0` - Item isn't in list.
  *
-* @remark The strings are treated as null-terminated strings.
+ * @remark The strings are treated as null-terminated strings.
  */
 int str_in_list(const char *list, const char *delim, const char *needle);
 
@@ -812,7 +812,7 @@ int str_utf8_check(const char *str);
  * @param num Maximum number of UTF-8 characters to be copied.
  *
  * @remark The strings are treated as null-terminated strings.
- * @remark Garantees that dst string will contain null-termination.
+ * @remark Guarantees that dst string will contain null-termination.
  */
 void str_utf8_copy_num(char *dst, const char *src, int dst_size, int num);
 

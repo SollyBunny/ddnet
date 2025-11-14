@@ -1,6 +1,7 @@
 #include <base/log.h>
 #include <base/math.h>
 #include <base/system.h>
+#include <base/types.h>
 
 #include <engine/graphics.h>
 #include <engine/shared/config.h>
@@ -331,7 +332,8 @@ void CMenus::RenderSettingsTClient(CUIRect MainView)
 			continue;
 
 		TabBar.VSplitLeft(TabWidth, &Button, &TabBar);
-		const int Corners = Tab == 0 ? IGraphics::CORNER_L : Tab == NUMBER_OF_TCLIENT_TABS - 1 ? IGraphics::CORNER_R : IGraphics::CORNER_NONE;
+		const int Corners = Tab == 0 ? IGraphics::CORNER_L : Tab == NUMBER_OF_TCLIENT_TABS - 1 ? IGraphics::CORNER_R :
+													 IGraphics::CORNER_NONE;
 		if(DoButton_MenuTab(&s_aPageTabs[Tab], apTabNames[Tab], s_CurCustomTab == Tab, &Button, Corners, nullptr, nullptr, nullptr, nullptr, 4.0f))
 			s_CurCustomTab = Tab;
 	}
@@ -438,9 +440,11 @@ void CMenus::RenderSettingsTClientSettngs(CUIRect MainView)
 	static CButtonContainer s_FontDirectoryId;
 	if(Ui()->DoButton_FontIcon(&s_FontDirectoryId, FONT_ICON_FOLDER, 0, &FontDirectory, IGraphics::CORNER_ALL))
 	{
-		Storage()->CreateFolder("data/tclient", IStorage::TYPE_ABSOLUTE);
-		Storage()->CreateFolder("data/tclient/fonts", IStorage::TYPE_ABSOLUTE);
-		Client()->ViewFile("data/tclient/fonts");
+		Storage()->CreateFolder("tclient", IStorage::TYPE_SAVE);
+		Storage()->CreateFolder("tclient/fonts", IStorage::TYPE_SAVE);
+		char aBuf[IO_MAX_PATH_LENGTH];
+		Storage()->GetCompletePath(IStorage::TYPE_SAVE, "tclient/fonts", aBuf, sizeof(aBuf));
+		Client()->ViewFile(aBuf);
 	}
 
 	CUIRect TinyTeeConfig;
@@ -1173,17 +1177,19 @@ void CMenus::RenderSettingsTClientBindWheel(CUIRect MainView)
 	LeftView.HSplitTop(MarginSmall, nullptr, &LeftView);
 	LeftView.HSplitTop(LineSize, &Label, &LeftView);
 	Ui()->DoLabel(&Label, TCLocalize("The command is ran in console not chat"), FontSize, TEXTALIGN_ML);
-	LeftView.HSplitTop(LineSize, &Label, &LeftView);
-	Ui()->DoLabel(&Label, TCLocalize("Use left mouse to select"), FontSize, TEXTALIGN_ML);
-	LeftView.HSplitTop(LineSize, &Label, &LeftView);
-	Ui()->DoLabel(&Label, TCLocalize("Use right mouse to swap with selected"), FontSize, TEXTALIGN_ML);
-	LeftView.HSplitTop(LineSize, &Label, &LeftView);
-	Ui()->DoLabel(&Label, TCLocalize("Use middle mouse select without copy"), FontSize, TEXTALIGN_ML);
+	LeftView.HSplitTop(LineSize * 0.8f, &Label, &LeftView);
+	Ui()->DoLabel(&Label, TCLocalize("Use left mouse to select"), FontSize * 0.8f, TEXTALIGN_ML);
+	LeftView.HSplitTop(LineSize * 0.8f, &Label, &LeftView);
+	Ui()->DoLabel(&Label, TCLocalize("Use right mouse to swap with selected"), FontSize * 0.8f, TEXTALIGN_ML);
+	LeftView.HSplitTop(LineSize * 0.8f, &Label, &LeftView);
+	Ui()->DoLabel(&Label, TCLocalize("Use middle mouse select without copy"), FontSize * 0.8f, TEXTALIGN_ML);
 
+	LeftView.HSplitBottom(LineSize, &LeftView, &Label);
 	static CButtonContainer s_ReaderButtonWheel, s_ClearButtonWheel;
-	DoLine_KeyReader(LeftView, s_ReaderButtonWheel, s_ClearButtonWheel, TCLocalize("Bind Wheel Key"), "+bindwheel");
+	DoLine_KeyReader(Label, s_ReaderButtonWheel, s_ClearButtonWheel, TCLocalize("Bind Wheel Key"), "+bindwheel");
 
-	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_TcResetBindWheelMouse, TCLocalize("Reset position of mouse when opening bindwheel"), &g_Config.m_TcResetBindWheelMouse, &Button, LineSize);
+	LeftView.HSplitBottom(LineSize, &LeftView, &Label);
+	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_TcResetBindWheelMouse, TCLocalize("Reset position of mouse when opening bindwheel"), &g_Config.m_TcResetBindWheelMouse, &Label, LineSize);
 }
 
 void CMenus::RenderSettingsTClientChatBinds(CUIRect MainView)

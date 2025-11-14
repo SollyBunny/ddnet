@@ -19,10 +19,9 @@
 #include <game/client/components/scoreboard.h>
 #include <game/client/components/skins.h>
 #include <game/client/components/sounds.h>
+#include <game/client/components/tclient/colored_parts.h>
 #include <game/client/gameclient.h>
 #include <game/localization.h>
-
-#include <variant>
 
 char CChat::ms_aDisplayText[MAX_LINE_LENGTH] = "";
 
@@ -576,6 +575,12 @@ void CChat::OnMessage(int MsgType, void *pRawMsg)
 		*/
 
 		AddLine(pMsg->m_ClientId, pMsg->m_Team, pMsg->m_pMessage);
+
+		if(Client()->State() != IClient::STATE_DEMOPLAYBACK &&
+			pMsg->m_ClientId == SERVER_MSG)
+		{
+			StoreSave(pMsg->m_pMessage);
+		}
 	}
 	else if(MsgType == NETMSGTYPE_SV_COMMANDINFO)
 	{
@@ -639,18 +644,6 @@ void CChat::StoreSave(const char *pText)
 
 	char aTimestamp[20];
 	str_timestamp_format(aTimestamp, sizeof(aTimestamp), FORMAT_SPACE);
-
-	// TODO: Find a simple way to get the names of team members. This doesn't
-	// work since team is killed first, then save message gets sent:
-	/*
-	for(int i = 0; i < MAX_CLIENTS; i++)
-	{
-		const CNetObj_PlayerInfo *pInfo = GameClient()->m_Snap.m_paInfoByDDTeam[i];
-		if(!pInfo)
-			continue;
-		pInfo->m_Team // All 0
-	}
-	*/
 
 	const bool SavesFileExists = Storage()->FileExists(SAVES_FILE, IStorage::TYPE_SAVE);
 	IOHANDLE File = Storage()->OpenFile(SAVES_FILE, IOFLAG_APPEND, IStorage::TYPE_SAVE);
@@ -719,12 +712,6 @@ void CChat::AddLine(int ClientId, int Team, const char *pLine)
 	bool Highlighted = false;
 
 	auto &&FChatMsgCheckAndPrint = [this](const CLine &Line) {
-		if(Line.m_ClientId < 0) // server or client message
-		{
-			if(Client()->State() != IClient::STATE_DEMOPLAYBACK)
-				StoreSave(Line.m_aText);
-		}
-
 		char aBuf[1024];
 		str_format(aBuf, sizeof(aBuf), "%s%s%s", Line.m_aName, Line.m_ClientId >= 0 ? ": " : "", Line.m_aText);
 
@@ -1011,118 +998,22 @@ void CChat::OnPrepareLines(float y)
 		{
 			if(str_startswith(Line.m_aText, "Team save in progress. You'll be able to load with '/load ") && str_endswith(Line.m_aText, "'"))
 			{
-				pText = "Team save in progress. You'll be able to load with '/load ***'";
+				pText = "Team save in progress. You'll be able to load with '/load *** *** ***'";
 			}
 			else if(str_startswith(Line.m_aText, "Team save in progress. You'll be able to load with '/load") && str_endswith(Line.m_aText, "if it fails"))
 			{
-				pText = "Team save in progress. You'll be able to load with '/load ***' if save is successful or with '/load *** *** ***' if it fails";
+				pText = "Team save in progress. You'll be able to load with '/load *** *** ***' if save is successful or with '/load *** *** ***' if it fails";
 			}
 			else if(str_startswith(Line.m_aText, "Team successfully saved by ") && str_endswith(Line.m_aText, " to continue"))
 			{
-				pText = "Team successfully saved by ***. Use '/load ***' to continue";
+				pText = "Team successfully saved by ***. Use '/load *** *** ***' to continue";
 			}
 		}
 
-		using ColoredPart = std::variant<const char *, ColorRGBA>;
-		class CColoredParts
-		{
-		public:
-			const char *m_pStringStorage = nullptr;
-			std::vector<ColoredPart> m_vParts;
-			~CColoredParts() { delete[] m_pStringStorage; }
-		} ColoredParts;
-		if(Line.m_ClientId == CLIENT_MSG)
-		{
-			// TODO: extract from src/engine/shared/console.cpp
-			auto GetColor = [](const char *pStr) -> std::optional<ColorHSLA> {
-				if(str_isallnum(pStr) || ((pStr[0] == '-' || pStr[0] == '+') && str_isallnum(pStr + 1))) // Teeworlds Color (Packed HSL)
-				{
-					unsigned long Value = str_toulong_base(pStr, 10);
-					if(Value == std::numeric_limits<unsigned long>::max())
-						return std::nullopt;
-					return ColorHSLA(Value, true);
-				}
-				else if(*pStr == '$') // Hex RGB/RGBA
-				{
-					auto ParsedColor = color_parse<ColorRGBA>(pStr + 1);
-					if(ParsedColor)
-						return color_cast<ColorHSLA>(ParsedColor.value());
-					else
-						return std::nullopt;
-				}
-				else if(!str_comp_nocase(pStr, "red"))
-					return ColorHSLA(0.0f / 6.0f, 1, .5f);
-				else if(!str_comp_nocase(pStr, "yellow"))
-					return ColorHSLA(1.0f / 6.0f, 1, .5f);
-				else if(!str_comp_nocase(pStr, "green"))
-					return ColorHSLA(2.0f / 6.0f, 1, .5f);
-				else if(!str_comp_nocase(pStr, "cyan"))
-					return ColorHSLA(3.0f / 6.0f, 1, .5f);
-				else if(!str_comp_nocase(pStr, "blue"))
-					return ColorHSLA(4.0f / 6.0f, 1, .5f);
-				else if(!str_comp_nocase(pStr, "magenta"))
-					return ColorHSLA(5.0f / 6.0f, 1, .5f);
-				else if(!str_comp_nocase(pStr, "white"))
-					return ColorHSLA(0, 0, 1);
-				else if(!str_comp_nocase(pStr, "gray"))
-					return ColorHSLA(0, 0, .5f);
-				else if(!str_comp_nocase(pStr, "black"))
-					return ColorHSLA(0, 0, 0);
-				return std::nullopt;
-			};
-
-			char *pFinder = new char[strlen(pText) + 1];
-			mem_copy(pFinder, pText, strlen(pText) + 1);
-			ColoredParts.m_pStringStorage = pFinder;
-			char *pWritten = pFinder;
-			while(*pFinder)
-			{
-				char *pMarkerStart = strstr(pFinder, "[[");
-				if(!pMarkerStart)
-				{
-					// No more markers, add the rest of the string
-					ColoredParts.m_vParts.emplace_back(pWritten);
-					break;
-				}
-				// From the start of just after the marker found in pMarkerStart, find the end marker
-				char *pMarkerEnd = strstr(pMarkerStart + 2, "]]");
-				if(!pMarkerEnd)
-				{
-					// No marker end, add the rest of the string
-					ColoredParts.m_vParts.emplace_back(pWritten);
-					break;
-				}
-				// Check if the marker is valid
-				*pMarkerEnd = '\0';
-				const auto Color = GetColor(pMarkerStart + 2);
-				if(Color.has_value())
-				{
-					// Add text before the marker, if any
-					if(pMarkerStart != pWritten)
-					{
-						*pMarkerStart = '\0';
-						ColoredParts.m_vParts.emplace_back(pWritten);
-					}
-					// Add the color
-					ColoredParts.m_vParts.emplace_back(color_cast<ColorRGBA>(*Color));
-					// Move written to end
-					pWritten = pMarkerEnd + 2;
-				}
-				else
-				{
-					// Restore ']'
-					*pMarkerEnd = ']';
-				}
-				// Move finder to end
-				pFinder = pMarkerEnd + 2;
-			}
-			if(!ColoredParts.m_vParts.empty() && std::holds_alternative<ColorRGBA>(ColoredParts.m_vParts[0]))
-				Line.m_CustomColor = std::get<ColorRGBA>(ColoredParts.m_vParts[0]);
-		}
-		else
-		{
-			ColoredParts.m_vParts.emplace_back(pText);
-		}
+		const CColoredParts ColoredParts(pText, Line.m_ClientId == CLIENT_MSG);
+		if(!ColoredParts.Colors().empty() && ColoredParts.Colors()[0].m_Index == 0)
+			Line.m_CustomColor = ColoredParts.Colors()[0].m_Color;
+		pText = ColoredParts.Text();
 
 		const char *pTranslatedError = nullptr;
 		const char *pTranslatedText = nullptr;
@@ -1207,9 +1098,7 @@ void CChat::OnPrepareLines(float y)
 			}
 			else
 			{
-				for(const auto &Part : ColoredParts.m_vParts)
-					if(std::holds_alternative<const char *>(Part))
-						TextRender()->TextEx(&AppendCursor, std::get<const char *>(Part));
+				TextRender()->TextEx(&AppendCursor, pText);
 			}
 
 			Line.m_aYOffset[OffsetType] = AppendCursor.Height() + RealMsgPaddingY;
@@ -1348,14 +1237,9 @@ void CChat::OnPrepareLines(float y)
 		}
 		else
 		{
-			for(const auto &Part : ColoredParts.m_vParts)
-			{
-				if(std::holds_alternative<const char *>(Part))
-					TextRender()->CreateOrAppendTextContainer(Line.m_TextContainerIndex, &AppendCursor, std::get<const char *>(Part));
-				else
-					TextRender()->TextColor(std::get<ColorRGBA>(Part));
-			}
-			TextRender()->TextColor(TextRender()->DefaultTextColor());
+			ColoredParts.AddSplitsToCursor(AppendCursor);
+			TextRender()->CreateOrAppendTextContainer(Line.m_TextContainerIndex, &AppendCursor, pText);
+			AppendCursor.m_vColorSplits.clear();
 		}
 
 		if(!g_Config.m_ClChatOld && (Line.m_aText[0] != '\0' || Line.m_aName[0] != '\0'))

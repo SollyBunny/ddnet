@@ -715,7 +715,7 @@ private:
 		}
 	}
 	template<typename PartType, typename... ArgsType>
-	void AddPart(CGameClient &This, ArgsType &&... Args)
+	void AddPart(CGameClient &This, ArgsType &&...Args)
 	{
 		m_vpParts.push_back(std::make_unique<PartType>(This, std::forward<ArgsType>(Args)...));
 	}
@@ -926,8 +926,7 @@ void CNamePlates::RenderNamePlateGame(vec2 Position, const CNetObj_PlayerInfo *p
 		Data.m_ShowDirection = pPlayerInfo->m_Local;
 		break;
 	default:
-		dbg_assert(false, "ShowDirectionConfig invalid");
-		dbg_break();
+		dbg_assert_failed("ShowDirectionConfig invalid");
 	}
 	if(Data.m_ShowDirection)
 	{

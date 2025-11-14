@@ -30,8 +30,8 @@ private:
 	void Reset();
 	bool Save(const char *pFile, bool Verbose);
 	bool Load(const char *pFile, bool Verbose);
-	template<typename... Args>
-	CBgDrawItem *AddItem(Args &&... args);
+	template<typename... T>
+	CBgDrawItem *AddItem(T &&...Args);
 	void MakeSpaceFor(int Count);
 
 public:

@@ -241,13 +241,13 @@ public:
 	virtual bool IsScreenKeyboardShown() = 0;
 
 	/**
-	* Listens to a resize event of the canvas, which is usually caused by a window resize.
-	* Will only be triggered if the actual size changed.
-	*/
+	 * Listens to a resize event of the canvas, which is usually caused by a window resize.
+	 * Will only be triggered if the actual size changed.
+	 */
 	virtual void AddWindowResizeListener(WINDOW_RESIZE_FUNC pFunc) = 0;
 	/**
-	* Listens to various window property changes, such as minimize, maximize, move, fullscreen mode
-	*/
+	 * Listens to various window property changes, such as minimize, maximize, move, fullscreen mode
+	 */
 	virtual void AddWindowPropChangeListener(WINDOW_PROPS_CHANGED_FUNC pFunc) = 0;
 
 	virtual void WindowDestroyNtf(uint32_t WindowId) = 0;
@@ -585,7 +585,7 @@ public:
 		EMessageBoxType m_Type = EMessageBoxType::ERROR;
 		/**
 		 * Buttons shown in the message box. At least one button is required.
-		 * The buttons are layed out from left to right.
+		 * The buttons are laid out from left to right.
 		 */
 		std::vector<CMessageBoxButton> m_vButtons = {{.m_pLabel = "OK", .m_Confirm = true, .m_Cancel = true}};
 	};

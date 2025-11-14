@@ -19,6 +19,7 @@
 
 #include <generated/client_data.h>
 
+#include <game/client/components/tclient/colored_parts.h>
 #include <game/client/gameclient.h>
 #include <game/client/ui.h>
 #include <game/localization.h>
@@ -716,7 +717,7 @@ void CGameConsole::CInstance::ScrollToCenter(int StartLine, int EndLine)
 	if(m_BacklogCurLine == Target)
 		return;
 
-	// Compute acutal amount of lines to scroll to make sure lines fit in viewport and we don't have empty space
+	// Compute actual amount of lines to scroll to make sure lines fit in viewport and we don't have empty space
 	int Direction = m_BacklogCurLine - Target < 0 ? -1 : 1;
 	int LinesToScroll = absolute(Target - m_BacklogCurLine);
 	int ComputedLines = GetLinesToScroll(Direction, LinesToScroll);
@@ -814,7 +815,7 @@ void CGameConsole::CInstance::UpdateSearch()
 
 		int EntryLineCount = pEntry->m_LineCount;
 
-		// Find all occurences of the search string and save their positions
+		// Find all occurrences of the search string and save their positions
 		while(pSearchPos)
 		{
 			int Pos = pSearchPos - pEntry->m_aText;
@@ -1389,6 +1390,8 @@ void CGameConsole::OnRender()
 			EntryCursor.m_PressMouse = pConsole->m_MousePress;
 			EntryCursor.m_ReleaseMouse = pConsole->m_MouseRelease;
 
+			bool ParseColors = false; // TClient
+
 			if(pConsole->m_Searching && pConsole->m_CurrentMatchIndex != -1)
 			{
 				std::vector<CInstance::SSearchMatch> vMatches;
@@ -1406,8 +1409,23 @@ void CGameConsole::OnRender()
 						IsSelected ? ms_SearchSelectedColor : ms_SearchHighlightColor);
 				}
 			}
+			else if(pEntry->m_Length > (size_t)str_length("xxxx-xx-xx xx:xx:xx x ") && str_startswith(pEntry->m_aText + str_length("xxxx-xx-xx xx:xx:xx x "), "chat/client"))
+			{
+				ParseColors = true;
+			}
 
-			TextRender()->TextEx(&EntryCursor, pEntry->m_aText, -1);
+			// TODO don't recalculate every frame
+			// TODO less jank way of detecting echo
+			CColoredParts ColoredParts(pEntry->m_aText, ParseColors);
+			ColoredParts.AddSplitsToCursor(EntryCursor);
+			if(!ColoredParts.Colors().empty() && ColoredParts.Colors()[0].m_Index == str_length("xxxx-xx-xx xx:xx:xx x chat/client: — "))
+			{
+				EntryCursor.m_vColorSplits[0].m_CharIndex -= str_length("— ");
+				EntryCursor.m_vColorSplits[0].m_Length += str_length("— ");
+			}
+			const char *pText = ColoredParts.Text();
+
+			TextRender()->TextEx(&EntryCursor, pText, -1); // TClient
 			EntryCursor.m_vColorSplits = {};
 
 			if(EntryCursor.m_CalculateSelectionMode == TEXT_CURSOR_SELECTION_MODE_CALCULATE)

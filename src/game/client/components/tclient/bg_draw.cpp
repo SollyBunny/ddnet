@@ -443,13 +443,13 @@ bool CBgDraw::Load(const char *pFilename, bool Verbose)
 	return true;
 }
 
-template<typename... Args>
-CBgDrawItem *CBgDraw::AddItem(Args &&... args)
+template<typename... T>
+CBgDrawItem *CBgDraw::AddItem(T &&...Aargs)
 {
 	MakeSpaceFor(1);
 	if(g_Config.m_TcBgDrawMaxItems == 0)
 		return nullptr;
-	m_pvItems->emplace_back(std::forward<Args>(args)...);
+	m_pvItems->emplace_back(std::forward<T>(Aargs)...);
 	m_Dirty = true;
 	return &m_pvItems->back();
 }

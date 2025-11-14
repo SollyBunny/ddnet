@@ -9,7 +9,6 @@
 
 #include <engine/storage.h>
 
-#include <functional>
 #include <memory>
 
 static constexpr ColorRGBA gs_ConsoleDefaultColor(1, 1, 1, 1);
@@ -143,7 +142,5 @@ public:
 };
 
 std::unique_ptr<IConsole> CreateConsole(int FlagMask);
-
-// TClient
 
 #endif // FILE_ENGINE_CONSOLE_H
