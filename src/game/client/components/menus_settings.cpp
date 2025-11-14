@@ -1546,7 +1546,7 @@ void CMenus::RenderSettings(CUIRect MainView)
 	}
 	else
 	{
-		dbg_assert(false, "ui_settings_page invalid");
+		dbg_assert_failed("ui_settings_page invalid");
 	}
 
 	if(NeedRestart)
@@ -2554,7 +2554,7 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 		Graphics()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 		RenderMap()->RenderTile(HookTileRect.x, HookTileRect.y, TILE_SOLID, TileScale, ColorRGBA(1.0f, 1.0f, 1.0f, 1.0f));
 
-		// ***** Hook Dummy Preivew *****
+		// ***** Hook Dummy Preview *****
 		RightView.HSplitTop(50.0f, &PreviewColl, &RightView);
 		RightView.HSplitTop(4 * MarginSmall, nullptr, &RightView);
 		TeeRenderPos = vec2(PreviewColl.x + LeftMargin, PreviewColl.y + PreviewColl.h / 2.0f);
@@ -2563,7 +2563,7 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 		RenderTools()->RenderTee(CAnimState::GetIdle(), &DummySkinInfo, 0, vec2(1.0f, 0.0f), DummyRenderPos);
 		RenderTools()->RenderTee(CAnimState::GetIdle(), &OwnSkinInfo, 0, vec2(1.0f, 0.0f), TeeRenderPos);
 
-		// ***** Hook Dummy Reverse Preivew *****
+		// ***** Hook Dummy Reverse Preview *****
 		RightView.HSplitTop(50.0f, &PreviewColl, &RightView);
 		RightView.HSplitTop(4 * MarginSmall, nullptr, &RightView);
 		TeeRenderPos = vec2(PreviewColl.x + LeftMargin, PreviewColl.y + PreviewColl.h / 2.0f);

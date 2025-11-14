@@ -217,7 +217,14 @@ CNetObj_PlayerInput CGameContext::GetLastPlayerInput(int ClientId) const
 	return m_aLastPlayerInput[ClientId];
 }
 
-class CCharacter *CGameContext::GetPlayerChar(int ClientId)
+CCharacter *CGameContext::GetPlayerChar(int ClientId)
+{
+	if(ClientId < 0 || ClientId >= MAX_CLIENTS || !m_apPlayers[ClientId])
+		return nullptr;
+	return m_apPlayers[ClientId]->GetCharacter();
+}
+
+const CCharacter *CGameContext::GetPlayerChar(int ClientId) const
 {
 	if(ClientId < 0 || ClientId >= MAX_CLIENTS || !m_apPlayers[ClientId])
 		return nullptr;
@@ -597,6 +604,9 @@ void CGameContext::CallVote(int ClientId, const char *pDesc, const char *pCmd, c
 	pPlayer->m_Vote = 1;
 	pPlayer->m_VotePos = m_VotePos = 1;
 	pPlayer->m_LastVoteCall = Now;
+
+	CNetMsg_Sv_YourVote Msg = {pPlayer->m_Vote};
+	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, ClientId);
 }
 
 void CGameContext::SendChatTarget(int To, const char *pText, int VersionFlags) const
@@ -3230,7 +3240,7 @@ void CGameContext::ConMapbug(IConsole::IResult *pResult, void *pUserData)
 		log_info("mapbugs", "unknown map bug '%s', ignoring", pMapBugName);
 		break;
 	default:
-		dbg_assert(false, "unreachable");
+		dbg_assert_failed("unreachable");
 	}
 }
 
@@ -3982,7 +3992,7 @@ void CGameContext::RegisterChatCommands()
 	Console()->Register("timeout", "?s[code]", CFGFLAG_CHAT | CFGFLAG_SERVER, ConTimeout, this, "Set timeout protection code s");
 	Console()->Register("practice", "?i['0'|'1']", CFGFLAG_CHAT | CFGFLAG_SERVER, ConPractice, this, "Enable cheats for your current team's run, but you can't earn a rank");
 	Console()->Register("unpractice", "", CFGFLAG_CHAT | CFGFLAG_SERVER | CMDFLAG_PRACTICE, ConUnPractice, this, "Kills team and disables practice mode");
-	Console()->Register("practicecmdlist", "", CFGFLAG_CHAT | CFGFLAG_SERVER, ConPracticeCmdList, this, "List all commands that are avaliable in practice mode");
+	Console()->Register("practicecmdlist", "", CFGFLAG_CHAT | CFGFLAG_SERVER, ConPracticeCmdList, this, "List all commands that are available in practice mode");
 	Console()->Register("swap", "?r[player name]", CFGFLAG_CHAT | CFGFLAG_SERVER, ConSwap, this, "Request to swap your tee with another team member");
 	Console()->Register("cancelswap", "", CFGFLAG_CHAT | CFGFLAG_SERVER, ConCancelSwap, this, "Cancel your swap request");
 	Console()->Register("save", "?r[code]", CFGFLAG_CHAT | CFGFLAG_SERVER, ConSave, this, "Save team with code r.");
@@ -4057,6 +4067,10 @@ void CGameContext::RegisterChatCommands()
 	Console()->Register("endless", "", CFGFLAG_CHAT | CMDFLAG_PRACTICE, ConPracticeEndlessHook, this, "Gives you endless hook");
 	Console()->Register("unendless", "", CFGFLAG_CHAT | CMDFLAG_PRACTICE, ConPracticeUnEndlessHook, this, "Removes endless hook from you");
 	Console()->Register("invincible", "?i['0'|'1']", CFGFLAG_CHAT | CMDFLAG_PRACTICE, ConPracticeToggleInvincible, this, "Toggles invincible mode");
+	Console()->Register("collision", "", CFGFLAG_CHAT | CMDFLAG_PRACTICE, ConPracticeToggleCollision, this, "Toggles collision");
+	Console()->Register("hookcollision", "", CFGFLAG_CHAT | CMDFLAG_PRACTICE, ConPracticeToggleHookCollision, this, "Toggles hook collision");
+	Console()->Register("hitothers", "?s['all'|'hammer'|'shotgun'|'grenade'|'laser']", CFGFLAG_CHAT | CMDFLAG_PRACTICE, ConPracticeToggleHitOthers, this, "Toggles hit others");
+
 	Console()->Register("kill", "", CFGFLAG_CHAT | CFGFLAG_SERVER, ConProtectedKill, this, "Kill yourself when kill-protected during a long game (use f1, kill for regular kill)");
 }
 
@@ -4896,8 +4910,7 @@ void CGameContext::SendSaveCode(int Team, int TeamSize, int State, const char *p
 				str_copy(aBuf, pError);
 				break;
 			default:
-				dbg_assert(false, "Unexpected save state %d", State);
-				break;
+				dbg_assert_failed("Unexpected save state %d", State);
 			}
 			SendChatTarget(MemberId, aBuf);
 		}

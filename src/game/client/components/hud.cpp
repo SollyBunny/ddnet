@@ -1664,7 +1664,7 @@ void CHud::RenderMovementInformation()
 {
 	const int ClientId = GameClient()->m_Snap.m_SpecInfo.m_Active ? GameClient()->m_Snap.m_SpecInfo.m_SpectatorId : GameClient()->m_Snap.m_LocalClientId;
 	const bool PosOnly = ClientId == SPEC_FREEVIEW || (GameClient()->m_aClients[ClientId].m_SpecCharPresent);
-	// Draw the infomations depending on settings: Position, speed and target angle
+	// Draw the information depending on settings: Position, speed and target angle
 	// This display is only to present the available information from the last snapshot, not to interpolate or predict
 	if(!g_Config.m_ClShowhudPlayerPosition && (PosOnly || (!g_Config.m_ClShowhudPlayerSpeed && !g_Config.m_ClShowhudPlayerAngle)))
 	{
@@ -1744,9 +1744,11 @@ void CHud::RenderMovementInformation()
 
 void CHud::RenderSpectatorHud()
 {
+	if(!g_Config.m_ClShowhudSpectator)
+		return;
+
 	// TClient
 	float AdjustedHeight = m_Height - (g_Config.m_TcStatusBar ? g_Config.m_TcStatusBarHeight : 0.0f);
-
 	// draw the box
 	Graphics()->DrawRect(m_Width - 180.0f, AdjustedHeight - 15.0f, 180.0f, 15.0f, ColorRGBA(0.0f, 0.0f, 0.0f, 0.4f), IGraphics::CORNER_TL, 5.0f);
 

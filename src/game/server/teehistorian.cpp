@@ -24,7 +24,7 @@ private:
 static const char TEEHISTORIAN_NAME[] = "teehistorian@ddnet.tw";
 static const CUuid TEEHISTORIAN_UUID = CalculateUuid(TEEHISTORIAN_NAME);
 static const char TEEHISTORIAN_VERSION[] = "2";
-static const char TEEHISTORIAN_VERSION_MINOR[] = "16";
+static const char TEEHISTORIAN_VERSION_MINOR[] = "17";
 
 #define UUID(id, name) static const CUuid UUID_##id = CalculateUuid(name);
 #include <engine/shared/teehistorian_ex_chunks.h>
@@ -761,9 +761,9 @@ void CTeeHistorian::RecordDDNetVersion(int ClientId, CUuid ConnectionId, int DDN
 
 	if(m_Debug)
 	{
-		char aConnnectionId[UUID_MAXSTRSIZE];
-		FormatUuid(ConnectionId, aConnnectionId, sizeof(aConnnectionId));
-		dbg_msg("teehistorian", "ddnetver cid=%d connection_id=%s ddnet_version=%d ddnet_version_str=%s", ClientId, aConnnectionId, DDNetVersion, pDDNetVersionStr);
+		char aConnectionId[UUID_MAXSTRSIZE];
+		FormatUuid(ConnectionId, aConnectionId, sizeof(aConnectionId));
+		dbg_msg("teehistorian", "ddnetver cid=%d connection_id=%s ddnet_version=%d ddnet_version_str=%s", ClientId, aConnectionId, DDNetVersion, pDDNetVersionStr);
 	}
 
 	WriteExtra(UUID_TEEHISTORIAN_DDNETVER, Buffer.Data(), Buffer.Size());

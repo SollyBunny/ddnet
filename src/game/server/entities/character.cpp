@@ -187,7 +187,9 @@ void CCharacter::SetSuper(bool Super)
 	if(Super && !WasSuper)
 	{
 		m_TeamBeforeSuper = Team();
-		Teams()->SetCharacterTeam(GetPlayer()->GetCid(), TEAM_SUPER);
+		char aError[512];
+		if(!Teams()->SetCharacterTeam(GetPlayer()->GetCid(), TEAM_SUPER, aError, sizeof(aError)))
+			log_error("character", "failed to set super: %s", aError);
 		m_DDRaceState = ERaceState::CHEATED;
 	}
 	else if(!Super && WasSuper)
@@ -207,6 +209,16 @@ void CCharacter::SetInvincible(bool Invincible)
 		UnFreeze();
 
 	SetEndlessJump(Invincible);
+}
+
+void CCharacter::SetCollisionDisabled(bool CollisionDisabled)
+{
+	m_Core.m_CollisionDisabled = CollisionDisabled;
+}
+
+void CCharacter::SetHookHitDisabled(bool HookHitDisabled)
+{
+	m_Core.m_HookHitDisabled = HookHitDisabled;
 }
 
 void CCharacter::SetLiveFrozen(bool Active)
@@ -2025,7 +2037,7 @@ void CCharacter::HandleTiles(int Index)
 		}
 		// if no checkpointout have been found (or if there no recorded checkpoint), teleport to start
 		vec2 SpawnPos;
-		if(GameServer()->m_pController->CanSpawn(m_pPlayer->GetTeam(), &SpawnPos, GameServer()->GetDDRaceTeam(GetPlayer()->GetCid())))
+		if(GameServer()->m_pController->CanSpawn(m_pPlayer->GetTeam(), &SpawnPos, GetPlayer()->GetCid()))
 		{
 			m_Core.m_Pos = SpawnPos;
 			m_Core.m_Vel = vec2(0, 0);
@@ -2060,7 +2072,7 @@ void CCharacter::HandleTiles(int Index)
 		}
 		// if no checkpointout have been found (or if there no recorded checkpoint), teleport to start
 		vec2 SpawnPos;
-		if(GameServer()->m_pController->CanSpawn(m_pPlayer->GetTeam(), &SpawnPos, GameServer()->GetDDRaceTeam(GetPlayer()->GetCid())))
+		if(GameServer()->m_pController->CanSpawn(m_pPlayer->GetTeam(), &SpawnPos, GetPlayer()->GetCid()))
 		{
 			m_Core.m_Pos = SpawnPos;
 

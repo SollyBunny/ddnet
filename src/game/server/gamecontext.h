@@ -27,7 +27,7 @@
 			Game World (GAMEWORLD::tick)
 				Reset world if requested (GAMEWORLD::reset)
 				All entities in the world (ENTITY::tick)
-				All entities in the world (ENTITY::tick_defered)
+				All entities in the world (ENTITY::tick_deferred)
 				Remove entities marked for deletion (GAMEWORLD::remove_entities)
 			Game Controller (GAMECONTROLLER::tick)
 			All players (CPlayer::tick)
@@ -225,7 +225,8 @@ public:
 	CGameWorld m_World;
 
 	// helper functions
-	class CCharacter *GetPlayerChar(int ClientId);
+	CCharacter *GetPlayerChar(int ClientId);
+	const CCharacter *GetPlayerChar(int ClientId) const;
 	bool EmulateBug(int Bug) const;
 	std::vector<SSwitchers> &Switchers() { return m_World.m_Core.m_vSwitchers; }
 
@@ -547,6 +548,9 @@ private:
 	static void ConPracticeEndlessHook(IConsole::IResult *pResult, void *pUserData);
 	static void ConPracticeUnEndlessHook(IConsole::IResult *pResult, void *pUserData);
 	static void ConPracticeToggleInvincible(IConsole::IResult *pResult, void *pUserData);
+	static void ConPracticeToggleCollision(IConsole::IResult *pResult, void *pUserData);
+	static void ConPracticeToggleHookCollision(IConsole::IResult *pResult, void *pUserData);
+	static void ConPracticeToggleHitOthers(IConsole::IResult *pResult, void *pUserData);
 
 	static void ConPracticeAddWeapon(IConsole::IResult *pResult, void *pUserData);
 	static void ConPracticeRemoveWeapon(IConsole::IResult *pResult, void *pUserData);

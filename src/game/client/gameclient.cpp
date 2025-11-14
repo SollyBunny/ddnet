@@ -342,8 +342,7 @@ void CGameClient::OnInit()
 			pMessage = Localize("Loading demo file from storage");
 			break;
 		default:
-			dbg_assert(false, "Invalid callback loading detail");
-			dbg_break();
+			dbg_assert_failed("Invalid callback loading detail");
 		}
 		m_Menus.RenderLoading(pTitle, pMessage, 0);
 	});
@@ -1035,7 +1034,7 @@ void CGameClient::OnMessage(int MsgId, CUnpacker *pUnpacker, int Conn, bool Dumm
 		{
 			// 31 is the magic number index of laser_damage
 			// which was removed in 0.7
-			// also in 0.6 it is unsed so we just set it to 0
+			// also in 0.6 it is unused so we just set it to 0
 			const int Value = (Client()->IsSixup() && i == 30) ? 0 : pUnpacker->GetInt();
 
 			// check for unpacking errors
@@ -1328,7 +1327,7 @@ void CGameClient::RenderShutdownMessage()
 	else if(Client()->State() == IClient::STATE_RESTARTING)
 		pMessage = Localize("Restarting. Please wait…");
 	else
-		dbg_assert(false, "Invalid client state for quitting message");
+		dbg_assert_failed("Invalid client state for quitting message");
 
 	// This function only gets called after the render loop has already terminated, so we have to call Swap manually.
 	Graphics()->Clear(0.0f, 0.0f, 0.0f);
@@ -2222,7 +2221,7 @@ void CGameClient::OnNewSnapshot()
 
 	if(m_Snap.m_SpecInfo.m_Active)
 	{
-		// don't send camera infomation when spectating
+		// don't send camera information when spectating
 		Zoom = m_LastZoom;
 		Deadzone = m_LastDeadzone;
 		FollowFactor = m_LastFollowFactor;
@@ -3587,7 +3586,7 @@ void CGameClient::UpdateLocalTuning()
 		}
 		else
 		{
-			// if we have processed what we need, and the tuning is still wrong due to out of order messege
+			// if we have processed what we need, and the tuning is still wrong due to out of order message
 			// fix our tuning by using the current one
 			m_GameWorld.TuningList()[TuneZone] = m_aTuning[g_Config.m_ClDummy];
 			m_aExpectingTuningSince[g_Config.m_ClDummy] = 0;
@@ -4940,7 +4939,7 @@ void CGameClient::ConMapbug(IConsole::IResult *pResult, void *pUserData)
 		log_debug("mapbugs", "unknown map bug '%s', ignoring", pMapBugName);
 		break;
 	default:
-		dbg_assert(false, "unreachable");
+		dbg_assert_failed("unreachable");
 	}
 }
 
@@ -5374,18 +5373,35 @@ void CGameClient::OnSaveCodeNetMessage(const CNetMsg_Sv_SaveCode *pMsg)
 	{
 		if(pMsg->m_pCode[0] == '\0')
 		{
-			str_format(aBuf,
-				sizeof(aBuf),
+			str_format(aBuf, sizeof(aBuf),
 				Localize("Team save in progress. You'll be able to load with '/load %s'"),
-				Config()->m_ClStreamerMode == 1 ? "*** *** ***" : pMsg->m_pGeneratedCode);
+				pMsg->m_pGeneratedCode);
 		}
 		else
 		{
-			str_format(aBuf,
-				sizeof(aBuf),
+			str_format(aBuf, sizeof(aBuf),
 				Localize("Team save in progress. You'll be able to load with '/load %s' if save is successful or with '/load %s' if it fails"),
-				Config()->m_ClStreamerMode == 1 ? "***" : pMsg->m_pCode,
-				Config()->m_ClStreamerMode == 1 ? "*** *** ***" : pMsg->m_pGeneratedCode);
+				pMsg->m_pCode,
+				pMsg->m_pGeneratedCode);
+		}
+		m_Chat.AddLine(-1, TEAM_ALL, aBuf);
+	}
+	else if(State == SAVESTATE_DONE)
+	{
+		if(pMsg->m_pServerName[0] == '\0')
+		{
+			str_format(aBuf, sizeof(aBuf),
+				"Team successfully saved by %s. Use '/load %s' to continue",
+				pMsg->m_pSaveRequester,
+				pMsg->m_pCode[0] ? pMsg->m_pCode : pMsg->m_pGeneratedCode);
+		}
+		else
+		{
+			str_format(aBuf, sizeof(aBuf),
+				"Team successfully saved by %s. Use '/load %s' on %s to continue",
+				pMsg->m_pSaveRequester,
+				pMsg->m_pCode[0] ? pMsg->m_pCode : pMsg->m_pGeneratedCode,
+				pMsg->m_pServerName);
 		}
 		m_Chat.AddLine(-1, TEAM_ALL, aBuf);
 	}
@@ -5393,21 +5409,17 @@ void CGameClient::OnSaveCodeNetMessage(const CNetMsg_Sv_SaveCode *pMsg)
 	{
 		if(pMsg->m_pServerName[0] == '\0')
 		{
-			str_format(
-				aBuf,
-				sizeof(aBuf),
+			str_format(aBuf, sizeof(aBuf),
 				Localize("Team successfully saved by %s. The database connection failed, using generated save code instead to avoid collisions. Use '/load %s' to continue"),
 				pMsg->m_pSaveRequester,
-				Config()->m_ClStreamerMode == 1 ? "*** *** ***" : pMsg->m_pGeneratedCode);
+				pMsg->m_pGeneratedCode);
 		}
 		else
 		{
-			str_format(
-				aBuf,
-				sizeof(aBuf),
+			str_format(aBuf, sizeof(aBuf),
 				Localize("Team successfully saved by %s. The database connection failed, using generated save code instead to avoid collisions. Use '/load %s' on %s to continue"),
 				pMsg->m_pSaveRequester,
-				Config()->m_ClStreamerMode == 1 ? "*** *** ***" : pMsg->m_pGeneratedCode,
+				pMsg->m_pGeneratedCode,
 				pMsg->m_pServerName);
 		}
 		m_Chat.AddLine(-1, TEAM_ALL, aBuf);
@@ -5419,7 +5431,7 @@ void CGameClient::OnSaveCodeNetMessage(const CNetMsg_Sv_SaveCode *pMsg)
 
 	if(State != SAVESTATE_PENDING && State != SAVESTATE_ERROR && Client()->State() != IClient::STATE_DEMOPLAYBACK)
 	{
-		StoreSave(pMsg->m_pTeamMembers, pMsg->m_pGeneratedCode);
+		StoreSave(pMsg->m_pTeamMembers, pMsg->m_pCode[0] ? pMsg->m_pCode : pMsg->m_pGeneratedCode);
 	}
 }
 
