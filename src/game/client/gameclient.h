@@ -694,7 +694,7 @@ public:
 	void SendKill() const;
 	void SendReadyChange7();
 
-	int m_NextChangeInfo;
+	int m_aNextChangeInfo[NUM_DUMMIES];
 
 	// DDRace
 
