@@ -87,7 +87,7 @@ Here is a list of states which are available:
 | `string` | `state("clan", int Id)` | Returns the clan name of a player given their client ID. |
 
 ```js
-var wha = include("thatscript.chai") // you can include other scripts, they use absolute paths from config dir
+var what = include("thatscript.chai") // you can include other scripts, they use absolute paths from config dir
 print(what) // prints "top level return"
 if (!file_exists("file")) { // check if a file exists, also absolute from config dir
 	throw("why doesn't this file exist")
