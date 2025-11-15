@@ -1400,7 +1400,7 @@ void CMenus::RenderSettingsTClientWarList(CUIRect MainView)
 			{
 				// TODO: stop misusing this function
 				// TODO: render the real skin with skin remembering component (to be added)
-				RenderDevSkin(EntryTypeRect.Center(), 35.0f, "defualt", "default", false, 0, 0, 0, false);
+				RenderDevSkin(EntryTypeRect.Center(), 35.0f, "default", "default", false, 0, 0, 0, false);
 			}
 
 			if(str_comp(pEntry->m_aReason, "") != 0)
