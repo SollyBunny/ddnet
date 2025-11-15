@@ -23,6 +23,30 @@ Thanks to tela for the logo design, and solly for svg <3
 * Download a [nightly (dev/unstable) build](https://github.com/sjrc6/TaterClient-ddnet/actions/workflows/fast-build.yml?query=branch%3Amaster)
 * [Clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) this repo and build using the [guide from DDNet](https://github.com/ddnet/ddnet?tab=readme-ov-file#cloning)
 
+### Translation
+
+FTAPI (a simple wrapper for Google translate) will work out of the box, however it will quickly become overloaded
+
+This is a guide for setting up [libretranslate](https://docs.libretranslate.com/guides/installation/)
+
+First you need an old version of python (3.8, 3.9 or 3.10), along with `pip`
+
+If you do not have this you can use [conda](https://www.anaconda.com/docs/getting-started/miniconda/install#quickstart-install-instructions) to install it
+
+```sh
+conda create -n libretranslate python=3.9
+conda activate libretranslate
+```
+
+Then you can install and run libretranslate, do note that this requires large libraries like `torch` so it's a couple of gigs
+
+```sh
+pip install libretranslate
+libretranslate
+```
+
+You can then set `tc_translate_backend libretranslate`, the port is automatically 5000
+
 ### Scripting
 
 TClient supports the [ChaiScript](https://chaiscript.com/) language for simple tasks
