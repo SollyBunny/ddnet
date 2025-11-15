@@ -1,7 +1,7 @@
 #ifndef GAME_CLIENT_COMPONENTS_TCLIENT_BG_DRAW_FILE_H
 #define GAME_CLIENT_COMPONENTS_TCLIENT_BG_DRAW_FILE_H
 
-// bg_draw_file.{cpp,h} can be used seperatley
+// bg_draw_file.{cpp,h} can be used separately
 
 #include <cstdio>
 #include <functional>

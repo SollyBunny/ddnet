@@ -6,7 +6,7 @@
 
 ### Taters custom ddnet client with some modifications
 
-Not guarenteed to be bug free, but I will try to fix them.
+Not guaranteed to be bug free, but I will try to fix them.
 
 If ddnet devs are reading this and want to steal my changes please feel free.
 
@@ -41,7 +41,7 @@ var d = ["lists", 2] // not strongly typed
 // var e, f = d // no list deconstruction
 print(d[0] + to_string(d[1])) // explicit to_string required for string concat
 var bass = "ba" + "s" + "s"
-var ass = bass.substr(1, -1) // both indecies required, use -1 for end
+var ass = bass.substr(1, -1) // both indices required, use -1 for end
 if (a == b) { // brackets required
 	print("this will never happen") // output
 } else if (c == "strings") { // string comparison

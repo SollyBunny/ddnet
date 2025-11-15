@@ -136,7 +136,7 @@ bool CMenus::DoSliderWithScaledValue(const void *pId, int *pOption, const CUIRec
 	int Value = *pOption;
 	Min /= Scale;
 	Max /= Scale;
-	// Allow adjustment of slider options when ctrl is pressed (to avoid scrolling, or accidently adjusting the value)
+	// Allow adjustment of slider options when ctrl is pressed (to avoid scrolling, or accidentally adjusting the value)
 	int Increment = std::max(1, (Max - Min) / 35);
 	if(Input()->ModifierIsPressed() && Input()->KeyPress(KEY_MOUSE_WHEEL_UP) && Ui()->MouseInside(pRect))
 	{
@@ -341,7 +341,7 @@ void CMenus::RenderSettingsTClient(CUIRect MainView)
 	MainView.HSplitTop(Margin, nullptr, &MainView);
 
 	if(s_CurCustomTab == TCLIENT_TAB_SETTINGS)
-		RenderSettingsTClientSettngs(MainView);
+		RenderSettingsTClientSettings(MainView);
 	if(s_CurCustomTab == TCLIENT_TAB_BINDCHAT)
 		RenderSettingsTClientChatBinds(MainView);
 	if(s_CurCustomTab == TCLIENT_TAB_BINDWHEEL)
@@ -354,7 +354,7 @@ void CMenus::RenderSettingsTClient(CUIRect MainView)
 		RenderSettingsTClientInfo(MainView);
 }
 
-void CMenus::RenderSettingsTClientSettngs(CUIRect MainView)
+void CMenus::RenderSettingsTClientSettings(CUIRect MainView)
 {
 	CUIRect Column, LeftView, RightView, Button, Label;
 
@@ -998,9 +998,9 @@ void CMenus::RenderSettingsTClientSettngs(CUIRect MainView)
 
 	Column.HSplitTop(LineSize * 2.0f, &Button, &Column);
 	if(g_Config.m_TcBgDrawFadeTime == 0)
-		Ui()->DoScrollbarOption(&g_Config.m_TcBgDrawFadeTime, &g_Config.m_TcBgDrawFadeTime, &Button, TCLocalize("Time until strokes dissapear"), 0, 600, &CUi::ms_LinearScrollbarScale, CUi::SCROLLBAR_OPTION_MULTILINE, TCLocalize(" seconds (never)"));
+		Ui()->DoScrollbarOption(&g_Config.m_TcBgDrawFadeTime, &g_Config.m_TcBgDrawFadeTime, &Button, TCLocalize("Time until strokes disappear"), 0, 600, &CUi::ms_LinearScrollbarScale, CUi::SCROLLBAR_OPTION_MULTILINE, TCLocalize(" seconds (never)"));
 	else
-		Ui()->DoScrollbarOption(&g_Config.m_TcBgDrawFadeTime, &g_Config.m_TcBgDrawFadeTime, &Button, TCLocalize("Time until strokes dissapear"), 0, 600, &CUi::ms_LinearScrollbarScale, CUi::SCROLLBAR_OPTION_MULTILINE, TCLocalize(" seconds"));
+		Ui()->DoScrollbarOption(&g_Config.m_TcBgDrawFadeTime, &g_Config.m_TcBgDrawFadeTime, &Button, TCLocalize("Time until strokes disappear"), 0, 600, &CUi::ms_LinearScrollbarScale, CUi::SCROLLBAR_OPTION_MULTILINE, TCLocalize(" seconds"));
 
 	Column.HSplitTop(LineSize * 2.0f, &Button, &Column);
 	Ui()->DoScrollbarOption(&g_Config.m_TcBgDrawWidth, &g_Config.m_TcBgDrawWidth, &Button, TCLocalize("Width"), 1, 50, &CUi::ms_LinearScrollbarScale, CUi::SCROLLBAR_OPTION_MULTILINE);
@@ -2159,8 +2159,8 @@ void CMenus::RenderSettingsTClientProfiles(CUIRect MainView)
 				MaxExtent = MaxSize;
 			TextRender()->TextColor(ColorRGBA(1.0f, 0.0f, 0.0f));
 			TextRender()->SetFontPreset(EFontPreset::ICON_FONT);
-			const auto TextBoudningBox = TextRender()->TextBoundingBox(MaxExtent * 0.8f, FONT_ICON_XMARK);
-			TextRender()->Text(Cross.x + (Cross.w - TextBoudningBox.m_W) / 2.0f, Cross.y + (Cross.h - TextBoudningBox.m_H) / 2.0f, MaxExtent * 0.8f, FONT_ICON_XMARK);
+			const auto TextBoundingBox = TextRender()->TextBoundingBox(MaxExtent * 0.8f, FONT_ICON_XMARK);
+			TextRender()->Text(Cross.x + (Cross.w - TextBoundingBox.m_W) / 2.0f, Cross.y + (Cross.h - TextBoundingBox.m_H) / 2.0f, MaxExtent * 0.8f, FONT_ICON_XMARK);
 			TextRender()->TextColor(TextRender()->DefaultTextColor());
 			TextRender()->SetFontPreset(EFontPreset::DEFAULT_FONT);
 		};
@@ -2403,11 +2403,11 @@ void CMenus::RenderSettingsTClientProfiles(CUIRect MainView)
 	static CListBox s_ListBox;
 	s_ListBox.DoStart(50.0f, ProfileList.size(), MainView.w / 200.0f, 3, s_SelectedProfile, &MainView, true, IGraphics::CORNER_ALL, true);
 
-	static bool s_Indexs[1024];
+	static bool s_Indexes[1024];
 
 	for(size_t i = 0; i < ProfileList.size(); ++i)
 	{
-		CListboxItem Item = s_ListBox.DoNextItem(&s_Indexs[i], s_SelectedProfile >= 0 && (size_t)s_SelectedProfile == i);
+		CListboxItem Item = s_ListBox.DoNextItem(&s_Indexes[i], s_SelectedProfile >= 0 && (size_t)s_SelectedProfile == i);
 		if(!Item.m_Visible)
 			continue;
 

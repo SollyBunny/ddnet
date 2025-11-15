@@ -2903,7 +2903,7 @@ void CGameClient::OnPredict()
 
 			vec2 ConfidenceVector = ConfidenceParallel * std::max(TrustFactor, NewConfidence) + ConfidencePerp * NewConfidence;
 
-			// Minor safe gaurd against insane predictions
+			// Minor safe guard against insane predictions
 			if(length(ConfidenceVector) > HistoryDistance)
 				ConfidenceVector = mix(normalize(ConfidenceVector) * HistoryDistance, ConfidenceVector, NewConfidence);
 

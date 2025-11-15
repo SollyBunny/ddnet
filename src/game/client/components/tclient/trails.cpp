@@ -263,16 +263,16 @@ void CTrails::OnRender()
 
 			vec2 Normal = vec2(-PrevDirection.y, PrevDirection.x);
 			Part.m_Normal = Normal;
-			vec2 Tanget = normalize(NextDirection + PrevDirection);
-			if(Tanget == vec2(0.0f, 0.0f))
-				Tanget = Normal;
+			vec2 Tangent = normalize(NextDirection + PrevDirection);
+			if(Tangent == vec2(0.0f, 0.0f))
+				Tangent = Normal;
 
-			vec2 PerpVec = vec2(-Tanget.y, Tanget.x);
+			vec2 PerpVec = vec2(-Tangent.y, Tangent.x);
 			Width = Part.m_Width;
 			float ScaledWidth = Width / dot(Normal, PerpVec);
 			float TopScaled = ScaledWidth;
 			float BotScaled = ScaledWidth;
-			if(dot(PrevDirection, Tanget) > 0.0f)
+			if(dot(PrevDirection, Tangent) > 0.0f)
 				TopScaled = std::min(Width * 3.0f, TopScaled);
 			else
 				BotScaled = std::min(Width * 3.0f, BotScaled);
@@ -285,8 +285,8 @@ void CTrails::OnRender()
 			// Bevel Cap
 			if(dot(PrevDirection, NextDirection) < -0.25f)
 			{
-				Top = Pos + Tanget * Width;
-				Bot = Pos - Tanget * Width;
+				Top = Pos + Tangent * Width;
+				Bot = Pos - Tangent * Width;
 
 				float Det = PrevDirection.x * NextDirection.y - PrevDirection.y * NextDirection.x;
 				if(Det >= 0.0f)
