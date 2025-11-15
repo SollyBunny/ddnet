@@ -77,9 +77,6 @@ Visual
 Custom Font: 
 == Fuente personalizada: 
 
-Show ping colored circle before names
-== Mostrar círculo de ping antes del nombre
-
 Hide nameplates in spec
 == Ocultar nombres en espectador
 
@@ -145,9 +142,6 @@ Uncertainty duration
 
 Other
 == Otro
-
-Run cl_run_on_join as console command
-== Ejecutar cl_run_on_join como comando
 
 Voting
 == Votación
@@ -617,9 +611,6 @@ v = Velocity
 z = Zoom
 == z = Zoom
 
-_ or \' \' = Space
-== _ o ' ' = Espacio
-
 Apply
 == Aplicar
 
@@ -631,6 +622,18 @@ Add Item
 
 Remove Item
 == Quitar elemento
+
+Add [group] [name] [reason]:
+== Añadir [grupo] [nombre] [razón]
+
+Add [group] [clan] [reason]:
+== Añadir [grupo] [clan] [razón]
+
+Remove [group] [name]:
+== Quitar [grupo] [nombre]
+
+Remove [group] [clan]:
+== Quitar [grupo] [clan]
 
 Translated text hidden due to streamer mode
 == 
@@ -646,19 +649,11 @@ Failed to create bgdraw folder
 == 
 
 [bgdraw]
-Opening %s for %s
+No items to write
 == 
 
 [bgdraw]
-writing
-== 
-
-[bgdraw]
-reading
-== 
-
-[bgdraw]
-Failed to open %s for %s
+No changes since last save
 == 
 
 [bgdraw]
@@ -698,55 +693,13 @@ Add team clan:
 Remove war name:
 == 
 
+Remove war clan:
+== 
+
 Remove team name:
 == 
 
 Remove team clan:
-== 
-
-Add [group] [name] [reason]:
-== Añadir [grupo] [nombre] [razón]
-
-Add [group] [clan] [reason]:
-== Añadir [grupo] [clan] [razón]
-
-Remove [group] [name]:
-== Quitar [grupo] [nombre]
-
-Remove [group] [clan]:
-== Quitar [grupo] [clan]
-
-Mod
-== 
-
-Mute ID:
-== 
-
-Mute Name:
-== 
-
-Unmute Last:
-== 
-
-Kick ID:
-== 
-
-Kick Name:
-== 
-
-Ban ID:
-== 
-
-Ban Name:
-== 
-
-Unban Last:
-== 
-
-Kill Ids:
-== 
-
-Kill Names:
 == 
 
 Translate:
@@ -762,9 +715,6 @@ Bind Wheel
 == 
 
 War List
-== 
-
-Bind Wheel Key
 == 
 
 [Hammer Mode]
@@ -788,6 +738,12 @@ Ingame cursor scale
 Wheel animate
 == 
 
+Show ping colored circle in nameplates
+== 
+
+Show country flags in nameplates
+== 
+
 Show katan on frozen players
 == 
 
@@ -795,6 +751,12 @@ Tiny Tees
 == 
 
 Tiny Tee Size
+== 
+
+Fake CTF flags
+== 
+
+Auto execute
 == 
 
 Pet
@@ -833,13 +795,32 @@ Screen center line color
 Screen center line width
 == 
 
+[Outlines]
+Width
+== 
+
+Unhook & hook
+== 
+
+Freeze & deep
+== 
+
+Unfreeze & undeep
+== 
+
+Kill
+== 
+
+Tele
+== 
+
 Toggle ghosts key
 == 
 
 Background Draw
 == 
 
-Time until strokes dissapear
+Time until strokes disappear
 == 
 
  seconds (never)
@@ -863,7 +844,23 @@ Attempt to change your name when near finish
 Finish Name:
 == 
 
+The command is ran in console not chat
+== 
+
+Bind Wheel Key
+== 
+
+_ or ' ' = Space
+== 
+
 Overwrite clan even if empty
+== 
+
+Activating mod weapon on %d: %s\n
+== 
+
+[data_version.h]
+You have probably only installed the TClient DDNet.exe which is not supported, please use the entire TClient folder
 == 
 
 Changing name to %s near finish
