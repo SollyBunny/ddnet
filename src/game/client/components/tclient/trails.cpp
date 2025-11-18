@@ -316,8 +316,23 @@ void CTrails::OnRender()
 		{
 			const CTrailPart &Part = s_Trail.at(i);
 			const CTrailPart &NextPart = s_Trail.at(i + 1);
-			if(distance(Part.m_Pos, NextPart.m_Pos) > 120.0f)
-				continue;
+			const float Dist = distance(Part.m_UnmovedPos, NextPart.m_UnmovedPos);
+
+			const float MaxDiff = 120.0f;
+			if (i > 0) 
+			{
+				const CTrailPart& PrevPart = s_Trail.at(i - 1);
+				float PrevDist = distance(PrevPart.m_UnmovedPos, Part.m_UnmovedPos);
+				if(std::abs(Dist - PrevDist) > MaxDiff)
+					continue;
+			}
+			if (i < (int)s_Trail.size() - 2)
+			{
+				const CTrailPart& NextNextPart = s_Trail.at(i + 2);
+				float NextDist = distance(NextPart.m_UnmovedPos, NextNextPart.m_UnmovedPos);
+				if (std::abs(Dist - NextDist) > MaxDiff)
+					continue;
+			}
 
 			if(LineMode)
 			{
