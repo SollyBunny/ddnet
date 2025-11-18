@@ -361,7 +361,7 @@ void CMenus::RenderSettingsTClientSettings(CUIRect MainView)
 	static CScrollRegion s_ScrollRegion;
 	vec2 ScrollOffset(0.0f, 0.0f);
 	CScrollRegionParams ScrollParams;
-	ScrollParams.m_ScrollUnit = 120.0f;
+	ScrollParams.m_ScrollUnit = 60.0f;
 	ScrollParams.m_Flags = CScrollRegionParams::FLAG_CONTENT_STATIC_WIDTH;
 	ScrollParams.m_ScrollbarMargin = 5.0f;
 	s_ScrollRegion.Begin(&MainView, &ScrollOffset, &ScrollParams);
@@ -1199,7 +1199,7 @@ void CMenus::RenderSettingsTClientChatBinds(CUIRect MainView)
 	static CScrollRegion s_ScrollRegion;
 	vec2 ScrollOffset(0.0f, 0.0f);
 	CScrollRegionParams ScrollParams;
-	ScrollParams.m_ScrollUnit = 120.0f;
+	ScrollParams.m_ScrollUnit = 60.0f;
 	ScrollParams.m_Flags = CScrollRegionParams::FLAG_CONTENT_STATIC_WIDTH;
 	ScrollParams.m_ScrollbarMargin = 5.0f;
 	s_ScrollRegion.Begin(&MainView, &ScrollOffset, &ScrollParams);
