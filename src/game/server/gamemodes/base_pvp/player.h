@@ -105,7 +105,7 @@ public:
 	// To fully apply the hammer hit effect we still need information
 	// about the now dead character.
 	// See https://github.com/ddnet-insta/ddnet-insta/issues/313
-	CCharacter *GetCharacterDeadOrAlive() { return m_pCharacter; };
+	CCharacter *GetCharacterDeadOrAlive() { return m_pCharacter; }
 
 	// dead players can not respawn
 	// will be used like m_RespawnDisabled in 0.7

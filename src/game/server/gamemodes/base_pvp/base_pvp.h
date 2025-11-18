@@ -42,7 +42,7 @@ public:
 	int SnapGameInfoExFlags2(int SnappingClient, int DDRaceFlags) override;
 	int SnapPlayerScore(int SnappingClient, CPlayer *pPlayer, int DDRaceScore) override;
 	int GetDefaultWeapon(class CPlayer *pPlayer) override { return m_DefaultWeapon; }
-	void OnDDRaceTimeLoad(class CPlayer *pPlayer, float Time) override {};
+	void OnDDRaceTimeLoad(class CPlayer *pPlayer, float Time) override {}
 	bool LoadNewPlayerNameData(int ClientId) override;
 	void OnLoadedNameStats(const CSqlStatsPlayer *pStats, class CPlayer *pPlayer) override;
 	bool OnTeamChatCmd(IConsole::IResult *pResult) override;
@@ -76,9 +76,9 @@ public:
 	bool OnCharacterTakeDamage(vec2 &Force, int &Dmg, int &From, int &Weapon, CCharacter &Character) override;
 	bool OnChatMessage(const CNetMsg_Cl_Say *pMsg, int Length, int &Team, CPlayer *pPlayer) override;
 	bool OnFireWeapon(CCharacter &Character, int &Weapon, vec2 &Direction, vec2 &MouseTarget, vec2 &ProjStartPos) override;
-	void SetArmorProgress(CCharacter *pCharacter, int Progress) override {};
-	void SetArmorProgressFull(CCharacter *pCharacter) override {};
-	void SetArmorProgressEmpty(CCharacter *pCharacter) override {};
+	void SetArmorProgress(CCharacter *pCharacter, int Progress) override {}
+	void SetArmorProgressFull(CCharacter *pCharacter) override {}
+	void SetArmorProgressEmpty(CCharacter *pCharacter) override {}
 	void OnShowStatsAll(const CSqlStatsPlayer *pStats, class CPlayer *pRequestingPlayer, const char *pRequestedName) override;
 	void OnShowRank(int Rank, int RankedScore, const char *pRankType, class CPlayer *pRequestingPlayer, const char *pRequestedName) override;
 	void OnRoundStart() override;
