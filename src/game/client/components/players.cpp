@@ -1453,10 +1453,16 @@ void CPlayers::OnRender()
 
 				if(g_Config.m_TcColorFreeze)
 				{
-					aRenderInfo[i].m_CustomColoredSkin = GameClient()->m_aClients[i].m_RenderInfo.m_CustomColoredSkin;
+					bool CustomColor = GameClient()->m_aClients[i].m_RenderInfo.m_CustomColoredSkin;
+					aRenderInfo[i].m_CustomColoredSkin = true;
+
 					aRenderInfo[i].m_ColorFeet = g_Config.m_TcColorFreezeFeet ? GameClient()->m_aClients[i].m_RenderInfo.m_ColorFeet : ColorRGBA(1, 1, 1);
 					float Darken = (g_Config.m_TcColorFreezeDarken / 100.0f) * 0.5f + 0.5f;
+
 					aRenderInfo[i].m_ColorBody = GameClient()->m_aClients[i].m_RenderInfo.m_ColorBody;
+					if(!CustomColor)
+						aRenderInfo[i].m_ColorBody = GameClient()->m_aClients[i].m_RenderInfo.m_BloodColor;
+
 					aRenderInfo[i].m_ColorBody = ColorRGBA(aRenderInfo[i].m_ColorBody.r * Darken, aRenderInfo[i].m_ColorBody.g * Darken, aRenderInfo[i].m_ColorBody.b * Darken, 1.0);
 				}
 			}
