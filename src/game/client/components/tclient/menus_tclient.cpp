@@ -215,7 +215,7 @@ int CMenus::DoButtonLineSize_Menu(CButtonContainer* pButtonContainer, const char
 	return Ui()->DoButtonLogic(pButtonContainer, Checked, pRect, BUTTONFLAG_LEFT);
 }
 
-void CMenus::RenderDevSkin(vec2 RenderPos, float Size, const char* pSkinName, const char* pBackupSkin, bool CustomColors, int FeetColor, int BodyColor, int Emote, bool Rainbow, ColorRGBA ColorFeet, ColorRGBA ColorBody)
+void CMenus::RenderDevSkin(vec2 RenderPos, float Size, const char* pSkinName, const char* pBackupSkin, bool CustomColors, int FeetColor, int BodyColor, int Emote, bool Rainbow, bool Cute, ColorRGBA ColorFeet, ColorRGBA ColorBody)
 {
 	bool WhiteFeetTemp = g_Config.m_TcWhiteFeet;
 	g_Config.m_TcWhiteFeet = false;
@@ -257,8 +257,24 @@ void CMenus::RenderDevSkin(vec2 RenderPos, float Size, const char* pSkinName, co
 	vec2 OffsetToMid;
 	CRenderTools::GetRenderTeeOffsetToRenderedTee(pIdleState, &SkinInfo, OffsetToMid);
 	vec2 TeeRenderPos(RenderPos.x, RenderPos.y + OffsetToMid.y);
-	RenderTools()->RenderTee(pIdleState, &SkinInfo, Emote, vec2(1.0f, 0.0f), TeeRenderPos);
+	if(Cute)
+		RenderTeeCute(pIdleState, &SkinInfo, Emote, vec2(1.0f, 0.0f), TeeRenderPos, true);
+	else
+		RenderTools()->RenderTee(pIdleState, &SkinInfo, Emote, vec2(1.0f, 0.0f), TeeRenderPos);
 	g_Config.m_TcWhiteFeet = WhiteFeetTemp;
+}
+
+void CMenus::RenderTeeCute(const CAnimState* pAnim, const CTeeRenderInfo* pInfo, int Emote, vec2 Dir, vec2 Pos, bool CuteEyes, float Alpha)
+{
+	Dir = Ui()->MousePos() - Pos;
+	if (pInfo->m_Size > 0.0f)
+		Dir /= pInfo->m_Size;
+	const float Length = length(Dir);
+	if (Length > 1.0f)
+		Dir /= Length;
+	if (CuteEyes && Length < 0.4f)
+		Emote = 2;
+	RenderTools()->RenderTee(pAnim, pInfo, Emote, Dir, Pos, Alpha);
 }
 
 void CMenus::RenderFontIcon(const CUIRect Rect, const char* pText, float Size, int Align)
@@ -1408,7 +1424,7 @@ void CMenus::RenderSettingsTClientWarList(CUIRect MainView)
 			{
 				// TODO: stop misusing this function
 				// TODO: render the real skin with skin remembering component (to be added)
-				RenderDevSkin(EntryTypeRect.Center(), 35.0f, "default", "default", false, 0, 0, 0, false);
+				RenderDevSkin(EntryTypeRect.Center(), 35.0f, "default", "default", false, 0, 0, 0, false, false);
 			}
 
 			if (str_comp(pEntry->m_aReason, "") != 0)
@@ -1739,7 +1755,7 @@ void CMenus::RenderSettingsTClientWarList(CUIRect MainView)
 
 		CTeeRenderInfo TeeInfo = Client.m_RenderInfo;
 		TeeInfo.m_Size = 25.0f;
-		RenderTools()->RenderTee(CAnimState::GetIdle(), &TeeInfo, 0, vec2(1.0f, 0.0f), TeeRect.Center() + vec2(-1.0f, 2.5f));
+		RenderTeeCute(CAnimState::GetIdle(), &TeeInfo, 0, vec2(1.0f, 0.0f), TeeRect.Center() + vec2(-1.0f, 2.5f), true);
 	}
 	s_PlayerListBox.DoEnd();
 }
@@ -2060,7 +2076,7 @@ void CMenus::RenderSettingsTClientInfo(CUIRect MainView)
 		Ui()->DoLabel(&Label, "Tater", LineSize, TEXTALIGN_ML);
 		if (Ui()->DoButton_FontIcon(&s_LinkButton1, FONT_ICON_ARROW_UP_RIGHT_FROM_SQUARE, 0, &Button, IGraphics::CORNER_ALL))
 			Client()->ViewLink("https://github.com/sjrc6");
-		RenderDevSkin(TeeRect.Center(), 50.0f, "glow_mermyfox", "mermyfox", true, 0, 0, 0, false, ColorRGBA(0.92f, 0.29f, 0.48f, 1.0f), ColorRGBA(0.55f, 0.64f, 0.76f, 1.0f));
+		RenderDevSkin(TeeRect.Center(), 50.0f, "glow_mermyfox", "mermyfox", true, 0, 0, 0, false, true, ColorRGBA(0.92f, 0.29f, 0.48f, 1.0f), ColorRGBA(0.55f, 0.64f, 0.76f, 1.0f));
 	}
 	{
 		RightView.HSplitTop(CardSize, &DevCardRect, &RightView);
@@ -2071,7 +2087,7 @@ void CMenus::RenderSettingsTClientInfo(CUIRect MainView)
 		Ui()->DoLabel(&Label, "SollyBunny / bun bun", LineSize, TEXTALIGN_ML);
 		if (Ui()->DoButton_FontIcon(&s_LinkButton3, FONT_ICON_ARROW_UP_RIGHT_FROM_SQUARE, 0, &Button, IGraphics::CORNER_ALL))
 			Client()->ViewLink("https://github.com/SollyBunny");
-		RenderDevSkin(TeeRect.Center(), 50.0f, "tuzi", "tuzi", false, 0, 0, 2, true);
+		RenderDevSkin(TeeRect.Center(), 50.0f, "tuzi", "tuzi", false, 0, 0, 2, true, true, true);
 	}
 	{
 		RightView.HSplitTop(CardSize, &DevCardRect, &RightView);
@@ -2082,7 +2098,7 @@ void CMenus::RenderSettingsTClientInfo(CUIRect MainView)
 		Ui()->DoLabel(&Label, "PeBox", LineSize, TEXTALIGN_ML);
 		if (Ui()->DoButton_FontIcon(&s_LinkButton2, FONT_ICON_ARROW_UP_RIGHT_FROM_SQUARE, 0, &Button, IGraphics::CORNER_ALL))
 			Client()->ViewLink("https://github.com/danielkempf");
-		RenderDevSkin(TeeRect.Center(), 50.0f, "greyfox", "greyfox", true, 0, 0, 2, false, ColorRGBA(0.00f, 0.09f, 1.00f, 1.00f), ColorRGBA(1.00f, 0.92f, 0.00f, 1.00f));
+		RenderDevSkin(TeeRect.Center(), 50.0f, "greyfox", "greyfox", true, 0, 0, 2, false, true, ColorRGBA(0.00f, 0.09f, 1.00f, 1.00f), ColorRGBA(1.00f, 0.92f, 0.00f, 1.00f));
 	}
 	{
 		RightView.HSplitTop(CardSize, &DevCardRect, &RightView);
@@ -2093,7 +2109,7 @@ void CMenus::RenderSettingsTClientInfo(CUIRect MainView)
 		Ui()->DoLabel(&Label, "Teero", LineSize, TEXTALIGN_ML);
 		if (Ui()->DoButton_FontIcon(&s_LinkButton4, FONT_ICON_ARROW_UP_RIGHT_FROM_SQUARE, 0, &Button, IGraphics::CORNER_ALL))
 			Client()->ViewLink("https://github.com/Teero888");
-		RenderDevSkin(TeeRect.Center(), 50.0f, "glow_mermyfox", "mermyfox", true, 0, 0, 0, false, ColorRGBA(1.00f, 1.00f, 1.00f, 1.00f), ColorRGBA(1.00f, 0.02f, 0.13f, 1.00f));
+		RenderDevSkin(TeeRect.Center(), 50.0f, "glow_mermyfox", "mermyfox", true, 0, 0, 0, false, true, ColorRGBA(1.00f, 1.00f, 1.00f, 1.00f), ColorRGBA(1.00f, 0.02f, 0.13f, 1.00f));
 	}
 	{
 		RightView.HSplitTop(CardSize, &DevCardRect, &RightView);
@@ -2104,7 +2120,7 @@ void CMenus::RenderSettingsTClientInfo(CUIRect MainView)
 		Ui()->DoLabel(&Label, "ChillerDragon", LineSize, TEXTALIGN_ML);
 		if (Ui()->DoButton_FontIcon(&s_LinkButton5, FONT_ICON_ARROW_UP_RIGHT_FROM_SQUARE, 0, &Button, IGraphics::CORNER_ALL))
 			Client()->ViewLink("https://github.com/ChillerDragon");
-		RenderDevSkin(TeeRect.Center(), 50.0f, "glow_greensward", "greensward", false, 0, 0, 0, false, ColorRGBA(1.00f, 1.00f, 1.00f, 1.00f), ColorRGBA(1.00f, 0.02f, 0.13f, 1.00f));
+		RenderDevSkin(TeeRect.Center(), 50.0f, "glow_greensward", "greensward", false, 0, 0, 0, false, true, ColorRGBA(1.00f, 1.00f, 1.00f, 1.00f), ColorRGBA(1.00f, 0.02f, 0.13f, 1.00f));
 	}
 
 	RightView.HSplitTop(MarginSmall, nullptr, &RightView);
@@ -2189,14 +2205,9 @@ void CMenus::RenderSettingsTClientProfiles(CUIRect MainView)
 				const vec2 Pos = Skin.Center() + vec2(0.0f, TeeRenderInfo.m_Size / 10.0f); // Prevent overflow from hats
 				vec2 Dir = vec2(1.0f, 0.0f);
 				if (Main)
-				{
-					Dir = Ui()->MousePos() - Pos;
-					Dir /= TeeRenderInfo.m_Size;
-					const float Length = length(Dir);
-					if (Length > 1.0f)
-						Dir /= Length;
-				}
-				RenderTools()->RenderTee(CAnimState::GetIdle(), &TeeRenderInfo, std::max(0, Profile.m_Emote), Dir, Pos);
+					RenderTeeCute(CAnimState::GetIdle(), &TeeRenderInfo, std::max(0, Profile.m_Emote), Dir, Pos, false);
+				else
+					RenderTools()->RenderTee(CAnimState::GetIdle(), &TeeRenderInfo, std::max(0, Profile.m_Emote), Dir, Pos);
 			}
 		}
 		Rect.VSplitLeft(5.0f, nullptr, &Rect);
