@@ -664,6 +664,7 @@ public:
 		SETTINGS_ASSETS,
 		SETTINGS_TCLIENT,
 		SETTINGS_PROFILES,
+		SETTINGS_CONFIGS,
 
 		SETTINGS_LENGTH,
 	};
@@ -821,6 +822,7 @@ private:
 	void RenderSettingsTClientInfo(CUIRect MainView);
 	void RenderSettingsTClientStatusBar(CUIRect MainView);
 	void RenderSettingsTClientProfiles(CUIRect MainView);
+	void RenderSettingsTClientConfigs(CUIRect MainView);
 
 	const CWarType *m_pRemoveWarType = nullptr;
 	void PopupConfirmRemoveWarType();
