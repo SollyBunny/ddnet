@@ -2570,8 +2570,8 @@ void CMenus::RenderSettingsTClientConfigs(CUIRect MainView)
 	ConfigManager()->PossibleConfigVariables("", FlagMask, Collector, &vEntries);
 
 	auto DomainEnabled = [&](ConfigDomain Domain) {
-		if(Domain == ConfigDomain::DDNET) return g_Config.m_TcCfgShowDDNet != 0;
-		if(Domain == ConfigDomain::TCLIENT) return g_Config.m_TcCfgShowTClient != 0;
+		if(Domain == ConfigDomain::DDNET) return g_Config.m_TcUiShowDDNet != 0;
+		if(Domain == ConfigDomain::TCLIENT) return g_Config.m_TcUiShowTClient != 0;
 		// only show DDNet and TClient domains
 		return false;
 	};
@@ -2610,7 +2610,7 @@ void CMenus::RenderSettingsTClientConfigs(CUIRect MainView)
 		const SConfigVariable* pVar = E.m_pVar;
 		if (!DomainEnabled(pVar->m_ConfigDomain))
 			continue;
-		if (g_Config.m_TcCfgOnlyModified && IsEffectiveDefaultVar(pVar))
+		if (g_Config.m_TcUiOnlyModified && IsEffectiveDefaultVar(pVar))
 			continue;
 		if (pSearch && pSearch[0])
 		{
@@ -2662,7 +2662,7 @@ void CMenus::RenderSettingsTClientConfigs(CUIRect MainView)
 		}
 
 		CUIRect RowItem;
-        const float RowHeight = g_Config.m_TcCfgCompactList ? (std::max(LineSize, ColorPickerLineSize) + 5.0f) : 55.0f;
+        const float RowHeight = g_Config.m_TcUiCompactList ? (std::max(LineSize, ColorPickerLineSize) + 5.0f) : 55.0f;
 		Content.HSplitTop(RowHeight, &RowItem, &Content);
 		Content.HSplitTop(MarginExtraSmall, nullptr, &Content);
 		const bool Visible = s_ScrollRegion.AddRect(RowItem);
@@ -2678,7 +2678,7 @@ void CMenus::RenderSettingsTClientConfigs(CUIRect MainView)
 		RowItem.Margin(5.0f, &RowContent);
 
 		CUIRect TopLine, Below;
-        if (g_Config.m_TcCfgCompactList)
+        if (g_Config.m_TcUiCompactList)
 		{
 			const float UsedHeight = (pVar->m_Type == SConfigVariable::VAR_COLOR) ? ColorPickerLineSize : LineSize;
 			TopLine = RowContent;
@@ -2704,7 +2704,7 @@ void CMenus::RenderSettingsTClientConfigs(CUIRect MainView)
 		ResetRect.y = Controls.y;
 		Controls.VSplitRight(MarginSmall, &Controls, nullptr);
 
-        if (!g_Config.m_TcCfgCompactList)
+        if (!g_Config.m_TcUiCompactList)
 		{
 			CUIRect Help;
 			Below.HSplitTop(2.0f, nullptr, &Below);
