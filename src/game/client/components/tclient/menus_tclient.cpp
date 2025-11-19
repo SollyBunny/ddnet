@@ -2581,10 +2581,10 @@ void CMenus::RenderSettingsTClientConfigs(CUIRect MainView)
 	auto IsEffectiveDefaultVar = [&](const SConfigVariable* p) -> bool {
 		if (p->m_Type == SConfigVariable::VAR_INT)
 		{
-			const SIntConfigVariable* pi = static_cast<const SIntConfigVariable*>(p);
+			const SIntConfigVariable* pint = static_cast<const SIntConfigVariable*>(p);
 			auto it = s_StagedInts.find(p);
-			int v = it != s_StagedInts.end() ? it->second.m_Value : *pi->m_pVariable;
-			return v == pi->m_Default;
+			int v = it != s_StagedInts.end() ? it->second.m_Value : *pint->m_pVariable;
+			return v == pint->m_Default;
 		}
 		if (p->m_Type == SConfigVariable::VAR_STRING)
 		{
