@@ -2524,10 +2524,10 @@ void CMenus::RenderSettingsTClientConfigs(CUIRect MainView)
 		RightRow.VSplitLeft(RightInset, nullptr, &RightRow);
 		CUIRect TopCol1, TopCol2;
 		RightRow.VSplitMid(&TopCol1, &TopCol2, 0.0f);
-		if(DoButton_CheckBox(&g_Config.m_TcCfgShowTClient, Localize("TClient"), g_Config.m_TcCfgShowTClient, &TopCol1))
-			g_Config.m_TcCfgShowTClient ^= 1;
-		if(DoButton_CheckBox(&g_Config.m_TcCfgCompactList, Localize("Compact List"), g_Config.m_TcCfgCompactList, &TopCol2))
-			g_Config.m_TcCfgCompactList ^= 1;
+		if(DoButton_CheckBox(&g_Config.m_TcUiShowTClient, Localize("TClient"), g_Config.m_TcUiShowTClient, &TopCol1))
+			g_Config.m_TcUiShowTClient ^= 1;
+		if(DoButton_CheckBox(&g_Config.m_TcUiCompactList, Localize("Compact List"), g_Config.m_TcUiCompactList, &TopCol2))
+			g_Config.m_TcUiCompactList ^= 1;
 	}
 
 	const float SearchLabelW = 60.0f;
@@ -2548,10 +2548,10 @@ void CMenus::RenderSettingsTClientConfigs(CUIRect MainView)
 		const float RightInset2 = 24.0f;
 		RightHalf.VSplitLeft(RightInset2, nullptr, &RightHalf);
 		RightHalf.VSplitMid(&RightCol1, &RightCol2, 0.0f);
-		if(DoButton_CheckBox(&g_Config.m_TcCfgShowDDNet, Localize("DDNet"), g_Config.m_TcCfgShowDDNet, &RightCol1))
-			g_Config.m_TcCfgShowDDNet ^= 1;
-		if(DoButton_CheckBox(&g_Config.m_TcCfgOnlyModified, Localize("Only modified"), g_Config.m_TcCfgOnlyModified, &RightCol2))
-			g_Config.m_TcCfgOnlyModified ^= 1;
+		if(DoButton_CheckBox(&g_Config.m_TcUiShowDDNet, Localize("DDNet"), g_Config.m_TcUiShowDDNet, &RightCol1))
+			g_Config.m_TcUiShowDDNet ^= 1;
+		if(DoButton_CheckBox(&g_Config.m_TcUiOnlyModified, Localize("Only modified"), g_Config.m_TcUiOnlyModified, &RightCol2))
+			g_Config.m_TcUiOnlyModified ^= 1;
 	}
 
 	const int FlagMask = CFGFLAG_CLIENT;
