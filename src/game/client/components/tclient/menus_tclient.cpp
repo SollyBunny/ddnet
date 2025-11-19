@@ -1065,9 +1065,9 @@ void CMenus::RenderSettingsTClientBindWheel(CUIRect MainView)
 	int HoveringIndex = -1;
 
 	float MouseDist = distance(Center, Ui()->MousePos());
-	if (MouseDist < Radius && MouseDist > Radius * 0.25f)
+	const int SegmentCount = GameClient()->m_BindWheel.m_vBinds.size();
+	if (MouseDist < Radius && MouseDist > Radius * 0.25f && SegmentCount > 0)
 	{
-		int SegmentCount = GameClient()->m_BindWheel.m_vBinds.size();
 		float SegmentAngle = 2.0f * pi / SegmentCount;
 
 		float HoveringAngle = angle(Ui()->MousePos() - Center) + SegmentAngle / 2.0f;
@@ -1075,6 +1075,7 @@ void CMenus::RenderSettingsTClientBindWheel(CUIRect MainView)
 			HoveringAngle += 2.0f * pi;
 
 		HoveringIndex = (int)(HoveringAngle / (2.0f * pi) * SegmentCount);
+		HoveringIndex = std::clamp(HoveringIndex, 0, SegmentCount - 1);
 		if (Ui()->MouseButtonClicked(0))
 		{
 			s_SelectedBindIndex = HoveringIndex;
@@ -1102,9 +1103,11 @@ void CMenus::RenderSettingsTClientBindWheel(CUIRect MainView)
 		str_copy(s_aBindCommand, "");
 	}
 
-	const float Theta = pi * 2.0f / std::max<float>(1.0f, GameClient()->m_BindWheel.m_vBinds.size()); // Prevent divide by 0
+	const float Theta = pi * 2.0f / std::max<float>(1.0f, GameClient()->m_BindWheel.m_vBinds.size());
 	for (int i = 0; i < static_cast<int>(GameClient()->m_BindWheel.m_vBinds.size()); i++)
 	{
+		TextRender()->TextColor(ColorRGBA(1.0f, 1.0f, 1.0f, 1.0f));
+
 		float SegmentFontSize = FontSize * 1.1f;
 		if (i == s_SelectedBindIndex)
 		{
@@ -1123,6 +1126,8 @@ void CMenus::RenderSettingsTClientBindWheel(CUIRect MainView)
 		const CUIRect Rect = CUIRect{ Pos.x - 50.0f, Pos.y - 50.0f, 100.0f, 100.0f };
 		Ui()->DoLabel(&Rect, Bind.m_aName, SegmentFontSize, TEXTALIGN_MC);
 	}
+
+	TextRender()->TextColor(ColorRGBA(1.0f, 1.0f, 1.0f, 1.0f));
 
 	LeftView.HSplitTop(LineSize, &Button, &LeftView);
 	Button.VSplitLeft(100.0f, &Label, &Button);
@@ -1145,7 +1150,7 @@ void CMenus::RenderSettingsTClientBindWheel(CUIRect MainView)
 
 	LeftView.HSplitTop(MarginSmall, nullptr, &LeftView);
 	LeftView.HSplitTop(LineSize, &Button, &LeftView);
-	if (DoButton_Menu(&s_OverrideButton, TCLocalize("Override Selected"), 0, &Button) && s_SelectedBindIndex >= 0)
+	if (DoButton_Menu(&s_OverrideButton, TCLocalize("Override Selected"), 0, &Button) && s_SelectedBindIndex >= 0 && s_SelectedBindIndex < static_cast<int>(GameClient()->m_BindWheel.m_vBinds.size()))
 	{
 		CBindWheel::CBind TempBind;
 		if (str_length(s_aBindName) == 0)
@@ -2524,9 +2529,9 @@ void CMenus::RenderSettingsTClientConfigs(CUIRect MainView)
 		RightRow.VSplitLeft(RightInset, nullptr, &RightRow);
 		CUIRect TopCol1, TopCol2;
 		RightRow.VSplitMid(&TopCol1, &TopCol2, 0.0f);
-		if(DoButton_CheckBox(&g_Config.m_TcUiShowTClient, Localize("TClient"), g_Config.m_TcUiShowTClient, &TopCol1))
+		if (DoButton_CheckBox(&g_Config.m_TcUiShowTClient, Localize("TClient"), g_Config.m_TcUiShowTClient, &TopCol1))
 			g_Config.m_TcUiShowTClient ^= 1;
-		if(DoButton_CheckBox(&g_Config.m_TcUiCompactList, Localize("Compact List"), g_Config.m_TcUiCompactList, &TopCol2))
+		if (DoButton_CheckBox(&g_Config.m_TcUiCompactList, Localize("Compact List"), g_Config.m_TcUiCompactList, &TopCol2))
 			g_Config.m_TcUiCompactList ^= 1;
 	}
 
@@ -2548,9 +2553,9 @@ void CMenus::RenderSettingsTClientConfigs(CUIRect MainView)
 		const float RightInset2 = 24.0f;
 		RightHalf.VSplitLeft(RightInset2, nullptr, &RightHalf);
 		RightHalf.VSplitMid(&RightCol1, &RightCol2, 0.0f);
-		if(DoButton_CheckBox(&g_Config.m_TcUiShowDDNet, Localize("DDNet"), g_Config.m_TcUiShowDDNet, &RightCol1))
+		if (DoButton_CheckBox(&g_Config.m_TcUiShowDDNet, Localize("DDNet"), g_Config.m_TcUiShowDDNet, &RightCol1))
 			g_Config.m_TcUiShowDDNet ^= 1;
-		if(DoButton_CheckBox(&g_Config.m_TcUiOnlyModified, Localize("Only modified"), g_Config.m_TcUiOnlyModified, &RightCol2))
+		if (DoButton_CheckBox(&g_Config.m_TcUiOnlyModified, Localize("Only modified"), g_Config.m_TcUiOnlyModified, &RightCol2))
 			g_Config.m_TcUiOnlyModified ^= 1;
 	}
 
@@ -2570,8 +2575,8 @@ void CMenus::RenderSettingsTClientConfigs(CUIRect MainView)
 	ConfigManager()->PossibleConfigVariables("", FlagMask, Collector, &vEntries);
 
 	auto DomainEnabled = [&](ConfigDomain Domain) {
-		if(Domain == ConfigDomain::DDNET) return g_Config.m_TcUiShowDDNet != 0;
-		if(Domain == ConfigDomain::TCLIENT) return g_Config.m_TcUiShowTClient != 0;
+		if (Domain == ConfigDomain::DDNET) return g_Config.m_TcUiShowDDNet != 0;
+		if (Domain == ConfigDomain::TCLIENT) return g_Config.m_TcUiShowTClient != 0;
 		// only show DDNet and TClient domains
 		return false;
 	};
@@ -2662,7 +2667,7 @@ void CMenus::RenderSettingsTClientConfigs(CUIRect MainView)
 		}
 
 		CUIRect RowItem;
-        const float RowHeight = g_Config.m_TcUiCompactList ? (std::max(LineSize, ColorPickerLineSize) + 5.0f) : 55.0f;
+		const float RowHeight = g_Config.m_TcUiCompactList ? (std::max(LineSize, ColorPickerLineSize) + 5.0f) : 55.0f;
 		Content.HSplitTop(RowHeight, &RowItem, &Content);
 		Content.HSplitTop(MarginExtraSmall, nullptr, &Content);
 		const bool Visible = s_ScrollRegion.AddRect(RowItem);
@@ -2678,7 +2683,7 @@ void CMenus::RenderSettingsTClientConfigs(CUIRect MainView)
 		RowItem.Margin(5.0f, &RowContent);
 
 		CUIRect TopLine, Below;
-        if (g_Config.m_TcUiCompactList)
+		if (g_Config.m_TcUiCompactList)
 		{
 			const float UsedHeight = (pVar->m_Type == SConfigVariable::VAR_COLOR) ? ColorPickerLineSize : LineSize;
 			TopLine = RowContent;
@@ -2704,7 +2709,7 @@ void CMenus::RenderSettingsTClientConfigs(CUIRect MainView)
 		ResetRect.y = Controls.y;
 		Controls.VSplitRight(MarginSmall, &Controls, nullptr);
 
-        if (!g_Config.m_TcUiCompactList)
+		if (!g_Config.m_TcUiCompactList)
 		{
 			CUIRect Help;
 			Below.HSplitTop(2.0f, nullptr, &Below);
