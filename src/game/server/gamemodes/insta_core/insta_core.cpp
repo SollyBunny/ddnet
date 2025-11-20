@@ -726,7 +726,7 @@ void CGameControllerInstaCore::UpdateSpawnWeapons(bool Silent, bool Apply)
 	}
 	else if(!Silent)
 	{
-		Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "ddnet-insta", "WARNING: reload required for spawn weapons to apply");
+	       log_warn("ddnet-insta", "WARNING: reload required for spawn weapons to apply");
 	}
 }
 
@@ -739,15 +739,15 @@ int CGameControllerInstaCore::GetDefaultWeaponBasedOnSpawnWeapons() const
 	case SPAWN_WEAPON_GRENADE:
 		return WEAPON_GRENADE;
 	default:
-		dbg_msg("zcatch", "invalid sv_spawn_weapons");
-		break;
+		dbg_assert_failed("Invalid m_SpawnWeapons: %d", m_SpawnWeapons);
 	}
 	return WEAPON_GUN;
 }
 
 void CGameControllerInstaCore::SetSpawnWeapons(class CCharacter *pChr)
 {
-	switch(CGameControllerInstaCore::GetSpawnWeapons(pChr->GetPlayer()->GetCid()))
+	int SpawnWeapons = CGameControllerInstaCore::GetSpawnWeapons(pChr->GetPlayer()->GetCid());
+	switch(SpawnWeapons)
 	{
 	case SPAWN_WEAPON_LASER:
 		pChr->GiveWeapon(WEAPON_LASER, false);
@@ -756,8 +756,7 @@ void CGameControllerInstaCore::SetSpawnWeapons(class CCharacter *pChr)
 		pChr->GiveWeapon(WEAPON_GRENADE, false, g_Config.m_SvGrenadeAmmoRegen ? g_Config.m_SvGrenadeAmmoRegenNum : -1);
 		break;
 	default:
-		dbg_msg("zcatch", "invalid sv_spawn_weapons");
-		break;
+		dbg_assert_failed("Invalid SpawnWeapons: %d", SpawnWeapons);
 	}
 }
 
@@ -805,7 +804,7 @@ void CGameControllerInstaCore::OnUpdateSpectatorVotesConfig()
 
 			if(pPlayer->GetTeam() != TEAM_SPECTATORS)
 			{
-				dbg_msg("ddnet-insta", "ERROR: tried to move player back to team=%d but expected spectators", pPlayer->GetTeam());
+				log_error("ddnet-insta", "ERROR: tried to move player back to team=%d but expected spectators", pPlayer->GetTeam());
 			}
 
 			protocol7::CNetMsg_Sv_Team Msg;
