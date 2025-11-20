@@ -420,9 +420,16 @@ void CGameControllerZcatch::KillPlayer(class CPlayer *pVictim, class CPlayer *pK
 	UpdateCatchTicks(pVictim, ECatchUpdate::CAUGHT);
 	pVictim->m_IsDead = true;
 	pVictim->m_KillerId = pKiller->GetCid();
-	if(pVictim->GetTeam() != TEAM_SPECTATORS)
-		pVictim->SetTeamNoKill(TEAM_SPECTATORS);
-	pVictim->SetSpectatorId(pKiller->GetCid());
+
+	// force death screen open as long as sv_enemy_kill_respawn_delay_ms specifies
+	// then move to spectators after that. Instead of moving to spectators instantly.
+	// helps with ddnet client losing spectator focus because
+	// of clicking directly after death
+	// https://github.com/ddnet-insta/ddnet-insta/issues/447
+	pVictim->m_ForceTeam = {
+		.m_Tick = pVictim->m_RespawnTick,
+		.m_Team = TEAM_SPECTATORS,
+		.m_SpectatorId = pKiller->GetCid()};
 
 	int Found = count(pKiller->m_vVictimIds.begin(), pKiller->m_vVictimIds.end(), pVictim->GetCid());
 	if(!Found)

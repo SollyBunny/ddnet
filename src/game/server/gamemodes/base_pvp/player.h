@@ -121,10 +121,31 @@ public:
 	// and it does not include players that were released so it is more than m_Spree
 	int m_KillsThatCount = 0;
 
-	/*******************************************************************
-	 * gCTF                                                            *
-	 *******************************************************************/
+	// debug broadcast with current game state
 	bool m_GameStateBroadcast;
+
+	// data class for delayed team change
+	class CForceTeam
+	{
+	public:
+		// if set to a value greater than 0
+		// if will move *this* player to the given team
+		// as soon as Server()->Tick() is greater than this value.
+		int m_Tick = 0;
+
+		// Should be TEAM_RED, TEAM_BLUE or TEAM_SPECTATORS
+		int m_Team = 0;
+
+		// Should be a valid client id or SPEC_FREEVIEW
+		int m_SpectatorId = 0;
+	};
+
+	// Force *this* player to a different team with a delay
+	CForceTeam m_ForceTeam;
+
+	/*******************************************************************
+	 * teeworlds core logic                                            *
+	 *******************************************************************/
 	int m_RespawnTick;
 	bool m_IsReadyToEnter; // 0.7 ready change
 	bool m_IsReadyToPlay; // 0.7 ready change

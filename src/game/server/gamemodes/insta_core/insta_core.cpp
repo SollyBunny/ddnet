@@ -626,6 +626,16 @@ void CGameControllerInstaCore::OnPlayerTick(class CPlayer *pPlayer)
 {
 	pPlayer->InstagibTick();
 
+	if(pPlayer->m_ForceTeam.m_Tick > 0 && Server()->Tick() > pPlayer->m_ForceTeam.m_Tick)
+	{
+		int WantedTeam = pPlayer->m_ForceTeam.m_Team;
+		if(pPlayer->GetTeam() != WantedTeam)
+			pPlayer->SetTeam(WantedTeam);
+		if(WantedTeam == TEAM_SPECTATORS)
+			pPlayer->SetSpectatorId(pPlayer->m_ForceTeam.m_SpectatorId);
+		pPlayer->m_ForceTeam.m_Tick = 0;
+	}
+
 	if(GameServer()->m_World.m_Paused)
 	{
 		// this is needed for the smart tournament chat
