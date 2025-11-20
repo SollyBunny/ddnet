@@ -1492,7 +1492,7 @@ bool CGameControllerPvp::OnFireWeapon(CCharacter &Character, int &Weapon, vec2 &
 	if(IsStatTrack() && Weapon != WEAPON_HAMMER)
 		Character.GetPlayer()->m_Stats.m_ShotsFired++;
 
-	if(g_Config.m_SvGrenadeAmmoRegenResetOnFire)
+	if(g_Config.m_SvGrenadeAmmoRegenResetOnFire && Character.m_Core.m_ActiveWeapon == WEAPON_GRENADE)
 		Character.m_Core.m_aWeapons[Character.m_Core.m_ActiveWeapon].m_AmmoRegenStart = -1;
 	if(Character.m_Core.m_aWeapons[Character.m_Core.m_ActiveWeapon].m_Ammo > 0) // -1 == unlimited
 		Character.m_Core.m_aWeapons[Character.m_Core.m_ActiveWeapon].m_Ammo--;
