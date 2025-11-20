@@ -726,7 +726,7 @@ void CGameControllerInstaCore::UpdateSpawnWeapons(bool Silent, bool Apply)
 	}
 	else if(!Silent)
 	{
-	       log_warn("ddnet-insta", "WARNING: reload required for spawn weapons to apply");
+		log_warn("ddnet-insta", "WARNING: reload required for spawn weapons to apply");
 	}
 }
 

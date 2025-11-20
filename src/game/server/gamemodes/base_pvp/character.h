@@ -24,6 +24,7 @@ public:
 		update grenade ammo state without selfkill
 		useful for votes
 	*/
+	// TODO: rename this to RestoreDefaultAmmo()
 	void ResetInstaSettings();
 
 	// player can not be damaged with weapons
