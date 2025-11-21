@@ -125,6 +125,12 @@ void CGameContext::ConInstaSwap(IConsole::IResult *pResult, void *pUserData)
 	if(!pSelf->m_pController)
 		return;
 
+	if(pSelf->m_pController->IsDDRaceGameType())
+	{
+		ConSwap(pResult, pUserData);
+		return;
+	}
+
 	CPlayer *pPlayer = pSelf->m_apPlayers[pResult->m_ClientId];
 	if(!pPlayer)
 		return;
