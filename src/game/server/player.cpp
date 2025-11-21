@@ -447,6 +447,11 @@ void CPlayer::Snap(int SnappingClient)
 
 			if(pSpecPlayer->m_EnableSpectatorCount && SpectatingClient == TranslatedId && SnappingClient != SERVER_DEMO_CLIENT && m_Team != TEAM_SPECTATORS && !m_Paused)
 			{
+				CNetObj_SpectatorCount *pSpectatorCount = Server()->SnapNewItem<CNetObj_SpectatorCount>(0);
+				if(!pSpectatorCount)
+				{
+					return;
+				}
 				int SpectatorCount = 0;
 				for(auto &pPlayer : GameServer()->m_apPlayers)
 				{
@@ -471,6 +476,7 @@ void CPlayer::Snap(int SnappingClient)
 					}
 				}
 				pDDNetSpectatorInfo->m_SpectatorCount = SpectatorCount;
+				pSpectatorCount->m_NumSpectators = SpectatorCount;
 			}
 		}
 	}
