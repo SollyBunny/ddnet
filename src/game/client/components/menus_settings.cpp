@@ -1934,16 +1934,19 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClShowhudDummyActions, Localize("Show dummy actions"), &g_Config.m_ClShowhudDummyActions, &RightView, LineSize);
 
 		// Player movement information display settings
+		RightView.HSplitTop(MarginSmall, nullptr, &RightView); // TClient
 		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClShowhudPlayerPosition, Localize("Show player position"), &g_Config.m_ClShowhudPlayerPosition, &RightView, LineSize);
 		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClShowhudPlayerSpeed, Localize("Show player speed"), &g_Config.m_ClShowhudPlayerSpeed, &RightView, LineSize);
 		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClShowhudPlayerAngle, Localize("Show player target angle"), &g_Config.m_ClShowhudPlayerAngle, &RightView, LineSize);
 
 		// Dummy movement information display settings
+		RightView.HSplitTop(MarginSmall, nullptr, &RightView); // TClient
 		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_TcShowhudDummyPosition, TCLocalize("Show dummy position"), &g_Config.m_TcShowhudDummyPosition, &RightView, LineSize);
 		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_TcShowhudDummySpeed, TCLocalize("Show dummy speed"), &g_Config.m_TcShowhudDummySpeed, &RightView, LineSize);
 		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_TcShowhudDummyAngle, TCLocalize("Show dummy target angle"), &g_Config.m_TcShowhudDummyAngle, &RightView, LineSize);
 
 		// Freeze bar settings
+		RightView.HSplitTop(MarginSmall, nullptr, &RightView); // TClient
 		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClShowFreezeBars, Localize("Show freeze bars"), &g_Config.m_ClShowFreezeBars, &RightView, LineSize);
 		RightView.HSplitTop(LineSize * 2.0f, &Button, &RightView);
 		if(g_Config.m_ClShowFreezeBars)
