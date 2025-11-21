@@ -2947,6 +2947,12 @@ if(SERVER)
     teeinfo.cpp
     teeinfo.h
   )
+
+  # ddnet-insta ext modes START
+  file(GLOB_RECURSE EXTERNAL_GAMEMODES src/external_gamemodes/*/*.cpp src/external_gamemodes/*/*.h)
+  list(APPEND GAME_SERVER ${EXTERNAL_GAMEMODES})
+  # ddnet-insta ext modes END
+
   set(GAME_GENERATED_SERVER
     "src/generated/server_data.cpp"
     "src/generated/server_data.h"
