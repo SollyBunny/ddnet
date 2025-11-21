@@ -1,3 +1,4 @@
+#include <base/log.h>
 #include <base/system.h>
 
 #include <engine/server/server.h>
@@ -25,6 +26,10 @@ void CGameContext::RegisterInstagibCommands()
 	Console()->Chain("sv_display_score", ConchainDisplayScore, this);
 	Console()->Chain("sv_only_wallshot_kills", ConchainOnlyWallshotKills, this);
 	Console()->Chain("sv_allow_zoom", ConchainAllowZoom, this);
+	Console()->Chain("sv_hammer_scale_x", ConchainFngHammerScale, this);
+	Console()->Chain("sv_hammer_scale_y", ConchainFngHammerScale, this);
+	Console()->Chain("sv_melt_hammer_scale_x", ConchainFngHammerScale, this);
+	Console()->Chain("sv_melt_hammer_scale_y", ConchainFngHammerScale, this);
 
 	// generated undocumented chat commands
 #define MACRO_ADD_COLUMN(name, sql_name, sql_type, bind_type, default, merge_method) ;
@@ -215,4 +220,17 @@ void CGameContext::ConchainAllowZoom(IConsole::IResult *pResult, void *pUserData
 	str_format(aBuf, sizeof(aBuf), "antibot sv_allow_zoom %d", g_Config.m_SvAllowZoom);
 	pSelf->Console()->ExecuteLine(aBuf);
 #endif
+}
+
+void CGameContext::ConchainFngHammerScale(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
+{
+	pfnCallback(pResult, pCallbackUserData);
+
+	if(!g_Config.m_SvFngHammer)
+	{
+		// hack to not spam the logs on server boot while reading the config
+		CGameContext *pSelf = (CGameContext *)pUserData;
+		if(pSelf->m_pController)
+			log_warn("server", "WARNING: that config has no effect as long as sv_fng_hammer is off");
+	}
 }
