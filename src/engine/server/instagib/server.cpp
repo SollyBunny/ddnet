@@ -102,7 +102,7 @@ bool CServer::SixupUsernameAuth(int ClientId, const char *pCredentials)
 	SendMsg(&Msgp, MSGFLAG_VITAL, ClientId);
 
 	m_aClients[ClientId].m_AuthKey = KeySlot;
-	m_aClients[ClientId].m_pRconCmdToSend = Console()->FirstCommandInfo(ConsoleAccessLevel(ClientId), CFGFLAG_SERVER);
+	m_aClients[ClientId].m_pRconCmdToSend = Console()->FirstCommandInfo(ClientId, CFGFLAG_SERVER);
 	SendRconCmdGroupStart(ClientId);
 	if(m_aClients[ClientId].m_pRconCmdToSend == nullptr)
 	{
