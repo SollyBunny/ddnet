@@ -565,7 +565,7 @@ void CPlayers::RenderPlayer(
 		// Update
 		const float Delta = Client()->IntraGameTickSincePrev(g_Config.m_ClDummy);
 		auto &ClientData = GameClient()->m_aClients[ClientId];
-		ClientData.m_VolleyBallAngle += Vel.x * Delta / 48.0f;
+		ClientData.m_VolleyBallAngle += Vel.x * Delta / 64.0f;
 		if(ClientData.m_VolleyBallAngle < 0.0f)
 			ClientData.m_VolleyBallAngle += 2.0f * pi;
 		else if(ClientData.m_VolleyBallAngle > 2.0f * pi)
