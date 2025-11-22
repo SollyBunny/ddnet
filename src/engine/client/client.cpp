@@ -213,7 +213,7 @@ void CClient::SendTClientInfo(int Conn)
 
 void CClient::SendInfo(int Conn)
 {
-	SendTClientInfo(CONN_MAIN);
+	SendTClientInfo(Conn);
 
 	CMsgPacker MsgVer(NETMSG_CLIENTVER, true);
 	MsgVer.AddRaw(&m_ConnectionId, sizeof(m_ConnectionId));
@@ -530,7 +530,7 @@ void CClient::OnPostConnect(int Conn)
 
 	if(g_Config.m_ClDummyDefaultEyes || g_Config.m_ClPlayerDefaultEyes)
 	{
-		int Emote = Conn ? g_Config.m_ClDummyDefaultEyes : g_Config.m_ClPlayerDefaultEyes;
+		int Emote = Conn == CONN_DUMMY ? g_Config.m_ClDummyDefaultEyes : g_Config.m_ClPlayerDefaultEyes;
 
 		if(Emote != EMOTE_NORMAL)
 		{
@@ -2630,6 +2630,17 @@ void CClient::PumpNetwork()
 			SetLoadingStateDetail(IClient::LOADING_STATE_DETAIL_INITIAL);
 			SendInfo(CONN_MAIN);
 		}
+
+		// progress on dummy connect when the connection is online
+		if(m_DummySendConnInfo && m_aNetClient[CONN_DUMMY].State() == NETSTATE_ONLINE)
+		{
+			m_DummySendConnInfo = false;
+			SendInfo(CONN_DUMMY);
+			m_aNetClient[CONN_DUMMY].Update();
+			SendReady(CONN_DUMMY);
+			GameClient()->SendDummyInfo(true);
+			SendEnterGame(CONN_DUMMY);
+		}
 	}
 
 	// process packets
@@ -3260,21 +3271,6 @@ void CClient::Run()
 			else
 				log_error("editor", "editing passed map file '%s' failed", m_aCmdEditMap);
 			m_aCmdEditMap[0] = 0;
-		}
-
-		// progress on dummy connect when the connection is online
-		if(m_DummySendConnInfo && m_aNetClient[CONN_DUMMY].State() == NETSTATE_ONLINE)
-		{
-			m_DummySendConnInfo = false;
-
-			// send client info
-			SendTClientInfo(CONN_DUMMY);
-
-			SendInfo(CONN_DUMMY);
-			m_aNetClient[CONN_DUMMY].Update();
-			SendReady(CONN_DUMMY);
-			GameClient()->SendDummyInfo(true);
-			SendEnterGame(CONN_DUMMY);
 		}
 
 		// update input

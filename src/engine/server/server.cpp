@@ -624,8 +624,12 @@ void CServer::SetRconCid(int ClientId)
 
 int CServer::GetAuthedState(int ClientId) const
 {
+	if(ClientId == IConsole::CLIENT_ID_UNSPECIFIED)
+		return AUTHED_ADMIN;
+	if(ClientId == IConsole::CLIENT_ID_GAME)
+		return AUTHED_ADMIN;
 	dbg_assert(ClientId >= 0 && ClientId < MAX_CLIENTS, "Invalid ClientId: %d", ClientId);
-	dbg_assert(m_aClients[ClientId].m_State != CServer::CClient::STATE_EMPTY, "Client slot is empty");
+	dbg_assert(m_aClients[ClientId].m_State != CServer::CClient::STATE_EMPTY, "Client slot %d is empty", ClientId);
 	return m_AuthManager.KeyLevel(m_aClients[ClientId].m_AuthKey);
 }
 
@@ -1407,8 +1411,8 @@ void CServer::SendRconLogLine(int ClientId, const CLogMessage *pMessage)
 	const char *pStart = str_find(pLine, "<{");
 	const char *pEnd = pStart == nullptr ? nullptr : str_find(pStart + 2, "}>");
 	const char *pLineWithoutIps;
-	char aLine[512];
-	char aLineWithoutIps[512];
+	char aLine[sizeof(CLogMessage().m_aLine)];
+	char aLineWithoutIps[sizeof(CLogMessage().m_aLine)];
 	aLine[0] = '\0';
 	aLineWithoutIps[0] = '\0';
 
@@ -1418,11 +1422,11 @@ void CServer::SendRconLogLine(int ClientId, const CLogMessage *pMessage)
 	}
 	else
 	{
-		str_append(aLine, pLine, pStart - pLine + 1);
-		str_append(aLine, pStart + 2, pStart - pLine + pEnd - pStart - 1);
+		str_append(aLine, pLine, minimum<size_t>(pStart - pLine + 1, sizeof(aLine)));
+		str_append(aLine, pStart + 2, minimum<size_t>(pStart - pLine + pEnd - pStart - 1, sizeof(aLine)));
 		str_append(aLine, pEnd + 2);
 
-		str_append(aLineWithoutIps, pLine, pStart - pLine + 1);
+		str_append(aLineWithoutIps, pLine, minimum<size_t>(pStart - pLine + 1, sizeof(aLine)));
 		str_append(aLineWithoutIps, "XXX");
 		str_append(aLineWithoutIps, pEnd + 2);
 
@@ -1477,9 +1481,8 @@ void CServer::SendRconCmdGroupEnd(int ClientId)
 int CServer::NumRconCommands(int ClientId)
 {
 	int Num = 0;
-	const IConsole::EAccessLevel AccessLevel = ConsoleAccessLevel(ClientId);
-	for(const IConsole::ICommandInfo *pCmd = Console()->FirstCommandInfo(AccessLevel, CFGFLAG_SERVER);
-		pCmd; pCmd = Console()->NextCommandInfo(pCmd, AccessLevel, CFGFLAG_SERVER))
+	for(const IConsole::ICommandInfo *pCmd = Console()->FirstCommandInfo(ClientId, CFGFLAG_SERVER);
+		pCmd; pCmd = Console()->NextCommandInfo(pCmd, ClientId, CFGFLAG_SERVER))
 	{
 		Num++;
 	}
@@ -1496,11 +1499,10 @@ void CServer::UpdateClientRconCommands(int ClientId)
 		return;
 	}
 
-	const IConsole::EAccessLevel AccessLevel = ConsoleAccessLevel(ClientId);
 	for(int i = 0; i < MAX_RCONCMD_SEND && Client.m_pRconCmdToSend; ++i)
 	{
 		SendRconCmdAdd(Client.m_pRconCmdToSend, ClientId);
-		Client.m_pRconCmdToSend = Console()->NextCommandInfo(Client.m_pRconCmdToSend, AccessLevel, CFGFLAG_SERVER);
+		Client.m_pRconCmdToSend = Console()->NextCommandInfo(Client.m_pRconCmdToSend, ClientId, CFGFLAG_SERVER);
 		if(Client.m_pRconCmdToSend == nullptr)
 		{
 			SendRconCmdGroupEnd(ClientId);
@@ -1962,13 +1964,11 @@ void CServer::ProcessClientPacket(CNetChunk *pPacket)
 					Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", aBuf);
 					m_RconClientId = ClientId;
 					m_RconAuthLevel = GetAuthedState(ClientId);
-					Console()->SetAccessLevel(ConsoleAccessLevel(ClientId));
 					{
 						CRconClientLogger Logger(this, ClientId);
 						CLogScope Scope(&Logger);
 						Console()->ExecuteLineFlag(pCmd, CFGFLAG_SERVER, ClientId);
 					}
-					Console()->SetAccessLevel(IConsole::EAccessLevel::ADMIN);
 					m_RconClientId = IServer::RCON_CID_SERV;
 					m_RconAuthLevel = AUTHED_ADMIN;
 				}
@@ -2031,7 +2031,7 @@ void CServer::ProcessClientPacket(CNetChunk *pPacket)
 					int SendRconCmds = IsSixup(ClientId) ? true : Unpacker.GetInt();
 					if(!Unpacker.Error() && SendRconCmds)
 					{
-						m_aClients[ClientId].m_pRconCmdToSend = Console()->FirstCommandInfo(ConsoleAccessLevel(ClientId), CFGFLAG_SERVER);
+						m_aClients[ClientId].m_pRconCmdToSend = Console()->FirstCommandInfo(ClientId, CFGFLAG_SERVER);
 						SendRconCmdGroupStart(ClientId);
 						if(m_aClients[ClientId].m_pRconCmdToSend == nullptr)
 						{
@@ -2656,6 +2656,35 @@ void CServer::UpdateRegisterServerInfo()
 
 	JsonWriter.WriteAttribute("requires_login");
 	JsonWriter.WriteBoolValue(false);
+
+	{
+		bool FoundFlags = false;
+		auto Flag = [&](const char *pFlag) {
+			if(!FoundFlags)
+			{
+				JsonWriter.WriteAttribute("flags");
+				JsonWriter.BeginArray();
+				FoundFlags = true;
+			}
+			JsonWriter.WriteStrValue(pFlag);
+		};
+
+		if(g_Config.m_SvRegisterCommunityToken[0] && g_Config.m_SvOfficialTutorial[0])
+		{
+			SHA256_DIGEST Sha256 = sha256(g_Config.m_SvOfficialTutorial, str_length(g_Config.m_SvOfficialTutorial));
+			char aSha256[SHA256_MAXSTRSIZE];
+			sha256_str(Sha256, aSha256, sizeof(aSha256));
+			if(str_comp(aSha256, "8a11dc71274313e78a09ff58b8e696fb5009ce8606d12077ceb78ebf99a57464") == 0)
+			{
+				Flag("tutorial");
+			}
+		}
+
+		if(FoundFlags)
+		{
+			JsonWriter.EndArray();
+		}
+	}
 
 	JsonWriter.WriteAttribute("clients");
 	JsonWriter.BeginArray();
@@ -3524,6 +3553,22 @@ static int GetAuthLevel(const char *pLevel)
 	return Level;
 }
 
+bool CServer::CanClientUseCommandCallback(int ClientId, const IConsole::ICommandInfo *pCommand, void *pUser)
+{
+	return ((CServer *)pUser)->CanClientUseCommand(ClientId, pCommand);
+}
+
+bool CServer::CanClientUseCommand(int ClientId, const IConsole::ICommandInfo *pCommand) const
+{
+	if(pCommand->Flags() & CFGFLAG_CHAT)
+		return true;
+	if(pCommand->Flags() & CMDFLAG_PRACTICE)
+		return true;
+	if(!IsRconAuthed(ClientId))
+		return false;
+	return pCommand->GetAccessLevel() >= ConsoleAccessLevel(ClientId);
+}
+
 void CServer::AuthRemoveKey(int KeySlot)
 {
 	m_AuthManager.RemoveKey(KeySlot);
@@ -4340,6 +4385,7 @@ void CServer::RegisterCommands()
 
 	Console()->Chain("sv_name", ConchainSpecialInfoupdate, this);
 	Console()->Chain("password", ConchainSpecialInfoupdate, this);
+	Console()->Chain("sv_reserved_slots", ConchainSpecialInfoupdate, this);
 	Console()->Chain("sv_spectator_slots", ConchainSpecialInfoupdate, this);
 
 	Console()->Chain("sv_max_clients_per_ip", ConchainMaxclientsperipUpdate, this);
@@ -4367,6 +4413,7 @@ void CServer::RegisterCommands()
 	m_ServerBan.InitServerBan(Console(), Storage(), this);
 	m_NameBans.InitConsole(Console());
 	m_pGameServer->OnConsoleInit();
+	Console()->SetCanUseCommandCallback(CanClientUseCommandCallback, this);
 }
 
 int CServer::SnapNewId()
