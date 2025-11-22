@@ -108,7 +108,7 @@ public:
 		{
 			m_Input.m_TargetY = m_LatestInput.m_TargetY = -1;
 		}
-	};
+	}
 	int GetJumped() const { return m_Core.m_Jumped; }
 	int GetAttackTick() const { return m_AttackTick; }
 	int GetStrongWeakId() const { return m_StrongWeakId; }
@@ -138,7 +138,7 @@ public:
 	int m_AliveAccumulation;
 
 	// TClient
-	CNetObj_PlayerInput *LatestInput() { return &m_LatestInput; };
+	CNetObj_PlayerInput *LatestInput() { return &m_LatestInput; }
 
 private:
 	// weapon info

@@ -274,13 +274,13 @@ bool CBindChat::ChatDoAutocomplete(bool ShiftPressed)
 		// str_next_token(pCompletionBind->m_aCommand, " ", commandBuf, sizeof(commandBuf));
 		// CCommandInfo *pInfo = m_pClient->Console()->GetCommandInfo(commandBuf, CFGFLAG_CLIENT, false);
 		// if(pInfo && pInfo->m_pParams != '\0')
-		const char *pSeperator = " ";
-		str_append(aBuf, pSeperator);
+		const char *pSeparator = " ";
+		str_append(aBuf, pSeparator);
 
 		// add part after the name
 		str_append(aBuf, Chat.m_Input.GetString() + Chat.m_PlaceholderOffset + Chat.m_PlaceholderLength);
 
-		Chat.m_PlaceholderLength = str_length(pSeperator) + str_length(pCompletionBind->m_aName);
+		Chat.m_PlaceholderLength = str_length(pSeparator) + str_length(pCompletionBind->m_aName);
 		Chat.m_Input.Set(aBuf);
 		Chat.m_Input.SetCursorOffset(Chat.m_PlaceholderOffset + Chat.m_PlaceholderLength);
 	}

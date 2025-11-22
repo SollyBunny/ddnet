@@ -21,19 +21,11 @@ Failed to create bgdraw folder
 == 
 
 [bgdraw]
-Opening %s for %s
+No items to write
 == 
 
 [bgdraw]
-writing
-== 
-
-[bgdraw]
-reading
-== 
-
-[bgdraw]
-Failed to open %s for %s
+No changes since last save
 == 
 
 [bgdraw]
@@ -88,6 +80,9 @@ Add team clan:
 Remove war name:
 == 
 
+Remove war clan:
+== 
+
 Remove team name:
 == 
 
@@ -104,39 +99,6 @@ Remove [group] [name]:
 == 
 
 Remove [group] [clan]:
-== 
-
-Mod
-== 
-
-Mute ID:
-== 
-
-Mute Name:
-== 
-
-Unmute Last:
-== 
-
-Kick ID:
-== 
-
-Kick Name:
-== 
-
-Ban ID:
-== 
-
-Ban Name:
-== 
-
-Unban Last:
-== 
-
-Kill Ids:
-== 
-
-Kill Names:
 == 
 
 Other
@@ -172,42 +134,6 @@ Status Bar
 Info
 == 
 
-Name:
-== 
-
-Name
-== 
-
-Command:
-== 
-
-Command
-== 
-
-Override Selected
-== 
-
-Add Bind
-== 
-
-Remove Bind
-== 
-
-Use left mouse to select
-== 
-
-Use right mouse to swap with selected
-== 
-
-Use middle mouse select without copy
-== 
-
-Bind Wheel Key
-== 
-
-Reset position of mouse when opening bindwheel
-== 
-
 Visual
 == 
 
@@ -235,7 +161,10 @@ Ingame cursor scale
 Wheel animate
 == 
 
-Show ping colored circle before names
+Show ping colored circle in nameplates
+== 
+
+Show country flags in nameplates
 == 
 
 Hide nameplates in spec
@@ -260,6 +189,9 @@ Tiny Tees
 == 
 
 Tiny Tee Size
+== 
+
+Fake CTF flags
 == 
 
 Input
@@ -310,7 +242,7 @@ Negative stability buffer (for Gores)
 Uncertainty duration
 == 
 
-Run cl_run_on_join as console command
+Auto execute
 == 
 
 Voting
@@ -478,6 +410,25 @@ Show any enabled outlines
 Only show outlines in entities
 == 
 
+[Outlines]
+Width
+== 
+
+Unhook & hook
+== 
+
+Freeze & deep
+== 
+
+Unfreeze & undeep
+== 
+
+Kill
+== 
+
+Tele
+== 
+
 Outline freeze & deep
 == 
 
@@ -610,7 +561,7 @@ Background Draw
 Color
 == 
 
-Time until strokes dissapear
+Time until strokes disappear
 == 
 
  seconds (never)
@@ -632,6 +583,45 @@ Attempt to change your name when near finish
 == 
 
 Finish Name:
+== 
+
+Name:
+== 
+
+Name
+== 
+
+Command:
+== 
+
+Command
+== 
+
+Override Selected
+== 
+
+Add Bind
+== 
+
+Remove Bind
+== 
+
+The command is ran in console not chat
+== 
+
+Use left mouse to select
+== 
+
+Use right mouse to swap with selected
+== 
+
+Use middle mouse select without copy
+== 
+
+Bind Wheel Key
+== 
+
+Reset position of mouse when opening bindwheel
 == 
 
 War Entries
@@ -692,99 +682,6 @@ Add Group
 == 
 
 Online Players
-== 
-
-TClient Links
-== 
-
-Discord
-== 
-
-Website
-== 
-
-Github
-== 
-
-Support ♥
-== 
-
-Config Files
-== 
-
-TClient Settings
-== 
-
-Profiles
-== 
-
-TClient Developers
-== 
-
-Hide Settings Tabs
-== 
-
-Integration
-== 
-
-Enable Discord Integration
-== 
-
-Your profile
-== 
-
-Name: %s
-== 
-
-Clan: %s
-== 
-
-Skin: %s
-== 
-
-After Load
-== 
-
-Dummy
-== 
-
-Custom colors
-== 
-
-Save/Load Skin
-== 
-
-Save/Load Colors
-== 
-
-Save/Load Emote
-== 
-
-Save/Load Name
-== 
-
-Save/Load Clan
-== 
-
-Save/Load Flag
-== 
-
-Overwrite clan even if empty
-== 
-
-Load
-== 
-
-Save
-== 
-
-Delete
-== 
-
-Override
-== 
-
-Profiles file
 == 
 
 Show status bar
@@ -850,7 +747,7 @@ v = Velocity
 z = Zoom
 == 
 
-_ or \' \' = Space
+_ or ' ' = Space
 == 
 
 Apply
@@ -863,6 +760,106 @@ Add Item
 == 
 
 Remove Item
+== 
+
+TClient Links
+== 
+
+Discord
+== 
+
+Website
+== 
+
+Github
+== 
+
+Support ♥
+== 
+
+Config Files
+== 
+
+TClient Settings
+== 
+
+Profiles
+== 
+
+TClient Developers
+== 
+
+Hide Settings Tabs
+== 
+
+Integration
+== 
+
+Enable Discord Integration
+== 
+
+Name: %s
+== 
+
+Clan: %s
+== 
+
+Skin: %s
+== 
+
+Your profile
+== 
+
+After Load
+== 
+
+Save/Load Skin
+== 
+
+Save/Load Colors
+== 
+
+Save/Load Emote
+== 
+
+Save/Load Name
+== 
+
+Save/Load Clan
+== 
+
+Save/Load Flag
+== 
+
+Load
+== 
+
+Save
+== 
+
+Delete
+== 
+
+Override
+== 
+
+Dummy
+== 
+
+Custom colors
+== 
+
+Overwrite clan even if empty
+== 
+
+Profiles file
+== 
+
+Activating mod weapon on %d: %s\n
+== 
+
+[data_version.h]
+You have probably only installed the TClient DDNet.exe which is not supported, please use the entire TClient folder
 == 
 
 Changing name to %s near finish

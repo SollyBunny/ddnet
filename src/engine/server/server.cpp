@@ -307,7 +307,7 @@ const char *CServer::DnsblStateStr(EDnsblState State)
 		return "white";
 	}
 
-	dbg_assert_failed("unreachable");
+	dbg_assert_failed("Invalid dnsbl State: %d", static_cast<int>(State));
 }
 
 IConsole::EAccessLevel CServer::ConsoleAccessLevel(int ClientId) const
@@ -323,7 +323,7 @@ IConsole::EAccessLevel CServer::ConsoleAccessLevel(int ClientId) const
 		return IConsole::EAccessLevel::HELPER;
 	};
 
-	dbg_assert_failed("invalid auth level: %d", AuthLevel);
+	dbg_assert_failed("Invalid AuthLevel: %d", AuthLevel);
 }
 
 bool CServer::IsClientNameAvailable(int ClientId, const char *pNameRequest)
@@ -352,7 +352,7 @@ bool CServer::IsClientNameAvailable(int ClientId, const char *pNameRequest)
 
 bool CServer::SetClientNameImpl(int ClientId, const char *pNameRequest, bool Set)
 {
-	dbg_assert(0 <= ClientId && ClientId < MAX_CLIENTS, "invalid client id");
+	dbg_assert(0 <= ClientId && ClientId < MAX_CLIENTS, "Invalid ClientId: %d", ClientId);
 	if(m_aClients[ClientId].m_State < CClient::STATE_READY)
 		return false;
 
@@ -408,7 +408,7 @@ bool CServer::SetClientNameImpl(int ClientId, const char *pNameRequest, bool Set
 
 bool CServer::SetClientClanImpl(int ClientId, const char *pClanRequest, bool Set)
 {
-	dbg_assert(0 <= ClientId && ClientId < MAX_CLIENTS, "invalid client id");
+	dbg_assert(0 <= ClientId && ClientId < MAX_CLIENTS, "Invalid ClientId: %d", ClientId);
 	if(m_aClients[ClientId].m_State < CClient::STATE_READY)
 		return false;
 
@@ -522,7 +522,7 @@ void CServer::Ban(int ClientId, int Seconds, const char *pReason, bool VerbatimR
 
 void CServer::ReconnectClient(int ClientId)
 {
-	dbg_assert(0 <= ClientId && ClientId < MAX_CLIENTS, "invalid client id");
+	dbg_assert(0 <= ClientId && ClientId < MAX_CLIENTS, "Invalid ClientId: %d", ClientId);
 
 	if(GetClientVersion(ClientId) < VERSION_DDNET_RECONNECT)
 	{
@@ -545,7 +545,7 @@ void CServer::ReconnectClient(int ClientId)
 
 void CServer::RedirectClient(int ClientId, int Port)
 {
-	dbg_assert(0 <= ClientId && ClientId < MAX_CLIENTS, "invalid client id");
+	dbg_assert(0 <= ClientId && ClientId < MAX_CLIENTS, "Invalid ClientId: %d", ClientId);
 
 	bool SupportsRedirect = GetClientVersion(ClientId) >= VERSION_DDNET_REDIRECT;
 
@@ -624,8 +624,12 @@ void CServer::SetRconCid(int ClientId)
 
 int CServer::GetAuthedState(int ClientId) const
 {
-	dbg_assert(ClientId >= 0 && ClientId < MAX_CLIENTS, "ClientId is not valid");
-	dbg_assert(m_aClients[ClientId].m_State != CServer::CClient::STATE_EMPTY, "Client slot is empty");
+	if(ClientId == IConsole::CLIENT_ID_UNSPECIFIED)
+		return AUTHED_ADMIN;
+	if(ClientId == IConsole::CLIENT_ID_GAME)
+		return AUTHED_ADMIN;
+	dbg_assert(ClientId >= 0 && ClientId < MAX_CLIENTS, "Invalid ClientId: %d", ClientId);
+	dbg_assert(m_aClients[ClientId].m_State != CServer::CClient::STATE_EMPTY, "Client slot %d is empty", ClientId);
 	return m_AuthManager.KeyLevel(m_aClients[ClientId].m_AuthKey);
 }
 
@@ -641,8 +645,8 @@ bool CServer::IsRconAuthedAdmin(int ClientId) const
 
 const char *CServer::GetAuthName(int ClientId) const
 {
-	dbg_assert(ClientId >= 0 && ClientId < MAX_CLIENTS, "ClientId is not valid");
-	dbg_assert(m_aClients[ClientId].m_State != CServer::CClient::STATE_EMPTY, "Client slot is empty");
+	dbg_assert(ClientId >= 0 && ClientId < MAX_CLIENTS, "Invalid ClientId: %d", ClientId);
+	dbg_assert(m_aClients[ClientId].m_State != CServer::CClient::STATE_EMPTY, "Client slot %d is empty", ClientId);
 	int Key = m_aClients[ClientId].m_AuthKey;
 	dbg_assert(Key != -1, "Client not authed");
 	return m_AuthManager.KeyIdent(Key);
@@ -650,13 +654,13 @@ const char *CServer::GetAuthName(int ClientId) const
 
 bool CServer::HasAuthHidden(int ClientId) const
 {
-	dbg_assert(ClientId >= 0 && ClientId < MAX_CLIENTS, "ClientId is not valid");
+	dbg_assert(ClientId >= 0 && ClientId < MAX_CLIENTS, "Invalid ClientId: %d", ClientId);
 	return m_aClients[ClientId].m_AuthHidden;
 }
 
 bool CServer::GetClientInfo(int ClientId, CClientInfo *pInfo) const
 {
-	dbg_assert(ClientId >= 0 && ClientId < MAX_CLIENTS, "ClientId is not valid");
+	dbg_assert(ClientId >= 0 && ClientId < MAX_CLIENTS, "Invalid ClientId: %d", ClientId);
 	dbg_assert(pInfo != nullptr, "pInfo cannot be null");
 
 	if(m_aClients[ClientId].m_State == CClient::STATE_INGAME)
@@ -682,7 +686,7 @@ bool CServer::GetClientInfo(int ClientId, CClientInfo *pInfo) const
 
 void CServer::SetClientDDNetVersion(int ClientId, int DDNetVersion)
 {
-	dbg_assert(ClientId >= 0 && ClientId < MAX_CLIENTS, "ClientId is not valid");
+	dbg_assert(ClientId >= 0 && ClientId < MAX_CLIENTS, "Invalid ClientId: %d", ClientId);
 
 	if(m_aClients[ClientId].m_State == CClient::STATE_INGAME)
 	{
@@ -693,8 +697,8 @@ void CServer::SetClientDDNetVersion(int ClientId, int DDNetVersion)
 
 const NETADDR *CServer::ClientAddr(int ClientId) const
 {
-	dbg_assert(ClientId >= 0 && ClientId < MAX_CLIENTS, "ClientId is not valid");
-	dbg_assert(m_aClients[ClientId].m_State != CServer::CClient::STATE_EMPTY, "Client slot is empty");
+	dbg_assert(ClientId >= 0 && ClientId < MAX_CLIENTS, "Invalid ClientId: %d", ClientId);
+	dbg_assert(m_aClients[ClientId].m_State != CServer::CClient::STATE_EMPTY, "Client slot %d is empty", ClientId);
 #ifdef CONF_DEBUG
 	if(m_aClients[ClientId].m_DebugDummy)
 	{
@@ -706,8 +710,8 @@ const NETADDR *CServer::ClientAddr(int ClientId) const
 
 const std::array<char, NETADDR_MAXSTRSIZE> &CServer::ClientAddrStringImpl(int ClientId, bool IncludePort) const
 {
-	dbg_assert(ClientId >= 0 && ClientId < MAX_CLIENTS, "ClientId is not valid");
-	dbg_assert(m_aClients[ClientId].m_State != CServer::CClient::STATE_EMPTY, "Client slot is empty");
+	dbg_assert(ClientId >= 0 && ClientId < MAX_CLIENTS, "Invalid ClientId: %d", ClientId);
+	dbg_assert(m_aClients[ClientId].m_State != CServer::CClient::STATE_EMPTY, "Client slot %d is empty", ClientId);
 #ifdef CONF_DEBUG
 	if(m_aClients[ClientId].m_DebugDummy)
 	{
@@ -1407,8 +1411,8 @@ void CServer::SendRconLogLine(int ClientId, const CLogMessage *pMessage)
 	const char *pStart = str_find(pLine, "<{");
 	const char *pEnd = pStart == nullptr ? nullptr : str_find(pStart + 2, "}>");
 	const char *pLineWithoutIps;
-	char aLine[512];
-	char aLineWithoutIps[512];
+	char aLine[sizeof(CLogMessage().m_aLine)];
+	char aLineWithoutIps[sizeof(CLogMessage().m_aLine)];
 	aLine[0] = '\0';
 	aLineWithoutIps[0] = '\0';
 
@@ -1418,11 +1422,11 @@ void CServer::SendRconLogLine(int ClientId, const CLogMessage *pMessage)
 	}
 	else
 	{
-		str_append(aLine, pLine, pStart - pLine + 1);
-		str_append(aLine, pStart + 2, pStart - pLine + pEnd - pStart - 1);
+		str_append(aLine, pLine, minimum<size_t>(pStart - pLine + 1, sizeof(aLine)));
+		str_append(aLine, pStart + 2, minimum<size_t>(pStart - pLine + pEnd - pStart - 1, sizeof(aLine)));
 		str_append(aLine, pEnd + 2);
 
-		str_append(aLineWithoutIps, pLine, pStart - pLine + 1);
+		str_append(aLineWithoutIps, pLine, minimum<size_t>(pStart - pLine + 1, sizeof(aLine)));
 		str_append(aLineWithoutIps, "XXX");
 		str_append(aLineWithoutIps, pEnd + 2);
 
@@ -1477,9 +1481,8 @@ void CServer::SendRconCmdGroupEnd(int ClientId)
 int CServer::NumRconCommands(int ClientId)
 {
 	int Num = 0;
-	const IConsole::EAccessLevel AccessLevel = ConsoleAccessLevel(ClientId);
-	for(const IConsole::ICommandInfo *pCmd = Console()->FirstCommandInfo(AccessLevel, CFGFLAG_SERVER);
-		pCmd; pCmd = Console()->NextCommandInfo(pCmd, AccessLevel, CFGFLAG_SERVER))
+	for(const IConsole::ICommandInfo *pCmd = Console()->FirstCommandInfo(ClientId, CFGFLAG_SERVER);
+		pCmd; pCmd = Console()->NextCommandInfo(pCmd, ClientId, CFGFLAG_SERVER))
 	{
 		Num++;
 	}
@@ -1496,11 +1499,10 @@ void CServer::UpdateClientRconCommands(int ClientId)
 		return;
 	}
 
-	const IConsole::EAccessLevel AccessLevel = ConsoleAccessLevel(ClientId);
 	for(int i = 0; i < MAX_RCONCMD_SEND && Client.m_pRconCmdToSend; ++i)
 	{
 		SendRconCmdAdd(Client.m_pRconCmdToSend, ClientId);
-		Client.m_pRconCmdToSend = Console()->NextCommandInfo(Client.m_pRconCmdToSend, AccessLevel, CFGFLAG_SERVER);
+		Client.m_pRconCmdToSend = Console()->NextCommandInfo(Client.m_pRconCmdToSend, ClientId, CFGFLAG_SERVER);
 		if(Client.m_pRconCmdToSend == nullptr)
 		{
 			SendRconCmdGroupEnd(ClientId);
@@ -1966,13 +1968,11 @@ void CServer::ProcessClientPacket(CNetChunk *pPacket)
 					Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", aBuf);
 					m_RconClientId = ClientId;
 					m_RconAuthLevel = GetAuthedState(ClientId);
-					Console()->SetAccessLevel(ConsoleAccessLevel(ClientId));
 					{
 						CRconClientLogger Logger(this, ClientId);
 						CLogScope Scope(&Logger);
 						Console()->ExecuteLineFlag(pCmd, CFGFLAG_SERVER, ClientId);
 					}
-					Console()->SetAccessLevel(IConsole::EAccessLevel::ADMIN);
 					m_RconClientId = IServer::RCON_CID_SERV;
 					m_RconAuthLevel = AUTHED_ADMIN;
 				}
@@ -2035,7 +2035,7 @@ void CServer::ProcessClientPacket(CNetChunk *pPacket)
 					int SendRconCmds = IsSixup(ClientId) ? true : Unpacker.GetInt();
 					if(!Unpacker.Error() && SendRconCmds)
 					{
-						m_aClients[ClientId].m_pRconCmdToSend = Console()->FirstCommandInfo(ConsoleAccessLevel(ClientId), CFGFLAG_SERVER);
+						m_aClients[ClientId].m_pRconCmdToSend = Console()->FirstCommandInfo(ClientId, CFGFLAG_SERVER);
 						SendRconCmdGroupStart(ClientId);
 						if(m_aClients[ClientId].m_pRconCmdToSend == nullptr)
 						{
@@ -2327,7 +2327,7 @@ void CServer::CacheServerInfo(CCache *pCache, int Type, bool SendClients)
 	case SERVERINFO_64_LEGACY: Remaining = 24; break;
 	case SERVERINFO_VANILLA: Remaining = VANILLA_MAX_CLIENTS; break;
 	case SERVERINFO_INGAME: Remaining = VANILLA_MAX_CLIENTS; break;
-	default: dbg_assert_failed("unreachable");
+	default: dbg_assert_failed("Invalid Type: %d", Type);
 	}
 
 	// Use the following strategy for sending:
@@ -2490,7 +2490,7 @@ void CServer::CacheServerInfoSixup(CCache *pCache, bool SendClients, int MaxCons
 				}
 				else
 				{
-					dbg_assert(Packer.Size() <= MaxPacketSize, "Max packet size exceeded while repacking");
+					dbg_assert(Packer.Size() <= MaxPacketSize, "Max packet size exceeded while repacking. Packer.Size()=%d MaxPacketSize=%d", Packer.Size(), MaxPacketSize);
 				}
 			}
 		}
@@ -2543,7 +2543,7 @@ void CServer::SendServerInfo(const NETADDR *pAddr, int Token, int Type, bool Sen
 		}
 		else
 		{
-			dbg_assert_failed("unknown serverinfo type");
+			dbg_assert_failed("Invalid serverinfo Type: %d", Type);
 		}
 
 		p.AddRaw(Chunk.m_vData.data(), Chunk.m_vData.size());
@@ -2660,6 +2660,35 @@ void CServer::UpdateRegisterServerInfo()
 
 	JsonWriter.WriteAttribute("requires_login");
 	JsonWriter.WriteBoolValue(false);
+
+	{
+		bool FoundFlags = false;
+		auto Flag = [&](const char *pFlag) {
+			if(!FoundFlags)
+			{
+				JsonWriter.WriteAttribute("flags");
+				JsonWriter.BeginArray();
+				FoundFlags = true;
+			}
+			JsonWriter.WriteStrValue(pFlag);
+		};
+
+		if(g_Config.m_SvRegisterCommunityToken[0] && g_Config.m_SvOfficialTutorial[0])
+		{
+			SHA256_DIGEST Sha256 = sha256(g_Config.m_SvOfficialTutorial, str_length(g_Config.m_SvOfficialTutorial));
+			char aSha256[SHA256_MAXSTRSIZE];
+			sha256_str(Sha256, aSha256, sizeof(aSha256));
+			if(str_comp(aSha256, "8a11dc71274313e78a09ff58b8e696fb5009ce8606d12077ceb78ebf99a57464") == 0)
+			{
+				Flag("tutorial");
+			}
+		}
+
+		if(FoundFlags)
+		{
+			JsonWriter.EndArray();
+		}
+	}
 
 	JsonWriter.WriteAttribute("clients");
 	JsonWriter.BeginArray();
@@ -3528,6 +3557,22 @@ static int GetAuthLevel(const char *pLevel)
 	return Level;
 }
 
+bool CServer::CanClientUseCommandCallback(int ClientId, const IConsole::ICommandInfo *pCommand, void *pUser)
+{
+	return ((CServer *)pUser)->CanClientUseCommand(ClientId, pCommand);
+}
+
+bool CServer::CanClientUseCommand(int ClientId, const IConsole::ICommandInfo *pCommand) const
+{
+	if(pCommand->Flags() & CFGFLAG_CHAT)
+		return true;
+	if(pCommand->Flags() & CMDFLAG_PRACTICE)
+		return true;
+	if(!IsRconAuthed(ClientId))
+		return false;
+	return pCommand->GetAccessLevel() >= ConsoleAccessLevel(ClientId);
+}
+
 void CServer::AuthRemoveKey(int KeySlot)
 {
 	m_AuthManager.RemoveKey(KeySlot);
@@ -4344,6 +4389,7 @@ void CServer::RegisterCommands()
 
 	Console()->Chain("sv_name", ConchainSpecialInfoupdate, this);
 	Console()->Chain("password", ConchainSpecialInfoupdate, this);
+	Console()->Chain("sv_reserved_slots", ConchainSpecialInfoupdate, this);
 	Console()->Chain("sv_spectator_slots", ConchainSpecialInfoupdate, this);
 
 	Console()->Chain("sv_max_clients_per_ip", ConchainMaxclientsperipUpdate, this);
@@ -4371,6 +4417,7 @@ void CServer::RegisterCommands()
 	m_ServerBan.InitServerBan(Console(), Storage(), this);
 	m_NameBans.InitConsole(Console());
 	m_pGameServer->OnConsoleInit();
+	Console()->SetCanUseCommandCallback(CanClientUseCommandCallback, this);
 }
 
 int CServer::SnapNewId()
@@ -4385,7 +4432,7 @@ void CServer::SnapFreeId(int Id)
 
 void *CServer::SnapNewItem(int Type, int Id, int Size)
 {
-	dbg_assert(Id >= -1 && Id <= 0xffff, "incorrect id");
+	dbg_assert(Id >= -1 && Id <= 0xffff, "Invalid snap item Id: %d", Id);
 	return Id < 0 ? nullptr : m_SnapshotBuilder.NewItem(Type, Id, Size);
 }
 
