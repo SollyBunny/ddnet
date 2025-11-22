@@ -116,26 +116,24 @@ static chaiscript::Boxed_Value Any2Boxed(const CScriptingCtx::Any &Any)
 template<>
 void CScriptingCtx::AddFunctionInternal(const char *pName, const std::function<CScriptingCtx::Any(const std::string &Str, const CScriptingCtx::Any &Any)> &Function)
 {
-	auto FuncCopy = Function;
-
-	m_pData->m_Chai.add(chaiscript::fun([FuncCopy](const std::string &Str) {
-		return Any2Boxed(FuncCopy(Str, nullptr));
+	m_pData->m_Chai.add(chaiscript::fun([&](const std::string &Str) {
+		return Any2Boxed(Function(Str, nullptr));
 	}),
 		pName);
-	m_pData->m_Chai.add(chaiscript::fun([FuncCopy](const std::string &Str, int Int) {
-		return Any2Boxed(FuncCopy(Str, Int));
+	m_pData->m_Chai.add(chaiscript::fun([&](const std::string &Str, int Int) {
+		return Any2Boxed(Function(Str, Int));
 	}),
 		pName);
-	m_pData->m_Chai.add(chaiscript::fun([FuncCopy](const std::string &Str, float Float) {
-		return Any2Boxed(FuncCopy(Str, Float));
+	m_pData->m_Chai.add(chaiscript::fun([&](const std::string &Str, float Float) {
+		return Any2Boxed(Function(Str, Float));
 	}),
 		pName);
-	m_pData->m_Chai.add(chaiscript::fun([FuncCopy](const std::string &Str, bool Bool) {
-		return Any2Boxed(FuncCopy(Str, Bool));
+	m_pData->m_Chai.add(chaiscript::fun([&](const std::string &Str, bool Bool) {
+		return Any2Boxed(Function(Str, Bool));
 	}),
 		pName);
-	m_pData->m_Chai.add(chaiscript::fun([FuncCopy](const std::string &Str, const std::string &Str2) {
-		return Any2Boxed(FuncCopy(Str, Str2));
+	m_pData->m_Chai.add(chaiscript::fun([&](const std::string &Str, const std::string &Str2) {
+		return Any2Boxed(Function(Str, Str2));
 	}),
 		pName);
 }
@@ -143,8 +141,7 @@ void CScriptingCtx::AddFunctionInternal(const char *pName, const std::function<C
 template<>
 void CScriptingCtx::AddFunctionInternal(const char *pName, const std::function<void(const std::string &Str)> &Function)
 {
-	auto FuncCopy = Function;
-	m_pData->m_Chai.add(chaiscript::fun(FuncCopy), pName);
+	m_pData->m_Chai.add(chaiscript::fun(Function), pName);
 }
 
 template<>
