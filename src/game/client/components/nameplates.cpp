@@ -564,7 +564,6 @@ public:
 	{
 		/*
 			If in a real game,
-				Don't show ping in demos
 				Show other people's pings if in scoreboard
 				Or if ping circle and name enabled
 			If in preview
@@ -573,8 +572,8 @@ public:
 		m_Radius = Data.m_FontSize / 3.0f;
 		m_Size = vec2(m_Radius, m_Radius) * 1.5f;
 		m_Visible = Data.m_InGame ? (
-						    This.Client()->State() != IClient::STATE_DEMOPLAYBACK && ((Data.m_ShowName && g_Config.m_TcNameplatePingCircle > 0) ||
-														     (This.m_Scoreboard.IsActive() && !This.m_Snap.m_apPlayerInfos[Data.m_ClientId]->m_Local))) :
+						    ((Data.m_ShowName && g_Config.m_TcNameplatePingCircle > 0) ||
+							    (This.m_Scoreboard.IsActive() && !This.m_Snap.m_apPlayerInfos[Data.m_ClientId]->m_Local))) :
 					    (
 						    (Data.m_ShowName && g_Config.m_TcNameplatePingCircle > 0));
 		if(!m_Visible)
