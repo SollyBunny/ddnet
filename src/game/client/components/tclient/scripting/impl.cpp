@@ -65,12 +65,12 @@ CScriptingCtx::CScriptingCtx()
 	m_pData = new CScriptingCtxData{
 		nullptr,
 		chaiscript::ChaiScript({}, {}, {chaiscript::Options::No_Load_Modules, chaiscript::Options::No_External_Scripts})};
-	auto PrintStr = chaiscript::fun([&](const std::string &Msg) {
+	static const auto s_PrintStr = chaiscript::fun([](const std::string &Msg) {
 		log_info(SCRIPTING_IMPL "/print", "%s", Msg.c_str());
 	});
-	m_pData->m_Chai.add(PrintStr, "print_string");
-	m_pData->m_Chai.add(PrintStr, "println_string");
-	auto PrintStrBoxed = chaiscript::fun([&](const chaiscript::Boxed_Value &Value) {
+	m_pData->m_Chai.add(s_PrintStr, "print_string");
+	m_pData->m_Chai.add(s_PrintStr, "println_string");
+	const auto PrintStrBoxed = chaiscript::fun([&](const chaiscript::Boxed_Value &Value) {
 		chaiscript::Boxed_Value ToStringRaw = m_pData->m_Chai.eval("to_string");
 		std::function<std::string(chaiscript::Boxed_Value)> ToString =
 			chaiscript::boxed_cast<std::function<std::string(chaiscript::Boxed_Value)>>(ToStringRaw);
@@ -116,23 +116,23 @@ static chaiscript::Boxed_Value Any2Boxed(const CScriptingCtx::Any &Any)
 template<>
 void CScriptingCtx::AddFunctionInternal(const char *pName, const std::function<CScriptingCtx::Any(const std::string &Str, const CScriptingCtx::Any &Any)> &Function)
 {
-	m_pData->m_Chai.add(chaiscript::fun([&](const std::string &Str) {
+	m_pData->m_Chai.add(chaiscript::fun([=](const std::string &Str) {
 		return Any2Boxed(Function(Str, nullptr));
 	}),
 		pName);
-	m_pData->m_Chai.add(chaiscript::fun([&](const std::string &Str, int Int) {
+	m_pData->m_Chai.add(chaiscript::fun([=](const std::string &Str, int Int) {
 		return Any2Boxed(Function(Str, Int));
 	}),
 		pName);
-	m_pData->m_Chai.add(chaiscript::fun([&](const std::string &Str, float Float) {
+	m_pData->m_Chai.add(chaiscript::fun([=](const std::string &Str, float Float) {
 		return Any2Boxed(Function(Str, Float));
 	}),
 		pName);
-	m_pData->m_Chai.add(chaiscript::fun([&](const std::string &Str, bool Bool) {
+	m_pData->m_Chai.add(chaiscript::fun([=](const std::string &Str, bool Bool) {
 		return Any2Boxed(Function(Str, Bool));
 	}),
 		pName);
-	m_pData->m_Chai.add(chaiscript::fun([&](const std::string &Str, const std::string &Str2) {
+	m_pData->m_Chai.add(chaiscript::fun([=](const std::string &Str, const std::string &Str2) {
 		return Any2Boxed(Function(Str, Str2));
 	}),
 		pName);
@@ -141,7 +141,7 @@ void CScriptingCtx::AddFunctionInternal(const char *pName, const std::function<C
 template<>
 void CScriptingCtx::AddFunctionInternal(const char *pName, const std::function<void(const std::string &Str)> &Function)
 {
-	m_pData->m_Chai.add(chaiscript::fun(Function), pName);
+	m_pData->m_Chai.add(chaiscript::fun([=](const std::string &Str) { Function(Str); }), pName);
 }
 
 template<>
