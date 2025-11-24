@@ -307,6 +307,7 @@ public:
 
 	int Init();
 
+	static bool StrHideIps(const char *pInput, char *pOutputWithIps, int OutputWithIpsSize, char *pOutputWithoutIps, int OutputWithoutIpsSize);
 	void SendLogLine(const CLogMessage *pMessage);
 	void SetRconCid(int ClientId) override;
 	int GetAuthedState(int ClientId) const override;
@@ -458,7 +459,7 @@ public:
 	void LogoutClient(int ClientId, const char *pReason);
 	void LogoutKey(int Key, const char *pReason);
 
-	void ConchainRconPasswordChangeGeneric(int Level, const char *pCurrent, IConsole::IResult *pResult);
+	void ConchainRconPasswordChangeGeneric(const char *pRoleName, const char *pCurrent, IConsole::IResult *pResult);
 	static void ConchainRconPasswordChange(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
 	static void ConchainRconModPasswordChange(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
 	static void ConchainRconHelperPasswordChange(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
