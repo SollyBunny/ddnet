@@ -513,16 +513,6 @@ bool IGameController::IsValidTeam(int Team)
 
 const char *IGameController::GetTeamName(int Team)
 {
-	// ddnet-insta
-	// TODO: move this diff to the insta core controller
-	if(IsTeamPlay())
-	{
-		if(Team == TEAM_RED)
-			return "red team";
-		if(Team == TEAM_BLUE)
-			return "blue team";
-	}
-
 	switch(Team)
 	{
 	case TEAM_SPECTATORS:

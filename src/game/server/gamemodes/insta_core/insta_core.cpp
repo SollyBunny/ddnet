@@ -456,6 +456,19 @@ int CGameControllerInstaCore::ClampTeam(int Team)
 	return TEAM_RED;
 }
 
+const char *CGameControllerInstaCore::GetTeamName(int Team)
+{
+	if(IsTeamPlay())
+	{
+		if(Team == TEAM_RED)
+			return "red team";
+		if(Team == TEAM_BLUE)
+			return "blue team";
+	}
+
+	return IGameController::GetTeamName(Team);
+}
+
 bool CGameControllerInstaCore::CanSpawn(int Team, vec2 *pOutPos, int DDTeam)
 {
 	// spectators can't spawn
