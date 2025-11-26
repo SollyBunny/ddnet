@@ -447,13 +447,16 @@ bool CGameControllerInstaCore::CanJoinTeam(int Team, int NotThisId, char *pError
 	return false;
 }
 
-int CGameControllerInstaCore::ClampTeam(int Team)
+bool CGameControllerInstaCore::IsValidTeam(int Team)
 {
-	if(Team < TEAM_RED)
-		return TEAM_SPECTATORS;
 	if(IsTeamPlay())
-		return Team & 1;
-	return TEAM_RED;
+	{
+		if(Team == TEAM_RED)
+			return true;
+		if(Team == TEAM_BLUE)
+			return true;
+	}
+	return IGameController::IsValidTeam(Team);
 }
 
 const char *CGameControllerInstaCore::GetTeamName(int Team)

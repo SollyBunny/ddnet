@@ -1331,14 +1331,17 @@ void CGameControllerPvp::OnPlayerDisconnect(class CPlayer *pPlayer, const char *
 	CheckReadyStates(pPlayer->GetCid());
 }
 
+// TODO: can we move this to the core controller?
 void CGameControllerPvp::DoTeamChange(CPlayer *pPlayer, int Team, bool DoChatMsg)
 {
+	if(!IsValidTeam(Team))
+		return;
+
 	// has to be saved for later
 	// because the set team operation kills the character
 	// and then we lose the team information
 	int DDRaceTeam = GameServer()->GetDDRaceTeam(pPlayer->GetCid());
 
-	Team = ClampTeam(Team);
 	if(Team == pPlayer->GetTeam())
 		return;
 

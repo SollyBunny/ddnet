@@ -69,7 +69,7 @@ public:
 	int GetPlayerTeam(class CPlayer *pPlayer, bool Sixup) override;
 	int GetAutoTeam(int NotThisId) override;
 	bool CanJoinTeam(int Team, int NotThisId, char *pErrorReason, int ErrorReasonSize) override;
-	int ClampTeam(int Team); // TODO: replace with the new IsValidTeam
+	bool IsValidTeam(int Team) override;
 	const char *GetTeamName(int Team) override;
 	bool CanSpawn(int Team, vec2 *pOutPos, int DDTeam) override;
 	bool OnSkinChange7(protocol7::CNetMsg_Cl_SkinChange *pMsg, int ClientId) override;
