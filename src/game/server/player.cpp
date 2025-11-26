@@ -27,6 +27,7 @@ CPlayer::CPlayer(CGameContext *pGameServer, uint32_t UniqueClientId, int ClientI
 	m_RespawnTick = Server()->Tick(); // ddnet-insta
 	m_HasGhostCharInGame = false; // ddnet-insta
 	m_ClientId = ClientId;
+	dbg_assert(GameServer()->m_pController->IsValidTeam(Team), "Invalid Team: %d", Team);
 	m_Team = Team;
 	m_NumInputs = 0;
 	m_Spawning = false;
@@ -695,7 +696,7 @@ CCharacter *CPlayer::ForceSpawn(vec2 Pos)
 	m_Spawning = false;
 	m_pCharacter = new(m_ClientId) CCharacter(&GameServer()->m_World, GameServer()->GetLastPlayerInput(m_ClientId));
 	m_pCharacter->Spawn(this, Pos);
-	m_Team = 0;
+	m_Team = TEAM_GAME;
 	return m_pCharacter;
 }
 

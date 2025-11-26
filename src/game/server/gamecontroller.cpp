@@ -506,9 +506,15 @@ void IGameController::ResetGame()
 	GameServer()->m_World.m_ResetRequested = true;
 }
 
+bool IGameController::IsValidTeam(int Team)
+{
+	return Team == TEAM_SPECTATORS || Team == TEAM_GAME;
+}
+
 const char *IGameController::GetTeamName(int Team)
 {
 	// ddnet-insta
+	// TODO: move this diff to the insta core controller
 	if(IsTeamPlay())
 	{
 		if(Team == TEAM_RED)
@@ -517,9 +523,15 @@ const char *IGameController::GetTeamName(int Team)
 			return "blue team";
 	}
 
-	if(Team == 0)
+	switch(Team)
+	{
+	case TEAM_SPECTATORS:
+		return "spectators";
+	case TEAM_GAME:
 		return "game";
-	return "spectators";
+	default:
+		dbg_assert_failed("Invalid Team: %d", Team);
+	}
 }
 
 void IGameController::StartRound()
@@ -854,7 +866,7 @@ void IGameController::Snap(int SnappingClient)
 
 int IGameController::GetAutoTeam(int NotThisId)
 {
-	int Team = 0;
+	int Team = TEAM_GAME;
 
 	if(CanJoinTeam(Team, NotThisId, nullptr, 0))
 		return Team;
@@ -891,13 +903,6 @@ bool IGameController::CanJoinTeam(int Team, int NotThisId, char *pErrorReason, i
 	return false;
 }
 
-int IGameController::ClampTeam(int Team)
-{
-	if(Team < 0)
-		return TEAM_SPECTATORS;
-	return 0;
-}
-
 CClientMask IGameController::GetMaskForPlayerWorldEvent(int Asker, int ExceptId)
 {
 	if(Asker == -1)
@@ -908,7 +913,9 @@ CClientMask IGameController::GetMaskForPlayerWorldEvent(int Asker, int ExceptId)
 
 void IGameController::DoTeamChange(CPlayer *pPlayer, int Team, bool DoChatMsg)
 {
-	Team = ClampTeam(Team);
+	if(!IsValidTeam(Team))
+		return;
+
 	if(Team == pPlayer->GetTeam())
 		return;
 
