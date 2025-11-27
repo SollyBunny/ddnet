@@ -182,8 +182,6 @@ class CGameContext : public IGameServer
 	static void ConchainPracticeByDefaultUpdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
 	static void ConDumpLog(IConsole::IResult *pResult, void *pUserData);
 
-	void Construct(int Resetting);
-	void Destruct(int Resetting);
 	void AddVote(const char *pDescription, const char *pCommand);
 	static int MapScan(const char *pName, int IsDir, int DirType, void *pUserData);
 
@@ -217,8 +215,7 @@ class CGameContext : public IGameServer
 	CNetObjHandler *GetNetObjHandler() override { return &m_NetObjHandler; }
 	protocol7::CNetObjHandler *GetNetObjHandler7() override { return &m_NetObjHandler7; }
 
-	CGameContext();
-	CGameContext(int Reset);
+	CGameContext(bool Resetting = false);
 	~CGameContext() override;
 
 	void Clear();
@@ -364,6 +361,7 @@ class CGameContext : public IGameServer
 	void OnChangeInfoNetMessage(const CNetMsg_Cl_ChangeInfo *pMsg, int ClientId);
 	void OnEmoticonNetMessage(const CNetMsg_Cl_Emoticon *pMsg, int ClientId);
 	void OnKillNetMessage(const CNetMsg_Cl_Kill *pMsg, int ClientId);
+	void OnEnableSpectatorCountNetMessage(const CNetMsg_Cl_EnableSpectatorCount *pMsg, int ClientId);
 	void OnStartInfoNetMessage(const CNetMsg_Cl_StartInfo *pMsg, int ClientId);
 
 	bool OnClientDataPersist(int ClientId, void *pData) override;

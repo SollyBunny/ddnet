@@ -319,7 +319,8 @@ void CRenderLayerTile::RenderTileLayer(const ColorRGBA &Color, const CRenderLaye
 
 		int X0 = std::max(ScreenRectX0, 0);
 		int X1 = std::min(ScreenRectX1, (int)Visuals.m_Width);
-		if(X0 <= X1)
+		int XR = X1 - 1;
+		if(X0 <= XR)
 		{
 			int Y0 = std::max(ScreenRectY0, 0);
 			int Y1 = std::min(ScreenRectY1, (int)Visuals.m_Height);
@@ -330,10 +331,7 @@ void CRenderLayerTile::RenderTileLayer(const ColorRGBA &Color, const CRenderLaye
 
 			for(int y = Y0; y < Y1; ++y)
 			{
-				int XR = X1 - 1;
-
-				dbg_assert(Visuals.m_vTilesOfLayer[y * Visuals.m_Width + XR].IndexBufferByteOffset() >= Visuals.m_vTilesOfLayer[y * Visuals.m_Width + X0].IndexBufferByteOffset(), "Tile count wrong.");
-
+				dbg_assert(Visuals.m_vTilesOfLayer[y * Visuals.m_Width + XR].IndexBufferByteOffset() >= Visuals.m_vTilesOfLayer[y * Visuals.m_Width + X0].IndexBufferByteOffset(), "Tile offsets are not monotone.");
 				unsigned int NumVertices = ((Visuals.m_vTilesOfLayer[y * Visuals.m_Width + XR].IndexBufferByteOffset() - Visuals.m_vTilesOfLayer[y * Visuals.m_Width + X0].IndexBufferByteOffset()) / sizeof(unsigned int)) + (Visuals.m_vTilesOfLayer[y * Visuals.m_Width + XR].DoDraw() ? 6lu : 0lu);
 
 				if(NumVertices)
@@ -726,18 +724,23 @@ void CRenderLayerTile::UploadTileData(std::optional<CTileLayerVisuals> &VisualsO
 	}
 
 	// shrink clip region
-	if(DrawLeft > DrawRight || DrawTop > DrawBottom)
+	// we only apply the clip once for the first overlay type (tile visuals). Physic layers can have multiple layers for text, e.g. speedup force
+	// the first overlay is always the largest and you will never find an overlay, where the text is written over AIR
+	if(CurOverlay == 0)
 	{
-		// we are drawing nothing, layer is empty
-		m_LayerClip->m_Height = 0.0f;
-		m_LayerClip->m_Width = 0.0f;
-	}
-	else
-	{
-		m_LayerClip->m_X = DrawLeft * 32.0f;
-		m_LayerClip->m_Y = DrawTop * 32.0f;
-		m_LayerClip->m_Width = (DrawRight - DrawLeft + 1) * 32.0f;
-		m_LayerClip->m_Height = (DrawBottom - DrawTop + 1) * 32.0f;
+		if(DrawLeft > DrawRight || DrawTop > DrawBottom)
+		{
+			// we are drawing nothing, layer is empty
+			m_LayerClip->m_Height = 0.0f;
+			m_LayerClip->m_Width = 0.0f;
+		}
+		else
+		{
+			m_LayerClip->m_X = DrawLeft * 32.0f;
+			m_LayerClip->m_Y = DrawTop * 32.0f;
+			m_LayerClip->m_Width = (DrawRight - DrawLeft + 1) * 32.0f;
+			m_LayerClip->m_Height = (DrawBottom - DrawTop + 1) * 32.0f;
+		}
 	}
 
 	// append one kill tile to the gamelayer

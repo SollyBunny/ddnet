@@ -51,9 +51,6 @@ Visual
 Custom Font: 
 ==     Шрифт: 
 
-Show ping colored circle before names
-== Показувати пінг у вигляді кольорового кола біля імені
-
 Hide nameplates in spec
 == Приховувати імена в режимі спостерігача
 
@@ -185,9 +182,6 @@ Uncertainty duration
 
 Other
 == Інше
-
-Run cl_run_on_join as console command
-== Запустити cl_run_on_join як консольну команду
 
 Ghost Tools
 == Інструменти привидів
@@ -636,9 +630,6 @@ Speed
 Colors in spectate select
 == Вибір кольорів в спостерігачах
 
-_ or \' \' = Space
-== _ або \' \' = Пробіл
-
 Translated text hidden due to streamer mode
 == Перекладений текст прихований через режим стримера
 
@@ -651,22 +642,6 @@ Translated text hidden due to streamer mode
 [bgdraw]
 Failed to create bgdraw folder
 == Не вдалося створити папку bgdraw
-
-[bgdraw]
-Opening %s for %s
-== Відкриття %s для %s
-
-[bgdraw]
-writing
-== запис
-
-[bgdraw]
-reading
-== читання
-
-[bgdraw]
-Failed to open %s for %s
-== Не вдалося відкрити %s для %s
 
 [bgdraw]
 Writing item %d failed
@@ -722,39 +697,6 @@ Remove [group] [name]:
 
 Remove [group] [clan]:
 == Прибрати клан [група] [клан]:
-
-Mod
-== Модератор
-
-Mute ID:
-== Заглушити ID:
-
-Mute Name:
-== Заглушити ім'я:
-
-Unmute Last:
-== Зняти мут з останнього:
-
-Kick ID:
-== Кікнути ID:
-
-Kick Name:
-== Кікнути ім'я:
-
-Ban ID:
-== Забанити ID:
-
-Ban Name:
-== Забанити ім'я:
-
-Unban Last:
-== Розбанити останнього:
-
-Kill Ids:
-== Вбити ID:
-
-Kill Names:
-== Вбити імена:
 
 Translate:
 == Перекласти:
@@ -846,9 +788,6 @@ Toggle ghosts key
 Background Draw
 == Фонове малювання
 
-Time until strokes dissapear
-== Час до зникнення штрихів
-
  seconds (never)
 ==  секунд (ніколи)
 
@@ -884,3 +823,60 @@ Changing name to %s near finish
 %s to %s failed: %s
 == %s на %s не вдався: %s
 
+[bgdraw]
+No items to write
+== 
+
+[bgdraw]
+No changes since last save
+== 
+
+Remove war clan:
+== 
+
+Show ping colored circle in nameplates
+== 
+
+Show country flags in nameplates
+== 
+
+Fake CTF flags
+== 
+
+Auto execute
+== 
+
+[Outlines]
+Width
+== 
+
+Unhook & hook
+== 
+
+Freeze & deep
+== 
+
+Unfreeze & undeep
+== 
+
+Kill
+== 
+
+Tele
+== 
+
+Time until strokes disappear
+== 
+
+The command is ran in console not chat
+== 
+
+_ or ' ' = Space
+== 
+
+Activating mod weapon on %d: %s\n
+== 
+
+[data_version.h]
+You have probably only installed the TClient DDNet.exe which is not supported, please use the entire TClient folder
+== 

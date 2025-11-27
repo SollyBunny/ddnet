@@ -81,13 +81,9 @@ void CClientChatLogger::Log(const CLogMessage *pMessage)
 	}
 }
 
-enum
-{
-	RESET,
-	NO_RESET
-};
-
-void CGameContext::Construct(int Resetting)
+CGameContext::CGameContext(bool Resetting) :
+	m_Mutes("mutes"),
+	m_VoteMutes("votemutes")
 {
 	m_Resetting = false;
 	m_pServer = nullptr;
@@ -123,7 +119,7 @@ void CGameContext::Construct(int Resetting)
 	m_LatestLog = 0;
 	mem_zero(&m_aLogs, sizeof(m_aLogs));
 
-	if(Resetting == NO_RESET)
+	if(!Resetting)
 	{
 		for(auto &pSavedTee : m_apSavedTees)
 			pSavedTee = nullptr;
@@ -144,12 +140,12 @@ void CGameContext::Construct(int Resetting)
 	mem_zero(m_aaLastChatMessages, sizeof(m_aaLastChatMessages));
 }
 
-void CGameContext::Destruct(int Resetting)
+CGameContext::~CGameContext()
 {
 	for(auto &pPlayer : m_apPlayers)
 		delete pPlayer;
 
-	if(Resetting == NO_RESET)
+	if(!m_Resetting)
 	{
 		for(auto &pSavedTee : m_apSavedTees)
 			delete pSavedTee;
@@ -160,30 +156,8 @@ void CGameContext::Destruct(int Resetting)
 		delete m_pVoteOptionHeap;
 	}
 
-	if(m_pScore)
-	{
-		delete m_pScore;
-		m_pScore = nullptr;
-	}
-}
-
-CGameContext::CGameContext() :
-	m_Mutes("mutes"),
-	m_VoteMutes("votemutes")
-{
-	Construct(NO_RESET);
-}
-
-CGameContext::CGameContext(int Reset) :
-	m_Mutes("mutes"),
-	m_VoteMutes("votemutes")
-{
-	Construct(Reset);
-}
-
-CGameContext::~CGameContext()
-{
-	Destruct(m_Resetting ? RESET : NO_RESET);
+	delete m_pScore;
+	m_pScore = nullptr;
 }
 
 void CGameContext::Clear()
@@ -198,7 +172,7 @@ void CGameContext::Clear()
 
 	m_Resetting = true;
 	this->~CGameContext();
-	new(this) CGameContext(RESET);
+	new(this) CGameContext(true);
 
 	m_pVoteOptionHeap = pVoteOptionHeap;
 	m_pVoteOptionFirst = pVoteOptionFirst;
@@ -642,7 +616,7 @@ void CGameContext::SendChatTarget(int To, const char *pText, int VersionFlags) c
 	Msg.m_pMessage = pText;
 
 	if(g_Config.m_SvDemoChat)
-		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL | MSGFLAG_NOSEND, SERVER_DEMO_CLIENT);
+		Server()->SendPackMsg(&Msg, MSGFLAG_NOSEND, SERVER_DEMO_CLIENT);
 
 	if(To == -1)
 	{
@@ -701,7 +675,7 @@ void CGameContext::SendChat(int ChatterClientId, int Team, const char *pText, in
 
 		// pack one for the recording only
 		if(g_Config.m_SvDemoChat)
-			Server()->SendPackMsg(&Msg, MSGFLAG_VITAL | MSGFLAG_NOSEND, SERVER_DEMO_CLIENT);
+			Server()->SendPackMsg(&Msg, MSGFLAG_NOSEND, SERVER_DEMO_CLIENT);
 
 		// send to the clients
 		for(int i = 0; i < Server()->MaxClients(); i++)
@@ -729,7 +703,7 @@ void CGameContext::SendChat(int ChatterClientId, int Team, const char *pText, in
 
 		// pack one for the recording only
 		if(g_Config.m_SvDemoChat)
-			Server()->SendPackMsg(&Msg, MSGFLAG_VITAL | MSGFLAG_NOSEND, SERVER_DEMO_CLIENT);
+			Server()->SendPackMsg(&Msg, MSGFLAG_NOSEND, SERVER_DEMO_CLIENT);
 
 		// send to the clients
 		for(int i = 0; i < Server()->MaxClients(); i++)
@@ -1648,8 +1622,8 @@ void CGameContext::OnClientEnter(int ClientId)
 		CNetMsg_Sv_CommandInfoGroupStart Msg;
 		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL | MSGFLAG_NORECORD, ClientId);
 	}
-	for(const IConsole::ICommandInfo *pCmd = Console()->FirstCommandInfo(IConsole::EAccessLevel::USER, CFGFLAG_CHAT);
-		pCmd; pCmd = Console()->NextCommandInfo(pCmd, IConsole::EAccessLevel::USER, CFGFLAG_CHAT))
+	for(const IConsole::ICommandInfo *pCmd = Console()->FirstCommandInfo(ClientId, CFGFLAG_CHAT);
+		pCmd; pCmd = Console()->NextCommandInfo(pCmd, ClientId, CFGFLAG_CHAT))
 	{
 		const char *pName = pCmd->Name();
 
@@ -2158,16 +2132,13 @@ void *CGameContext::PreProcessMsg(int *pMsgId, CUnpacker *pUnpacker, int ClientI
 
 			if(pMsg7->m_Force)
 			{
-				const int Authed = Server()->GetAuthedState(ClientId);
-				if(Authed == AUTHED_NO)
+				if(!Server()->IsRconAuthed(ClientId))
 				{
 					return nullptr;
 				}
 				char aCommand[IConsole::CMDLINE_LENGTH];
 				str_format(aCommand, sizeof(aCommand), "force_vote \"%s\" \"%s\" \"%s\"", pMsg7->m_pType, pMsg7->m_pValue, pMsg7->m_pReason);
-				Console()->SetAccessLevel(Authed == AUTHED_ADMIN ? IConsole::EAccessLevel::ADMIN : (Authed == AUTHED_MOD ? IConsole::EAccessLevel::MODERATOR : IConsole::EAccessLevel::HELPER));
 				Console()->ExecuteLine(aCommand, ClientId, false);
-				Console()->SetAccessLevel(IConsole::EAccessLevel::ADMIN);
 				return nullptr;
 			}
 
@@ -2279,6 +2250,8 @@ void CGameContext::OnMessage(int MsgId, CUnpacker *pUnpacker, int ClientId)
 		case NETMSGTYPE_CL_KILL:
 			OnKillNetMessage(static_cast<CNetMsg_Cl_Kill *>(pRawMsg), ClientId);
 			break;
+		case NETMSGTYPE_CL_ENABLESPECTATORCOUNT:
+			OnEnableSpectatorCountNetMessage(static_cast<CNetMsg_Cl_EnableSpectatorCount *>(pRawMsg), ClientId);
 		default:
 			break;
 		}
@@ -2374,12 +2347,6 @@ void CGameContext::OnSayNetMessage(const CNetMsg_Cl_Say *pMsg, int ClientId, con
 			pPlayer->m_LastCommandPos = (pPlayer->m_LastCommandPos + 1) % 4;
 
 			Console()->SetFlagMask(CFGFLAG_CHAT);
-			int Authed = Server()->GetAuthedState(ClientId);
-			if(Authed)
-				Console()->SetAccessLevel(Authed == AUTHED_ADMIN ? IConsole::EAccessLevel::ADMIN : (Authed == AUTHED_MOD ? IConsole::EAccessLevel::MODERATOR : IConsole::EAccessLevel::HELPER));
-			else
-				Console()->SetAccessLevel(IConsole::EAccessLevel::USER);
-
 			{
 				CClientChatLogger Logger(this, ClientId, log_get_scope_logger());
 				CLogScope Scope(&Logger);
@@ -2391,7 +2358,6 @@ void CGameContext::OnSayNetMessage(const CNetMsg_Cl_Say *pMsg, int ClientId, con
 			str_format(aBuf, sizeof(aBuf), "%d used %s", ClientId, pMsg->m_pMessage);
 			Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "chat-command", aBuf);
 
-			Console()->SetAccessLevel(IConsole::EAccessLevel::ADMIN);
 			Console()->SetFlagMask(CFGFLAG_SERVER);
 		}
 	}
@@ -2584,31 +2550,49 @@ void CGameContext::OnCallVoteNetMessage(const CNetMsg_Cl_CallVote *pMsg, int Cli
 		}
 
 		// Don't allow kicking if a player has no character
-		if(!GetPlayerChar(ClientId) || !GetPlayerChar(KickId) || GetDDRaceTeam(ClientId) != GetDDRaceTeam(KickId))
+		if(!GetPlayerChar(ClientId) || !GetPlayerChar(KickId))
 		{
 			SendChatTarget(ClientId, "You can kick only your team member");
 			return;
 		}
 
-		str_format(aChatmsg, sizeof(aChatmsg), "'%s' called for vote to kick '%s' (%s)", Server()->ClientName(ClientId), Server()->ClientName(KickId), aReason);
-		str_format(aSixupDesc, sizeof(aSixupDesc), "%2d: %s", KickId, Server()->ClientName(KickId));
-		if(!GetDDRaceTeam(ClientId))
+		if(GetDDRaceTeam(ClientId) != GetDDRaceTeam(KickId))
 		{
-			if(!g_Config.m_SvVoteKickBantime)
+			if(!g_Config.m_SvVoteKickMuteTime)
 			{
-				str_format(aCmd, sizeof(aCmd), "kick %d Kicked by vote", KickId);
-				str_format(aDesc, sizeof(aDesc), "Kick '%s'", Server()->ClientName(KickId));
+				str_format(aChatmsg, sizeof(aChatmsg), "'%s' called for vote to mute '%s' (%s)", Server()->ClientName(ClientId), Server()->ClientName(KickId), aReason);
+				str_format(aSixupDesc, sizeof(aSixupDesc), "%2d: %s", KickId, Server()->ClientName(KickId));
+				str_format(aCmd, sizeof(aCmd), "muteid %d %d Muted by vote", KickId, g_Config.m_SvVoteKickMuteTime);
+				str_format(aDesc, sizeof(aDesc), "Mute '%s'", Server()->ClientName(KickId));
 			}
 			else
 			{
-				str_format(aCmd, sizeof(aCmd), "ban %s %d Banned by vote", Server()->ClientAddrString(KickId, false), g_Config.m_SvVoteKickBantime);
-				str_format(aDesc, sizeof(aDesc), "Ban '%s'", Server()->ClientName(KickId));
+				SendChatTarget(ClientId, "You can kick only your team member");
+				return;
 			}
 		}
 		else
 		{
-			str_format(aCmd, sizeof(aCmd), "uninvite %d %d; set_team_ddr %d 0", KickId, GetDDRaceTeam(KickId), KickId);
-			str_format(aDesc, sizeof(aDesc), "Move '%s' to team 0", Server()->ClientName(KickId));
+			str_format(aChatmsg, sizeof(aChatmsg), "'%s' called for vote to kick '%s' (%s)", Server()->ClientName(ClientId), Server()->ClientName(KickId), aReason);
+			str_format(aSixupDesc, sizeof(aSixupDesc), "%2d: %s", KickId, Server()->ClientName(KickId));
+			if(!GetDDRaceTeam(ClientId))
+			{
+				if(!g_Config.m_SvVoteKickBantime)
+				{
+					str_format(aCmd, sizeof(aCmd), "kick %d Kicked by vote", KickId);
+					str_format(aDesc, sizeof(aDesc), "Kick '%s'", Server()->ClientName(KickId));
+				}
+				else
+				{
+					str_format(aCmd, sizeof(aCmd), "ban %s %d Banned by vote", Server()->ClientAddrString(KickId, false), g_Config.m_SvVoteKickBantime);
+					str_format(aDesc, sizeof(aDesc), "Ban '%s'", Server()->ClientName(KickId));
+				}
+			}
+			else
+			{
+				str_format(aCmd, sizeof(aCmd), "uninvite %d %d; set_team_ddr %d 0", KickId, GetDDRaceTeam(KickId), KickId);
+				str_format(aDesc, sizeof(aDesc), "Move '%s' to team 0", Server()->ClientName(KickId));
+			}
 		}
 		m_apPlayers[ClientId]->m_LastKickVote = time_get();
 		m_VoteType = VOTE_TYPE_KICK;
@@ -3059,6 +3043,15 @@ void CGameContext::OnKillNetMessage(const CNetMsg_Cl_Kill *pMsg, int ClientId)
 	pPlayer->Respawn();
 }
 
+void CGameContext::OnEnableSpectatorCountNetMessage(const CNetMsg_Cl_EnableSpectatorCount *pMsg, int ClientId)
+{
+	CPlayer *pPlayer = m_apPlayers[ClientId];
+	if(!pPlayer)
+		return;
+
+	pPlayer->m_EnableSpectatorCount = pMsg->m_Enable;
+}
+
 void CGameContext::OnStartInfoNetMessage(const CNetMsg_Cl_StartInfo *pMsg, int ClientId)
 {
 	CPlayer *pPlayer = m_apPlayers[ClientId];
@@ -3455,14 +3448,20 @@ void CGameContext::ConSay(IConsole::IResult *pResult, void *pUserData)
 void CGameContext::ConSetTeam(IConsole::IResult *pResult, void *pUserData)
 {
 	CGameContext *pSelf = (CGameContext *)pUserData;
+	int Team = pResult->GetInteger(1);
+	if(!pSelf->m_pController->IsValidTeam(Team))
+	{
+		log_info("server", "Invalid Team: %d", Team);
+		return;
+	}
+
 	int ClientId = std::clamp(pResult->GetInteger(0), 0, (int)MAX_CLIENTS - 1);
-	int Team = std::clamp(pResult->GetInteger(1), -1, 1);
 	int Delay = pResult->NumArguments() > 2 ? pResult->GetInteger(2) : 0;
 	if(!pSelf->m_apPlayers[ClientId])
 		return;
 
 	char aBuf[256];
-	str_format(aBuf, sizeof(aBuf), "moved client %d to team %d", ClientId, Team);
+	str_format(aBuf, sizeof(aBuf), "moved client %d to the %s", ClientId, pSelf->m_pController->GetTeamName(Team));
 	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", aBuf);
 
 	pSelf->m_apPlayers[ClientId]->Pause(CPlayer::PAUSE_NONE, false); // reset /spec and /pause to allow rejoin
@@ -3475,7 +3474,12 @@ void CGameContext::ConSetTeam(IConsole::IResult *pResult, void *pUserData)
 void CGameContext::ConSetTeamAll(IConsole::IResult *pResult, void *pUserData)
 {
 	CGameContext *pSelf = (CGameContext *)pUserData;
-	int Team = std::clamp(pResult->GetInteger(0), -1, 1);
+	int Team = pResult->GetInteger(0);
+	if(!pSelf->m_pController->IsValidTeam(Team))
+	{
+		log_info("server", "Invalid Team: %d", Team);
+		return;
+	}
 
 	char aBuf[256];
 	str_format(aBuf, sizeof(aBuf), "All players were moved to the %s", pSelf->m_pController->GetTeamName(Team));
@@ -3947,8 +3951,8 @@ void CGameContext::OnConsoleInit()
 	Console()->Register("mod_alert", "v[id] r[message]", CFGFLAG_SERVER, ConModAlert, this, "Send a moderator alert message to player");
 	Console()->Register("broadcast", "r[message]", CFGFLAG_SERVER, ConBroadcast, this, "Broadcast message");
 	Console()->Register("say", "r[message]", CFGFLAG_SERVER, ConSay, this, "Say in chat");
-	Console()->Register("set_team", "i[id] i[team-id] ?i[delay in minutes]", CFGFLAG_SERVER, ConSetTeam, this, "Set team of player to team");
-	Console()->Register("set_team_all", "i[team-id]", CFGFLAG_SERVER, ConSetTeamAll, this, "Set team of all players to team");
+	Console()->Register("set_team", "i[id] i[team-id] ?i[delay in minutes]", CFGFLAG_SERVER, ConSetTeam, this, "Set team for a player (spectators = -1, game = 0)");
+	Console()->Register("set_team_all", "i[team-id]", CFGFLAG_SERVER, ConSetTeamAll, this, "Set team for all players (spectators = -1, game = 0)");
 	Console()->Register("hot_reload", "", CFGFLAG_SERVER | CMDFLAG_TEST, ConHotReload, this, "Reload the map while preserving the state of tees and teams");
 	Console()->Register("reload_censorlist", "", CFGFLAG_SERVER, ConReloadCensorlist, this, "Reload the censorlist");
 
@@ -4022,7 +4026,7 @@ void CGameContext::RegisterDDRaceCommands()
 	Console()->Register("force_pause", "v[id] i[seconds]", CFGFLAG_SERVER, ConForcePause, this, "Force i to pause for i seconds");
 	Console()->Register("force_unpause", "v[id]", CFGFLAG_SERVER, ConForcePause, this, "Set force-pause timer of i to 0.");
 
-	Console()->Register("set_team_ddr", "v[id] i[team]", CFGFLAG_SERVER, ConSetDDRTeam, this, "Set ddrace team of a player");
+	Console()->Register("set_team_ddr", "v[id] i[team]", CFGFLAG_SERVER, ConSetDDRTeam, this, "Set ddrace team for a player");
 	Console()->Register("uninvite", "v[id] i[team]", CFGFLAG_SERVER, ConUninvite, this, "Uninvite player from team");
 
 	Console()->Register("mute", "", CFGFLAG_SERVER, ConMute, this, "Deprecated. Use either 'muteid <client_id> <seconds> <reason>' or 'muteip <ip> <seconds> <reason>'");

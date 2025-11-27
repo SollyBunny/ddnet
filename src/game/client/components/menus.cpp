@@ -126,7 +126,8 @@ int CMenus::DoButton_Menu(CButtonContainer *pButtonContainer, const char *pText,
 
 	if(Checked)
 		Color = ColorRGBA(0.6f, 0.6f, 0.6f, 0.5f);
-	Color.a *= Ui()->ButtonColorMul(pButtonContainer);
+	else // TClient, why was this not here? ig they never use "checked" anywhere important
+		Color.a *= Ui()->ButtonColorMul(pButtonContainer);
 
 	pRect->Draw(Color, Corners, Rounding);
 
@@ -505,7 +506,7 @@ void CMenus::RenderMenubar(CUIRect Box, IClient::EClientState ClientState)
 	}
 	else
 	{
-		dbg_assert_failed("Client state invalid for RenderMenubar");
+		dbg_assert_failed("Client state %d is invalid for RenderMenubar", ClientState);
 	}
 
 	// First render buttons aligned from right side so remaining
@@ -1128,7 +1129,7 @@ void CMenus::Render()
 			}
 			else
 			{
-				dbg_assert_failed("m_MenuPage invalid");
+				dbg_assert_failed("Invalid m_MenuPage: %d", m_MenuPage);
 			}
 
 			RenderMenubar(TabBar, ClientState);
@@ -1180,7 +1181,7 @@ void CMenus::Render()
 			}
 			else
 			{
-				dbg_assert_failed("m_GamePage invalid");
+				dbg_assert_failed("Invalid m_GamePage: %d", m_GamePage);
 			}
 
 			RenderMenubar(TabBar, ClientState);
@@ -2031,7 +2032,7 @@ void CMenus::RenderPopupLoading(CUIRect Screen)
 			str_copy(aLabel1, Localize("Sending initial client info"));
 			break;
 		default:
-			dbg_assert_failed("Invalid loading state for RenderPopupLoading");
+			dbg_assert_failed("Invalid loading state %d for RenderPopupLoading", static_cast<int>(Client()->LoadingStateDetail()));
 		}
 		aLabel2[0] = '\0';
 	}
@@ -2288,8 +2289,6 @@ void CMenus::OnWindowResize()
 
 void CMenus::OnRender()
 {
-	Ui()->StartCheck();
-
 	if(Client()->State() != IClient::STATE_ONLINE && Client()->State() != IClient::STATE_DEMOPLAYBACK)
 		SetActive(true);
 
@@ -2308,12 +2307,12 @@ void CMenus::OnRender()
 		}
 		else if(Client()->State() != IClient::STATE_DEMOPLAYBACK)
 		{
-			Ui()->FinishCheck();
 			Ui()->ClearHotkeys();
 			return;
 		}
 	}
 
+	Ui()->StartCheck();
 	UpdateColors();
 
 	Ui()->Update();
@@ -2428,7 +2427,7 @@ int CMenus::DoButton_CheckBox_Tristate(const void *pId, const char *pText, TRIST
 	case TRISTATE::ALL:
 		return DoButton_CheckBox_Common(pId, pText, "X", pRect, BUTTONFLAG_LEFT);
 	default:
-		dbg_assert_failed("invalid tristate");
+		dbg_assert_failed("Invalid tristate. Checked: %d", static_cast<int>(Checked));
 	}
 }
 

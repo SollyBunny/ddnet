@@ -53,9 +53,6 @@ Profiles
 Visual
 == 视觉效果
 
-Show ping colored circle before names
-== 在玩家昵称前显示延迟状况
-
 Hide nameplates in spec
 == 其他玩家旁观时隐藏玩家昵称
 
@@ -187,9 +184,6 @@ Uncertainty duration
 
 Other
 == 其他
-
-Run cl_run_on_join as console command
-== 将cl_run_on_join当作控制台指令执行
 
 Ghost Tools
 == 影子工具
@@ -590,9 +584,6 @@ TClient
 Colors in spectate select
 == 旁观选择中的颜色
 
-_ or \' \' = Space
-== _ 或 \' \' = 置空（占位）
-
 Voting
 == 投票
 
@@ -674,10 +665,6 @@ Loaded %d items
 Loaded %d items (discarded %d items)
 == 加载了 %d 项（丢弃了 %d 项）
 
-[bgdraw]
-Opening %s for %s
-== Opening %s for %s
-
 Pet
 == 宠物
 
@@ -695,9 +682,6 @@ Show mini vote HUD
 
 Show the pet
 == 显示宠物
-
-Time until strokes dissapear
-== 笔画消失时间
 
 Translated text hidden due to streamer mode
 == 由于主播模式，隐藏翻译文本
@@ -718,14 +702,6 @@ Writing item %d failed
 [bgdraw]
 Written %d items
 == 写入了 %d 项
-
-[bgdraw]
-reading
-== 正在读取
-
-[bgdraw]
-writing
-== 正在写入
 
 Toggle ghosts key
 == 切换影子键
@@ -770,10 +746,6 @@ Unmute:
 Failed to create bgdraw folder
 == 创建 bgdraw 文件夹失败
 
-[bgdraw]
-Failed to open %s for %s
-== 打开 %s 失败因为 %s
-
 Add war name:
 == 添加敌对玩家:
 
@@ -809,39 +781,6 @@ Remove [group] [name]:
 
 Remove [group] [clan]:
 == 删除 [组名] [战队名] [原因]
-
-Mod
-== 管理
-
-Mute ID:
-== 禁言玩家(ID):
-
-Mute Name:
-== 禁言玩家(名字):
-
-Unmute Last:
-== 取消上一个禁言:
-
-Kick ID:
-== 踢出玩家(ID):
-
-Kick Name:
-== 踢出玩家(名字):
-
-Ban ID:
-== Ban玩家(ID):
-
-Ban Name:
-== Ban玩家(名字):
-
-Unban Last:
-== 取消上一个Ban:
-
-Kill Ids:
-== 杀掉玩家(ID):
-
-Kill Names:
-== 杀掉玩家(名字):
 
 Translate ID:
 == 翻译ID:
@@ -896,12 +835,6 @@ Overwrite clan even if empty
 Auto execute
 == 自动执行
 
-Execute before connect
-== 连接前执行（控制台）
-
-Execute on join
-== 在加入时执行（控制台）
-
 Unhook & hook
 == 墙体轮廓
 
@@ -914,32 +847,42 @@ Unfreeze & undeep
 Tele
 == 传送轮廓
 
-Run a console command before connect
-== 在连接前运行控制台命令
-
-Run a console command on join
-== 在加入时运行控制台命令
-
 Show ping colored circle in nameplates
 == 在名称前根据延迟显示彩色圆圈
 
 Show country flags in nameplates
 == 在名称前显示国旗
 
-None
-== 无
-
-Own
-== 仅自己
-
 Fake CTF flags
 == 伪CTF旗帜
 
-Red
-== 红
-
-Blue
-== 蓝
-
 The command is ran in console not chat
 == 在此绑定的命令会在控制台运行，而非聊天窗口，绑定发送文字需要在前面添加say
+
+[bgdraw]
+No items to write
+== 
+
+[bgdraw]
+No changes since last save
+== 
+
+[Outlines]
+Width
+== 
+
+Kill
+== 
+
+Time until strokes disappear
+== 
+
+_ or ' ' = Space
+== 
+
+Activating mod weapon on %d: %s\n
+== 
+
+[data_version.h]
+You have probably only installed the TClient DDNet.exe which is not supported, please use the entire TClient folder
+== 

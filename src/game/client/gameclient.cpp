@@ -183,6 +183,7 @@ void CGameClient::OnConsoleInit()
 						  &m_Binds.m_SpecialBinds,
 						  &m_GameConsole,
 						  &m_Chat, // chat has higher prio, due to that you can quit it by pressing esc
+						  &m_Scoreboard,
 						  &m_Motd, // for pressing esc to remove it
 						  &m_Spectator,
 						  &m_BindWheel,
@@ -316,6 +317,11 @@ void CGameClient::InitializeLanguage()
 	char aBuf[512];
 	str_format(aBuf, sizeof(aBuf), "tclient/%s", g_Config.m_ClLanguagefile);
 	g_Localization.Load(aBuf, Storage(), Console(), false);
+}
+
+void CGameClient::ForceUpdateConsoleRemoteCompletionSuggestions()
+{
+	m_GameConsole.ForceUpdateRemoteCompletionSuggestions();
 }
 
 void CGameClient::OnInit()
@@ -687,7 +693,7 @@ void CGameClient::OnReset()
 	for(auto &Stats : m_aStats)
 		Stats.Reset();
 
-	m_NextChangeInfo = 0;
+	std::fill(std::begin(m_aNextChangeInfo), std::end(m_aNextChangeInfo), -1);
 	std::fill(std::begin(m_aLocalIds), std::end(m_aLocalIds), -1);
 	m_DummyInput = {};
 	m_HammerInput = {};
@@ -704,6 +710,7 @@ void CGameClient::OnReset()
 
 	std::fill(std::begin(m_aDDRaceMsgSent), std::end(m_aDDRaceMsgSent), false);
 	std::fill(std::begin(m_aShowOthers), std::end(m_aShowOthers), SHOW_OTHERS_NOT_SET);
+	std::fill(std::begin(m_aEnableSpectatorCount), std::end(m_aEnableSpectatorCount), -1);
 	std::fill(std::begin(m_aLastUpdateTick), std::end(m_aLastUpdateTick), 0);
 
 	m_PredictedDummyId = -1;
@@ -939,6 +946,7 @@ void CGameClient::OnDummyDisconnect()
 	m_aLocalIds[1] = -1;
 	m_aDDRaceMsgSent[1] = false;
 	m_aShowOthers[1] = SHOW_OTHERS_NOT_SET;
+	m_aEnableSpectatorCount[1] = -1;
 	m_aLastNewPredictedTick[1] = -1;
 	m_PredictedDummyId = -1;
 }
@@ -978,6 +986,10 @@ bool CGameClient::Predict() const
 
 ColorRGBA CGameClient::GetDDTeamColor(int DDTeam, float Lightness) const
 {
+	// TClient
+	if(g_Config.m_TcOldTeamColors)
+		return color_cast<ColorRGBA>(ColorHSLA(DDTeam / 64.0f, 1.0f, Lightness));
+
 	// Use golden angle to generate unique colors with distinct adjacent colors.
 	// The first DDTeam (team 1) gets angle 0°, i.e. red hue.
 	const float Hue = std::fmod((DDTeam - 1) * (137.50776f / 360.0f), 1.0f);
@@ -1065,6 +1077,13 @@ void CGameClient::OnMessage(int MsgId, CUnpacker *pUnpacker, int Conn, bool Dumm
 			str_format(aBuf, sizeof(aBuf), "dropped weird message '%s' (%d), failed on '%s'", m_NetObjHandler.GetMsgName(MsgId), MsgId, m_NetObjHandler.FailedMsgOn());
 			Console()->Print(IConsole::OUTPUT_LEVEL_ADDINFO, "client", aBuf);
 		}
+		return;
+	}
+
+	if(MsgId == NETMSGTYPE_SV_CHANGEINFOCOOLDOWN)
+	{
+		CNetMsg_Sv_ChangeInfoCooldown *pMsg = (CNetMsg_Sv_ChangeInfoCooldown *)pRawMsg;
+		m_aNextChangeInfo[Conn] = pMsg->m_WaitUntil;
 		return;
 	}
 
@@ -1201,11 +1220,6 @@ void CGameClient::OnMessage(int MsgId, CUnpacker *pUnpacker, int Conn, bool Dumm
 		{
 			m_CharOrder.GiveWeak(Id.first);
 		}
-	}
-	else if(MsgId == NETMSGTYPE_SV_CHANGEINFOCOOLDOWN)
-	{
-		CNetMsg_Sv_ChangeInfoCooldown *pMsg = (CNetMsg_Sv_ChangeInfoCooldown *)pRawMsg;
-		m_NextChangeInfo = pMsg->m_WaitUntil;
 	}
 	else if(MsgId == NETMSGTYPE_SV_MAPSOUNDGLOBAL)
 	{
@@ -1892,7 +1906,10 @@ void CGameClient::OnNewSnapshot()
 				m_Snap.m_SpecInfo.m_Zoom = pDDNetSpecInfo->m_Zoom / 1000.0f;
 				m_Snap.m_SpecInfo.m_Deadzone = pDDNetSpecInfo->m_Deadzone;
 				m_Snap.m_SpecInfo.m_FollowFactor = pDDNetSpecInfo->m_FollowFactor;
-				m_Snap.m_SpecInfo.m_SpectatorCount = pDDNetSpecInfo->m_SpectatorCount;
+			}
+			else if(Item.m_Type == NETOBJTYPE_SPECTATORCOUNT)
+			{
+				m_Snap.m_pSpectatorCount = (const CNetObj_SpectatorCount *)Item.m_pData;
 			}
 			else if(Item.m_Type == NETOBJTYPE_GAMEINFO)
 			{
@@ -2207,6 +2224,21 @@ void CGameClient::OnNewSnapshot()
 
 		// update state
 		m_aShowOthers[g_Config.m_ClDummy] = g_Config.m_ClShowOthers;
+	}
+
+	if(m_aEnableSpectatorCount[0] == -1 || m_aEnableSpectatorCount[0] != g_Config.m_ClShowhudSpectatorCount)
+	{
+		CNetMsg_Cl_EnableSpectatorCount Msg;
+		Msg.m_Enable = g_Config.m_ClShowhudSpectatorCount;
+		Client()->SendPackMsg(0, &Msg, MSGFLAG_VITAL);
+		m_aEnableSpectatorCount[0] = g_Config.m_ClShowhudSpectatorCount;
+	}
+	if(Client()->DummyConnected() && (m_aEnableSpectatorCount[1] == -1 || m_aEnableSpectatorCount[1] != g_Config.m_ClShowhudSpectatorCount))
+	{
+		CNetMsg_Cl_EnableSpectatorCount Msg;
+		Msg.m_Enable = g_Config.m_ClShowhudSpectatorCount;
+		Client()->SendPackMsg(1, &Msg, MSGFLAG_VITAL);
+		m_aEnableSpectatorCount[1] = g_Config.m_ClShowhudSpectatorCount;
 	}
 
 	float ShowDistanceZoom = m_Camera.m_Zoom;
@@ -2908,7 +2940,7 @@ void CGameClient::OnPredict()
 
 			vec2 ConfidenceVector = ConfidenceParallel * std::max(TrustFactor, NewConfidence) + ConfidencePerp * NewConfidence;
 
-			// Minor safe gaurd against insane predictions
+			// Minor safe guard against insane predictions
 			if(length(ConfidenceVector) > HistoryDistance)
 				ConfidenceVector = mix(normalize(ConfidenceVector) * HistoryDistance, ConfidenceVector, NewConfidence);
 
@@ -3471,7 +3503,7 @@ IGameClient *CreateGameClient()
 	return new CGameClient();
 }
 
-int CGameClient::IntersectCharacter(vec2 HookPos, vec2 NewPos, vec2 &NewPos2, int OwnId)
+int CGameClient::IntersectCharacter(vec2 HookPos, vec2 NewPos, vec2 &NewPos2, int OwnId, vec2 *pPlayerPosition)
 {
 	float Distance = 0.0f;
 	int ClosestId = -1;
@@ -3509,6 +3541,8 @@ int CGameClient::IntersectCharacter(vec2 HookPos, vec2 NewPos, vec2 &NewPos2, in
 					NewPos2 = ClosestPoint;
 					ClosestId = i;
 					Distance = distance(HookPos, Position);
+					if(pPlayerPosition)
+						*pPlayerPosition = Position;
 				}
 			}
 		}

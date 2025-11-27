@@ -117,7 +117,7 @@ public:
 	virtual void OnCharacterSpawn(class CCharacter *pChr);
 
 	virtual void HandleCharacterTiles(class CCharacter *pChr, int MapIndex);
-	virtual void SetArmorProgress(CCharacter *pCharacter, int Progress) {};
+	virtual void SetArmorProgress(CCharacter *pCharacter, int Progress) {}
 
 	/*
 		Function: OnEntity
@@ -162,10 +162,10 @@ public:
 	/*
 
 	*/
+	virtual bool IsValidTeam(int Team);
 	virtual const char *GetTeamName(int Team);
 	virtual int GetAutoTeam(int NotThisId);
 	virtual bool CanJoinTeam(int Team, int NotThisId, char *pErrorReason, int ErrorReasonSize);
-	virtual int ClampTeam(int Team);
 
 	CClientMask GetMaskForPlayerWorldEvent(int Asker, int ExceptID = -1);
 
