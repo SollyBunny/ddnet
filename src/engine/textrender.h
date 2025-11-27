@@ -160,9 +160,7 @@ namespace FontIcons
 	[[maybe_unused]] static const char *FONT_ICON_CAMERA = "\xEF\x80\xB0";
 
 	// TClient
-	[[maybe_unused]] static const char *FONT_ICON_COMMENT_SLASH = "\xEF\x92\xB3";
 	[[maybe_unused]] static const char *FONT_ICON_USERS = "\xEF\x83\x80";
-	[[maybe_unused]] static const char *FONT_ICON_COMMENT = "\xEF\x81\xB5";
 }
 
 enum ETextCursorSelectionMode
