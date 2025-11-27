@@ -7,7 +7,7 @@
 #include <game/server/instagib/sql_stats.h>
 #include <game/server/player.h>
 
-// base functionallity of the ddnet-insta server
+// base functionality of the ddnet-insta server
 // should be inherited from in all gametypes
 // it aims to be more generic than the base pvp controller
 // and makes no assumption about your gameplay
@@ -26,7 +26,7 @@ public:
 	CGameControllerInstaCore(class CGameContext *pGameServer);
 	~CGameControllerInstaCore() override;
 
-	// convience accessors to copy code from gamecontext to the instagib controller
+	// convenience accessors to copy code from gamecontext to the instagib controller
 	class IServer *Server() const { return GameServer()->Server(); }
 	class CConfig *Config() { return GameServer()->Config(); }
 	class IConsole *Console() { return GameServer()->Console(); }
@@ -69,7 +69,8 @@ public:
 	int GetPlayerTeam(class CPlayer *pPlayer, bool Sixup) override;
 	int GetAutoTeam(int NotThisId) override;
 	bool CanJoinTeam(int Team, int NotThisId, char *pErrorReason, int ErrorReasonSize) override;
-	int ClampTeam(int Team) override;
+	bool IsValidTeam(int Team) override;
+	const char *GetTeamName(int Team) override;
 	bool CanSpawn(int Team, vec2 *pOutPos, int DDTeam) override;
 	bool OnSkinChange7(protocol7::CNetMsg_Cl_SkinChange *pMsg, int ClientId) override;
 	void OnClientDataPersist(CPlayer *pPlayer, CGameContext::CPersistentClientData *pData) override;

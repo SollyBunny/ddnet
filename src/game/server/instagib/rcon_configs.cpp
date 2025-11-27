@@ -1,3 +1,4 @@
+#include <base/log.h>
 #include <base/system.h>
 
 #include <engine/server/server.h>
@@ -25,6 +26,15 @@ void CGameContext::RegisterInstagibCommands()
 	Console()->Chain("sv_display_score", ConchainDisplayScore, this);
 	Console()->Chain("sv_only_wallshot_kills", ConchainOnlyWallshotKills, this);
 	Console()->Chain("sv_allow_zoom", ConchainAllowZoom, this);
+	Console()->Chain("sv_hammer_scale_x", ConchainFngHammerScale, this);
+	Console()->Chain("sv_hammer_scale_y", ConchainFngHammerScale, this);
+	Console()->Chain("sv_melt_hammer_scale_x", ConchainFngHammerScale, this);
+	Console()->Chain("sv_melt_hammer_scale_y", ConchainFngHammerScale, this);
+	Console()->Chain("sv_grenade_ammo_regen_time", ConchainGrenadeAmmoRegenSetting, this);
+	Console()->Chain("sv_grenade_ammo_regen_num", ConchainGrenadeAmmoRegenSetting, this);
+	Console()->Chain("sv_grenade_ammo_regen_speed", ConchainGrenadeAmmoRegenSetting, this);
+	Console()->Chain("sv_grenade_ammo_regen_on_kill", ConchainGrenadeAmmoRegenSetting, this);
+	Console()->Chain("sv_grenade_ammo_regen_reset_on_fire", ConchainGrenadeAmmoRegenSetting, this);
 
 	// generated undocumented chat commands
 #define MACRO_ADD_COLUMN(name, sql_name, sql_type, bind_type, default, merge_method) ;
@@ -39,12 +49,12 @@ void CGameContext::RegisterInstagibCommands()
 
 	// chat commands
 #define CONSOLE_COMMAND(name, params, flags, callback, userdata, help) Console()->Register(name, params, flags, callback, userdata, help);
-#include <game/server/instagib/chat_commands.h>
+#include <game/server/instagib/includes/chat_commands.h>
 #undef CONSOLE_COMMAND
 
 	// rcon commands
 #define CONSOLE_COMMAND(name, params, flags, callback, userdata, help) Console()->Register(name, params, flags, callback, userdata, help);
-#include <game/server/instagib/rcon_commands.h>
+#include <game/server/instagib/includes/rcon_commands.h>
 #undef CONSOLE_COMMAND
 
 	// generate callbacks to trigger insta settings update for all instagib configs
@@ -54,7 +64,7 @@ void CGameContext::RegisterInstagibCommands()
 	Console()->Chain(#ScriptName, ConchainInstaSettingsUpdate, this);
 #define MACRO_CONFIG_COL(Name, ScriptName, Def, Flags, Desc) // only int checkboxes for now
 #define MACRO_CONFIG_STR(Name, ScriptName, Len, Def, Flags, Desc) // only int checkboxes for now
-#include <engine/shared/config_variables_insta.h>
+#include <game/server/instagib/includes/config_variables.h>
 #undef MACRO_CONFIG_INT
 #undef MACRO_CONFIG_COL
 #undef MACRO_CONFIG_STR
@@ -215,4 +225,30 @@ void CGameContext::ConchainAllowZoom(IConsole::IResult *pResult, void *pUserData
 	str_format(aBuf, sizeof(aBuf), "antibot sv_allow_zoom %d", g_Config.m_SvAllowZoom);
 	pSelf->Console()->ExecuteLine(aBuf);
 #endif
+}
+
+void CGameContext::ConchainFngHammerScale(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
+{
+	pfnCallback(pResult, pCallbackUserData);
+
+	if(!g_Config.m_SvFngHammer)
+	{
+		// hack to not spam the logs on server boot while reading the config
+		CGameContext *pSelf = (CGameContext *)pUserData;
+		if(pSelf->m_pController)
+			log_warn("server", "WARNING: that config has no effect as long as sv_fng_hammer is off");
+	}
+}
+
+void CGameContext::ConchainGrenadeAmmoRegenSetting(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
+{
+	pfnCallback(pResult, pCallbackUserData);
+
+	if(!g_Config.m_SvGrenadeAmmoRegen)
+	{
+		// hack to not spam the logs on server boot while reading the config
+		CGameContext *pSelf = (CGameContext *)pUserData;
+		if(pSelf->m_pController)
+			log_warn("server", "WARNING: that config has no effect as long as sv_grenade_ammo_regen is off");
+	}
 }

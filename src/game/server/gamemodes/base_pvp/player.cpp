@@ -252,7 +252,7 @@ void CPlayer::SetTeamSpoofed(int Team, bool DoChatMsg)
 	m_LastSetTeam = Server()->Tick();
 	m_LastActionTick = Server()->Tick();
 
-	// TODO: revist this when ddnet merged 128 player support
+	// TODO: revisit this when ddnet merged 128 player support
 	//       do we really want to rebuild and resend some 0.6 backcompat mappings here?
 	SetSpectatorId(SPEC_FREEVIEW);
 
@@ -271,7 +271,7 @@ void CPlayer::SetTeamSpoofed(int Team, bool DoChatMsg)
 		// update spectator modes
 		for(auto &pPlayer : GameServer()->m_apPlayers)
 		{
-			// TODO: revist this when ddnet merged 128 player support
+			// TODO: revisit this when ddnet merged 128 player support
 			if(pPlayer && pPlayer->SpectatorId() == m_ClientId)
 				pPlayer->SetSpectatorId(SPEC_FREEVIEW);
 		}
@@ -286,7 +286,7 @@ void CPlayer::SetTeamNoKill(int Team, bool DoChatMsg)
 	m_Team = Team;
 	m_LastSetTeam = Server()->Tick();
 	m_LastActionTick = Server()->Tick();
-	// TODO: revist this when ddnet merged 128 player support
+	// TODO: revisit this when ddnet merged 128 player support
 	SetSpectatorId(SPEC_FREEVIEW);
 
 	// dead spec mode for 0.7
@@ -308,7 +308,7 @@ void CPlayer::SetTeamNoKill(int Team, bool DoChatMsg)
 		// update spectator modes
 		for(auto &pPlayer : GameServer()->m_apPlayers)
 		{
-			// TODO: revist this when ddnet merged 128 player support
+			// TODO: revisit this when ddnet merged 128 player support
 			if(pPlayer && pPlayer->SpectatorId() == m_ClientId)
 				pPlayer->SetSpectatorId(SPEC_FREEVIEW);
 		}
@@ -345,7 +345,7 @@ void CPlayer::SetTeamRaw(int Team)
 	m_Team = Team;
 }
 
-void CPlayer::UpdateLastToucher(int ClientId)
+void CPlayer::UpdateLastToucher(int ClientId, int Weapon)
 {
 	if(ClientId == GetCid())
 		return;
@@ -364,7 +364,7 @@ void CPlayer::UpdateLastToucher(int ClientId)
 	// hits a player after the shooter already left
 	// in that case we dont have enough information anymore to setup a proper last toucher
 	// and it will just be as if the player was never touched
-	// not counting it is block, fly kill or sacrafice in fng
+	// not counting it is block, fly kill or sacrifice in fng
 	// seems okay to me
 	if(!pPlayer)
 		return;
@@ -383,6 +383,7 @@ void CPlayer::UpdateLastToucher(int ClientId)
 		ClientId,
 		pPlayer->GetUniqueCid(),
 		pPlayer->GetTeam(),
+		Weapon,
 		Server()->Tick());
 }
 
@@ -394,7 +395,7 @@ void CPlayer::ResetLastToucherAfterSeconds(int Seconds)
 	int TicksSinceTouch = Server()->Tick() - m_LastToucher.value().m_TouchTick;
 	int SecsSinceTouch = TicksSinceTouch / Server()->TickSpeed();
 	if(SecsSinceTouch > Seconds)
-		UpdateLastToucher(-1);
+		UpdateLastToucher(-1, -1);
 }
 
 void CPlayer::ResetOwnLastTouchOnAllOtherPlayers()

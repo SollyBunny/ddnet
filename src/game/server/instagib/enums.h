@@ -1,12 +1,21 @@
 #ifndef GAME_SERVER_INSTAGIB_ENUMS_H
 #define GAME_SERVER_INSTAGIB_ENUMS_H
 
+#include <generated/protocol.h>
+
 enum
 {
 	FLAG_NONE = -1,
 	FLAG_RED = 0,
 	FLAG_BLUE = 1,
 	NUM_FLAGS = 2
+};
+
+enum
+{
+	// ddnet-insta special weapon
+	// not supported by the protocol or client
+	WEAPON_HOOK = WEAPON_GAME - 1,
 };
 
 enum class EDisplayScore

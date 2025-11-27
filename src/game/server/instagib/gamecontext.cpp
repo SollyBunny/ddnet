@@ -195,7 +195,7 @@ void CGameContext::UpdateVoteCheckboxes() const
 		/* \
 		votes can directly match the command or have other commands \
 		or only start with it but then they should be delimited with a semicolon \
-		this allows to detect config option votes that also run additonal commands on vote pass \
+		this allows to detect config option votes that also run additional commands on vote pass \
 		*/ \
 		if(pCurrent->m_aCommand[Len] != ';' && pCurrent->m_aCommand[Len] != '\0') \
 		{ \
@@ -205,7 +205,7 @@ void CGameContext::UpdateVoteCheckboxes() const
 	}
 #define MACRO_CONFIG_COL(Name, ScriptName, Def, Flags, Desc) // only int checkboxes for now
 #define MACRO_CONFIG_STR(Name, ScriptName, Len, Def, Flags, Desc) // only int checkboxes for now
-#include <engine/shared/config_variables_insta.h>
+#include <game/server/instagib/includes/config_variables.h>
 #undef MACRO_CONFIG_INT
 #undef MACRO_CONFIG_COL
 #undef MACRO_CONFIG_STR
@@ -241,9 +241,9 @@ void CGameContext::SendBroadcastSix(const char *pText, bool Important)
 
 		// not very nice but the best hack that comes to my mind
 		// the broadcast is not rendered if the scoreboard is shown
-		// the client shows the scorebaord if he is dead
+		// the client shows the scoreboard if he is dead
 		// and if there is sv_warmup(igs countdown) in the beginning of a round
-		// the chracter did not spawn yet. And thus the server forces a scoreboard
+		// the character did not spawn yet. And thus the server forces a scoreboard
 		// on the client. And 0.6 clients just get stuck in that screen without
 		// even noticing that a sv_warmup(igs countdown) is happenin.
 		//

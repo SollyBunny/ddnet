@@ -188,7 +188,7 @@ void CGameControllerBaseFng::OnPlayerDisconnect(class CPlayer *pPlayer, const ch
 		if(!pOther)
 			continue;
 
-		// if someone leaves a frozen tee behing on disconnect
+		// if someone leaves a frozen tee behind on disconnect
 		// and a teammates spikes him this is not considered a steal
 		if(pOther->m_OriginalFreezerId == pPlayer->GetCid())
 			pOther->m_OriginalFreezerId = -1;
@@ -233,7 +233,7 @@ void CGameControllerBaseFng::OnWrongSpike(class CPlayer *pPlayer, int RemoveScor
 	if(!pChr)
 		return;
 
-	pPlayer->UpdateLastToucher(-1);
+	pPlayer->UpdateLastToucher(-1, -1);
 	if(g_Config.m_SvWrongSpikeFreeze)
 		pChr->Freeze(g_Config.m_SvWrongSpikeFreeze);
 }
@@ -474,7 +474,7 @@ bool CGameControllerBaseFng::OnCharacterTakeDamage(vec2 &Force, int &Dmg, int &F
 
 	GameServer()->CreateDeath(Character.m_Pos, Character.GetPlayer()->GetCid(), Character.TeamMask());
 
-	Character.GetPlayer()->UpdateLastToucher(From);
+	Character.GetPlayer()->UpdateLastToucher(From, Weapon);
 	Character.GetPlayer()->m_OriginalFreezerId = From;
 	Character.Freeze(g_Config.m_SvHitFreezeDelay);
 	return false;

@@ -24,6 +24,7 @@ public:
 		update grenade ammo state without selfkill
 		useful for votes
 	*/
+	// TODO: rename this to RestoreDefaultAmmo()
 	void ResetInstaSettings();
 
 	// player can not be damaged with weapons
@@ -33,19 +34,19 @@ public:
 	// before full auto weapons actually are full auto
 	// and can be fired again by holding the mouse
 	//
-	// if Server()->Tick() is greated than this value it expires as well
+	// if Server()->Tick() is greater than this value it expires as well
 	// and holding will fire again
 	int m_BlockFullAutoUntilReleaseOrTick = 0;
 
-	int Health() const { return m_Health; };
-	int Armor() const { return m_Armor; };
+	int Health() const { return m_Health; }
+	int Armor() const { return m_Armor; }
 
-	void SetHealth(int Amount) { m_Health = Amount; };
+	void SetHealth(int Amount) { m_Health = Amount; }
 	// void SetArmor(int Amount) { m_Armor = Amount; }; // defined by ddnet
 
-	void AddHealth(int Amount) { m_Health += Amount; };
-	void AddArmor(int Amount) { m_Armor += Amount; };
-	int GetAimDir() const { return m_Input.m_TargetX < 0 ? -1 : 1; };
+	void AddHealth(int Amount) { m_Health += Amount; }
+	void AddArmor(int Amount) { m_Armor += Amount; }
+	int GetAimDir() const { return m_Input.m_TargetX < 0 ? -1 : 1; }
 
 	void AmmoRegen();
 	/*

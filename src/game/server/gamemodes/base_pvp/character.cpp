@@ -5,6 +5,7 @@
 #include <engine/antibot.h>
 #include <engine/shared/config.h>
 
+#include <generated/protocol.h>
 #include <generated/server_data.h>
 
 #include <game/server/entities/character.h>
@@ -147,15 +148,22 @@ void CCharacter::AmmoRegen()
 
 void CCharacter::ResetInstaSettings()
 {
-	int Ammo = -1;
-	// TODO: this should not check the default weapon
-	//       but if any of the spawn weapons is a grenade
-	if(GameServer()->m_pController->GetDefaultWeapon(GetPlayer()) == WEAPON_GRENADE)
+	if(m_Core.m_aWeapons[WEAPON_GRENADE].m_Got)
 	{
-		Ammo = g_Config.m_SvGrenadeAmmoRegen ? g_Config.m_SvGrenadeAmmoRegenNum : -1;
-		m_Core.m_aWeapons[m_Core.m_ActiveWeapon].m_AmmoRegenStart = -1;
+		// TODO: IsVanillaGameType() is probably not the best check for infinite ammo mode
+		//       see also the todo below for a possible refactor
+		bool IsInfiniteAmmoMode = GameServer()->m_pController && GameServer()->m_pController->IsVanillaGameType();
+
+		// TODO: add DefaultAmmoGrenade(), DefaultAmmoShotgun(), ...
+		//       to the controller and call it here
+		//       so that gametypes can define their own ammo defaults
+		//       and it will be reset correctly
+		int Ammo = IsInfiniteAmmoMode ? -1 : 10;
+		if(g_Config.m_SvGrenadeAmmoRegen)
+			Ammo = g_Config.m_SvGrenadeAmmoRegenNum;
+		m_Core.m_aWeapons[WEAPON_GRENADE].m_AmmoRegenStart = -1;
+		m_Core.m_aWeapons[WEAPON_GRENADE].m_Ammo = Ammo;
 	}
-	GiveWeapon(GameServer()->m_pController->GetDefaultWeapon(GetPlayer()), false, Ammo);
 }
 
 void CCharacter::Rainbow(bool Activate)

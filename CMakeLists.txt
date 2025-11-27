@@ -3087,6 +3087,14 @@ if(SERVER)
     instagib/gamecontext/bangcommands.cpp
     instagib/gamecontroller.cpp
     instagib/gamecontroller.h
+    instagib/includes/character.h
+    instagib/includes/chat_commands.h
+    instagib/includes/config_variables.h
+    instagib/includes/gamecontext.h
+    instagib/includes/gamecontroller.h
+    instagib/includes/persistent_client_data.h
+    instagib/includes/player.h
+    instagib/includes/rcon_commands.h
     instagib/ip_storage.cpp
     instagib/ip_storage.h
     instagib/laser_text.cpp
@@ -3124,6 +3132,12 @@ if(SERVER)
     teeinfo.cpp
     teeinfo.h
   )
+
+  # ddnet-insta ext modes START
+  file(GLOB_RECURSE EXTERNAL_GAMEMODES src/external_gamemodes/*/*.cpp src/external_gamemodes/*/*.h)
+  list(APPEND GAME_SERVER ${EXTERNAL_GAMEMODES})
+  # ddnet-insta ext modes END
+
   set(GAME_GENERATED_SERVER
     "src/generated/server_data.cpp"
     "src/generated/server_data.h"

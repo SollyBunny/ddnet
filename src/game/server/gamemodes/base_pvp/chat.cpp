@@ -76,7 +76,7 @@ void CGameControllerPvp::SmartChatTick()
 	{
 		if(g_Config.m_SvTournamentChat)
 		{
-			SendChat(-1, TEAM_ALL, "Spectators can use public chat again. Because this is no longer a competitve round.");
+			SendChat(-1, TEAM_ALL, "Spectators can use public chat again. Because this is no longer a competitive round.");
 			g_Config.m_SvTournamentChat = 0;
 		}
 	}
@@ -141,7 +141,7 @@ bool CGameControllerPvp::ParseChatCmd(char Prefix, int ClientId, const char *pCm
 			// if we reached the r parameter
 			if(NumArgs == RestOffset)
 			{
-				// strip spaces from the beggining
+				// strip spaces from the beginning
 				// add spaces in the middle and end
 				if(ppArgs[NumArgs][0])
 				{

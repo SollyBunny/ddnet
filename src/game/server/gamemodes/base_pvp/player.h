@@ -105,7 +105,7 @@ public:
 	// To fully apply the hammer hit effect we still need information
 	// about the now dead character.
 	// See https://github.com/ddnet-insta/ddnet-insta/issues/313
-	CCharacter *GetCharacterDeadOrAlive() { return m_pCharacter; };
+	CCharacter *GetCharacterDeadOrAlive() { return m_pCharacter; }
 
 	// dead players can not respawn
 	// will be used like m_RespawnDisabled in 0.7
@@ -121,10 +121,31 @@ public:
 	// and it does not include players that were released so it is more than m_Spree
 	int m_KillsThatCount = 0;
 
-	/*******************************************************************
-	 * gCTF                                                            *
-	 *******************************************************************/
+	// debug broadcast with current game state
 	bool m_GameStateBroadcast;
+
+	// data class for delayed team change
+	class CForceTeam
+	{
+	public:
+		// if set to a value greater than 0
+		// if will move *this* player to the given team
+		// as soon as Server()->Tick() is greater than this value.
+		int m_Tick = 0;
+
+		// Should be TEAM_RED, TEAM_BLUE or TEAM_SPECTATORS
+		int m_Team = 0;
+
+		// Should be a valid client id or SPEC_FREEVIEW
+		int m_SpectatorId = 0;
+	};
+
+	// Force *this* player to a different team with a delay
+	CForceTeam m_ForceTeam;
+
+	/*******************************************************************
+	 * teeworlds core logic                                            *
+	 *******************************************************************/
 	int m_RespawnTick;
 	bool m_IsReadyToEnter; // 0.7 ready change
 	bool m_IsReadyToPlay; // 0.7 ready change
@@ -162,7 +183,16 @@ public:
 	// for example selfkill in freeze in block
 	// spikes in fly or fng
 	std::optional<CLastToucher> m_LastToucher;
-	void UpdateLastToucher(int ClientId);
+
+	// Marks *this* player to be touched by *ClientId*
+	// using *Weapon*
+	// That is used for tracking fly and block kills.
+	void UpdateLastToucher(int ClientId, int Weapon);
+
+	// Has to be called on tick to work.
+	// Resets the information about anyone having
+	// touched *this* player. That is used for tracking
+	// fly and block kills.
 	void ResetLastToucherAfterSeconds(int Seconds);
 
 	// resets all m_LastToucher states of OTHER players
@@ -282,7 +312,7 @@ public:
 	// get whitelisted
 	bool m_VerifiedForChat = false;
 
-	// Similiar to ddnets IsAfk()
+	// Similar to ddnets IsAfk()
 	// but with a much shorter timer
 	// this is used to quickly detect if someone
 	// goes afk during a high pace non casual game
@@ -293,7 +323,7 @@ public:
 	// so it also works when the world is paused
 	int64_t m_JoinTime = 0;
 
-	// used for balacing
+	// used for balancing
 	// to figure out which players score the least
 	int m_ScoreStartTick = 0;
 

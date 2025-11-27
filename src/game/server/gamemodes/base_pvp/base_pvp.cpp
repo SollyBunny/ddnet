@@ -37,11 +37,11 @@ CGameControllerPvp::CGameControllerPvp(class CGameContext *pGameServer) :
 {
 	m_GameFlags = GAMEFLAG_TEAMS | GAMEFLAG_FLAGS;
 
-	GameServer()->Tuning()->Set("gun_curvature", 1.25f);
-	GameServer()->Tuning()->Set("gun_speed", 2200);
-	GameServer()->Tuning()->Set("shotgun_curvature", 1.25f);
-	GameServer()->Tuning()->Set("shotgun_speed", 2750);
-	GameServer()->Tuning()->Set("shotgun_speeddiff", 0.8f);
+	GameServer()->GlobalTuning()->Set("gun_curvature", 1.25f);
+	GameServer()->GlobalTuning()->Set("gun_speed", 2200);
+	GameServer()->GlobalTuning()->Set("shotgun_curvature", 1.25f);
+	GameServer()->GlobalTuning()->Set("shotgun_speed", 2750);
+	GameServer()->GlobalTuning()->Set("shotgun_speeddiff", 0.8f);
 
 	log_info("ddnet-insta", "connecting to database ...");
 	// set the stats table to the gametype name in all lowercase
@@ -54,7 +54,7 @@ CGameControllerPvp::CGameControllerPvp(class CGameContext *pGameServer) :
 	// https://github.com/ddnet-insta/ddnet-insta/issues/253
 	// always umute spectators on map change or "reload" command
 	//
-	// this contructor is not called on "restart" commands
+	// this constructor is not called on "restart" commands
 	if(g_Config.m_SvTournamentChatSmart)
 		g_Config.m_SvTournamentChat = 0;
 
@@ -229,7 +229,7 @@ int CGameControllerPvp::SnapPlayerScore(int SnappingClient, CPlayer *pPlayer, in
 
 	int Score = pPlayer->m_Score.value_or(0);
 
-	// alawys force display round score if the game ended
+	// always force display round score if the game ended
 	// otherwise you can not see who actually won
 	//
 	// in zCatch you do win by score
@@ -1013,20 +1013,20 @@ void CGameControllerPvp::OnAnyDamage(vec2 &Force, int &Dmg, int &From, int &Weap
 	CPlayer *pPlayer = pCharacter->GetPlayer();
 	CPlayer *pKiller = GetPlayerOrNullptr(From);
 
-	// only weapons that push the tee around are considerd a touch
+	// only weapons that push the tee around are considered a touch
 	// gun and laser do not push (as long as there is no explosive guns/lasers)
 	// and shotgun only pushes in ddrace gametypes
 	if(Weapon != WEAPON_GUN && Weapon != WEAPON_LASER)
 	{
 		if(!HasVanillaShotgun(pPlayer) || Weapon != WEAPON_SHOTGUN)
-			pPlayer->UpdateLastToucher(From);
+			pPlayer->UpdateLastToucher(From, Weapon);
 	}
 
 	if(IsTeamPlay() && pKiller && pPlayer->GetTeam() == pKiller->GetTeam())
 	{
 		// interaction from team mates protects from spikes in fng
 		// and from counting as enemy kill in fly
-		pPlayer->UpdateLastToucher(-1);
+		pPlayer->UpdateLastToucher(-1, -1);
 	}
 
 	if(From == pPlayer->GetCid() && Weapon != WEAPON_LASER)
@@ -1222,7 +1222,7 @@ bool CGameControllerPvp::OnSetDDRaceTeam(int ClientId, int Team)
 {
 	// only joining team 0
 	// forces players to spectators
-	// to avoid players interrrupting gameplay
+	// to avoid players interrupting gameplay
 	if(Team != TEAM_FLOCK)
 		return false;
 
@@ -1248,7 +1248,7 @@ bool CGameControllerPvp::OnSetDDRaceTeam(int ClientId, int Team)
 	// and later we again call SetTeam which sends the team change
 	// net message so clients are aware of the correct team
 	//
-	// TODO: revist this and check if 0.7 works correctly
+	// TODO: revisit this and check if 0.7 works correctly
 	//       see https://github.com/ddnet-insta/ddnet-insta/issues/362
 	pPlayer->SetTeamRawAndUnsafe(TEAM_SPECTATORS);
 
@@ -1279,7 +1279,7 @@ bool CGameControllerPvp::OnSetDDRaceTeam(int ClientId, int Team)
 	else
 	{
 		// this is the expected branch
-		// the players death triggerd the team change
+		// the players death triggered the team change
 		// so we have to use the NoKill version of set team
 		// otherwise the player is killed twice
 		// which causes nullptr issues
@@ -1331,14 +1331,17 @@ void CGameControllerPvp::OnPlayerDisconnect(class CPlayer *pPlayer, const char *
 	CheckReadyStates(pPlayer->GetCid());
 }
 
+// TODO: can we move this to the core controller?
 void CGameControllerPvp::DoTeamChange(CPlayer *pPlayer, int Team, bool DoChatMsg)
 {
+	if(!IsValidTeam(Team))
+		return;
+
 	// has to be saved for later
 	// because the set team operation kills the character
 	// and then we lose the team information
 	int DDRaceTeam = GameServer()->GetDDRaceTeam(pPlayer->GetCid());
 
-	Team = ClampTeam(Team);
 	if(Team == pPlayer->GetTeam())
 		return;
 
@@ -1361,7 +1364,7 @@ void CGameControllerPvp::DoTeamChange(CPlayer *pPlayer, int Team, bool DoChatMsg
 	// ddnet-insta
 
 	// https://github.com/ddnet-insta/ddnet-insta/issues/388
-	// makes sure changing team during a fng sacrafice does not give the
+	// makes sure changing team during a fng sacrifice does not give the
 	// player a wrong shire punishment
 	//
 	// also invalidates block or fly kills when the killer joined spectators between starting the kill (hooking, shooting)
@@ -1492,7 +1495,7 @@ bool CGameControllerPvp::OnFireWeapon(CCharacter &Character, int &Weapon, vec2 &
 	if(IsStatTrack() && Weapon != WEAPON_HAMMER)
 		Character.GetPlayer()->m_Stats.m_ShotsFired++;
 
-	if(g_Config.m_SvGrenadeAmmoRegenResetOnFire)
+	if(g_Config.m_SvGrenadeAmmoRegenResetOnFire && Character.m_Core.m_ActiveWeapon == WEAPON_GRENADE)
 		Character.m_Core.m_aWeapons[Character.m_Core.m_ActiveWeapon].m_AmmoRegenStart = -1;
 	if(Character.m_Core.m_aWeapons[Character.m_Core.m_ActiveWeapon].m_Ammo > 0) // -1 == unlimited
 		Character.m_Core.m_aWeapons[Character.m_Core.m_ActiveWeapon].m_Ammo--;
@@ -1529,7 +1532,7 @@ bool CGameControllerPvp::OnFireWeapon(CCharacter &Character, int &Weapon, vec2 &
 			float Angle = angle(Direction);
 			Angle += Spreading[i + 2];
 			float v = 1 - (absolute(i) / (float)ShotSpread);
-			float Speed = mix((float)GameServer()->Tuning()->m_ShotgunSpeeddiff, 1.0f, v);
+			float Speed = mix((float)GameServer()->GlobalTuning()->m_ShotgunSpeeddiff, 1.0f, v);
 
 			// TODO: not sure about Dir and InitDir and prediction
 
@@ -1539,7 +1542,7 @@ bool CGameControllerPvp::OnFireWeapon(CCharacter &Character, int &Weapon, vec2 &
 				Character.GetPlayer()->GetCid(), // Owner
 				ProjStartPos, // Pos
 				direction(Angle) * Speed, // Dir
-				(int)(Server()->TickSpeed() * GameServer()->Tuning()->m_ShotgunLifetime), // Span
+				(int)(Server()->TickSpeed() * GameServer()->GlobalTuning()->m_ShotgunLifetime), // Span
 				false, // Freeze
 				false, // Explosive
 				-1, // SoundImpact

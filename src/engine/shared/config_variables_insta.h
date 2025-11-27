@@ -50,7 +50,7 @@ MACRO_CONFIG_INT(SvLaserTextPoints, sv_laser_text_points, 1, 0, 1, CFGFLAG_SERVE
 MACRO_CONFIG_INT(SvAnnounceSteals, sv_announce_steals, 1, 0, 1, CFGFLAG_SERVER, "show in chat when someone stole a kill (only fng for now)")
 
 MACRO_CONFIG_INT(SvGrenadeAmmoRegen, sv_grenade_ammo_regen, 0, 0, 1, CFGFLAG_SAVE | CFGFLAG_SERVER, "Activate or deactivate grenade ammo regeneration in general")
-MACRO_CONFIG_INT(SvGrenadeAmmoRegenTime, sv_grenade_ammo_regen_time, 128, 1, 9000, CFGFLAG_SAVE | CFGFLAG_SERVER, "Grenade ammo regeneration time in miliseconds")
+MACRO_CONFIG_INT(SvGrenadeAmmoRegenTime, sv_grenade_ammo_regen_time, 128, 1, 9000, CFGFLAG_SAVE | CFGFLAG_SERVER, "Grenade ammo regeneration time in milliseconds")
 MACRO_CONFIG_INT(SvGrenadeAmmoRegenNum, sv_grenade_ammo_regen_num, 6, 1, 10, CFGFLAG_SAVE | CFGFLAG_SERVER, "Maximum number of grenades if ammo regeneration on")
 MACRO_CONFIG_INT(SvGrenadeAmmoRegenSpeedNade, sv_grenade_ammo_regen_speed, 1, 0, 1, CFGFLAG_SAVE | CFGFLAG_SERVER, "Give grenades back that push own player")
 MACRO_CONFIG_INT(SvGrenadeAmmoRegenOnKill, sv_grenade_ammo_regen_on_kill, 2, 0, 2, CFGFLAG_SAVE | CFGFLAG_SERVER, "Refill nades on kill (0=off, 1=1, 2=all)")
@@ -80,12 +80,13 @@ MACRO_CONFIG_INT(SvReloadTimeOnHit, sv_reload_time_on_hit, 0, 0, 500, CFGFLAG_SE
 MACRO_CONFIG_INT(SvFastHitFullAuto, sv_fast_hit_full_auto, 0, 0, 1, CFGFLAG_SERVER, "require fire button repress when sv_reload_time_on_hit is set")
 MACRO_CONFIG_INT(SvPunishFreezeDisconnect, sv_punish_freeze_disconnect, 1, 0, 1, CFGFLAG_SERVER, "freeze player for 20 seconds on rejoin when leaving server while being frozen")
 MACRO_CONFIG_STR(SvDisplayScore, sv_display_score, 512, "round_points", CFGFLAG_SERVER, "values: points, round_points, spree, current_spree, win_points, wins, kills, round_kills")
-MACRO_CONFIG_INT(SvSelfDamageRespawnDelayMs, sv_self_damage_respawn_delay_ms, 500, 0, 10000, CFGFLAG_SERVER, "time in miliseconds it takes to respawn after dying by self damage")
-MACRO_CONFIG_INT(SvSelfKillRespawnDelayMs, sv_self_kill_respawn_delay_ms, 3000, 0, 10000, CFGFLAG_SERVER, "time in miliseconds it takes to respawn after sending kill bind")
-MACRO_CONFIG_INT(SvEnemyKillRespawnDelayMs, sv_enemy_kill_respawn_delay_ms, 500, 0, 10000, CFGFLAG_SERVER, "time in miliseconds it takes to respawn after getting killed by enemies")
-MACRO_CONFIG_INT(SvWorldKillRespawnDelayMs, sv_world_kill_respawn_delay_ms, 500, 0, 10000, CFGFLAG_SERVER, "time in miliseconds it takes to respawn after touching a deathtile")
-MACRO_CONFIG_INT(SvGameKillRespawnDelayMs, sv_game_kill_respawn_delay_ms, 500, 0, 10000, CFGFLAG_SERVER, "time in miliseconds it takes to respawn after team change, round start and so on")
+MACRO_CONFIG_INT(SvSelfDamageRespawnDelayMs, sv_self_damage_respawn_delay_ms, 500, 0, 10000, CFGFLAG_SERVER, "time in milliseconds it takes to respawn after dying by self damage")
+MACRO_CONFIG_INT(SvSelfKillRespawnDelayMs, sv_self_kill_respawn_delay_ms, 3000, 0, 10000, CFGFLAG_SERVER, "time in milliseconds it takes to respawn after sending kill bind")
+MACRO_CONFIG_INT(SvEnemyKillRespawnDelayMs, sv_enemy_kill_respawn_delay_ms, 500, 0, 10000, CFGFLAG_SERVER, "time in milliseconds it takes to respawn after getting killed by enemies")
+MACRO_CONFIG_INT(SvWorldKillRespawnDelayMs, sv_world_kill_respawn_delay_ms, 500, 0, 10000, CFGFLAG_SERVER, "time in milliseconds it takes to respawn after touching a deathtile")
+MACRO_CONFIG_INT(SvGameKillRespawnDelayMs, sv_game_kill_respawn_delay_ms, 500, 0, 10000, CFGFLAG_SERVER, "time in milliseconds it takes to respawn after team change, round start and so on")
 
+// clang-format off
 /*
 
 sv_chat_ratelimit_long_messages
@@ -103,6 +104,7 @@ come base  |
 need help  |
 
 */
+// clang-format on
 MACRO_CONFIG_INT(SvChatRatelimitLongMessages, sv_chat_ratelimit_long_messages, 1, 0, 1, CFGFLAG_SERVER, "Needs sv_spamprotection 0 (0=off, 1=only messages longer than 12 chars are limited)")
 MACRO_CONFIG_INT(SvChatRatelimitSpectators, sv_chat_ratelimit_spectators, 1, 0, 1, CFGFLAG_SERVER, "Needs sv_spamprotection 0 (0=off, 1=specs have slow chat)")
 MACRO_CONFIG_INT(SvChatRatelimitPublicChat, sv_chat_ratelimit_public_chat, 1, 0, 1, CFGFLAG_SERVER, "Needs sv_spamprotection 0 (0=off, 1=non team chat is slow)")

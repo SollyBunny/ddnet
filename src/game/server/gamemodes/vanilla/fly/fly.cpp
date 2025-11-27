@@ -63,6 +63,11 @@ int CGameControllerFly::OnCharacterDeath(class CCharacter *pVictim, class CPlaye
 	}
 	int ModeSpecial = CGameControllerCTF::OnCharacterDeath(pVictim, pKiller, Weapon);
 
+	// TODO: this hack should be removed by using the config sv_suicide_penalty
+	//       and default configs per gametype
+	//       see https://github.com/ddnet-insta/ddnet-insta/pull/433
+	//       and https://github.com/ddnet-insta/ddnet-insta/issues/308
+
 	// if the player is punished for the selfkill
 	// we revert to the original score
 	// because in fly selfkills or running into spikes

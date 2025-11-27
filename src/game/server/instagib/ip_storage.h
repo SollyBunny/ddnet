@@ -31,8 +31,8 @@ class CIpStorage
 public:
 	CIpStorage(const NETADDR *pAddr, int EntryId, uint32_t UniqueClientId, const char *pName);
 
-	const NETADDR *Addr() const { return &m_Addr; };
-	int EntryId() const { return m_EntryId; };
+	const NETADDR *Addr() const { return &m_Addr; }
+	int EntryId() const { return m_EntryId; }
 	int UniqueClientId() const { return m_UniqueClientId; }
 
 	// display name of the user when the entry was created
