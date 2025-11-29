@@ -312,24 +312,6 @@ void CGameControllerBaseFoot::SnapDDNetCharacter(int SnappingClient, CCharacter 
 		pDDNetCharacter->m_FreezeEnd = -1;
 }
 
-void CGameControllerBaseFoot::Snap(int SnappingClient)
-{
-	CGameControllerPvp::Snap(SnappingClient);
-
-	if(Server()->IsSixup(SnappingClient))
-		return;
-
-	CNetObj_GameData *pGameDataObj = (CNetObj_GameData *)Server()->SnapNewItem(NETOBJTYPE_GAMEDATA, 0, sizeof(CNetObj_GameData));
-	if(!pGameDataObj)
-		return;
-
-	pGameDataObj->m_TeamscoreRed = m_aTeamscore[TEAM_RED];
-	pGameDataObj->m_TeamscoreBlue = m_aTeamscore[TEAM_BLUE];
-
-	pGameDataObj->m_FlagCarrierRed = 0;
-	pGameDataObj->m_FlagCarrierBlue = 0;
-}
-
 void CGameControllerBaseFoot::FireGrenade(CCharacter *Character, vec2 Direction, vec2 MouseTarget, vec2 ProjStartPos)
 {
 	if(!Character)

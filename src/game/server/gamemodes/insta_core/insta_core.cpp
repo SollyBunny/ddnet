@@ -574,19 +574,71 @@ void CGameControllerInstaCore::Snap(int SnappingClient)
 {
 	CGameControllerDDRace::Snap(SnappingClient);
 
+	// TODO: do we have to or should we use IsTeamPlay() here? And or check GAMEFLAG_FLAGS
+	//       i feel like the client checks that anyways
+	//       and we can snap flags and team score and the client will just ignore them if no gameflags are set
 
 	if(Server()->IsSixup(SnappingClient))
 	{
-		if(IsTeamPlay())
-		{
-			protocol7::CNetObj_GameDataTeam *pGameDataTeam = Server()->SnapNewItem<protocol7::CNetObj_GameDataTeam>(0);
-			if(!pGameDataTeam)
-				return;
+		protocol7::CNetObj_GameDataFlag *pGameDataObj = Server()->SnapNewItem<protocol7::CNetObj_GameDataFlag>(0);
+		if(!pGameDataObj)
+			return;
 
-			pGameDataTeam->m_TeamscoreRed = m_aTeamscore[TEAM_RED];
-			pGameDataTeam->m_TeamscoreBlue = m_aTeamscore[TEAM_BLUE];
-		}
+		pGameDataObj->m_FlagCarrierRed = SnapFlagCarrierRed(SnappingClient);
+		pGameDataObj->m_FlagCarrierBlue = SnapFlagCarrierBlue(SnappingClient);
+
+		protocol7::CNetObj_GameDataTeam *pGameDataTeam = Server()->SnapNewItem<protocol7::CNetObj_GameDataTeam>(0);
+		if(!pGameDataTeam)
+			return;
+
+		// TODO: create SnapTeamscoreRed(SnappingClient) controller method so custom gamemodes
+		//       can easily spoof this value on a per player basis without leaving
+		//       the controller
+		pGameDataTeam->m_TeamscoreRed = m_aTeamscore[TEAM_RED];
+		pGameDataTeam->m_TeamscoreBlue = m_aTeamscore[TEAM_BLUE];
 	}
+	else
+	{
+		CNetObj_GameData *pGameDataObj = Server()->SnapNewItem<CNetObj_GameData>(0);
+		if(!pGameDataObj)
+			return;
+
+		pGameDataObj->m_FlagCarrierRed = SnapFlagCarrierRed(SnappingClient);
+		pGameDataObj->m_FlagCarrierBlue = SnapFlagCarrierBlue(SnappingClient);
+
+		pGameDataObj->m_TeamscoreRed = m_aTeamscore[TEAM_RED];
+		pGameDataObj->m_TeamscoreBlue = m_aTeamscore[TEAM_BLUE];
+	}
+}
+
+int CGameControllerInstaCore::SnapFlagCarrierRed(int SnappingClient)
+{
+	int FlagCarrierRed = FLAG_MISSING;
+	if(m_apFlags[TEAM_RED])
+	{
+		if(m_apFlags[TEAM_RED]->m_AtStand)
+			FlagCarrierRed = FLAG_ATSTAND;
+		else if(m_apFlags[TEAM_RED]->GetCarrier() && m_apFlags[TEAM_RED]->GetCarrier()->GetPlayer())
+			FlagCarrierRed = m_apFlags[TEAM_RED]->GetCarrier()->GetPlayer()->GetCid();
+		else
+			FlagCarrierRed = FLAG_TAKEN;
+	}
+	return FlagCarrierRed;
+}
+
+int CGameControllerInstaCore::SnapFlagCarrierBlue(int SnappingClient)
+{
+	int FlagCarrierBlue = FLAG_MISSING;
+	if(m_apFlags[TEAM_BLUE])
+	{
+		if(m_apFlags[TEAM_BLUE]->m_AtStand)
+			FlagCarrierBlue = FLAG_ATSTAND;
+		else if(m_apFlags[TEAM_BLUE]->GetCarrier() && m_apFlags[TEAM_BLUE]->GetCarrier()->GetPlayer())
+			FlagCarrierBlue = m_apFlags[TEAM_BLUE]->GetCarrier()->GetPlayer()->GetCid();
+		else
+			FlagCarrierBlue = FLAG_TAKEN;
+	}
+	return FlagCarrierBlue;
 }
 
 int CGameControllerInstaCore::SnapPlayerFlags7(int SnappingClient, CPlayer *pPlayer, int PlayerFlags7)
