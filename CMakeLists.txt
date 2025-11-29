@@ -2910,7 +2910,6 @@ if(SERVER)
     instagib/includes/config_variables.h
     instagib/includes/gamecontext.h
     instagib/includes/gamecontroller.h
-    instagib/includes/persistent_client_data.h
     instagib/includes/player.h
     instagib/includes/rcon_commands.h
     instagib/ip_storage.cpp
