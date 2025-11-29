@@ -600,11 +600,8 @@ void CGameControllerInstaCore::Snap(int SnappingClient)
 			if(!pGameDataTeam)
 				return;
 
-			// TODO: create SnapTeamscoreRed(SnappingClient) controller method so custom gamemodes
-			//       can easily spoof this value on a per player basis without leaving
-			//       the controller
-			pGameDataTeam->m_TeamscoreRed = m_aTeamscore[TEAM_RED];
-			pGameDataTeam->m_TeamscoreBlue = m_aTeamscore[TEAM_BLUE];
+			pGameDataTeam->m_TeamscoreRed = SnapTeamscoreRed(SnappingClient);
+			pGameDataTeam->m_TeamscoreBlue = SnapTeamscoreBlue(SnappingClient);
 		}
 		else
 		{
@@ -615,8 +612,8 @@ void CGameControllerInstaCore::Snap(int SnappingClient)
 			pGameDataObj->m_FlagCarrierRed = SnapFlagCarrierRed(SnappingClient);
 			pGameDataObj->m_FlagCarrierBlue = SnapFlagCarrierBlue(SnappingClient);
 
-			pGameDataObj->m_TeamscoreRed = m_aTeamscore[TEAM_RED];
-			pGameDataObj->m_TeamscoreBlue = m_aTeamscore[TEAM_BLUE];
+			pGameDataObj->m_TeamscoreRed = SnapTeamscoreRed(SnappingClient);
+			pGameDataObj->m_TeamscoreBlue = SnapTeamscoreBlue(SnappingClient);
 		}
 	}
 }
@@ -649,6 +646,16 @@ int CGameControllerInstaCore::SnapFlagCarrierBlue(int SnappingClient)
 			FlagCarrierBlue = FLAG_TAKEN;
 	}
 	return FlagCarrierBlue;
+}
+
+int CGameControllerInstaCore::SnapTeamscoreRed(int SnappingClient)
+{
+	return m_aTeamscore[TEAM_RED];
+}
+
+int CGameControllerInstaCore::SnapTeamscoreBlue(int SnappingClient)
+{
+	return m_aTeamscore[TEAM_BLUE];
 }
 
 int CGameControllerInstaCore::SnapPlayerFlags7(int SnappingClient, CPlayer *pPlayer, int PlayerFlags7)

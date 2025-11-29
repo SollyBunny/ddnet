@@ -80,6 +80,8 @@ public:
 	void Snap(int SnappingClient) override;
 	int SnapFlagCarrierRed(int SnappingClient) override;
 	int SnapFlagCarrierBlue(int SnappingClient) override;
+	int SnapTeamscoreRed(int SnappingClient) override;
+	int SnapTeamscoreBlue(int SnappingClient) override;
 	int SnapPlayerFlags7(int SnappingClient, CPlayer *pPlayer, int PlayerFlags7) override;
 	void SnapPlayer6(int SnappingClient, CPlayer *pPlayer, CNetObj_ClientInfo *pClientInfo, CNetObj_PlayerInfo *pPlayerInfo) override;
 	void SnapDDNetPlayer(int SnappingClient, CPlayer *pPlayer, CNetObj_DDNetPlayer *pDDNetPlayer) override;
