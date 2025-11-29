@@ -811,15 +811,6 @@ void IGameController::Snap(int SnappingClient)
 		pRaceData->m_RaceFlags = protocol7::RACEFLAG_KEEP_WANTED_WEAPON;
 
 		// ddnet-insta
-		if(IsTeamPlay())
-		{
-			protocol7::CNetObj_GameDataTeam *pGameDataTeam = static_cast<protocol7::CNetObj_GameDataTeam *>(Server()->SnapNewItem(-protocol7::NETOBJTYPE_GAMEDATATEAM, 0, sizeof(protocol7::CNetObj_GameDataTeam)));
-			if(!pGameDataTeam)
-				return;
-
-			pGameDataTeam->m_TeamscoreRed = m_aTeamscore[TEAM_RED];
-			pGameDataTeam->m_TeamscoreBlue = m_aTeamscore[TEAM_BLUE];
-		}
 		switch(m_GameState)
 		{
 		case IGS_WARMUP_GAME:

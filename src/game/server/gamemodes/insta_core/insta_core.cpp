@@ -570,6 +570,25 @@ void CGameControllerInstaCore::InitPlayer(CPlayer *pPlayer)
 	RoundInitPlayer(pPlayer);
 }
 
+void CGameControllerInstaCore::Snap(int SnappingClient)
+{
+	CGameControllerDDRace::Snap(SnappingClient);
+
+
+	if(Server()->IsSixup(SnappingClient))
+	{
+		if(IsTeamPlay())
+		{
+			protocol7::CNetObj_GameDataTeam *pGameDataTeam = static_cast<protocol7::CNetObj_GameDataTeam *>(Server()->SnapNewItem(-protocol7::NETOBJTYPE_GAMEDATATEAM, 0, sizeof(protocol7::CNetObj_GameDataTeam)));
+			if(!pGameDataTeam)
+				return;
+
+			pGameDataTeam->m_TeamscoreRed = m_aTeamscore[TEAM_RED];
+			pGameDataTeam->m_TeamscoreBlue = m_aTeamscore[TEAM_BLUE];
+		}
+	}
+}
+
 int CGameControllerInstaCore::SnapPlayerFlags7(int SnappingClient, CPlayer *pPlayer, int PlayerFlags7)
 {
 	if(SnappingClient < 0 || SnappingClient >= MAX_CLIENTS)
