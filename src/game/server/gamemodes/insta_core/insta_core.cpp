@@ -579,7 +579,7 @@ void CGameControllerInstaCore::Snap(int SnappingClient)
 	{
 		if(IsTeamPlay())
 		{
-			protocol7::CNetObj_GameDataTeam *pGameDataTeam = static_cast<protocol7::CNetObj_GameDataTeam *>(Server()->SnapNewItem(-protocol7::NETOBJTYPE_GAMEDATATEAM, 0, sizeof(protocol7::CNetObj_GameDataTeam)));
+			protocol7::CNetObj_GameDataTeam *pGameDataTeam = Server()->SnapNewItem<protocol7::CNetObj_GameDataTeam>(0);
 			if(!pGameDataTeam)
 				return;
 
