@@ -574,40 +574,50 @@ void CGameControllerInstaCore::Snap(int SnappingClient)
 {
 	CGameControllerDDRace::Snap(SnappingClient);
 
-	// TODO: do we have to or should we use IsTeamPlay() here? And or check GAMEFLAG_FLAGS
-	//       i feel like the client checks that anyways
-	//       and we can snap flags and team score and the client will just ignore them if no gameflags are set
-
-	if(Server()->IsSixup(SnappingClient))
+	// it is a bit of a mess that 0.6 has both teamscore
+	// and flag carriers in one object
+	// so the only way to have consistent 0.6 and 0.7 behavior is to
+	// regress 0.7 to also send teamscore together with the flag carriers
+	// even if it could split it
+	//
+	// But that is fine. We could also not check teamplay or gameflag_flags at all
+	// both the 0.6 and 0.7 client handle receiving these snap objects well.
+	// Even if the gametype is dm it would just ignore the teamscore.
+	// I still decided to require either teamplay or gameflag_flags
+	// to have a bit smaller snap size in modes that do not use either of the two.
+	if(IsTeamPlay() || (m_GameFlags & GAMEFLAG_FLAGS))
 	{
-		protocol7::CNetObj_GameDataFlag *pGameDataObj = Server()->SnapNewItem<protocol7::CNetObj_GameDataFlag>(0);
-		if(!pGameDataObj)
-			return;
+		if(Server()->IsSixup(SnappingClient))
+		{
+			protocol7::CNetObj_GameDataFlag *pGameDataObj = Server()->SnapNewItem<protocol7::CNetObj_GameDataFlag>(0);
+			if(!pGameDataObj)
+				return;
 
-		pGameDataObj->m_FlagCarrierRed = SnapFlagCarrierRed(SnappingClient);
-		pGameDataObj->m_FlagCarrierBlue = SnapFlagCarrierBlue(SnappingClient);
+			pGameDataObj->m_FlagCarrierRed = SnapFlagCarrierRed(SnappingClient);
+			pGameDataObj->m_FlagCarrierBlue = SnapFlagCarrierBlue(SnappingClient);
 
-		protocol7::CNetObj_GameDataTeam *pGameDataTeam = Server()->SnapNewItem<protocol7::CNetObj_GameDataTeam>(0);
-		if(!pGameDataTeam)
-			return;
+			protocol7::CNetObj_GameDataTeam *pGameDataTeam = Server()->SnapNewItem<protocol7::CNetObj_GameDataTeam>(0);
+			if(!pGameDataTeam)
+				return;
 
-		// TODO: create SnapTeamscoreRed(SnappingClient) controller method so custom gamemodes
-		//       can easily spoof this value on a per player basis without leaving
-		//       the controller
-		pGameDataTeam->m_TeamscoreRed = m_aTeamscore[TEAM_RED];
-		pGameDataTeam->m_TeamscoreBlue = m_aTeamscore[TEAM_BLUE];
-	}
-	else
-	{
-		CNetObj_GameData *pGameDataObj = Server()->SnapNewItem<CNetObj_GameData>(0);
-		if(!pGameDataObj)
-			return;
+			// TODO: create SnapTeamscoreRed(SnappingClient) controller method so custom gamemodes
+			//       can easily spoof this value on a per player basis without leaving
+			//       the controller
+			pGameDataTeam->m_TeamscoreRed = m_aTeamscore[TEAM_RED];
+			pGameDataTeam->m_TeamscoreBlue = m_aTeamscore[TEAM_BLUE];
+		}
+		else
+		{
+			CNetObj_GameData *pGameDataObj = Server()->SnapNewItem<CNetObj_GameData>(0);
+			if(!pGameDataObj)
+				return;
 
-		pGameDataObj->m_FlagCarrierRed = SnapFlagCarrierRed(SnappingClient);
-		pGameDataObj->m_FlagCarrierBlue = SnapFlagCarrierBlue(SnappingClient);
+			pGameDataObj->m_FlagCarrierRed = SnapFlagCarrierRed(SnappingClient);
+			pGameDataObj->m_FlagCarrierBlue = SnapFlagCarrierBlue(SnappingClient);
 
-		pGameDataObj->m_TeamscoreRed = m_aTeamscore[TEAM_RED];
-		pGameDataObj->m_TeamscoreBlue = m_aTeamscore[TEAM_BLUE];
+			pGameDataObj->m_TeamscoreRed = m_aTeamscore[TEAM_RED];
+			pGameDataObj->m_TeamscoreBlue = m_aTeamscore[TEAM_BLUE];
+		}
 	}
 }
 
