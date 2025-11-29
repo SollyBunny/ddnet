@@ -166,6 +166,7 @@ void CGameClient::OnConsoleInit()
 						  &m_Binds.m_SpecialBinds,
 						  &m_GameConsole,
 						  &m_Chat, // chat has higher prio, due to that you can quit it by pressing esc
+						  &m_Scoreboard,
 						  &m_Motd, // for pressing esc to remove it
 						  &m_Spectator,
 						  &m_Emoticon,
@@ -3205,7 +3206,7 @@ int CGameClient::IntersectCharacter(vec2 HookPos, vec2 NewPos, vec2 &NewPos2, in
 
 		const CClientData &Data = m_aClients[i];
 
-		if(!Data.m_Active)
+		if(!Data.m_Active || !m_Snap.m_aCharacters[i].m_Active)
 			continue;
 
 		CNetObj_Character Prev = m_Snap.m_aCharacters[i].m_Prev;
