@@ -30,6 +30,10 @@ class Controller
     @name
   end
 
+  def class_name
+    "CGameController#{@name}"
+  end
+
   def name_snake
     @name.to_snake
   end
@@ -85,11 +89,11 @@ class Gamemode
       "",
       '#include "../base_pvp/base_pvp.h"',
       "",
-      "class CGameController#{@controller.name} : public CGameController#{@parent_controller.name}",
+      "class #{@controller.class_name} : public #{@parent_controller.class_name}",
       "{",
       "public:",
-      "	CGameController#{@controller.name}(CGameContext *pGameServer);",
-      "	~CGameController#{@controller.name}() override;",
+      "	#{@controller.class_name}(CGameContext *pGameServer);",
+      "	~#{@controller.class_name}() override;",
       "",
       header_methods,
       "};",
@@ -100,17 +104,42 @@ class Gamemode
   # @return [String] gamemode.cpp C++ source code
   def gen_cpp_source
     [
-      "#include \"#{@controller.header_filename}.h\"",
+      "#include \"#{@controller.header_filename}\"",
       "",
       "#include <game/server/entities/character.h>",
       "#include <game/server/gamecontext.h>",
       "#include <game/server/player.h>",
       "",
-      "class CGameController#{@controller.name} : public CGameController#{@parent_controller.name}"
+      "#{@controller.class_name}::#{@controller.class_name}(CGameContext *pGameServer) :",
+      "	#{@parent_controller.class_name}(pGameServer)",
+      "{",
+      constructor_body,
+      "}",
+      "",
+      "#{@controller.class_name}::~#{@controller.class_name}() = default;",
+      "",
+      source_methods,
+      "",
+      "REGISTER_GAMEMODE(#{@controller.name_snake}, #{@controller.class_name}(pGameServer));"
     ].join("\n") + "\n"
   end
 
   private
+
+  def constructor_body
+    [
+      "// if you do not need team red/blue or the red and blue flag from ctf",
+      "// just do m_GameFlags = 0;",
+      "m_GameFlags = GAMEFLAG_TEAMS | GAMEFLAG_FLAGS;",
+      "m_pGameType = \"#{@controller.name_snake}\"",
+      "m_DefaultWeapon = WEAPON_GUN;",
+      "",
+      "m_pStatsTable = \"#{@controller.name_snake}\"",
+      "m_pExtraColumns = new C#{@controller.name}Columns();",
+      "m_pSqlStats->SetExtraColumns(m_pExtraColumns);",
+      "m_pSqlStats->CreateTable(m_pStatsTable);",
+    ].map { |m| "\t#{m}" }.join("\n")
+  end
 
   def include_guard_open
     slug = @controller.path.map(&:upcase).join('_')
@@ -126,6 +155,18 @@ class Gamemode
     "#endif"
   end
 
+
+  def source_methods
+    # TODO: the header and source methods should be be kept in sync with some kind of data structure
+    #       that matches methods by name
+    #       and then writes the correct signatures
+    #       and these signatures should be fetched from the source code
+    #       not hardcodet in here
+    [
+      "// TODO: add methods here, but they should be dynamic"
+    ].join("\n")
+  end
+
   def header_methods
     [
       "void OnInit() override",
@@ -139,7 +180,7 @@ class Cli
     mode = Gamemode.new(
       name: 'placeholder'
     )
-    puts mode.gen_cpp_header
+    puts mode.gen_cpp_source
   end
 end
 
