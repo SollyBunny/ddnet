@@ -16,7 +16,6 @@ public:
 
 	void OnCreditsChatCmd(IConsole::IResult *pResult, void *pUserData) override;
 	void Tick() override;
-	void Snap(int SnappingClient) override;
 	void OnReset() override;
 	void OnPlayerDisconnect(class CPlayer *pPlayer, const char *pReason) override;
 	void SnapDDNetCharacter(int SnappingClient, CCharacter *pChr, CNetObj_DDNetCharacter *pDDNetCharacter) override;

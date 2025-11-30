@@ -1263,18 +1263,60 @@ bool CGameControllerPvp::OnSetDDRaceTeam(int ClientId, int Team)
 		// but we might be able to recover using SetTeam so this is not an assert
 		//
 		// UPDATE: I saw this log in production. Can not reproduce yet.
-
-		// log_error(
-		// 	"ddnet-insta",
+		//
+		// dbg_assert(false,
 		// 	"cid=%d changed from ddrace team %d to ddrace team 0 but is still alive",
 		// 	ClientId,
 		// 	OldDDRaceTeam);
-		// pPlayer->SetTeam(TEAM_SPECTATORS);
+		//
+		// UPDATE: Okay I figured it out. This branch can be hit by the rcon command
+		//         set_team_ddr and also by kick votes inside of ddrace teams
+		//         which use the same rcon command under the hood
+		//         if players get moved to t0 with the rcon command they do not die
+		//         unless they started the race.
 
-		dbg_assert(false,
-			"cid=%d changed from ddrace team %d to ddrace team 0 but is still alive",
-			ClientId,
-			OldDDRaceTeam);
+		// in ddracecommands.cpp the character is currently killed with this if statement
+		//
+		// if((pSelf->GetDDRaceTeam(Target) && pController->Teams().GetDDRaceState(pSelf->m_apPlayers[Target]) == ERaceState::STARTED) || (pChr && pController->Teams().IsPractice(pChr->Team())))
+		//
+		// if we get out of sync with that in a merge and logic changes I want to know!
+		// so we fail loud with an assert
+
+		bool RconCmdShouldHaveKilled =
+			(GameServer()->GetDDRaceTeam(ClientId) && Teams().GetDDRaceState(pPlayer) == ERaceState::STARTED) ||
+			Teams().IsPractice(pChr->Team());
+
+		// could also assert the bool but i find it hard to read
+		if(RconCmdShouldHaveKilled)
+		{
+			// WARNING: this assert will not actually log when triggered by rcon
+			//          because of https://github.com/ddnet/ddnet/issues/11305
+			//          so a debugger is needed to catch this
+			dbg_assert_failed(
+				"cid=%d changed from ddrace team %d to ddrace team 0 but is still alive",
+				ClientId,
+				OldDDRaceTeam);
+		}
+
+		// kill player even if they did not start the race yet
+		// to avoid someone bypassing slot limit and entering t0
+		pPlayer->KillCharacter(WEAPON_GAME);
+
+		// use respawn delay caused by kill above
+		// to move player to spectators
+		// because we first want to let the ddnet code run while the player
+		// is still in game so there are no unexpected side effects
+		// and then after the ddnet code finished we have to move the player
+		// to spectators to avoid users bypassing the in game slot limit
+		// and enter t0 by escaping a ddrace team
+		pPlayer->m_ForceTeam = {
+			.m_Tick = pPlayer->m_RespawnTick,
+			.m_Team = TEAM_SPECTATORS,
+			.m_SpectatorId = SPEC_FREEVIEW};
+
+		// this is expected to only happen when the player gets voted out of the ddrace team
+		// or gets moved by an admin with the rcon command set_team_ddr
+		SendChatTarget(ClientId, "You were forced to spectators because you left the ddrace team.");
 	}
 	else
 	{

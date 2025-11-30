@@ -45,21 +45,3 @@ bool CGameControllerTeamFng::OnEntity(int Index, int x, int y, int Layer, int Fl
 	CGameControllerBaseFng::OnEntity(Index, x, y, Layer, Flags, Initial, Number);
 	return false;
 }
-
-void CGameControllerTeamFng::Snap(int SnappingClient)
-{
-	CGameControllerBaseFng::Snap(SnappingClient);
-
-	if(Server()->IsSixup(SnappingClient))
-		return;
-
-	CNetObj_GameData *pGameDataObj = (CNetObj_GameData *)Server()->SnapNewItem(NETOBJTYPE_GAMEDATA, 0, sizeof(CNetObj_GameData));
-	if(!pGameDataObj)
-		return;
-
-	pGameDataObj->m_TeamscoreRed = m_aTeamscore[TEAM_RED];
-	pGameDataObj->m_TeamscoreBlue = m_aTeamscore[TEAM_BLUE];
-
-	pGameDataObj->m_FlagCarrierRed = 0;
-	pGameDataObj->m_FlagCarrierBlue = 0;
-}

@@ -37,9 +37,6 @@ void CScoreboard::ConKeyScoreboard(IConsole::IResult *pResult, void *pUserData)
 {
 	CScoreboard *pSelf = static_cast<CScoreboard *>(pUserData);
 
-	if(pSelf->GameClient()->m_Menus.IsActive())
-		return;
-
 	pSelf->GameClient()->m_Spectator.OnRelease();
 	pSelf->GameClient()->m_Emoticon.OnRelease();
 
@@ -58,12 +55,20 @@ void CScoreboard::ConToggleScoreboardCursor(IConsole::IResult *pResult, void *pU
 {
 	CScoreboard *pSelf = static_cast<CScoreboard *>(pUserData);
 
-	if(!pSelf->IsActive() || pSelf->Client()->State() == IClient::STATE_DEMOPLAYBACK)
+	if(!pSelf->IsActive() ||
+		pSelf->GameClient()->m_Menus.IsActive() ||
+		pSelf->GameClient()->m_Chat.IsActive() ||
+		pSelf->Client()->State() == IClient::STATE_DEMOPLAYBACK)
 	{
 		return;
 	}
 
 	pSelf->m_MouseUnlocked = !pSelf->m_MouseUnlocked;
+
+	if(!pSelf->m_MouseUnlocked)
+	{
+		pSelf->Ui()->ClosePopupMenus();
+	}
 
 	vec2 OldMousePos = pSelf->Ui()->MousePos();
 
@@ -761,7 +766,7 @@ void CScoreboard::OnRender()
 	if(!IsActive())
 		return;
 
-	if(!GameClient()->m_Menus.IsActive())
+	if(!GameClient()->m_Menus.IsActive() && !GameClient()->m_Chat.IsActive())
 	{
 		Ui()->StartCheck();
 		Ui()->Update();
@@ -912,7 +917,7 @@ void CScoreboard::OnRender()
 
 	RenderRecordingNotification((Screen.w / 7) * 4 + 10);
 
-	if(!GameClient()->m_Menus.IsActive())
+	if(!GameClient()->m_Menus.IsActive() && !GameClient()->m_Chat.IsActive())
 	{
 		Ui()->RenderPopupMenus();
 

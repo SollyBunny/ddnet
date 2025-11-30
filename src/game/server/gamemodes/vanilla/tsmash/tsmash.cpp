@@ -275,23 +275,5 @@ bool CGameControllerTsmash::OnSelfkill(int ClientId)
 	return true;
 }
 
-void CGameControllerTsmash::Snap(int SnappingClient)
-{
-	CGameControllerVanilla::Snap(SnappingClient);
-
-	if(IsTeamPlay())
-	{
-		if(Server()->IsSixup(SnappingClient))
-			return;
-
-		CNetObj_GameData *pGameDataObj = (CNetObj_GameData *)Server()->SnapNewItem(NETOBJTYPE_GAMEDATA, 0, sizeof(CNetObj_GameData));
-		if(!pGameDataObj)
-			return;
-
-		pGameDataObj->m_TeamscoreRed = m_aTeamscore[TEAM_RED];
-		pGameDataObj->m_TeamscoreBlue = m_aTeamscore[TEAM_BLUE];
-	}
-}
-
 REGISTER_GAMEMODE(tsmash, CGameControllerTsmash(pGameServer, false));
 REGISTER_GAMEMODE(ttsmash, CGameControllerTsmash(pGameServer, true));

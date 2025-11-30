@@ -936,6 +936,74 @@ public:
 			return the new score value that will be included in the snapshot
 	*/
 	virtual int SnapPlayerScore(int SnappingClient, CPlayer *pPlayer, int DDRaceScore);
+
+	/*
+		Function: SnapFlagCarrierRed
+			This value is fetched and snapped by the insta core controller
+			if the gameflag teams or gameflag flags is set
+			that is `IGameController::m_GameFlags`
+			being set to `GAMEFLAG_FLAGS` or `GAMEFLAG_TEAMS`
+
+			See also `SnapFlagCarrierBlue`
+
+		Arguments:
+			SnappingClient - Client Id of the player that will receive the snapshot
+
+		Returns:
+			return the flag holders client id value that will be included in the snapshot
+	*/
+	virtual int SnapFlagCarrierRed(int SnappingClient) { return 0; }
+
+	/*
+		Function: SnapFlagCarrierBlue
+			This value is fetched and snapped by the insta core controller
+			if the gameflag teams or gameflag flags is set
+			that is `IGameController::m_GameFlags`
+			being set to `GAMEFLAG_FLAGS` or `GAMEFLAG_TEAMS`
+
+			See also `SnapFlagCarrierRed`
+
+		Arguments:
+			SnappingClient - Client Id of the player that will receive the snapshot
+
+		Returns:
+			return the flag holders client id value that will be included in the snapshot
+	*/
+	virtual int SnapFlagCarrierBlue(int SnappingClient) { return 0; }
+
+	/*
+		Function: SnapTeamscoreRed
+			This value is fetched and snapped by the insta core controller
+			if the gameflag teams or gameflag flags is set
+			that is `IGameController::m_GameFlags`
+			being set to `GAMEFLAG_FLAGS` or `GAMEFLAG_TEAMS`
+
+			See also `SnapTeamscoreBlue`
+
+		Arguments:
+			SnappingClient - Client Id of the player that will receive the snapshot
+
+		Returns:
+			return the score value that will be included in the snapshot and shown in the scoreboard
+	*/
+	virtual int SnapTeamscoreRed(int SnappingClient) { return 0; }
+
+	/*
+		Function: SnapTeamscoreBlue
+			This value is fetched and snapped by the insta core controller
+			if the gameflag teams or gameflag flags is set
+			that is `IGameController::m_GameFlags`
+			being set to `GAMEFLAG_FLAGS` or `GAMEFLAG_TEAMS`
+
+			See also `SnapTeamscoreRed`
+
+		Arguments:
+			SnappingClient - Client Id of the player that will receive the snapshot
+
+		Returns:
+			return the score value that will be included in the snapshot and shown in the scoreboard
+	*/
+	virtual int SnapTeamscoreBlue(int SnappingClient) { return 0; }
 	virtual void SnapDDNetCharacter(int SnappingClient, CCharacter *pChr, CNetObj_DDNetCharacter *pDDNetCharacter) {}
 	virtual void SnapDDNetPlayer(int SnappingClient, CPlayer *pPlayer, CNetObj_DDNetPlayer *pDDNetPlayer) {}
 	virtual int SnapRoundStartTick(int SnappingClient);

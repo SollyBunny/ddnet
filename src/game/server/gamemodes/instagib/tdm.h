@@ -9,7 +9,6 @@ public:
 	CGameControllerInstaTDM(class CGameContext *pGameServer);
 	~CGameControllerInstaTDM() override;
 
-	void Snap(int SnappingClient) override;
 	int OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon) override;
 	void Tick() override;
 };
