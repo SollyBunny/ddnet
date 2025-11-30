@@ -217,6 +217,10 @@ int CControls::SnapInput(int *pData)
 		for(auto &InputData : m_aInputData)
 			InputData.m_PlayerFlags &= ~PLAYERFLAG_CHATTING;
 
+	if(g_Config.m_TcNameplatePingCircle)
+		for(auto &InputData : m_aInputData)
+			InputData.m_PlayerFlags |= PLAYERFLAG_SCOREBOARD;
+
 	bool Send = m_aLastData[g_Config.m_ClDummy].m_PlayerFlags != m_aInputData[g_Config.m_ClDummy].m_PlayerFlags;
 
 	m_aLastData[g_Config.m_ClDummy].m_PlayerFlags = m_aInputData[g_Config.m_ClDummy].m_PlayerFlags;
