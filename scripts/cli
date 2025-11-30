@@ -5,21 +5,77 @@ require_relative "ddnet-insta-cli/lib/strings"
 # comments use YARD format
 # https://rubydoc.info/gems/yard/file/docs/GettingStarted.md
 
-class Gamemode
+class Controller
+  @@pvp_controller = nil
+
+  attr_reader :path
+
   def initialize(opts = {})
-    @base_path = ["instagib"]
+    # relative path from
+    # src/game/server/gamemodes/
+    @path = opts[:path] || ["instagib"]
 
-    # camel name of parent controller
-    @parent_controller = "CGameControllerPvp"
-
-    # never read this value directly
-    # use the name_* getters
+    # class name
     @name = opts[:name].to_camel
+    raise "Name can not be empty!" if @name.empty?
+
+    # [String] filename base without extension
+    @filename = opts[:filename].to_snake
+    raise "Filename can not be empty!" if @filename.nil? || @filename.empty?
+    raise "Invalid filename: #{@filename}" if @filename.include? '.'
   end
 
   # camel cased name
   def name
     @name
+  end
+
+  def name_snake
+    @name.to_snake
+  end
+
+  # @return [String] controller header filename
+  def header_filename
+    "#{name_snake}.h"
+  end
+
+  # @return [String] controller cpp source filename
+  def source_filename
+    "#{name_snake}.cpp"
+  end
+
+  def self.pvp
+    return @@pvp_controller if @@pvp_controller
+
+    # TODO: omg all these values are so close!!!
+    #       change the C++ code so we can do convention
+    #       over configuration
+    @@pvp_controller = Controller.new(
+      path: 'base_pvp',
+      name: 'pvp',
+      filename: 'base_pvp',
+    )
+  end
+
+  # TODO: create user facing dropdown with this
+  #       so we can pick a parent controller
+  def self.list
+    {
+      pvp: {
+        controller: self.pvp,
+        description: 'Basic pvp controller. Top recommendation!'
+      }
+    }
+  end
+end
+
+class Gamemode
+  def initialize(opts = {})
+    opts[:filename] = opts[:name] if opts[:filename].nil?
+    @controller = Controller.new(opts)
+
+    # camel name of parent controller
+    @parent_controller = Controller.pvp
   end
 
   # @return [String] gamemode.h C++ source code
@@ -29,11 +85,11 @@ class Gamemode
       "",
       '#include "../base_pvp/base_pvp.h"',
       "",
-      "class CGameController#{name} : public #{@parent_controller}",
+      "class CGameController#{@controller.name} : public CGameController#{@parent_controller.name}",
       "{",
       "public:",
-      "	CGameController#{name}(CGameContext *pGameServer);",
-      "	~CGameController#{name}() override;",
+      "	CGameController#{@controller.name}(CGameContext *pGameServer);",
+      "	~CGameController#{@controller.name}() override;",
       "",
       header_methods,
       "};",
@@ -43,15 +99,23 @@ class Gamemode
 
   # @return [String] gamemode.cpp C++ source code
   def gen_cpp_source
-    ""
+    [
+      "#include \"#{@controller.header_filename}.h\"",
+      "",
+      "#include <game/server/entities/character.h>",
+      "#include <game/server/gamecontext.h>",
+      "#include <game/server/player.h>",
+      "",
+      "class CGameController#{@controller.name} : public CGameController#{@parent_controller.name}"
+    ].join("\n") + "\n"
   end
 
   private
 
   def include_guard_open
-    slug = @base_path.map(&:upcase).join('_')
+    slug = @controller.path.map(&:upcase).join('_')
     slug += '_' unless slug.empty?
-    slug += name.to_snake.upcase
+    slug += @controller.name.to_snake.upcase
     [
       "#ifndef GAME_SERVER_GAMEMODES_#{slug}_H",
       "#define GAME_SERVER_GAMEMODES_#{slug}_H",
