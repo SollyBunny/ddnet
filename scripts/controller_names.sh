@@ -79,7 +79,7 @@ check_file() {
 
 check_root_files() {
 	for header_path in src/game/server/gamemodes/*.h; do
-		# should never happend but would be an bash error
+		# should never happen but would be an bash error
 		# if the code gets refactored
 		[ -f "$header_path" ] || continue
 
