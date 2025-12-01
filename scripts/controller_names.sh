@@ -66,6 +66,7 @@ check_file() {
 		fi
 	done
 
+	# shellcheck disable=SC2015
 	[ "$VERBOSE" -eq 0 ] && printf '.' || true
 	v_print "checking header: $header_path $class_name"
 
@@ -104,6 +105,7 @@ check_all_files() {
 	check_root_files
 	check_all_dirs
 
+	# shellcheck disable=SC2015
 	[ "$VERBOSE" -eq 0 ] && printf '\n' || true
 }
 
