@@ -1129,7 +1129,7 @@ public:
 	virtual void SetArmorProgressEmpty(CCharacter *pCharacter);
 
 	// ddnet has grenade
-	// but the actual implementation is in CGameControllerPvp::IsGrenadeGameType()
+	// but the actual implementation is in CGameControllerBasePvp::IsGrenadeGameType()
 	virtual bool IsGrenadeGameType() const { return true; }
 	virtual bool IsFngGameType() const { return false; }
 	virtual bool IsZcatchGameType() const { return false; }

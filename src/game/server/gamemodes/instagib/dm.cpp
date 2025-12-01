@@ -13,15 +13,15 @@ CGameControllerInstaBaseDM::~CGameControllerInstaBaseDM() = default;
 
 void CGameControllerInstaBaseDM::Tick()
 {
-	CGameControllerPvp::Tick();
+	CGameControllerBasePvp::Tick();
 }
 
 void CGameControllerInstaBaseDM::OnCharacterSpawn(class CCharacter *pChr)
 {
-	CGameControllerPvp::OnCharacterSpawn(pChr);
+	CGameControllerBasePvp::OnCharacterSpawn(pChr);
 }
 
 int CGameControllerInstaBaseDM::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int WeaponId)
 {
-	return CGameControllerPvp::OnCharacterDeath(pVictim, pKiller, WeaponId);
+	return CGameControllerBasePvp::OnCharacterDeath(pVictim, pKiller, WeaponId);
 }

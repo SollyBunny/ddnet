@@ -19,7 +19,7 @@
 #include <optional>
 
 CGameControllerBlock::CGameControllerBlock(class CGameContext *pGameServer) :
-	CGameControllerPvp(pGameServer)
+	CGameControllerBasePvp(pGameServer)
 {
 	m_pGameType = "block";
 	m_GameFlags = 0;
@@ -35,7 +35,7 @@ CGameControllerBlock::~CGameControllerBlock() = default;
 
 void CGameControllerBlock::OnCharacterSpawn(class CCharacter *pChr)
 {
-	CGameControllerPvp::OnCharacterSpawn(pChr);
+	CGameControllerBasePvp::OnCharacterSpawn(pChr);
 
 	// give default weapons
 	pChr->GiveWeapon(WEAPON_HAMMER, false, -1);
@@ -55,7 +55,7 @@ void CGameControllerBlock::Tick()
 	// keep last to
 	// make sure the pvp ticks set the hooking toucher
 	// even if we did reset it this tick
-	CGameControllerPvp::Tick();
+	CGameControllerBasePvp::Tick();
 }
 
 bool CGameControllerBlock::SkipDamage(int Dmg, int From, int Weapon, const CCharacter *pCharacter, bool &ApplyForce)
@@ -75,7 +75,7 @@ int CGameControllerBlock::OnCharacterDeath(class CCharacter *pVictim, class CPla
 	// which should not happen in block
 	if(pKiller && pKiller != pVictim->GetPlayer())
 	{
-		return CGameControllerPvp::OnCharacterDeath(pVictim, pKiller, Weapon);
+		return CGameControllerBasePvp::OnCharacterDeath(pVictim, pKiller, Weapon);
 	}
 	std::optional<CLastToucher> &LastToucher = pVictim->GetPlayer()->m_LastToucher;
 
@@ -106,7 +106,7 @@ int CGameControllerBlock::OnCharacterDeath(class CCharacter *pVictim, class CPla
 		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
 
 		// count the kill
-		return CGameControllerPvp::OnCharacterDeath(pVictim, pKiller, Weapon);
+		return CGameControllerBasePvp::OnCharacterDeath(pVictim, pKiller, Weapon);
 	}
 
 	// do not count the kill

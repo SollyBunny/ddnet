@@ -3,7 +3,7 @@
 
 #include <game/server/gamemodes/base_pvp/base_pvp.h>
 
-class CGameControllerBlock : public CGameControllerPvp
+class CGameControllerBlock : public CGameControllerBasePvp
 {
 public:
 	CGameControllerBlock(class CGameContext *pGameServer);

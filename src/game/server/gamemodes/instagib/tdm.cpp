@@ -27,5 +27,5 @@ int CGameControllerInstaTDM::OnCharacterDeath(class CCharacter *pVictim, class C
 			AddTeamscore(pKiller->GetTeam() & 1, 1);
 	}
 
-	return CGameControllerPvp::OnCharacterDeath(pVictim, pKiller, WeaponId);
+	return CGameControllerBasePvp::OnCharacterDeath(pVictim, pKiller, WeaponId);
 }

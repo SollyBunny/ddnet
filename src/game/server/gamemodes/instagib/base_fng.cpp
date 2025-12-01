@@ -27,7 +27,7 @@ CGameControllerBaseFng::~CGameControllerBaseFng() = default;
 
 int CGameControllerBaseFng::SnapGameInfoExFlags(int SnappingClient, int DDRaceFlags)
 {
-	int Flags = CGameControllerPvp::SnapGameInfoExFlags(SnappingClient, DDRaceFlags);
+	int Flags = CGameControllerBasePvp::SnapGameInfoExFlags(SnappingClient, DDRaceFlags);
 	Flags &= ~(GAMEINFOFLAG_ENTITIES_DDNET);
 	Flags &= ~(GAMEINFOFLAG_ENTITIES_DDRACE);
 	Flags &= ~(GAMEINFOFLAG_ENTITIES_RACE);
@@ -334,7 +334,7 @@ inline void CGameControllerBaseFng::UpdateScoresAndDisplayPoints(CPlayer *pKille
 	if(!pKiller)
 		return;
 	// The player already gets one score point
-	// in CGameControllerPvp::OnCharacterDeath()
+	// in CGameControllerBasePvp::OnCharacterDeath()
 	pKiller->AddScore(PlayerScore - 1);
 	AddTeamscore(pKiller->GetTeam(), TeamScore);
 	if(pKiller->IsPlaying()) // NOLINT(clang-analyzer-unix.Malloc)

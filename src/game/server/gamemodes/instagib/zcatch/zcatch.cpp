@@ -316,7 +316,7 @@ int CGameControllerZcatch::GetPlayerTeam(class CPlayer *pPlayer, bool Sixup)
 	if(Sixup && pPlayer->m_IsDead)
 		return TEAM_RED;
 
-	return CGameControllerPvp::GetPlayerTeam(pPlayer, Sixup);
+	return CGameControllerBasePvp::GetPlayerTeam(pPlayer, Sixup);
 }
 
 void CGameControllerZcatch::ReleasePlayer(class CPlayer *pPlayer, const char *pMsg)
@@ -553,7 +553,7 @@ bool CGameControllerZcatch::OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMsg, 
 		return true;
 	}
 
-	return CGameControllerPvp::OnSetTeamNetMessage(pMsg, ClientId);
+	return CGameControllerBasePvp::OnSetTeamNetMessage(pMsg, ClientId);
 }
 
 // called after spam protection on client team join request

@@ -3,7 +3,7 @@
 
 #include "../base_pvp/base_pvp.h"
 
-class CGameControllerInstagib : public CGameControllerPvp
+class CGameControllerInstagib : public CGameControllerBasePvp
 {
 public:
 	CGameControllerInstagib(class CGameContext *pGameServer);
