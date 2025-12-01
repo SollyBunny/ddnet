@@ -3205,7 +3205,7 @@ void CGameContext::ConTuneZone(IConsole::IResult *pResult, void *pUserData)
 	const char *pParamName = pResult->GetString(1);
 	float NewValue = pResult->GetFloat(2);
 
-	if(List >= 0 && List < NUM_TUNEZONES)
+	if(List >= 0 && List < TuneZone::NUM)
 	{
 		char aBuf[256];
 		if(pSelf->TuningList()[List].Set(pParamName, NewValue) && pSelf->TuningList()[List].Get(pParamName, &NewValue))
@@ -3226,7 +3226,7 @@ void CGameContext::ConTuneDumpZone(IConsole::IResult *pResult, void *pUserData)
 	CGameContext *pSelf = (CGameContext *)pUserData;
 	int List = pResult->GetInteger(0);
 	char aBuf[256];
-	if(List >= 0 && List < NUM_TUNEZONES)
+	if(List >= 0 && List < TuneZone::NUM)
 	{
 		for(int i = 0; i < CTuningParams::Num(); i++)
 		{
@@ -3244,7 +3244,7 @@ void CGameContext::ConTuneResetZone(IConsole::IResult *pResult, void *pUserData)
 	if(pResult->NumArguments())
 	{
 		int List = pResult->GetInteger(0);
-		if(List >= 0 && List < NUM_TUNEZONES)
+		if(List >= 0 && List < TuneZone::NUM)
 		{
 			pSelf->TuningList()[List] = CTuningParams::DEFAULT;
 			char aBuf[256];
@@ -3255,7 +3255,7 @@ void CGameContext::ConTuneResetZone(IConsole::IResult *pResult, void *pUserData)
 	}
 	else
 	{
-		for(int i = 0; i < NUM_TUNEZONES; i++)
+		for(int i = 0; i < TuneZone::NUM; i++)
 		{
 			*(pSelf->TuningList() + i) = CTuningParams::DEFAULT;
 			pSelf->SendTuningParams(-1, i);
@@ -3270,7 +3270,7 @@ void CGameContext::ConTuneSetZoneMsgEnter(IConsole::IResult *pResult, void *pUse
 	if(pResult->NumArguments())
 	{
 		int List = pResult->GetInteger(0);
-		if(List >= 0 && List < NUM_TUNEZONES)
+		if(List >= 0 && List < TuneZone::NUM)
 		{
 			str_copy(pSelf->m_aaZoneEnterMsg[List], pResult->GetString(1), sizeof(pSelf->m_aaZoneEnterMsg[List]));
 		}
@@ -3283,7 +3283,7 @@ void CGameContext::ConTuneSetZoneMsgLeave(IConsole::IResult *pResult, void *pUse
 	if(pResult->NumArguments())
 	{
 		int List = pResult->GetInteger(0);
-		if(List >= 0 && List < NUM_TUNEZONES)
+		if(List >= 0 && List < TuneZone::NUM)
 		{
 			str_copy(pSelf->m_aaZoneLeaveMsg[List], pResult->GetString(1), sizeof(pSelf->m_aaZoneLeaveMsg[List]));
 		}
@@ -4198,7 +4198,7 @@ void CGameContext::OnInit(const void *pPersistentData)
 	m_MapBugs = CMapBugs::Create(aMapName, MapSize, MapSha256);
 
 	// Reset Tunezones
-	for(int i = 0; i < NUM_TUNEZONES; i++)
+	for(int i = 0; i < TuneZone::NUM; i++)
 	{
 		TuningList()[i] = CTuningParams::DEFAULT;
 		TuningList()[i].Set("gun_curvature", 0);
@@ -4208,7 +4208,7 @@ void CGameContext::OnInit(const void *pPersistentData)
 		TuningList()[i].Set("shotgun_speeddiff", 0);
 	}
 
-	for(int i = 0; i < NUM_TUNEZONES; i++)
+	for(int i = 0; i < TuneZone::NUM; i++)
 	{
 		// Send no text by default when changing tune zones.
 		m_aaZoneEnterMsg[i][0] = 0;
@@ -4261,7 +4261,7 @@ void CGameContext::OnInit(const void *pPersistentData)
 		GlobalTuning()->Set("player_collision", 0);
 		GlobalTuning()->Set("player_hooking", 0);
 
-		for(int i = 0; i < NUM_TUNEZONES; i++)
+		for(int i = 0; i < TuneZone::NUM; i++)
 		{
 			TuningList()[i].Set("player_collision", 0);
 			TuningList()[i].Set("player_hooking", 0);
