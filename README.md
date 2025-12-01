@@ -31,6 +31,15 @@ of your gamemode directory. Just look at the existing gamemodes for examples. A 
 [vanilla deathmatch](https://github.com/ddnet-insta/ddnet-insta/tree/ba38c11ccf46e888786c90c7dc0f09503be19a49/src/game/server/gamemodes/vanilla/dm).
 Adding your own stats columns and rank/top commands can be done in a few lines of code without writing any SQL.
 
+There also is a command line tool that will generate the boilerplate code of a new controller for you.
+To create a new gametype called zombie ball run the following command (needs git submodules):
+
+```
+./scripts/cli zombie_ball:base_pvp
+```
+
+More information about the cli tool can be found [here](https://github.com/ddnet-insta/cli)
+
 # Project goals
 
 - Stay close and up to date with upstream ddnet. Keep the git diff in files edited by ddnet as minimal as possible to keep merging cheap.
