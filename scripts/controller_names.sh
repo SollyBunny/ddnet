@@ -10,10 +10,6 @@ SKIP_FILES=(
 	#       needs some thinking
 	src/game/server/gamemodes/ddrace/ddrace.h
 
-	# TODO: fix these
-	src/game/server/gamemodes/instagib/bolofng/bolofng.h
-	src/game/server/gamemodes/instagib/boomfng/boomfng.h
-
 	# eh .. probably fine idk
 	src/game/server/gamemodes/instagib/gctf/gctf.h
 	src/game/server/gamemodes/instagib/gdm/gdm.h
@@ -21,7 +17,6 @@ SKIP_FILES=(
 	src/game/server/gamemodes/instagib/ictf/ictf.h
 	src/game/server/gamemodes/instagib/idm/idm.h
 	src/game/server/gamemodes/instagib/itdm/itdm.h
-	src/game/server/gamemodes/instagib/solofng/solofng.h
 	src/game/server/gamemodes/vanilla/ctf/ctf.h
 	src/game/server/gamemodes/vanilla/dm/dm.h
 )
