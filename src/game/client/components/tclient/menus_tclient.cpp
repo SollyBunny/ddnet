@@ -2555,29 +2555,29 @@ void CMenus::RenderSettingsTClientConfigs(CUIRect MainView)
 		const bool ApplyClicked = DoButton_Menu(&s_ApplyBtn, Localize("Apply Changes"), DisabledStyle, &ApplyBtn);
 		if(ChangesCount > 0 && ApplyClicked)
 		{
-			for(const auto &it : s_StagedInts)
+			for(const auto &It : s_StagedInts)
 			{
-				const SConfigVariable *pVar = it.first;
+				const SConfigVariable *pVar = It.first;
 				char aCmd[256];
-				str_format(aCmd, sizeof(aCmd), "%s %d", pVar->m_pScriptName, it.second.m_Value);
+				str_format(aCmd, sizeof(aCmd), "%s %d", pVar->m_pScriptName, It.second.m_Value);
 				Console()->ExecuteLine(aCmd);
 			}
-			for(const auto &it : s_StagedStrs)
+			for(const auto &It : s_StagedStrs)
 			{
-				const SConfigVariable *pVar = it.first;
+				const SConfigVariable *pVar = It.first;
 				char aEsc[1024];
 				aEsc[0] = '\0';
 				char *pDst = aEsc;
-				str_escape(&pDst, it.second.m_Value.c_str(), aEsc + sizeof(aEsc));
+				str_escape(&pDst, It.second.m_Value.c_str(), aEsc + sizeof(aEsc));
 				char aCmd[1200];
 				str_format(aCmd, sizeof(aCmd), "%s \"%s\"", pVar->m_pScriptName, aEsc);
 				Console()->ExecuteLine(aCmd);
 			}
-			for(const auto &it : s_StagedCols)
+			for(const auto &It : s_StagedCols)
 			{
-				const SConfigVariable *pVar = it.first;
+				const SConfigVariable *pVar = It.first;
 				char aCmd[256];
-				str_format(aCmd, sizeof(aCmd), "%s %u", pVar->m_pScriptName, it.second.m_Value);
+				str_format(aCmd, sizeof(aCmd), "%s %u", pVar->m_pScriptName, It.second.m_Value);
 				Console()->ExecuteLine(aCmd);
 			}
 			ClearStagedAndCaches();
@@ -2658,24 +2658,24 @@ void CMenus::RenderSettingsTClientConfigs(CUIRect MainView)
 	auto IsEffectiveDefaultVar = [&](const SConfigVariable *p) -> bool {
 		if(p->m_Type == SConfigVariable::VAR_INT)
 		{
-			const SIntConfigVariable *pint = static_cast<const SIntConfigVariable *>(p);
-			auto it = s_StagedInts.find(p);
-			int v = it != s_StagedInts.end() ? it->second.m_Value : *pint->m_pVariable;
-			return v == pint->m_Default;
+			const SIntConfigVariable *pInt = static_cast<const SIntConfigVariable *>(p);
+			auto It = s_StagedInts.find(p);
+			int Value = It != s_StagedInts.end() ? It->second.m_Value : *pInt->m_pVariable;
+			return Value == pInt->m_Default;
 		}
 		if(p->m_Type == SConfigVariable::VAR_STRING)
 		{
-			const SStringConfigVariable *ps = static_cast<const SStringConfigVariable *>(p);
-			auto it = s_StagedStrs.find(p);
-			const char *v = it != s_StagedStrs.end() ? it->second.m_Value.c_str() : ps->m_pStr;
-			return str_comp(v, ps->m_pDefault) == 0;
+			const SStringConfigVariable *pStr = static_cast<const SStringConfigVariable *>(p);
+			auto It = s_StagedStrs.find(p);
+			const char *pValue = It != s_StagedStrs.end() ? It->second.m_Value.c_str() : pStr->m_pStr;
+			return str_comp(pValue, pStr->m_pDefault) == 0;
 		}
 		if(p->m_Type == SConfigVariable::VAR_COLOR)
 		{
-			const SColorConfigVariable *pc = static_cast<const SColorConfigVariable *>(p);
-			auto it = s_StagedCols.find(p);
-			unsigned v = it != s_StagedCols.end() ? it->second.m_Value : *pc->m_pVariable;
-			return v == pc->m_Default;
+			const SColorConfigVariable *pColor = static_cast<const SColorConfigVariable *>(p);
+			auto It = s_StagedCols.find(p);
+			unsigned Value = It != s_StagedCols.end() ? It->second.m_Value : *pColor->m_pVariable;
+			return Value == pColor->m_Default;
 		}
 		return true;
 	};
@@ -2815,7 +2815,7 @@ void CMenus::RenderSettingsTClientConfigs(CUIRect MainView)
 			// treat 0 1 ints as checkboxes
 			if(pInt->m_Min == 0 && pInt->m_Max == 1)
 			{
-				const int Effective = s_StagedInts.count(pVar) ? s_StagedInts[pVar].m_Value : *pInt->m_pVariable;
+				const int Effective = s_StagedInts.contains(pVar) ? s_StagedInts[pVar].m_Value : *pInt->m_pVariable;
 				if(DoButton_CheckBox(pVar, "", Effective, &Controls))
 				{
 					const int NewVal = Effective ? 0 : 1;
@@ -2828,7 +2828,7 @@ void CMenus::RenderSettingsTClientConfigs(CUIRect MainView)
 			else
 			{
 				SIntState &State = s_IntInputs[pVar];
-				const int Effective = s_StagedInts.count(pVar) ? s_StagedInts[pVar].m_Value : *pInt->m_pVariable;
+				const int Effective = s_StagedInts.contains(pVar) ? s_StagedInts[pVar].m_Value : *pInt->m_pVariable;
 				if(!State.m_Inited)
 				{
 					State.m_Input.SetInteger(Effective);
@@ -2870,7 +2870,7 @@ void CMenus::RenderSettingsTClientConfigs(CUIRect MainView)
 		{
 			const SStringConfigVariable *pStr = static_cast<const SStringConfigVariable *>(pVar);
 			SStrState &State = s_StrInputs[pVar];
-			const char *Effective = s_StagedStrs.count(pVar) ? s_StagedStrs[pVar].m_Value.c_str() : pStr->m_pStr;
+			const char *Effective = s_StagedStrs.contains(pVar) ? s_StagedStrs[pVar].m_Value.c_str() : pStr->m_pStr;
 			if(!State.m_Inited)
 			{
 				State.m_Input.Set(Effective);
@@ -2904,7 +2904,7 @@ void CMenus::RenderSettingsTClientConfigs(CUIRect MainView)
 			CButtonContainer &ResetId = s_ColorResetIds[pVar];
 
 			SColState &ColState = s_ColInputs[pVar];
-			unsigned Effective = s_StagedCols.count(pVar) ? s_StagedCols[pVar].m_Value : *pCol->m_pVariable;
+			unsigned Effective = s_StagedCols.contains(pVar) ? s_StagedCols[pVar].m_Value : *pCol->m_pVariable;
 			if(!ColState.m_Inited)
 			{
 				ColState.m_Working = Effective;
