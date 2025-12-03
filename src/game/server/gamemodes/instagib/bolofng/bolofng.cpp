@@ -11,7 +11,7 @@
 #include <game/server/score.h>
 #include <game/version.h>
 
-CGameControllerBoloFng::CGameControllerBoloFng(class CGameContext *pGameServer) :
+CGameControllerBolofng::CGameControllerBolofng(class CGameContext *pGameServer) :
 	CGameControllerBaseFng(pGameServer)
 {
 	m_pGameType = "bolofng";
@@ -26,14 +26,14 @@ CGameControllerBoloFng::CGameControllerBoloFng(class CGameContext *pGameServer) 
 	m_pSqlStats->CreateTable(m_pStatsTable);
 }
 
-CGameControllerBoloFng::~CGameControllerBoloFng() = default;
+CGameControllerBolofng::~CGameControllerBolofng() = default;
 
-void CGameControllerBoloFng::Tick()
+void CGameControllerBolofng::Tick()
 {
 	CGameControllerBaseFng::Tick();
 }
 
-void CGameControllerBoloFng::OnCharacterSpawn(class CCharacter *pChr)
+void CGameControllerBolofng::OnCharacterSpawn(class CCharacter *pChr)
 {
 	CGameControllerBaseFng::OnCharacterSpawn(pChr);
 
@@ -41,21 +41,21 @@ void CGameControllerBoloFng::OnCharacterSpawn(class CCharacter *pChr)
 	pChr->GiveWeapon(m_DefaultWeapon, false, g_Config.m_SvGrenadeAmmoRegen ? g_Config.m_SvGrenadeAmmoRegenNum : -1);
 }
 
-int CGameControllerBoloFng::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int WeaponId)
+int CGameControllerBolofng::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int WeaponId)
 {
 	CGameControllerBaseFng::OnCharacterDeath(pVictim, pKiller, WeaponId);
 	return 0;
 }
 
-bool CGameControllerBoloFng::OnEntity(int Index, int x, int y, int Layer, int Flags, bool Initial, int Number)
+bool CGameControllerBolofng::OnEntity(int Index, int x, int y, int Layer, int Flags, bool Initial, int Number)
 {
 	CGameControllerBaseFng::OnEntity(Index, x, y, Layer, Flags, Initial, Number);
 	return false;
 }
 
-void CGameControllerBoloFng::Snap(int SnappingClient)
+void CGameControllerBolofng::Snap(int SnappingClient)
 {
 	CGameControllerBaseFng::Snap(SnappingClient);
 }
 
-REGISTER_GAMEMODE(bolofng, CGameControllerBoloFng(pGameServer));
+REGISTER_GAMEMODE(bolofng, CGameControllerBolofng(pGameServer));

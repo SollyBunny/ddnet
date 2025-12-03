@@ -199,12 +199,12 @@ int CGameControllerTsmash::OnCharacterDeath(class CCharacter *pVictim, class CPl
 void CGameControllerTsmash::OnKill(class CPlayer *pVictim, class CPlayer *pKiller, int Weapon)
 {
 	DoSpikeKillSound(pVictim ? pVictim->GetCid() : -1, pKiller ? pKiller->GetCid() : -1);
-	CGameControllerPvp::OnKill(pVictim, pKiller, Weapon);
+	CGameControllerBasePvp::OnKill(pVictim, pKiller, Weapon);
 }
 
 void CGameControllerTsmash::OnCharacterSpawn(class CCharacter *pChr)
 {
-	CGameControllerPvp::OnCharacterSpawn(pChr);
+	CGameControllerBasePvp::OnCharacterSpawn(pChr);
 
 	// give default weapons
 	pChr->GiveWeapon(m_DefaultWeapon, false, -1);
@@ -224,7 +224,7 @@ void CGameControllerTsmash::Tick()
 		SetTeeColor(pPlayer);
 		pPlayer->ResetLastToucherAfterSeconds(5);
 	}
-	CGameControllerPvp::Tick();
+	CGameControllerBasePvp::Tick();
 }
 
 void CGameControllerTsmash::OnAnyDamage(vec2 &Force, int &Dmg, int &From, int &Weapon, CCharacter *pCharacter)

@@ -16,7 +16,7 @@
 #include <game/version.h>
 
 CGameControllerVanilla::CGameControllerVanilla(class CGameContext *pGameServer) :
-	CGameControllerPvp(pGameServer)
+	CGameControllerBasePvp(pGameServer)
 {
 	m_GameFlags = 0;
 	m_IsVanillaGameType = true;
@@ -28,7 +28,7 @@ CGameControllerVanilla::~CGameControllerVanilla() = default;
 
 int CGameControllerVanilla::SnapGameInfoExFlags(int SnappingClient, int DDRaceFlags)
 {
-	int Flags = CGameControllerPvp::SnapGameInfoExFlags(SnappingClient, DDRaceFlags);
+	int Flags = CGameControllerBasePvp::SnapGameInfoExFlags(SnappingClient, DDRaceFlags);
 	if(Server()->GetClientVersion(SnappingClient) < VERSION_DDNET_PICKUPFLAG_NO_PREDICT)
 		Flags &= ~(GAMEINFOFLAG_PREDICT_DDRACE); // https://github.com/ddnet-insta/ddnet-insta/issues/120
 	Flags &= ~(GAMEINFOFLAG_PREDICT_DDRACE_TILES); // https://github.com/ddnet-insta/ddnet-insta/issues/181
@@ -110,5 +110,5 @@ bool CGameControllerVanilla::OnEntity(int Index, int x, int y, int Layer, int Fl
 		return true; // NOLINT(clang-analyzer-unix.Malloc)
 	}
 
-	return CGameControllerPvp::OnEntity(Index, x, y, Layer, Flags, Initial, Number);
+	return CGameControllerBasePvp::OnEntity(Index, x, y, Layer, Flags, Initial, Number);
 }

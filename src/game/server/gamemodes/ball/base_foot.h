@@ -6,7 +6,7 @@
 #include <game/server/entities/foot/foot_projectile.h>
 
 #endif
-class CGameControllerBaseFoot : public CGameControllerPvp
+class CGameControllerBaseFoot : public CGameControllerBasePvp
 {
 public:
 	CGameControllerBaseFoot(class CGameContext *pGameServer);

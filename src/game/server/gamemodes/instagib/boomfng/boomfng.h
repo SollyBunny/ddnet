@@ -83,11 +83,11 @@ public:
 	}
 };
 
-class CGameControllerBoomFng : public CGameControllerTeamFng
+class CGameControllerBoomfng : public CGameControllerTeamFng
 {
 public:
-	CGameControllerBoomFng(class CGameContext *pGameServer);
-	~CGameControllerBoomFng() override;
+	CGameControllerBoomfng(class CGameContext *pGameServer);
+	~CGameControllerBoomfng() override;
 
 	void OnCharacterSpawn(class CCharacter *pChr) override;
 };

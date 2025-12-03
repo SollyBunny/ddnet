@@ -11,7 +11,7 @@
 #include <game/server/score.h>
 #include <game/version.h>
 
-CGameControllerBoomFng::CGameControllerBoomFng(class CGameContext *pGameServer) :
+CGameControllerBoomfng::CGameControllerBoomfng(class CGameContext *pGameServer) :
 	CGameControllerTeamFng(pGameServer)
 {
 	m_pGameType = "boomfng";
@@ -26,9 +26,9 @@ CGameControllerBoomFng::CGameControllerBoomFng(class CGameContext *pGameServer) 
 	m_pSqlStats->CreateTable(m_pStatsTable);
 }
 
-CGameControllerBoomFng::~CGameControllerBoomFng() = default;
+CGameControllerBoomfng::~CGameControllerBoomfng() = default;
 
-void CGameControllerBoomFng::OnCharacterSpawn(class CCharacter *pChr)
+void CGameControllerBoomfng::OnCharacterSpawn(class CCharacter *pChr)
 {
 	CGameControllerBaseFng::OnCharacterSpawn(pChr);
 
@@ -36,4 +36,4 @@ void CGameControllerBoomFng::OnCharacterSpawn(class CCharacter *pChr)
 	pChr->GiveWeapon(m_DefaultWeapon, false, -1);
 }
 
-REGISTER_GAMEMODE(boomfng, CGameControllerBoomFng(pGameServer));
+REGISTER_GAMEMODE(boomfng, CGameControllerBoomfng(pGameServer));

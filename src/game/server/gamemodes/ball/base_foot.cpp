@@ -19,7 +19,7 @@
 #include <game/server/player.h>
 
 CGameControllerBaseFoot::CGameControllerBaseFoot(class CGameContext *pGameServer) :
-	CGameControllerPvp(pGameServer)
+	CGameControllerBasePvp(pGameServer)
 {
 	m_GameFlags = GAMEFLAG_TEAMS;
 }
@@ -40,7 +40,7 @@ void CGameControllerBaseFoot::OnCreditsChatCmd(IConsole::IResult *pResult, void 
 
 int CGameControllerBaseFoot::SnapGameInfoExFlags(int SnappingClient, int DDRaceFlags)
 {
-	int Flags = CGameControllerPvp::SnapGameInfoExFlags(SnappingClient, DDRaceFlags);
+	int Flags = CGameControllerBasePvp::SnapGameInfoExFlags(SnappingClient, DDRaceFlags);
 	Flags &= ~(GAMEINFOFLAG_ENTITIES_DDRACE);
 	Flags &= ~(GAMEINFOFLAG_ENTITIES_RACE);
 	Flags &= ~(GAMEINFOFLAG_UNLIMITED_AMMO);
@@ -49,7 +49,7 @@ int CGameControllerBaseFoot::SnapGameInfoExFlags(int SnappingClient, int DDRaceF
 
 void CGameControllerBaseFoot::Tick()
 {
-	CGameControllerPvp::Tick();
+	CGameControllerBasePvp::Tick();
 	for(CPlayer *pPlayer : GameServer()->m_apPlayers)
 	{
 		if(!pPlayer)
@@ -95,7 +95,7 @@ void CGameControllerBaseFoot::Tick()
 
 void CGameControllerBaseFoot::OnReset()
 {
-	CGameControllerPvp::OnReset();
+	CGameControllerBasePvp::OnReset();
 
 	for(int Team = 0; Team < NUM_DDRACE_TEAMS; Team++)
 		BallReset(Team, g_Config.m_SvBallRespawnDelay);
@@ -253,12 +253,12 @@ void CGameControllerBaseFoot::OnPlayerDisconnect(class CPlayer *pPlayer, const c
 	if(pPlayer->GetCharacter() && pPlayer->GetCharacter()->m_LoseBallTick)
 		pPlayer->GetCharacter()->LoseBall();
 
-	CGameControllerPvp::OnPlayerDisconnect(pPlayer, pReason);
+	CGameControllerBasePvp::OnPlayerDisconnect(pPlayer, pReason);
 }
 
 void CGameControllerBaseFoot::OnCharacterSpawn(class CCharacter *pChr)
 {
-	CGameControllerPvp::OnCharacterSpawn(pChr);
+	CGameControllerBasePvp::OnCharacterSpawn(pChr);
 
 	pChr->GiveWeapon(WEAPON_HAMMER, false, -1);
 	pChr->SetActiveWeapon(WEAPON_HAMMER);
@@ -269,7 +269,7 @@ int CGameControllerBaseFoot::OnCharacterDeath(class CCharacter *pVictim, class C
 	if(pVictim->GetCore().m_aWeapons[WEAPON_GRENADE].m_Got)
 		BallReset(pVictim->Team(), g_Config.m_SvBallRespawnDelay);
 
-	return CGameControllerPvp::OnCharacterDeath(pVictim, pKiller, WeaponId);
+	return CGameControllerBasePvp::OnCharacterDeath(pVictim, pKiller, WeaponId);
 }
 
 bool CGameControllerBaseFoot::OnEntity(int Index, int x, int y, int Layer, int Flags, bool Initial, int Number)
@@ -291,12 +291,12 @@ bool CGameControllerBaseFoot::OnEntity(int Index, int x, int y, int Layer, int F
 		return true;
 	}
 
-	return CGameControllerPvp::OnEntity(Index, x, y, Layer, Flags, Initial, Number);
+	return CGameControllerBasePvp::OnEntity(Index, x, y, Layer, Flags, Initial, Number);
 }
 
 void CGameControllerBaseFoot::SnapDDNetCharacter(int SnappingClient, CCharacter *pChr, CNetObj_DDNetCharacter *pDDNetCharacter)
 {
-	CGameControllerPvp::SnapDDNetCharacter(SnappingClient, pChr, pDDNetCharacter);
+	CGameControllerBasePvp::SnapDDNetCharacter(SnappingClient, pChr, pDDNetCharacter);
 
 	if(SnappingClient < 0 || SnappingClient >= MAX_CLIENTS)
 		return;

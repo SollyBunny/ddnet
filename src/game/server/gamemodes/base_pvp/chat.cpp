@@ -14,7 +14,7 @@
 #include <game/server/score.h>
 #include <game/version.h>
 
-void CGameControllerPvp::DoWarmup(int Seconds)
+void CGameControllerBasePvp::DoWarmup(int Seconds)
 {
 	CGameControllerDDRace::DoWarmup(Seconds);
 
@@ -28,7 +28,7 @@ void CGameControllerPvp::DoWarmup(int Seconds)
 	}
 }
 
-bool CGameControllerPvp::DetectedCasualRound()
+bool CGameControllerBasePvp::DetectedCasualRound()
 {
 	int NumAfks = 0;
 	for(CPlayer *pPlayer : GameServer()->m_apPlayers)
@@ -65,7 +65,7 @@ bool CGameControllerPvp::DetectedCasualRound()
 	return false;
 }
 
-void CGameControllerPvp::SmartChatTick()
+void CGameControllerBasePvp::SmartChatTick()
 {
 	// do not compute this stuff every tick
 	// waste of clock cycles
@@ -82,7 +82,7 @@ void CGameControllerPvp::SmartChatTick()
 	}
 }
 
-bool CGameControllerPvp::AllowPublicChat(const CPlayer *pPlayer)
+bool CGameControllerBasePvp::AllowPublicChat(const CPlayer *pPlayer)
 {
 	if(!g_Config.m_SvTournamentChat)
 		return true;
@@ -96,7 +96,7 @@ bool CGameControllerPvp::AllowPublicChat(const CPlayer *pPlayer)
 	return true;
 }
 
-bool CGameControllerPvp::ParseChatCmd(char Prefix, int ClientId, const char *pCmdWithArgs)
+bool CGameControllerBasePvp::ParseChatCmd(char Prefix, int ClientId, const char *pCmdWithArgs)
 {
 #define MAX_ARG_LEN 256
 	char aCmd[MAX_ARG_LEN];
@@ -208,7 +208,7 @@ static int Match1v1ChatCommand(const char *pCmd, int TeamSlots)
 	return false;
 }
 
-bool CGameControllerPvp::OnBangCommand(int ClientId, const char *pCmd, int NumArgs, const char **ppArgs)
+bool CGameControllerBasePvp::OnBangCommand(int ClientId, const char *pCmd, int NumArgs, const char **ppArgs)
 {
 	if(ClientId < 0 || ClientId >= MAX_CLIENTS)
 		return false;
@@ -304,7 +304,7 @@ bool CGameControllerPvp::OnBangCommand(int ClientId, const char *pCmd, int NumAr
 	return true;
 }
 
-bool CGameControllerPvp::IsChatBlocked(const CNetMsg_Cl_Say *pMsg, int Length, int Team, CPlayer *pPlayer) const
+bool CGameControllerBasePvp::IsChatBlocked(const CNetMsg_Cl_Say *pMsg, int Length, int Team, CPlayer *pPlayer) const
 {
 	int ClientId = pPlayer->GetCid();
 
@@ -356,7 +356,7 @@ bool CGameControllerPvp::IsChatBlocked(const CNetMsg_Cl_Say *pMsg, int Length, i
 	return false;
 }
 
-bool CGameControllerPvp::OnChatMessage(const CNetMsg_Cl_Say *pMsg, int Length, int &Team, CPlayer *pPlayer)
+bool CGameControllerBasePvp::OnChatMessage(const CNetMsg_Cl_Say *pMsg, int Length, int &Team, CPlayer *pPlayer)
 {
 	int ClientId = pPlayer->GetCid();
 

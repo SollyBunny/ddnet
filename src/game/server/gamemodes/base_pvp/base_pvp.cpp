@@ -32,7 +32,7 @@
 
 #include <cstdint>
 
-CGameControllerPvp::CGameControllerPvp(class CGameContext *pGameServer) :
+CGameControllerBasePvp::CGameControllerBasePvp(class CGameContext *pGameServer) :
 	CGameControllerInstaCore(pGameServer)
 {
 	m_GameFlags = GAMEFLAG_TEAMS | GAMEFLAG_FLAGS;
@@ -61,7 +61,7 @@ CGameControllerPvp::CGameControllerPvp(class CGameContext *pGameServer) :
 	m_UnbalancedTick = TBALANCE_OK;
 }
 
-CGameControllerPvp::~CGameControllerPvp()
+CGameControllerBasePvp::~CGameControllerBasePvp()
 {
 	// TODO: we have to make sure to block all operations and save everything if sv_gametype is switched
 	//       there should be no data loss no matter in which state and how often the controller is recreated
@@ -81,7 +81,7 @@ CGameControllerPvp::~CGameControllerPvp()
 	}
 }
 
-void CGameControllerPvp::OnInit()
+void CGameControllerBasePvp::OnInit()
 {
 	CGameControllerInstaCore::OnInit();
 
@@ -91,7 +91,7 @@ void CGameControllerPvp::OnInit()
 	}
 }
 
-void CGameControllerPvp::OnRoundStart()
+void CGameControllerBasePvp::OnRoundStart()
 {
 	log_debug(
 		"ddnet-insta",
@@ -147,7 +147,7 @@ void CGameControllerPvp::OnRoundStart()
 	}
 }
 
-void CGameControllerPvp::OnRoundEnd()
+void CGameControllerBasePvp::OnRoundEnd()
 {
 	dbg_msg("ddnet-insta", "match end");
 
@@ -181,7 +181,7 @@ void CGameControllerPvp::OnRoundEnd()
 	}
 }
 
-int CGameControllerPvp::SnapGameInfoExFlags(int SnappingClient, int DDRaceFlags)
+int CGameControllerBasePvp::SnapGameInfoExFlags(int SnappingClient, int DDRaceFlags)
 {
 	int Flags =
 		GAMEINFOFLAG_PREDICT_VANILLA | // ddnet-insta
@@ -216,12 +216,12 @@ int CGameControllerPvp::SnapGameInfoExFlags(int SnappingClient, int DDRaceFlags)
 	return Flags;
 }
 
-int CGameControllerPvp::SnapGameInfoExFlags2(int SnappingClient, int DDRaceFlags)
+int CGameControllerBasePvp::SnapGameInfoExFlags2(int SnappingClient, int DDRaceFlags)
 {
 	return GAMEINFOFLAG2_HUD_AMMO | GAMEINFOFLAG2_HUD_HEALTH_ARMOR;
 }
 
-int CGameControllerPvp::SnapPlayerScore(int SnappingClient, CPlayer *pPlayer, int DDRaceScore)
+int CGameControllerBasePvp::SnapPlayerScore(int SnappingClient, CPlayer *pPlayer, int DDRaceScore)
 {
 	CPlayer *pSnapReceiver = GetPlayerOrNullptr(SnappingClient);
 	if(!pSnapReceiver)
@@ -268,7 +268,7 @@ int CGameControllerPvp::SnapPlayerScore(int SnappingClient, CPlayer *pPlayer, in
 	return Score;
 }
 
-bool CGameControllerPvp::IsGrenadeGameType() const
+bool CGameControllerBasePvp::IsGrenadeGameType() const
 {
 	// TODO: this should be done with some cleaner spawnweapons/available weapons enum flag thing
 	if(IsZcatchGameType())
@@ -278,7 +278,7 @@ bool CGameControllerPvp::IsGrenadeGameType() const
 	return IsVanillaGameType() || m_pGameType[0] == 'g';
 }
 
-void CGameControllerPvp::OnFlagCapture(class CFlag *pFlag, float Time, int TimeTicks)
+void CGameControllerBasePvp::OnFlagCapture(class CFlag *pFlag, float Time, int TimeTicks)
 {
 	if(!pFlag)
 		return;
@@ -298,7 +298,7 @@ void CGameControllerPvp::OnFlagCapture(class CFlag *pFlag, float Time, int TimeT
 	m_pSqlStats->SaveFastcap(ClientId, TimeTicks, aTimestamp, Grenade, IsStatTrack());
 }
 
-bool CGameControllerPvp::ForceNetworkClipping(const CEntity *pEntity, int SnappingClient, vec2 CheckPos)
+bool CGameControllerBasePvp::ForceNetworkClipping(const CEntity *pEntity, int SnappingClient, vec2 CheckPos)
 {
 	if(!g_Config.m_SvStrictSnapDistance)
 		return false;
@@ -327,7 +327,7 @@ bool CGameControllerPvp::ForceNetworkClipping(const CEntity *pEntity, int Snappi
 	return absolute(dy) > ShowDistance.y;
 }
 
-bool CGameControllerPvp::ForceNetworkClippingLine(const CEntity *pEntity, int SnappingClient, vec2 StartPos, vec2 EndPos)
+bool CGameControllerBasePvp::ForceNetworkClippingLine(const CEntity *pEntity, int SnappingClient, vec2 StartPos, vec2 EndPos)
 {
 	if(!g_Config.m_SvStrictSnapDistance)
 		return false;
@@ -362,7 +362,7 @@ bool CGameControllerPvp::ForceNetworkClippingLine(const CEntity *pEntity, int Sn
 	return (absolute(DistanceToLine.x) > ClippDistance || absolute(DistanceToLine.y) > ClippDistance);
 }
 
-void CGameControllerPvp::OnShowStatsAll(const CSqlStatsPlayer *pStats, class CPlayer *pRequestingPlayer, const char *pRequestedName)
+void CGameControllerBasePvp::OnShowStatsAll(const CSqlStatsPlayer *pStats, class CPlayer *pRequestingPlayer, const char *pRequestedName)
 {
 	char aBuf[1024];
 	str_format(
@@ -393,7 +393,7 @@ void CGameControllerPvp::OnShowStatsAll(const CSqlStatsPlayer *pStats, class CPl
 	GameServer()->SendChatTarget(pRequestingPlayer->GetCid(), aBuf);
 }
 
-void CGameControllerPvp::OnShowRank(int Rank, int RankedScore, const char *pRankType, class CPlayer *pRequestingPlayer, const char *pRequestedName)
+void CGameControllerBasePvp::OnShowRank(int Rank, int RankedScore, const char *pRankType, class CPlayer *pRequestingPlayer, const char *pRequestedName)
 {
 	char aBuf[1024];
 	str_format(
@@ -420,7 +420,7 @@ void CGameControllerPvp::OnShowRank(int Rank, int RankedScore, const char *pRank
 	}
 }
 
-bool CGameControllerPvp::IsWinner(const CPlayer *pPlayer, char *pMessage, int SizeOfMessage)
+bool CGameControllerBasePvp::IsWinner(const CPlayer *pPlayer, char *pMessage, int SizeOfMessage)
 {
 	if(pMessage && SizeOfMessage)
 		pMessage[0] = '\0';
@@ -434,7 +434,7 @@ bool CGameControllerPvp::IsWinner(const CPlayer *pPlayer, char *pMessage, int Si
 	return HasWinningScore(pPlayer);
 }
 
-bool CGameControllerPvp::IsLoser(const CPlayer *pPlayer)
+bool CGameControllerBasePvp::IsLoser(const CPlayer *pPlayer)
 {
 	// TODO: we could relax this a bit
 	//       and not count every disconnect during a running round as loss
@@ -452,7 +452,7 @@ bool CGameControllerPvp::IsLoser(const CPlayer *pPlayer)
 	return !IsWinner(pPlayer, 0, 0);
 }
 
-bool CGameControllerPvp::IsStatTrack(char *pReason, int SizeOfReason)
+bool CGameControllerBasePvp::IsStatTrack(char *pReason, int SizeOfReason)
 {
 	if(pReason)
 		pReason[0] = '\0';
@@ -486,7 +486,7 @@ bool CGameControllerPvp::IsStatTrack(char *pReason, int SizeOfReason)
 	return Track;
 }
 
-void CGameControllerPvp::SaveStatsOnRoundEnd(CPlayer *pPlayer)
+void CGameControllerBasePvp::SaveStatsOnRoundEnd(CPlayer *pPlayer)
 {
 	char aMsg[512] = {0};
 	bool Won = IsWinner(pPlayer, aMsg, sizeof(aMsg));
@@ -535,7 +535,7 @@ void CGameControllerPvp::SaveStatsOnRoundEnd(CPlayer *pPlayer)
 	pPlayer->ResetStats();
 }
 
-void CGameControllerPvp::SaveStatsOnDisconnect(CPlayer *pPlayer)
+void CGameControllerBasePvp::SaveStatsOnDisconnect(CPlayer *pPlayer)
 {
 	if(!pPlayer)
 		return;
@@ -620,7 +620,7 @@ void CGameControllerPvp::SaveStatsOnDisconnect(CPlayer *pPlayer)
 	m_pSqlStats->SaveRoundStats(Server()->ClientName(pPlayer->GetCid()), StatsTable(), &pPlayer->m_Stats);
 }
 
-int CGameControllerPvp::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon)
+int CGameControllerBasePvp::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon)
 {
 	CGameControllerInstaCore::OnCharacterDeath(pVictim, pKiller, Weapon);
 
@@ -681,7 +681,7 @@ int CGameControllerPvp::OnCharacterDeath(class CCharacter *pVictim, class CPlaye
 	return 0;
 }
 
-void CGameControllerPvp::CheckForceUnpauseGame()
+void CGameControllerBasePvp::CheckForceUnpauseGame()
 {
 	if(!Config()->m_SvForceReadyAll)
 		return;
@@ -719,7 +719,7 @@ void CGameControllerPvp::CheckForceUnpauseGame()
 	}
 }
 
-void CGameControllerPvp::Tick()
+void CGameControllerBasePvp::Tick()
 {
 	CGameControllerInstaCore::Tick();
 
@@ -764,7 +764,7 @@ void CGameControllerPvp::Tick()
 	}
 }
 
-bool CGameControllerPvp::OnLaserHit(int Bounces, int From, int Weapon, CCharacter *pVictim)
+bool CGameControllerBasePvp::OnLaserHit(int Bounces, int From, int Weapon, CCharacter *pVictim)
 {
 	CPlayer *pPlayer = GameServer()->m_apPlayers[From];
 	if(!pPlayer)
@@ -781,7 +781,7 @@ bool CGameControllerPvp::OnLaserHit(int Bounces, int From, int Weapon, CCharacte
 	return true;
 }
 
-void CGameControllerPvp::OnExplosionHits(int OwnerId, CExplosionTarget *pTargets, int NumTargets)
+void CGameControllerBasePvp::OnExplosionHits(int OwnerId, CExplosionTarget *pTargets, int NumTargets)
 {
 	CPlayer *pKiller = GetPlayerOrNullptr(OwnerId);
 	if(!pKiller)
@@ -835,7 +835,7 @@ void CGameControllerPvp::OnExplosionHits(int OwnerId, CExplosionTarget *pTargets
 	}
 }
 
-void CGameControllerPvp::OnHammerHit(CPlayer *pPlayer, CPlayer *pTarget, vec2 &Force)
+void CGameControllerBasePvp::OnHammerHit(CPlayer *pPlayer, CPlayer *pTarget, vec2 &Force)
 {
 	// not sure if these asserts should be kept
 	// all of them should be save its just wasting clock cycles
@@ -847,7 +847,7 @@ void CGameControllerPvp::OnHammerHit(CPlayer *pPlayer, CPlayer *pTarget, vec2 &F
 	FngUnmeltHammerHit(pPlayer, pTarget, Force);
 }
 
-void CGameControllerPvp::ApplyFngHammerForce(CPlayer *pPlayer, CPlayer *pTarget, vec2 &Force)
+void CGameControllerBasePvp::ApplyFngHammerForce(CPlayer *pPlayer, CPlayer *pTarget, vec2 &Force)
 {
 	if(!g_Config.m_SvFngHammer)
 		return;
@@ -879,7 +879,7 @@ void CGameControllerPvp::ApplyFngHammerForce(CPlayer *pPlayer, CPlayer *pTarget,
 	Force = Push;
 }
 
-void CGameControllerPvp::FngUnmeltHammerHit(CPlayer *pPlayer, CPlayer *pTarget, vec2 &Force)
+void CGameControllerBasePvp::FngUnmeltHammerHit(CPlayer *pPlayer, CPlayer *pTarget, vec2 &Force)
 {
 	CCharacter *pTargetChr = pTarget->GetCharacter();
 
@@ -907,7 +907,7 @@ void CGameControllerPvp::FngUnmeltHammerHit(CPlayer *pPlayer, CPlayer *pTarget, 
 	}
 }
 
-bool CGameControllerPvp::IsSpawnProtected(const CPlayer *pVictim, const CPlayer *pKiller) const
+bool CGameControllerBasePvp::IsSpawnProtected(const CPlayer *pVictim, const CPlayer *pKiller) const
 {
 	// there has to be a valid killer to get spawn protected
 	// one should never be spawn protected from the world
@@ -939,7 +939,7 @@ bool CGameControllerPvp::IsSpawnProtected(const CPlayer *pVictim, const CPlayer 
 	return false;
 }
 
-void CGameControllerPvp::OnKill(CPlayer *pVictim, CPlayer *pKiller, int Weapon)
+void CGameControllerBasePvp::OnKill(CPlayer *pVictim, CPlayer *pKiller, int Weapon)
 {
 	if(pKiller->GetCharacter())
 	{
@@ -948,7 +948,7 @@ void CGameControllerPvp::OnKill(CPlayer *pVictim, CPlayer *pKiller, int Weapon)
 	}
 }
 
-bool CGameControllerPvp::DecreaseHealthAndKill(int Dmg, int From, int Weapon, CCharacter *pCharacter)
+bool CGameControllerBasePvp::DecreaseHealthAndKill(int Dmg, int From, int Weapon, CCharacter *pCharacter)
 {
 	// instagib damage always kills no matter the armor
 	// max vanilla weapon damage is katana with 9 dmg
@@ -972,7 +972,7 @@ bool CGameControllerPvp::DecreaseHealthAndKill(int Dmg, int From, int Weapon, CC
 	return false;
 }
 
-bool CGameControllerPvp::SkipDamage(int Dmg, int From, int Weapon, const CCharacter *pCharacter, bool &ApplyForce)
+bool CGameControllerBasePvp::SkipDamage(int Dmg, int From, int Weapon, const CCharacter *pCharacter, bool &ApplyForce)
 {
 	ApplyForce = true;
 
@@ -1008,7 +1008,7 @@ bool CGameControllerPvp::SkipDamage(int Dmg, int From, int Weapon, const CCharac
 	return false;
 }
 
-void CGameControllerPvp::OnAnyDamage(vec2 &Force, int &Dmg, int &From, int &Weapon, CCharacter *pCharacter)
+void CGameControllerBasePvp::OnAnyDamage(vec2 &Force, int &Dmg, int &From, int &Weapon, CCharacter *pCharacter)
 {
 	CPlayer *pPlayer = pCharacter->GetPlayer();
 	CPlayer *pKiller = GetPlayerOrNullptr(From);
@@ -1045,7 +1045,7 @@ void CGameControllerPvp::OnAnyDamage(vec2 &Force, int &Dmg, int &From, int &Weap
 	}
 }
 
-void CGameControllerPvp::OnAppliedDamage(int &Dmg, int &From, int &Weapon, CCharacter *pCharacter)
+void CGameControllerBasePvp::OnAppliedDamage(int &Dmg, int &From, int &Weapon, CCharacter *pCharacter)
 {
 	CPlayer *pPlayer = pCharacter->GetPlayer();
 	CPlayer *pKiller = GetPlayerOrNullptr(From);
@@ -1079,7 +1079,7 @@ void CGameControllerPvp::OnAppliedDamage(int &Dmg, int &From, int &Weapon, CChar
 	}
 }
 
-void CGameControllerPvp::RefillGrenadesOnHit(CPlayer *pPlayer)
+void CGameControllerBasePvp::RefillGrenadesOnHit(CPlayer *pPlayer)
 {
 	CCharacter *pChr = pPlayer->GetCharacter();
 	if(!pChr)
@@ -1097,7 +1097,7 @@ void CGameControllerPvp::RefillGrenadesOnHit(CPlayer *pPlayer)
 	}
 }
 
-bool CGameControllerPvp::OnCharacterTakeDamage(vec2 &Force, int &Dmg, int &From, int &Weapon, CCharacter &Character)
+bool CGameControllerBasePvp::OnCharacterTakeDamage(vec2 &Force, int &Dmg, int &From, int &Weapon, CCharacter &Character)
 {
 	OnAnyDamage(Force, Dmg, From, Weapon, &Character);
 	bool ApplyForce = true;
@@ -1111,7 +1111,7 @@ bool CGameControllerPvp::OnCharacterTakeDamage(vec2 &Force, int &Dmg, int &From,
 	return false;
 }
 
-void CGameControllerPvp::AddSpree(class CPlayer *pPlayer)
+void CGameControllerBasePvp::AddSpree(class CPlayer *pPlayer)
 {
 	if(!IsStatTrack())
 	{
@@ -1133,7 +1133,7 @@ void CGameControllerPvp::AddSpree(class CPlayer *pPlayer)
 	}
 }
 
-void CGameControllerPvp::EndSpree(class CPlayer *pPlayer, class CPlayer *pKiller)
+void CGameControllerBasePvp::EndSpree(class CPlayer *pPlayer, class CPlayer *pKiller)
 {
 	if(g_Config.m_SvKillingspreeKills > 0 && pPlayer->Spree() >= g_Config.m_SvKillingspreeKills)
 	{
@@ -1164,7 +1164,7 @@ void CGameControllerPvp::EndSpree(class CPlayer *pPlayer, class CPlayer *pKiller
 	pPlayer->m_UntrackedSpree = 0;
 }
 
-void CGameControllerPvp::OnLoadedNameStats(const CSqlStatsPlayer *pStats, class CPlayer *pPlayer)
+void CGameControllerBasePvp::OnLoadedNameStats(const CSqlStatsPlayer *pStats, class CPlayer *pPlayer)
 {
 	if(!pPlayer)
 		return;
@@ -1178,7 +1178,7 @@ void CGameControllerPvp::OnLoadedNameStats(const CSqlStatsPlayer *pStats, class 
 	}
 }
 
-bool CGameControllerPvp::LoadNewPlayerNameData(int ClientId)
+bool CGameControllerBasePvp::LoadNewPlayerNameData(int ClientId)
 {
 	if(ClientId < 0 || ClientId >= MAX_CLIENTS)
 		return true;
@@ -1194,7 +1194,7 @@ bool CGameControllerPvp::LoadNewPlayerNameData(int ClientId)
 	return true;
 }
 
-bool CGameControllerPvp::OnTeamChatCmd(IConsole::IResult *pResult)
+bool CGameControllerBasePvp::OnTeamChatCmd(IConsole::IResult *pResult)
 {
 	if(!g_Config.m_SvTeam)
 	{
@@ -1218,7 +1218,7 @@ bool CGameControllerPvp::OnTeamChatCmd(IConsole::IResult *pResult)
 	return false;
 }
 
-bool CGameControllerPvp::OnSetDDRaceTeam(int ClientId, int Team)
+bool CGameControllerBasePvp::OnSetDDRaceTeam(int ClientId, int Team)
 {
 	// only joining team 0
 	// forces players to spectators
@@ -1332,7 +1332,7 @@ bool CGameControllerPvp::OnSetDDRaceTeam(int ClientId, int Team)
 	return false;
 }
 
-void CGameControllerPvp::OnPlayerConnect(CPlayer *pPlayer)
+void CGameControllerBasePvp::OnPlayerConnect(CPlayer *pPlayer)
 {
 	CGameControllerInstaCore::OnPlayerConnect(pPlayer);
 	int ClientId = pPlayer->GetCid();
@@ -1356,7 +1356,7 @@ void CGameControllerPvp::OnPlayerConnect(CPlayer *pPlayer)
 	SendGameInfo(ClientId); // update game info
 }
 
-void CGameControllerPvp::OnPlayerDisconnect(class CPlayer *pPlayer, const char *pReason)
+void CGameControllerBasePvp::OnPlayerDisconnect(class CPlayer *pPlayer, const char *pReason)
 {
 	CGameControllerInstaCore::OnPlayerDisconnect(pPlayer, pReason);
 
@@ -1374,7 +1374,7 @@ void CGameControllerPvp::OnPlayerDisconnect(class CPlayer *pPlayer, const char *
 }
 
 // TODO: can we move this to the core controller?
-void CGameControllerPvp::DoTeamChange(CPlayer *pPlayer, int Team, bool DoChatMsg)
+void CGameControllerBasePvp::DoTeamChange(CPlayer *pPlayer, int Team, bool DoChatMsg)
 {
 	if(!IsValidTeam(Team))
 		return;
@@ -1440,7 +1440,7 @@ void CGameControllerPvp::DoTeamChange(CPlayer *pPlayer, int Team, bool DoChatMsg
 	CheckReadyStates();
 }
 
-bool CGameControllerPvp::BlockFirstShotOnSpawn(class CCharacter *pChr, int Weapon) const
+bool CGameControllerBasePvp::BlockFirstShotOnSpawn(class CCharacter *pChr, int Weapon) const
 {
 	// WEAPON_GUN is not full auto
 	// this makes sure that vanilla gamemodes are not affected
@@ -1473,7 +1473,7 @@ bool CGameControllerPvp::BlockFirstShotOnSpawn(class CCharacter *pChr, int Weapo
 	return true;
 }
 
-bool CGameControllerPvp::BlockFullAutoUntilRepress(class CCharacter *pChr, int Weapon) const
+bool CGameControllerBasePvp::BlockFullAutoUntilRepress(class CCharacter *pChr, int Weapon) const
 {
 	// TODO: this might also apply to other auto weapons
 	//       but i dont want to fully test all of them now
@@ -1511,7 +1511,7 @@ bool CGameControllerPvp::BlockFullAutoUntilRepress(class CCharacter *pChr, int W
 	return false;
 }
 
-bool CGameControllerPvp::OnFireWeapon(CCharacter &Character, int &Weapon, vec2 &Direction, vec2 &MouseTarget, vec2 &ProjStartPos)
+bool CGameControllerBasePvp::OnFireWeapon(CCharacter &Character, int &Weapon, vec2 &Direction, vec2 &MouseTarget, vec2 &ProjStartPos)
 {
 	// https://github.com/ddnet-insta/ddnet-insta/issues/289
 	// left clicking during death screen can decrease the spawn delay
@@ -1610,7 +1610,7 @@ bool CGameControllerPvp::OnFireWeapon(CCharacter &Character, int &Weapon, vec2 &
 	return true;
 }
 
-int CGameControllerPvp::NumActivePlayers()
+int CGameControllerBasePvp::NumActivePlayers()
 {
 	int Active = 0;
 	for(const CPlayer *pPlayer : GameServer()->m_apPlayers)
@@ -1619,7 +1619,7 @@ int CGameControllerPvp::NumActivePlayers()
 	return Active;
 }
 
-int CGameControllerPvp::NumAlivePlayers()
+int CGameControllerBasePvp::NumAlivePlayers()
 {
 	int Alive = 0;
 	for(const CPlayer *pPlayer : GameServer()->m_apPlayers)
@@ -1628,7 +1628,7 @@ int CGameControllerPvp::NumAlivePlayers()
 	return Alive;
 }
 
-int CGameControllerPvp::NumNonDeadActivePlayers()
+int CGameControllerBasePvp::NumNonDeadActivePlayers()
 {
 	int Alive = 0;
 	for(const CPlayer *pPlayer : GameServer()->m_apPlayers)
@@ -1637,7 +1637,7 @@ int CGameControllerPvp::NumNonDeadActivePlayers()
 	return Alive;
 }
 
-int CGameControllerPvp::GetHighestSpreeClientId()
+int CGameControllerBasePvp::GetHighestSpreeClientId()
 {
 	int ClientId = -1;
 	int Spree = 0;

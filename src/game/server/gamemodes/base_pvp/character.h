@@ -13,7 +13,7 @@ class CCharacter : public CEntity
 
 	friend class CGameControllerInstaCore;
 	friend class CGameControllerVanilla;
-	friend class CGameControllerPvp;
+	friend class CGameControllerBasePvp;
 	friend class CGameControllerCTF;
 	friend class CGameControllerBaseFng;
 	friend class IGameController;

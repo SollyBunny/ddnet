@@ -18,6 +18,10 @@ jobs:
     #   run: |
     #     ./scripts/gendocs_instagib.sh --dry-run
 
+    - name: Check controller names
+      run: |
+        ./scripts/controller_names.sh
+
     - name: Check sql columns
       run: |
         ./scripts/insta_check_sql_columns.sh

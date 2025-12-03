@@ -23,7 +23,7 @@ CGameControllerInstaBaseCTF::~CGameControllerInstaBaseCTF() = default;
 
 void CGameControllerInstaBaseCTF::Tick()
 {
-	CGameControllerPvp::Tick();
+	CGameControllerBasePvp::Tick();
 
 	FlagTick(); // ddnet-insta
 }
@@ -119,12 +119,12 @@ bool CGameControllerInstaBaseCTF::DropFlag(class CCharacter *pChr)
 
 void CGameControllerInstaBaseCTF::OnCharacterSpawn(class CCharacter *pChr)
 {
-	CGameControllerPvp::OnCharacterSpawn(pChr);
+	CGameControllerBasePvp::OnCharacterSpawn(pChr);
 }
 
 int CGameControllerInstaBaseCTF::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int WeaponId)
 {
-	CGameControllerPvp::OnCharacterDeath(pVictim, pKiller, WeaponId);
+	CGameControllerBasePvp::OnCharacterDeath(pVictim, pKiller, WeaponId);
 	int HadFlag = 0;
 
 	// drop flags
@@ -188,7 +188,7 @@ bool CGameControllerInstaBaseCTF::CanBeMovedOnBalance(int ClientId)
 
 void CGameControllerInstaBaseCTF::OnFlagReturn(CFlag *pFlag)
 {
-	CGameControllerPvp::OnFlagReturn(pFlag);
+	CGameControllerBasePvp::OnFlagReturn(pFlag);
 
 	GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", "flag_return");
 	GameServer()->SendGameMsg(protocol7::GAMEMSG_CTF_RETURN, -1);

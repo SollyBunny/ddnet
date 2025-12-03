@@ -11,7 +11,7 @@
 #include <game/server/score.h>
 #include <game/version.h>
 
-CGameControllerSoloFng::CGameControllerSoloFng(class CGameContext *pGameServer) :
+CGameControllerSolofng::CGameControllerSolofng(class CGameContext *pGameServer) :
 	CGameControllerBaseFng(pGameServer)
 {
 	m_pGameType = "solofng";
@@ -26,14 +26,14 @@ CGameControllerSoloFng::CGameControllerSoloFng(class CGameContext *pGameServer) 
 	m_pSqlStats->CreateTable(m_pStatsTable);
 }
 
-CGameControllerSoloFng::~CGameControllerSoloFng() = default;
+CGameControllerSolofng::~CGameControllerSolofng() = default;
 
-void CGameControllerSoloFng::Tick()
+void CGameControllerSolofng::Tick()
 {
 	CGameControllerBaseFng::Tick();
 }
 
-void CGameControllerSoloFng::OnCharacterSpawn(class CCharacter *pChr)
+void CGameControllerSolofng::OnCharacterSpawn(class CCharacter *pChr)
 {
 	CGameControllerBaseFng::OnCharacterSpawn(pChr);
 
@@ -41,21 +41,21 @@ void CGameControllerSoloFng::OnCharacterSpawn(class CCharacter *pChr)
 	pChr->GiveWeapon(m_DefaultWeapon, false, -1);
 }
 
-int CGameControllerSoloFng::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int WeaponId)
+int CGameControllerSolofng::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int WeaponId)
 {
 	CGameControllerBaseFng::OnCharacterDeath(pVictim, pKiller, WeaponId);
 	return 0;
 }
 
-bool CGameControllerSoloFng::OnEntity(int Index, int x, int y, int Layer, int Flags, bool Initial, int Number)
+bool CGameControllerSolofng::OnEntity(int Index, int x, int y, int Layer, int Flags, bool Initial, int Number)
 {
 	CGameControllerBaseFng::OnEntity(Index, x, y, Layer, Flags, Initial, Number);
 	return false;
 }
 
-void CGameControllerSoloFng::Snap(int SnappingClient)
+void CGameControllerSolofng::Snap(int SnappingClient)
 {
 	CGameControllerBaseFng::Snap(SnappingClient);
 }
 
-REGISTER_GAMEMODE(solofng, CGameControllerSoloFng(pGameServer));
+REGISTER_GAMEMODE(solofng, CGameControllerSolofng(pGameServer));

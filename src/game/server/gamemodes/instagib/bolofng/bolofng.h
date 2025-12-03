@@ -83,11 +83,11 @@ public:
 	}
 };
 
-class CGameControllerBoloFng : public CGameControllerBaseFng
+class CGameControllerBolofng : public CGameControllerBaseFng
 {
 public:
-	CGameControllerBoloFng(class CGameContext *pGameServer);
-	~CGameControllerBoloFng() override;
+	CGameControllerBolofng(class CGameContext *pGameServer);
+	~CGameControllerBolofng() override;
 
 	void Tick() override;
 	void Snap(int SnappingClient) override;

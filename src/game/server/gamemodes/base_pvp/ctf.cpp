@@ -14,7 +14,7 @@
 #include <game/version.h>
 
 CGameControllerBaseCTF::CGameControllerBaseCTF(class CGameContext *pGameServer) :
-	CGameControllerPvp(pGameServer)
+	CGameControllerBasePvp(pGameServer)
 {
 	m_GameFlags = GAMEFLAG_TEAMS | GAMEFLAG_FLAGS;
 }
@@ -23,14 +23,14 @@ CGameControllerBaseCTF::~CGameControllerBaseCTF() = default;
 
 void CGameControllerBaseCTF::Tick()
 {
-	CGameControllerPvp::Tick();
+	CGameControllerBasePvp::Tick();
 
 	FlagTick(); // ddnet-insta
 }
 
 void CGameControllerBaseCTF::OnShowStatsAll(const CSqlStatsPlayer *pStats, class CPlayer *pRequestingPlayer, const char *pRequestedName)
 {
-	CGameControllerPvp::OnShowStatsAll(pStats, pRequestingPlayer, pRequestedName);
+	CGameControllerBasePvp::OnShowStatsAll(pStats, pRequestingPlayer, pRequestedName);
 
 	char aBuf[512];
 
@@ -119,12 +119,12 @@ bool CGameControllerBaseCTF::DropFlag(class CCharacter *pChr)
 
 void CGameControllerBaseCTF::OnCharacterSpawn(class CCharacter *pChr)
 {
-	CGameControllerPvp::OnCharacterSpawn(pChr);
+	CGameControllerBasePvp::OnCharacterSpawn(pChr);
 }
 
 int CGameControllerBaseCTF::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int WeaponId)
 {
-	CGameControllerPvp::OnCharacterDeath(pVictim, pKiller, WeaponId);
+	CGameControllerBasePvp::OnCharacterDeath(pVictim, pKiller, WeaponId);
 	int HadFlag = 0;
 
 	// drop flags
@@ -158,7 +158,7 @@ int CGameControllerBaseCTF::OnCharacterDeath(class CCharacter *pVictim, class CP
 
 bool CGameControllerBaseCTF::OnEntity(int Index, int x, int y, int Layer, int Flags, bool Initial, int Number)
 {
-	CGameControllerPvp::OnEntity(Index, x, y, Layer, Flags, Initial, Number);
+	CGameControllerBasePvp::OnEntity(Index, x, y, Layer, Flags, Initial, Number);
 
 	const vec2 Pos((x * 32.0f) + 16.0f, (y * 32.0f) + 16.0f);
 	int Team = -1;
@@ -188,7 +188,7 @@ bool CGameControllerBaseCTF::CanBeMovedOnBalance(int ClientId)
 
 void CGameControllerBaseCTF::OnFlagReturn(CFlag *pFlag)
 {
-	CGameControllerPvp::OnFlagReturn(pFlag);
+	CGameControllerBasePvp::OnFlagReturn(pFlag);
 
 	GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", "flag_return");
 	GameServer()->SendGameMsg(protocol7::GAMEMSG_CTF_RETURN, -1);
@@ -211,7 +211,7 @@ void CGameControllerBaseCTF::OnFlagGrab(class CFlag *pFlag)
 
 void CGameControllerBaseCTF::OnFlagCapture(class CFlag *pFlag, float Time, int TimeTicks)
 {
-	CGameControllerPvp::OnFlagCapture(pFlag, Time, TimeTicks);
+	CGameControllerBasePvp::OnFlagCapture(pFlag, Time, TimeTicks);
 
 	if(!pFlag)
 		return;

@@ -24,11 +24,11 @@
 // - pause the game and ready mode
 // - vanilla weapon tuning and damage
 // - network clipping against zoom cheats
-class CGameControllerPvp : public CGameControllerInstaCore
+class CGameControllerBasePvp : public CGameControllerInstaCore
 {
 public:
-	CGameControllerPvp(class CGameContext *pGameServer);
-	~CGameControllerPvp() override;
+	CGameControllerBasePvp(class CGameContext *pGameServer);
+	~CGameControllerBasePvp() override;
 
 	bool BlockFirstShotOnSpawn(class CCharacter *pChr, int Weapon) const;
 	bool BlockFullAutoUntilRepress(class CCharacter *pChr, int Weapon) const;

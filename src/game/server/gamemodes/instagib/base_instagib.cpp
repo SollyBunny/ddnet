@@ -15,7 +15,7 @@
 #include <game/version.h>
 
 CGameControllerInstagib::CGameControllerInstagib(class CGameContext *pGameServer) :
-	CGameControllerPvp(pGameServer)
+	CGameControllerBasePvp(pGameServer)
 {
 	m_GameFlags = GAMEFLAG_TEAMS | GAMEFLAG_FLAGS;
 	m_IsVanillaGameType = false;
@@ -32,13 +32,13 @@ bool CGameControllerInstagib::SkipDamage(int Dmg, int From, int Weapon, const CC
 	if(Dmg < g_Config.m_SvDamageNeededForKill && Weapon == WEAPON_GRENADE)
 		return true;
 
-	return CGameControllerPvp::SkipDamage(Dmg, From, Weapon, pCharacter, ApplyForce);
+	return CGameControllerBasePvp::SkipDamage(Dmg, From, Weapon, pCharacter, ApplyForce);
 }
 
 void CGameControllerInstagib::OnAppliedDamage(int &Dmg, int &From, int &Weapon, CCharacter *pCharacter)
 {
 	Dmg = 20;
-	CGameControllerPvp::OnAppliedDamage(Dmg, From, Weapon, pCharacter);
+	CGameControllerBasePvp::OnAppliedDamage(Dmg, From, Weapon, pCharacter);
 }
 
 bool CGameControllerInstagib::OnEntity(int Index, int x, int y, int Layer, int Flags, bool Initial, int Number)
@@ -48,5 +48,5 @@ bool CGameControllerInstagib::OnEntity(int Index, int x, int y, int Layer, int F
 	if(Index == ENTITY_ARMOR_1 || Index == ENTITY_HEALTH_1 || Index == ENTITY_WEAPON_SHOTGUN || Index == ENTITY_WEAPON_GRENADE || Index == ENTITY_WEAPON_LASER || Index == ENTITY_POWERUP_NINJA)
 		return false;
 
-	return CGameControllerPvp::OnEntity(Index, x, y, Layer, Flags, Initial, Number);
+	return CGameControllerBasePvp::OnEntity(Index, x, y, Layer, Flags, Initial, Number);
 }
