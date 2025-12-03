@@ -764,7 +764,41 @@ void CMenus::RenderSettingsTClientSettings(CUIRect MainView)
 	static CLineInput s_PetSkin(g_Config.m_TcPetSkin, sizeof(g_Config.m_TcPetSkin));
 	Ui()->DoEditBox(&s_PetSkin, &Button, EditBoxFontSize);
 	s_SectionBoxes.back().h = Column.y - s_SectionBoxes.back().y;
-	// TODO: add preview
+	// Pet Preview
+	Column.HSplitTop(MarginSmall, nullptr, &Column);
+	CUIRect Preview;
+	Column.HSplitTop(64.0f, &Preview, &Column);
+
+	CTeeRenderInfo TeeInfo;
+	const CSkin *pSkin = GameClient()->m_Skins.Find(g_Config.m_TcPetSkin);
+	if(!pSkin || str_comp(pSkin->GetName(), g_Config.m_TcPetSkin) != 0)
+		pSkin = GameClient()->m_Skins.Find("default");
+
+	TeeInfo.m_OriginalRenderSkin = pSkin->m_OriginalSkin;
+	TeeInfo.m_ColorableRenderSkin = pSkin->m_ColorableSkin;
+	TeeInfo.m_SkinMetrics = pSkin->m_Metrics;
+	TeeInfo.m_CustomColoredSkin = false;
+	TeeInfo.m_ColorBody = ColorRGBA(1.0f, 1.0f, 1.0f);
+	TeeInfo.m_ColorFeet = ColorRGBA(1.0f, 1.0f, 1.0f);
+	TeeInfo.m_Size = 64.0f;
+
+	const CAnimState *pIdleState = CAnimState::GetIdle();
+	vec2 OffsetToMid;
+	RenderTools()->GetRenderTeeOffsetToRenderedTee(pIdleState, &TeeInfo, OffsetToMid);
+	vec2 TeeRenderPos = Preview.Center();
+	TeeRenderPos.y += OffsetToMid.y;
+
+	vec2 Dir = Ui()->MousePos() - TeeRenderPos;
+	const float Length = length(Dir);
+	if(Length > 0.0f)
+		Dir /= Length;
+	if(Length < 0.4f * 64.0f)
+	{
+		Dir = vec2(1.0f, 0.0f);
+	}
+
+	int PetEmote = g_Config.m_ClPlayerDefaultEyes;
+	RenderTools()->RenderTee(pIdleState, &TeeInfo, PetEmote, Dir, TeeRenderPos);
 
 	// ***** RightView ***** //
 	LeftView = Column;
