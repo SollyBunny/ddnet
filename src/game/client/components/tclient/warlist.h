@@ -137,7 +137,7 @@ class CWarList : public CComponent
 
 public:
 	CWarList();
-	~CWarList();
+	~CWarList() override;
 
 	// duplicate war types are NOT allowed
 	std::vector<CWarType *> m_WarTypes = {
