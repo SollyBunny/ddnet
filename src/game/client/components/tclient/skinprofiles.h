@@ -35,8 +35,8 @@ public:
 	void AddProfile(int BodyColor, int FeetColor, int CountryFlag, int Emote, const char *pSkinName, const char *pName, const char *pClan);
 	void ApplyProfile(int Dummy, const CProfile &Profile);
 
-	virtual int Sizeof() const override { return sizeof(*this); }
+	int Sizeof() const override { return sizeof(*this); }
 
-	virtual void OnConsoleInit() override;
+	void OnConsoleInit() override;
 };
 #endif

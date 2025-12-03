@@ -264,16 +264,16 @@ void CWarList::RemoveWarEntryDuplicates(const char *pName, const char *pClan)
 	if(str_comp(pName, "") == 0 && str_comp(pClan, "") == 0)
 		return;
 
-	for(auto it = m_vWarEntries.begin(); it != m_vWarEntries.end();)
+	for(auto It = m_vWarEntries.begin(); It != m_vWarEntries.end();)
 	{
 		bool IsDuplicate =
-			(str_comp(it->m_aName, pName) == 0) &&
-			(str_comp(it->m_aClan, pClan) == 0);
+			(str_comp(It->m_aName, pName) == 0) &&
+			(str_comp(It->m_aClan, pClan) == 0);
 
 		if(IsDuplicate)
-			it = m_vWarEntries.erase(it);
+			It = m_vWarEntries.erase(It);
 		else
-			++it;
+			++It;
 	}
 }
 
@@ -298,50 +298,50 @@ void CWarList::RemoveWarEntry(const char *pName, const char *pClan, const char *
 {
 	CWarType *pWarType = FindWarType(pType);
 	CWarEntry Entry(pWarType, pName, pClan, "");
-	auto it = std::find(m_vWarEntries.begin(), m_vWarEntries.end(), Entry);
-	if(it != m_vWarEntries.end())
-		m_vWarEntries.erase(it);
+	auto It = std::find(m_vWarEntries.begin(), m_vWarEntries.end(), Entry);
+	if(It != m_vWarEntries.end())
+		m_vWarEntries.erase(It);
 }
 
 void CWarList::RemoveWarEntry(CWarEntry *Entry)
 {
-	auto it = std::find_if(m_vWarEntries.begin(), m_vWarEntries.end(),
+	auto It = std::find_if(m_vWarEntries.begin(), m_vWarEntries.end(),
 		[Entry](const CWarEntry &WarEntry) { return &WarEntry == Entry; });
-	if(it != m_vWarEntries.end())
-		m_vWarEntries.erase(it);
+	if(It != m_vWarEntries.end())
+		m_vWarEntries.erase(It);
 }
 
 void CWarList::RemoveWarType(const char *pType)
 {
 	CWarType Type(pType);
 
-	auto it = std::find_if(m_WarTypes.begin(), m_WarTypes.end(),
+	auto It = std::find_if(m_WarTypes.begin(), m_WarTypes.end(),
 		[&Type](CWarType *pWarTypePtr) { return *pWarTypePtr == Type; });
-	if(it != m_WarTypes.end())
+	if(It != m_WarTypes.end())
 	{
 		// Don't remove default war types
-		if(!(*it)->m_Removable)
+		if(!(*It)->m_Removable)
 			return;
 
 		// Find all war entries and set them to None if they are using this type
 		for(CWarEntry &Entry : m_vWarEntries)
 		{
-			if(*Entry.m_pWarType == **it)
+			if(*Entry.m_pWarType == **It)
 			{
 				Entry.m_pWarType = m_pWarTypeNone;
 			}
 		}
-		m_WarTypes.erase(it);
+		m_WarTypes.erase(It);
 	}
 }
 
 CWarType *CWarList::FindWarType(const char *pType)
 {
 	CWarType Type(pType);
-	auto it = std::find_if(m_WarTypes.begin(), m_WarTypes.end(),
+	auto It = std::find_if(m_WarTypes.begin(), m_WarTypes.end(),
 		[&Type](CWarType *pWarTypePtr) { return *pWarTypePtr == Type; });
-	if(it != m_WarTypes.end())
-		return *it;
+	if(It != m_WarTypes.end())
+		return *It;
 	else
 		return m_pWarTypeNone;
 }
@@ -350,10 +350,10 @@ CWarEntry *CWarList::FindWarEntry(const char *pName, const char *pClan, const ch
 {
 	CWarType *pWarType = FindWarType(pType);
 	CWarEntry Entry(pWarType, pName, pClan, "");
-	auto it = std::find(m_vWarEntries.begin(), m_vWarEntries.end(), Entry);
+	auto It = std::find(m_vWarEntries.begin(), m_vWarEntries.end(), Entry);
 
-	if(it != m_vWarEntries.end())
-		return &(*it);
+	if(It != m_vWarEntries.end())
+		return &(*It);
 	else
 		return nullptr;
 }
