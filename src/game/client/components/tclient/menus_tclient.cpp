@@ -763,7 +763,7 @@ void CMenus::RenderSettingsTClientSettings(CUIRect MainView)
 	Ui()->DoLabel(&Label, TCLocalize("Pet Skin:"), FontSize, TEXTALIGN_ML);
 	static CLineInput s_PetSkin(g_Config.m_TcPetSkin, sizeof(g_Config.m_TcPetSkin));
 	Ui()->DoEditBox(&s_PetSkin, &Button, EditBoxFontSize);
-	s_SectionBoxes.back().h = Column.y - s_SectionBoxes.back().y;
+
 	// Pet Preview
 	Column.HSplitTop(MarginSmall, nullptr, &Column);
 	CUIRect Preview;
@@ -784,7 +784,7 @@ void CMenus::RenderSettingsTClientSettings(CUIRect MainView)
 
 	const CAnimState *pIdleState = CAnimState::GetIdle();
 	vec2 OffsetToMid;
-	RenderTools()->GetRenderTeeOffsetToRenderedTee(pIdleState, &TeeInfo, OffsetToMid);
+	CRenderTools::GetRenderTeeOffsetToRenderedTee(pIdleState, &TeeInfo, OffsetToMid);
 	vec2 TeeRenderPos = Preview.Center();
 	TeeRenderPos.y += OffsetToMid.y;
 
@@ -799,6 +799,8 @@ void CMenus::RenderSettingsTClientSettings(CUIRect MainView)
 
 	int PetEmote = g_Config.m_ClPlayerDefaultEyes;
 	RenderTools()->RenderTee(pIdleState, &TeeInfo, PetEmote, Dir, TeeRenderPos);
+
+	s_SectionBoxes.back().h = Column.y - s_SectionBoxes.back().y;
 
 	// ***** RightView ***** //
 	LeftView = Column;
