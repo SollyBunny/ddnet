@@ -1077,6 +1077,15 @@ void CGameControllerBasePvp::OnAppliedDamage(int &Dmg, int &From, int &Weapon, C
 			pKillerChar->m_BlockFullAutoUntilReleaseOrTick = Server()->Tick() + (FireDelay * Server()->TickSpeed() / 1000);
 		pKillerChar->m_ReloadTimer = g_Config.m_SvReloadTimeOnHit;
 	}
+
+	if(Config()->m_SvFreezeHammer && Weapon == WEAPON_HAMMER)
+	{
+		CCharacterCore NewCore = pCharacter->GetCore();
+		NewCore.m_FreezeEnd = Server()->Tick() + Config()->m_SvFreezeHammer;
+		NewCore.m_FreezeStart = Server()->Tick();
+		pCharacter->m_FreezeTime = Config()->m_SvFreezeHammer;
+		pCharacter->SetCore(NewCore);
+	}
 }
 
 void CGameControllerBasePvp::RefillGrenadesOnHit(CPlayer *pPlayer)

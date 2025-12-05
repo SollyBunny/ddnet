@@ -750,6 +750,13 @@ bool CGameControllerInstaCore::OnClientPacket(int ClientId, bool Sys, int MsgId,
 	return false;
 }
 
+bool CGameControllerInstaCore::UnfreezeOnHammerHit() const
+{
+	if(IsFngGameType())
+		return false;
+	return g_Config.m_SvFreezeHammer == 0;
+}
+
 void CGameControllerInstaCore::OnPlayerTick(class CPlayer *pPlayer)
 {
 	pPlayer->InstagibTick();

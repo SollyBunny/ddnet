@@ -118,7 +118,6 @@ public:
 	int AmountOfBombs() const;
 
 	bool IsBombGameType() const override { return true; }
-	bool UnFreezeOnHammerHit() const override { return false; }
 
 	bool m_RoundActive = false;
 

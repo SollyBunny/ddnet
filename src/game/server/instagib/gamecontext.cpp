@@ -46,6 +46,9 @@ void CGameContext::PrintInstaCredits()
 
 void CGameContext::AlertOnSpecialInstagibConfigs(int ClientId) const
 {
+	if(!m_pController)
+		return;
+
 	if(g_Config.m_SvTournament)
 	{
 		SendChatTarget(ClientId, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
@@ -60,6 +63,8 @@ void CGameContext::AlertOnSpecialInstagibConfigs(int ClientId) const
 		SendChatTarget(ClientId, "WARNING: the hook kills");
 	if(g_Config.m_SvOnlyWallshotKills)
 		SendChatTarget(ClientId, "WARNING: only wallshots can kill");
+	if(g_Config.m_SvFreezeHammer && !m_pController->IsBombGameType())
+		SendChatTarget(ClientId, "WARNING: hammer freezes");
 	if(m_pController->IsInfiniteWarmup())
 		SendChatTarget(ClientId, "This is a warmup game until a restart vote is called.");
 }
@@ -140,7 +145,7 @@ void CGameContext::ShowCurrentInstagibConfigsMotd(int ClientId, bool Force) cons
 	// see https://github.com/teeworlds/teeworlds/issues/1699
 	//
 	// because we are not correctly implementing vanilla physics that should be noted
-	if(m_pController && m_pController->IsVanillaGameType())
+	if(m_pController->IsVanillaGameType())
 		str_append(aMotd, "* hammer through walls: on\n");
 
 	if(m_pController->IsFngGameType())
@@ -163,6 +168,8 @@ void CGameContext::ShowCurrentInstagibConfigsMotd(int ClientId, bool Force) cons
 		str_append(aMotd, "! WARNING: only wallshots can kill\n");
 	if(g_Config.m_SvKillHook)
 		str_append(aMotd, "! WARNING: the hook kills\n");
+	if(g_Config.m_SvFreezeHammer && !m_pController->IsBombGameType())
+		str_append(aMotd, "! WARNING: the hammer freezes\n");
 
 	CNetMsg_Sv_Motd Msg;
 	Msg.m_pMessage = aMotd;

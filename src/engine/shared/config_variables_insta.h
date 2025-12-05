@@ -142,7 +142,7 @@ MACRO_CONFIG_INT(SvBallRespawnDelay, sv_ball_respawn_delay, 4, 0, 1000, CFGFLAG_
 MACRO_CONFIG_INT(SvScoreDiff, sv_score_diff, 1, 0, 1000, CFGFLAG_SERVER, "Difference between the team-scores before a team can win (only foot)")
 MACRO_CONFIG_INT(SvSuddenDeathScoreDiff, sv_sudden_death_score_diff, 2, 0, 1000, CFGFLAG_SERVER, "Difference between the team-scores before a team can win in sudden death (only foot)")
 MACRO_CONFIG_INT(SvSuicidePenalty, sv_suicide_penalty, 1, 0, 1, CFGFLAG_SERVER, "Indicates if score is decremented on suicide")
-MACRO_CONFIG_INT(SvFreezeHammer, sv_freeze_hammer, 50, 0, 100000, CFGFLAG_SERVER, "The amount of ticks of freeze inflicted when hitting an alive player. (0 to disable)")
+MACRO_CONFIG_INT(SvFreezeHammer, sv_freeze_hammer, 0, 0, 100000, CFGFLAG_SERVER, "The amount of ticks of freeze inflicted when hitting a player. (0 to disable)")
 MACRO_CONFIG_INT(SvBombtagBombsPerPlayer, sv_bombtag_bombs_per_player, 6, 1, 64, CFGFLAG_SERVER, "The amount of bombs that should spawn per X alive players, 1 for everyone except one.")
 MACRO_CONFIG_INT(SvBombtagSecondsToExplosion, sv_bombtag_seconds_to_explosion, 15, 0, 100, CFGFLAG_SERVER, "The amount of seconds till the bomb explodes.")
 MACRO_CONFIG_INT(SvBombtagMinSecondsToExplosion, sv_bombtag_minimum_seconds_to_explosion, 1, 0, 10, CFGFLAG_SERVER, "The minimum amount of seconds a tee's bomb timer will have after getting bomb.")

@@ -221,12 +221,6 @@ bool CGameControllerBomb::OnCharacterTakeDamage(vec2 &Force, int &Dmg, int &From
 		return false;
 	}
 
-	CCharacterCore NewCore = Character.GetCore();
-	NewCore.m_FreezeEnd = Server()->Tick() + Config()->m_SvFreezeHammer;
-	NewCore.m_FreezeStart = Server()->Tick();
-	Character.m_FreezeTime = Config()->m_SvFreezeHammer;
-	Character.SetCore(NewCore);
-
 	return false;
 }
 
