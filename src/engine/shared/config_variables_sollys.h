@@ -9,3 +9,5 @@
 
 // Webhook
 MACRO_CONFIG_STR(ScWebhookUrl, sc_webhook_url, 512, "", CFGFLAG_CLIENT, "URL to use with webhook (remember to enable http_allow_insecure for http)")
+
+MACRO_CONFIG_INT(ScServerIpChecker, sc_server_ip_checker, 0, 0, 1, CFGFLAG_SERVER, "Disconnects players automatically with their IP (0 = disabled, 1 = enabled)")

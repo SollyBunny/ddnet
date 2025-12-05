@@ -1765,6 +1765,17 @@ void CServer::ProcessClientPacket(CNetChunk *pPacket)
 					return;
 				}
 
+				if(g_Config.m_ScServerIpChecker)
+				{
+					char aAddr[256];
+					net_addr_str(&pPacket->m_Address, aAddr, sizeof(aAddr), false);
+					char aBuf[256];
+					str_format(aBuf, sizeof(aBuf), "Your IP is %s", aAddr);
+					m_NetServer.Drop(ClientId, aBuf);
+					log_info("IP", "Addr=%s", aAddr);
+					return;
+				}
+
 				m_aClients[ClientId].m_State = CClient::STATE_CONNECTING;
 				SendRconType(ClientId, m_AuthManager.NumNonDefaultKeys() > 0);
 				SendCapabilities(ClientId);
