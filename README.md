@@ -392,7 +392,7 @@ Below is a list of all the settings that were added in ddnet-insta.
 + `sv_score_diff` Difference between the team-scores before a team can win (only foot)
 + `sv_sudden_death_score_diff` Difference between the team-scores before a team can win in sudden death (only foot)
 + `sv_suicide_penalty` Indicates if score is decremented on suicide
-+ `sv_freeze_hammer` The amount of ticks of freeze inflicted when hitting an alive player. (0 to disable)
++ `sv_freeze_hammer` The amount of ticks of freeze inflicted when hitting a player. (0 to disable)
 + `sv_bombtag_bombs_per_player` The amount of bombs that should spawn per X alive players, 1 for everyone except one.
 + `sv_bombtag_seconds_to_explosion` The amount of seconds till the bomb explodes.
 + `sv_bombtag_minimum_seconds_to_explosion` The minimum amount of seconds a tee's bomb timer will have after getting bomb.
