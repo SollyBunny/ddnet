@@ -336,7 +336,7 @@ public:
 	};
 
 	EBombState m_BombState = EBombState::NONE;
-	bool m_Bomb = false;
+	bool m_IsBomb = false;
 	int m_ToBombTick = 0;
 
 	std::unique_ptr<CTeeInfo> m_FakeTeeInfos;

@@ -106,7 +106,7 @@ void CGameControllerBomb::OnReset()
 		if(pPlayer->m_BombState >= CPlayer::EBombState::ACTIVE)
 		{
 			pPlayer->m_BombState = CPlayer::EBombState::ACTIVE;
-			pPlayer->m_Bomb = false;
+			pPlayer->m_IsBomb = false;
 		}
 	}
 	m_RoundActive = false;
@@ -133,7 +133,7 @@ bool CGameControllerBomb::DoWincheckRound()
 				if(!pPlayer)
 					continue;
 
-				if(pPlayer->m_BombState == CPlayer::EBombState::ALIVE && !pPlayer->m_Bomb)
+				if(pPlayer->m_BombState == CPlayer::EBombState::ALIVE && !pPlayer->m_IsBomb)
 					Alive++;
 			}
 			MakeRandomBomb(std::ceil((Alive / (float)Config()->m_SvBombtagBombsPerPlayer) - (Config()->m_SvBombtagBombsPerPlayer == 1 ? 1 : 0)));
@@ -151,7 +151,7 @@ bool CGameControllerBomb::DoWincheckRound()
 		if(!pPlayer)
 			continue;
 
-		if(pPlayer->m_Bomb)
+		if(pPlayer->m_IsBomb)
 		{
 			if(pPlayer->m_ToBombTick % Server()->TickSpeed() == 0)
 				UpdateTimer();
@@ -168,7 +168,7 @@ void CGameControllerBomb::OnCharacterSpawn(class CCharacter *pChr)
 {
 	CGameControllerBasePvp::OnCharacterSpawn(pChr);
 
-	if(pChr->GetPlayer()->m_Bomb)
+	if(pChr->GetPlayer()->m_IsBomb)
 		return;
 
 	pChr->GiveWeapon(WEAPON_HAMMER, false, -1);
@@ -182,14 +182,14 @@ bool CGameControllerBomb::OnCharacterTakeDamage(vec2 &Force, int &Dmg, int &From
 	if(!pKiller)
 		return false;
 
-	if(pKiller->m_Bomb && pKiller->m_ToBombTick > 0 && !pPlayer->m_Bomb)
+	if(pKiller->m_IsBomb && pKiller->m_ToBombTick > 0 && !pPlayer->m_IsBomb)
 	{
 		auto *pChr = pKiller->GetCharacter();
 		if(!pChr)
 			return false;
 
 		GameServer()->SendBroadcast("", From);
-		pKiller->m_Bomb = false;
+		pKiller->m_IsBomb = false;
 
 		// Remove all remaining projectiles from this player on the map
 		GameServer()->m_World.RemoveEntitiesFromPlayer(From);
@@ -210,7 +210,7 @@ bool CGameControllerBomb::OnCharacterTakeDamage(vec2 &Force, int &Dmg, int &From
 	if(Weapon != WEAPON_HAMMER)
 		return false;
 
-	if(pPlayer->m_Bomb)
+	if(pPlayer->m_IsBomb)
 	{
 		pPlayer->m_ToBombTick -= Config()->m_SvBombtagBombDamage * Server()->TickSpeed();
 		UpdateTimer();
@@ -254,7 +254,7 @@ bool CGameControllerBomb::CanJoinTeam(int Team, int NotThisId, char *pErrorReaso
 		if(pErrorReason)
 			str_copy(pErrorReason, "You are a spectator now\nYou won't join when a new round begins", ErrorReasonSize);
 		pPlayer->m_BombState = CPlayer::EBombState::SPECTATING;
-		pPlayer->m_Bomb = false;
+		pPlayer->m_IsBomb = false;
 		return true;
 	}
 
@@ -321,7 +321,7 @@ void CGameControllerBomb::OnShowRoundStats(const CSqlStatsPlayer *pStats, class 
 
 void CGameControllerBomb::SetSkin(CPlayer *pPlayer)
 {
-	if(pPlayer->m_Bomb)
+	if(pPlayer->m_IsBomb)
 	{
 		if(pPlayer->m_ToBombTick <= 3 * Server()->TickSpeed())
 		{
@@ -355,7 +355,7 @@ void CGameControllerBomb::EliminatePlayer(CPlayer *pPlayer, bool Collateral)
 	str_format(aBuf, sizeof(aBuf), "'%s' eliminated%s!", Server()->ClientName(pPlayer->GetCid()), Collateral ? " by collateral damage" : "");
 	GameServer()->SendChat(-1, TEAM_ALL, aBuf);
 
-	pPlayer->m_Bomb = false;
+	pPlayer->m_IsBomb = false;
 	pPlayer->m_BombState = CPlayer::EBombState::ACTIVE;
 }
 
@@ -400,7 +400,7 @@ void CGameControllerBomb::UpdateTimer()
 {
 	for(auto *pPlayer : GameServer()->m_apPlayers)
 	{
-		if(!pPlayer || !pPlayer->m_Bomb)
+		if(!pPlayer || !pPlayer->m_IsBomb)
 			continue;
 
 		auto *pChr = pPlayer->GetCharacter();
@@ -470,7 +470,7 @@ void CGameControllerBomb::MakeBomb(int ClientId, int Ticks)
 	// clear previous broadcast
 	GameServer()->SendBroadcast("", ClientId);
 
-	pPlayer->m_Bomb = true;
+	pPlayer->m_IsBomb = true;
 	pPlayer->m_ToBombTick = Ticks;
 	if(Config()->m_SvBombtagBombWeapon != WEAPON_HAMMER)
 		pChr->GiveWeapon(WEAPON_HAMMER, true);
@@ -497,7 +497,7 @@ int CGameControllerBomb::AmountOfBombs() const
 	int Amount = 0;
 	for(const auto *pPlayer : GameServer()->m_apPlayers)
 	{
-		if(pPlayer && pPlayer->m_Bomb)
+		if(pPlayer && pPlayer->m_IsBomb)
 			Amount++;
 	}
 	return Amount;
