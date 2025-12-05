@@ -11,7 +11,6 @@
 #include <random>
 
 std::mt19937 CGameControllerBomb::M_S_RANDOM_ENGINE(std::random_device{}());
-size_t CGameControllerBomb::M_S_LAST_LINE = std::numeric_limits<size_t>::max();
 
 CGameControllerBomb::CGameControllerBomb(class CGameContext *pGameServer) :
 	CGameControllerBasePvp(pGameServer)
@@ -52,13 +51,13 @@ void CGameControllerBomb::Tick()
 			continue;
 
 		// In the source code it was done via GetAutoTeam, but it crashes...
-		if(pPlayer->m_BombState == CPlayer::EBombState::None)
-			pPlayer->m_BombState = pPlayer->GetTeam() == TEAM_SPECTATORS ? CPlayer::EBombState::Spectating : CPlayer::EBombState::Active;
+		if(pPlayer->m_BombState == CPlayer::EBombState::NONE)
+			pPlayer->m_BombState = pPlayer->GetTeam() == TEAM_SPECTATORS ? CPlayer::EBombState::SPECTATING : CPlayer::EBombState::ACTIVE;
 
 		if(!m_RoundActive)
 			continue;
 
-		if(pPlayer->m_BombState == CPlayer::EBombState::Active && !m_Warmup && pPlayer->GetTeam() != TEAM_SPECTATORS)
+		if(pPlayer->m_BombState == CPlayer::EBombState::ACTIVE && !m_Warmup && pPlayer->GetTeam() != TEAM_SPECTATORS)
 			pPlayer->SetTeam(TEAM_SPECTATORS, true);
 	}
 
@@ -72,7 +71,7 @@ void CGameControllerBomb::Tick()
 	}
 	else
 	{
-		if(AmountOfPlayers(CPlayer::EBombState::Active) == 1)
+		if(AmountOfPlayers(CPlayer::EBombState::ACTIVE) == 1)
 		{
 			switch(Server()->Tick() % (Server()->TickSpeed() * 3))
 			{
@@ -87,7 +86,7 @@ void CGameControllerBomb::Tick()
 				break;
 			}
 		}
-		if(AmountOfPlayers(CPlayer::EBombState::Active) + AmountOfPlayers(CPlayer::EBombState::Alive) > 1 && !m_Warmup)
+		if(AmountOfPlayers(CPlayer::EBombState::ACTIVE) + AmountOfPlayers(CPlayer::EBombState::ALIVE) > 1 && !m_Warmup)
 		{
 			GameServer()->SendBroadcast("Game started", -1);
 			StartBombRound();
@@ -104,9 +103,9 @@ void CGameControllerBomb::OnReset()
 		if(!pPlayer)
 			continue;
 
-		if(pPlayer->m_BombState >= CPlayer::EBombState::Active)
+		if(pPlayer->m_BombState >= CPlayer::EBombState::ACTIVE)
 		{
-			pPlayer->m_BombState = CPlayer::EBombState::Active;
+			pPlayer->m_BombState = CPlayer::EBombState::ACTIVE;
 			pPlayer->m_Bomb = false;
 		}
 	}
@@ -126,7 +125,7 @@ bool CGameControllerBomb::DoWincheckRound()
 
 	if(AmountOfBombs() == 0)
 	{
-		if(AmountOfPlayers(CPlayer::EBombState::Alive) >= 2)
+		if(AmountOfPlayers(CPlayer::EBombState::ALIVE) >= 2)
 		{
 			int Alive = 0;
 			for(auto *pPlayer : GameServer()->m_apPlayers)
@@ -134,7 +133,7 @@ bool CGameControllerBomb::DoWincheckRound()
 				if(!pPlayer)
 					continue;
 
-				if(pPlayer->m_BombState == CPlayer::EBombState::Alive && !pPlayer->m_Bomb)
+				if(pPlayer->m_BombState == CPlayer::EBombState::ALIVE && !pPlayer->m_Bomb)
 					Alive++;
 			}
 			MakeRandomBomb(std::ceil((Alive / (float)Config()->m_SvBombtagBombsPerPlayer) - (Config()->m_SvBombtagBombsPerPlayer == 1 ? 1 : 0)));
@@ -252,7 +251,7 @@ bool CGameControllerBomb::CanJoinTeam(int Team, int NotThisId, char *pErrorReaso
 	{
 		if(pErrorReason)
 			str_copy(pErrorReason, "", ErrorReasonSize);
-		pPlayer->m_BombState = CPlayer::EBombState::Active;
+		pPlayer->m_BombState = CPlayer::EBombState::ACTIVE;
 		return true;
 	}
 
@@ -260,14 +259,14 @@ bool CGameControllerBomb::CanJoinTeam(int Team, int NotThisId, char *pErrorReaso
 	{
 		if(pErrorReason)
 			str_copy(pErrorReason, "You are a spectator now\nYou won't join when a new round begins", ErrorReasonSize);
-		pPlayer->m_BombState = CPlayer::EBombState::Spectating;
+		pPlayer->m_BombState = CPlayer::EBombState::SPECTATING;
 		pPlayer->m_Bomb = false;
 		return true;
 	}
 
 	if(pErrorReason)
 		str_copy(pErrorReason, "You will join the game when the round is over", ErrorReasonSize);
-	pPlayer->m_BombState = CPlayer::EBombState::Active;
+	pPlayer->m_BombState = CPlayer::EBombState::ACTIVE;
 	return false;
 }
 
@@ -279,7 +278,7 @@ void CGameControllerBomb::OnRoundEnd()
 		if(!pPlayer)
 			continue;
 
-		if(pPlayer->m_BombState != CPlayer::EBombState::Alive)
+		if(pPlayer->m_BombState != CPlayer::EBombState::ALIVE)
 			continue;
 
 		char aBuf[128];
@@ -363,14 +362,14 @@ void CGameControllerBomb::EliminatePlayer(CPlayer *pPlayer, bool Collateral)
 	GameServer()->SendChat(-1, TEAM_ALL, aBuf);
 
 	pPlayer->m_Bomb = false;
-	pPlayer->m_BombState = CPlayer::EBombState::Active;
+	pPlayer->m_BombState = CPlayer::EBombState::ACTIVE;
 }
 
 void CGameControllerBomb::ExplodeBomb(CPlayer *pPlayer)
 {
 	GameServer()->CreateExplosion(pPlayer->m_ViewPos, pPlayer->GetCid(), WEAPON_GAME, true, 0);
 	GameServer()->CreateSound(pPlayer->m_ViewPos, SOUND_GRENADE_EXPLODE);
-	pPlayer->m_BombState = CPlayer::EBombState::Active;
+	pPlayer->m_BombState = CPlayer::EBombState::ACTIVE;
 
 	// Collateral damage
 	for(auto *pTempPlayer : GameServer()->m_apPlayers)
@@ -429,11 +428,11 @@ void CGameControllerBomb::StartBombRound()
 		if(!pPlayer)
 			continue;
 
-		if(pPlayer->m_BombState != CPlayer::EBombState::Active)
+		if(pPlayer->m_BombState != CPlayer::EBombState::ACTIVE)
 			continue;
 
 		pPlayer->SetTeam(TEAM_FLOCK, true);
-		pPlayer->m_BombState = CPlayer::EBombState::Alive;
+		pPlayer->m_BombState = CPlayer::EBombState::ALIVE;
 		Players++;
 
 		// Instant appearance after the start of the game
@@ -452,7 +451,7 @@ void CGameControllerBomb::MakeRandomBomb(int Count)
 		if(!pPlayer)
 			continue;
 
-		if(pPlayer->m_BombState == CPlayer::EBombState::Alive)
+		if(pPlayer->m_BombState == CPlayer::EBombState::ALIVE)
 			Playing[Players++] = pPlayer->GetCid();
 	}
 

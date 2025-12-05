@@ -1,7 +1,7 @@
 #ifndef GAME_SERVER_GAMEMODES_VANILLA_BOMB_BOMB_H
 #define GAME_SERVER_GAMEMODES_VANILLA_BOMB_BOMB_H
 
-#include <game/server/gamemodes/ball/base_foot.h>
+#include <game/server/gamemodes/base_pvp/base_pvp.h>
 #include <game/server/instagib/extra_columns.h>
 #include <game/server/player.h>
 
@@ -123,6 +123,5 @@ public:
 	bool m_RoundActive = false;
 
 	static std::mt19937 M_S_RANDOM_ENGINE;
-	static size_t M_S_LAST_LINE;
 };
 #endif
