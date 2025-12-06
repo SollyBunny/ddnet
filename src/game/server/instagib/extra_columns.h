@@ -105,6 +105,22 @@ public:
 	virtual void Dump(const class CSqlStatsPlayer *pStats, const char *pSystem = "stats") const = 0;
 
 	/*
+		HasValues
+
+		Arguments:
+			pStats - stats to check
+
+		Callback that should return true if any of the extra columns is set
+		to a non default value.
+		Used to check if we need to save stats to the database.
+
+		Example check code:
+
+		return m_MyExtraValue1 != 0 || my_MyExtraValue2 != 0;
+	*/
+	virtual bool HasValues(const class CSqlStatsPlayer *pStats) const = 0;
+
+	/*
 		MergeStats
 
 		Arguments:
@@ -146,6 +162,8 @@ public:
 		pOutputStats->m_Deaths = MergeIntAdd(pSqlServer->GetInt((*pOffset)++), pNewStats->m_Deaths);
 	*/
 	virtual void ReadAndMergeStats(int *pOffset, IDbConnection *pSqlServer, class CSqlStatsPlayer *pOutputStats, const class CSqlStatsPlayer *pNewStats) = 0;
+
+	bool IsIntValueSet(int Value) const { return Value != 0; }
 
 	int MergeIntAdd(int Current, int Other)
 	{

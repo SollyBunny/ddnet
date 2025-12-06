@@ -64,6 +64,16 @@ public:
 #undef MACRO_ADD_COLUMN
 	}
 
+	bool HasValues(const class CSqlStatsPlayer *pStats) const override
+	{
+		return false
+#define MACRO_ADD_COLUMN(name, sql_name, sql_type, bind_type, default, merge_method) \
+	|| Is##bind_type##ValueSet(pStats->m_##name)
+#include "sql_columns.h"
+#undef MACRO_ADD_COLUMN
+			;
+	}
+
 	void MergeStats(CSqlStatsPlayer *pOutputStats, const CSqlStatsPlayer *pNewStats) override
 	{
 #define MACRO_ADD_COLUMN(name, sql_name, sql_type, bind_type, default, merge_method) \

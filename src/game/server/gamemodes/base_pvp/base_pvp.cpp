@@ -539,7 +539,7 @@ void CGameControllerBasePvp::SaveStatsOnDisconnect(CPlayer *pPlayer)
 {
 	if(!pPlayer)
 		return;
-	if(!pPlayer->m_Stats.HasValues())
+	if(!pPlayer->m_Stats.HasValues(m_pExtraColumns))
 		return;
 
 	// the spree can not be incremented if stat track is off

@@ -179,9 +179,11 @@ public:
 			pExtraColumns->Dump(this);
 	}
 
-	bool HasValues() const
+	bool HasValues(const CExtraColumns *pExtraColumns) const
 	{
-		// TODO: add a HasValues callback in the gametype instead of listing all here
+		if(pExtraColumns && pExtraColumns->HasValues(this))
+			return true;
+
 		return m_Points ||
 		       m_Kills ||
 		       m_Deaths ||
@@ -190,22 +192,7 @@ public:
 		       m_Wins ||
 		       m_Losses ||
 		       m_ShotsFired ||
-		       m_ShotsHit ||
-		       m_FlagCaptures ||
-		       m_FlagGrabs ||
-		       m_FlaggerKills ||
-		       m_Wallshots ||
-		       m_TicksCaught ||
-		       m_TicksInGame ||
-		       m_BestMulti ||
-		       m_GotFrozen ||
-		       m_GoldSpikes ||
-		       m_GreenSpikes ||
-		       m_PurpleSpikes ||
-		       m_Unfreezes ||
-		       m_WrongSpikes ||
-		       m_StealsFromOthers ||
-		       m_StealsByOthers;
+		       m_ShotsHit;
 	}
 
 	CSqlStatsPlayer()

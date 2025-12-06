@@ -961,11 +961,11 @@ bool CSqlStats::SaveRoundStatsThread(IDbConnection *pSqlServer, const ISqlData *
 			return false;
 		}
 
-		if(NumUpdated == 0 && pData->m_Stats.HasValues())
+		if(NumUpdated == 0 && pData->m_Stats.HasValues(pData->m_pExtraColumns))
 		{
 			CSqlStatsPlayer StatsWithoutSpree = pData->m_Stats;
 			StatsWithoutSpree.m_BestSpree = 0;
-			if(StatsWithoutSpree.HasValues())
+			if(StatsWithoutSpree.HasValues(pData->m_pExtraColumns))
 			{
 				log_error("sql-thread", "failed to save stats for player '%s'", pData->m_aName);
 				log_error("sql-thread", "update failed no rows changed but got the following stats:");
