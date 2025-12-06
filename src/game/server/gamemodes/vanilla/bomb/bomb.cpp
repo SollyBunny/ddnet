@@ -299,10 +299,6 @@ void CGameControllerBomb::OnShowStatsAll(const CSqlStatsPlayer *pStats, class CP
 	CGameControllerBasePvp::OnShowStatsAll(pStats, pRequestingPlayer, pRequestedName);
 
 	char aBuf[512];
-
-	str_format(aBuf, sizeof(aBuf), "~ Hammer kills: %d", pStats->m_HammerKills);
-	GameServer()->SendChatTarget(pRequestingPlayer->GetCid(), aBuf);
-
 	str_format(aBuf, sizeof(aBuf), "~ Collateral Kills: %d", pStats->m_CollateralKills);
 	GameServer()->SendChatTarget(pRequestingPlayer->GetCid(), aBuf);
 }
@@ -312,10 +308,6 @@ void CGameControllerBomb::OnShowRoundStats(const CSqlStatsPlayer *pStats, class 
 	CGameControllerBasePvp::OnShowRoundStats(pStats, pRequestingPlayer, pRequestedName);
 
 	char aBuf[512];
-
-	str_format(aBuf, sizeof(aBuf), "~ Hammer kills: %d", pStats->m_HammerKills);
-	GameServer()->SendChatTarget(pRequestingPlayer->GetCid(), aBuf);
-
 	str_format(aBuf, sizeof(aBuf), "~ Collateral Kills: %d", pStats->m_CollateralKills);
 	GameServer()->SendChatTarget(pRequestingPlayer->GetCid(), aBuf);
 }

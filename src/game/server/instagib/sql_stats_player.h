@@ -73,7 +73,6 @@ public:
 	 * bomb                              *
 	 *************************************/
 
-	int m_HammerKills;
 	int m_CollateralKills;
 
 	/*************************************
@@ -135,7 +134,6 @@ public:
 		m_GoldSpikes = 0;
 		m_GreenSpikes = 0;
 		m_PurpleSpikes = 0;
-		m_HammerKills = 0;
 		m_CollateralKills = 0;
 
 		for(auto &Multi : m_aMultis)
