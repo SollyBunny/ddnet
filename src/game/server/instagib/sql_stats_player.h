@@ -129,16 +129,16 @@ public:
 		m_Wallshots = 0;
 		m_TicksCaught = 0;
 		m_TicksInGame = 0;
+		m_Goals = 0;
+		m_OwnGoals = 0;
+		m_CollateralKills = 0;
 		m_BestMulti = 0;
+		for(auto &Multi : m_aMultis)
+			Multi = 0;
 		m_GotFrozen = 0;
 		m_GoldSpikes = 0;
 		m_GreenSpikes = 0;
 		m_PurpleSpikes = 0;
-		m_CollateralKills = 0;
-
-		for(auto &Multi : m_aMultis)
-			Multi = 0;
-
 		m_Unfreezes = 0;
 		m_WrongSpikes = 0;
 		m_StealsByOthers = 0;
