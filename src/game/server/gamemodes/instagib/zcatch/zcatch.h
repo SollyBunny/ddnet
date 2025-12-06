@@ -5,6 +5,7 @@
 
 #include <game/server/instagib/extra_columns.h>
 #include <game/server/instagib/sql_stats_player.h>
+#include <game/server/player.h>
 
 class CZCatchColumns : public CExtraColumns
 {
@@ -204,6 +205,9 @@ public:
 
 	void SetCatchColors(class CPlayer *pPlayer);
 	void OnUpdateZcatchColorConfig() override;
+
+	void AddToKillsThatCount(CPlayer *pPlayer, int Kills);
+	void ResetKillsThatCount(CPlayer *pPlayer);
 
 	// returns nullptr if nobody made a kill yet that counts
 	CPlayer *PlayerWithMostKillsThatCount();

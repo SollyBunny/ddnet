@@ -285,7 +285,7 @@ void CGameControllerZcatch::OnCharacterSpawn(class CCharacter *pChr)
 
 	SetSpawnWeapons(pChr);
 
-	pChr->GetPlayer()->m_KillsThatCount = 0; // just to be sure
+	ResetKillsThatCount(pChr->GetPlayer()); // just to be sure
 }
 
 int CGameControllerZcatch::GetPlayerTeam(class CPlayer *pPlayer, bool Sixup)
@@ -350,10 +350,10 @@ bool CGameControllerZcatch::OnSelfkill(int ClientId)
 	// not at -2
 	//
 	// https://github.com/ddnet-insta/ddnet-insta/issues/225
-	pPlayer->m_KillsThatCount--;
+	AddToKillsThatCount(pPlayer, -1);
 	if(pPlayer->m_KillsThatCount <= 0)
 	{
-		pPlayer->m_KillsThatCount = 0;
+		ResetKillsThatCount(pPlayer);
 		for(int VictimId : pPlayer->m_vVictimIds)
 		{
 			pVictim = GameServer()->m_apPlayers[VictimId];
@@ -396,8 +396,6 @@ void CGameControllerZcatch::KillPlayer(class CPlayer *pVictim, class CPlayer *pK
 	str_format(aBuf, sizeof(aBuf), "You are spectator until '%s' dies", Server()->ClientName(pKiller->GetCid()));
 	GameServer()->SendChatTarget(pVictim->GetCid(), aBuf);
 
-	SetCatchColors(pKiller);
-	SetCatchColors(pVictim);
 	UpdateCatchTicks(pVictim, ECatchUpdate::CAUGHT);
 	pVictim->m_IsDead = true;
 	pVictim->m_KillerId = pKiller->GetCid();
@@ -417,7 +415,7 @@ void CGameControllerZcatch::KillPlayer(class CPlayer *pVictim, class CPlayer *pK
 	{
 		pKiller->m_vVictimIds.emplace_back(pVictim->GetCid());
 		if(KillCounts)
-			pKiller->m_KillsThatCount++;
+			AddToKillsThatCount(pKiller, 1);
 	}
 }
 
@@ -465,7 +463,7 @@ int CGameControllerZcatch::OnCharacterDeath(class CCharacter *pVictim, class CPl
 	}
 
 	CGameControllerInstagib::OnCharacterDeath(pVictim, pKiller, WeaponId);
-	pVictim->GetPlayer()->m_KillsThatCount = 0;
+	ResetKillsThatCount(pVictim->GetPlayer());
 
 	// TODO: revisit this edge case when zcatch is done
 	//       a killer leaving while the bullet is flying
@@ -771,6 +769,18 @@ void CGameControllerZcatch::ReleaseAllPlayers()
 		pPlayer->m_KillerId = -1;
 		pPlayer->m_vVictimIds.clear();
 	}
+}
+
+void CGameControllerZcatch::AddToKillsThatCount(CPlayer *pPlayer, int Kills)
+{
+	pPlayer->m_KillsThatCount += Kills;
+	SetCatchColors(pPlayer);
+}
+
+void CGameControllerZcatch::ResetKillsThatCount(CPlayer *pPlayer)
+{
+	pPlayer->m_KillsThatCount = 0;
+	SetCatchColors(pPlayer);
 }
 
 CPlayer *CGameControllerZcatch::PlayerWithMostKillsThatCount()
