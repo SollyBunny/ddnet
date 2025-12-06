@@ -163,7 +163,7 @@ public:
 		// gametype specific is implemented in the gametypes callback
 	}
 
-	void Dump(CExtraColumns *pExtraColumns, const char *pSystem = "stats") const
+	void Dump(const CExtraColumns *pExtraColumns, const char *pSystem = "stats") const
 	{
 		dbg_msg(pSystem, "  points: %d", m_Points);
 		dbg_msg(pSystem, "  kills: %d", m_Kills);
