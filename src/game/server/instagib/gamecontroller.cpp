@@ -323,6 +323,14 @@ void IGameController::DoTeamBalance()
 	GameServer()->SendGameMsg(protocol7::GAMEMSG_TEAM_BALANCE, -1);
 }
 
+bool IGameController::OnLaserHit(int Bounces, int From, int Weapon, CCharacter *pVictim)
+{
+	if(UnfreezeOnLaserHit())
+		pVictim->UnFreeze();
+
+	return true;
+}
+
 void IGameController::AmmoRegen(CCharacter *pChr)
 {
 	pChr->AmmoRegen();

@@ -35,7 +35,6 @@ public:
 	//
 	//
 
-	// virtual bool OnLaserHitCharacter(vec2 From, vec2 To, class CLaser &Laser) {};
 	/*
 		Function: OnCharacterTakeDamage
 			this function was added in ddnet-insta and is a non standard controller method.
@@ -382,7 +381,7 @@ public:
 			true - to call TakeDamage
 			false - to skip TakeDamage
 	*/
-	virtual bool OnLaserHit(int Bounces, int From, int Weapon, CCharacter *pVictim) { return true; }
+	virtual bool OnLaserHit(int Bounces, int From, int Weapon, CCharacter *pVictim);
 
 	/*
 		Function: OnHammerHit

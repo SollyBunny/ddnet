@@ -766,15 +766,13 @@ void CGameControllerBasePvp::Tick()
 
 bool CGameControllerBasePvp::OnLaserHit(int Bounces, int From, int Weapon, CCharacter *pVictim)
 {
+	CGameControllerInstaCore::OnLaserHit(Bounces, From, Weapon, pVictim);
 	CPlayer *pPlayer = GameServer()->m_apPlayers[From];
 	if(!pPlayer)
 		return true;
 
 	if(IsStatTrack() && Bounces != 0)
 		pPlayer->m_Stats.m_Wallshots++;
-
-	if(!IsFngGameType())
-		pVictim->UnFreeze();
 
 	if(g_Config.m_SvOnlyWallshotKills)
 		return Bounces != 0;
