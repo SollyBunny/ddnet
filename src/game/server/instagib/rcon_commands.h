@@ -33,6 +33,7 @@ CONSOLE_COMMAND("random_map_from_pool", "", CFGFLAG_SERVER, ConRandomMapFromPool
 
 CONSOLE_COMMAND("gctf_antibot", "", CFGFLAG_SERVER, ConGctfAntibot, this, "runs the antibot command gctf (depends on closed source module)")
 CONSOLE_COMMAND("known_antibot", "", CFGFLAG_SERVER, ConKnownAntibot, this, "runs the antibot command known (depends on antibob antibot module)")
+CONSOLE_COMMAND("malloc_info", "", CFGFLAG_SERVER, ConMallocInfo, this, "dumps glibc malloc xml to stdout for debugging memory usage")
 
 CONSOLE_COMMAND("redirect", "v[victim] i[port]", CFGFLAG_SERVER, CServer::ConRedirect, Server(), "Redirect client to given port use victim \"all\" to redirect all but your self")
 CONSOLE_COMMAND("deep_jailid", "v[victim] i[minutes]", CFGFLAG_SERVER, ConDeepJailId, this, "deep freeze (undeep tile works) will be restored on respawn and reconnect")
