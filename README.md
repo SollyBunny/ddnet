@@ -32,7 +32,7 @@ of your gamemode directory. Just look at the existing gamemodes for examples. A 
 Adding your own stats columns and rank/top commands can be done in a few lines of code without writing any SQL.
 
 There also is a command line tool that will generate the boilerplate code of a new controller for you.
-To create a new gametype called zombie ball run the following command (needs git submodules):
+To create a new gametype called zombie ball run the following command (needs git submodules and only works on linux/macOS):
 
 ```
 ./scripts/cli zombie_ball:base_pvp
