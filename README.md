@@ -429,7 +429,6 @@ Below is a list of all the settings that were added in ddnet-insta.
 + `random_map_from_pool` Changes to random map from pool (see add_map_to_pool)
 + `gctf_antibot` runs the antibot command gctf (depends on closed source module)
 + `known_antibot` runs the antibot command known (depends on antibob antibot module)
-+ `malloc_info` dumps glibc malloc xml to stdout for debugging memory usage
 + `redirect` Redirect client to given port use victim \"all\" to redirect all but your self
 + `deep_jailid` deep freeze (undeep tile works) will be restored on respawn and reconnect
 + `deep_jailip` deep freeze (undeep tile works) will be restored on respawn and reconnect

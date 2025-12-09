@@ -13,10 +13,6 @@
 #include <game/server/instagib/ip_storage.h>
 #include <game/server/player.h>
 
-#ifdef CONF_PLATFORM_LINUX
-#include <malloc.h>
-#endif
-
 void CGameContext::ConHammer(IConsole::IResult *pResult, void *pUserData)
 {
 	CGameContext *pSelf = (CGameContext *)pUserData;
@@ -193,16 +189,6 @@ void CGameContext::ConKnownAntibot(IConsole::IResult *pResult, void *pUserData)
 {
 	CGameContext *pSelf = (CGameContext *)pUserData;
 	pSelf->Antibot()->ConsoleCommand("known");
-}
-
-void CGameContext::ConMallocInfo(IConsole::IResult *pResult, void *pUserData)
-{
-#if defined(CONF_PLATFORM_LINUX) && defined(__GLIBC__)
-	log_info("debug", "check stdout for malloc info");
-	malloc_info(0, stdout);
-#else
-	log_info("debug", "operating system not supported or not using glibc");
-#endif
 }
 
 void CGameContext::ConDeepJailId(IConsole::IResult *pResult, void *pUserData)
