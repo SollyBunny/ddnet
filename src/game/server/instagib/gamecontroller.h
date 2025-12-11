@@ -41,7 +41,7 @@ public:
 			neither ddnet nor teeworlds have this
 
 			WARNING: if you implement a pvp mode and inherit from base pvp this method should
-			         ideally not be overridden.
+				 ideally not be overridden.
 				 Have a look in base_pvp.cpp at `CGameControllerBasePvp::OnCharacterTakeDamage()`
 				 how it is implemented.
 				 If you want to track any kind of hit use `OnAnyDamage()` instead.
