@@ -66,6 +66,21 @@ public:
 	virtual bool OnCharacterTakeDamage(vec2 &Force, int &Dmg, int &From, int &Weapon, CCharacter &Character) { return false; }
 
 	/*
+		Function: IsPickupEntity
+			Helper to check if a `Index` passed to `OnEntity()` is a pickup
+			like shield, armor or a weapon.
+			This is useful to disable pickups in your gametype.
+
+		Arguments:
+			Index - Entity index. For example `ENTITY_ARMOR_1` or `ENTITY_WEAPON_SHOTGUN`
+
+		Returns:
+			true - if the given `Index` is a weapon, health or armor pickup
+			false - otherwise
+	*/
+	virtual bool IsPickupEntity(int Index) const;
+
+	/*
 		Function: OnCharacterDeathImpl
 			Called when a CCharacter in the world dies.
 			This contains the full death implementation that in regular ddnet lives

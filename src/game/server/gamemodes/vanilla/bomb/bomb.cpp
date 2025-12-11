@@ -224,12 +224,9 @@ void CGameControllerBomb::OnAppliedDamage(int &Dmg, int &From, int &Weapon, CCha
 	}
 }
 
-// From CGameControllerInstagib::OnEntity
 bool CGameControllerBomb::OnEntity(int Index, int x, int y, int Layer, int Flags, bool Initial, int Number)
 {
-	// ddnet-insta
-	// do not spawn pickups
-	if(Index == ENTITY_ARMOR_1 || Index == ENTITY_HEALTH_1 || Index == ENTITY_WEAPON_SHOTGUN || Index == ENTITY_WEAPON_GRENADE || Index == ENTITY_WEAPON_LASER || Index == ENTITY_POWERUP_NINJA)
+	if(IsPickupEntity(Index))
 		return false;
 
 	return CGameControllerBasePvp::OnEntity(Index, x, y, Layer, Flags, Initial, Number);

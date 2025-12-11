@@ -6,6 +6,7 @@
 
 #include <generated/protocol.h>
 
+#include <game/mapitems.h>
 #include <game/server/entities/character.h>
 #include <game/server/entities/door.h>
 #include <game/server/gamecontext.h>
@@ -13,6 +14,16 @@
 #include <game/server/instagib/entities/flag.h>
 #include <game/server/player.h>
 #include <game/server/score.h>
+
+bool IGameController::IsPickupEntity(int Index) const
+{
+	return Index == ENTITY_ARMOR_1 ||
+	       Index == ENTITY_HEALTH_1 ||
+	       Index == ENTITY_WEAPON_SHOTGUN ||
+	       Index == ENTITY_WEAPON_GRENADE ||
+	       Index == ENTITY_WEAPON_LASER ||
+	       Index == ENTITY_POWERUP_NINJA;
+}
 
 void IGameController::OnCharacterDeathImpl(CCharacter *pVictim, int Killer, int Weapon, bool SendKillMsg)
 {
