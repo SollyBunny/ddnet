@@ -175,19 +175,21 @@ void CGameControllerBomb::OnCharacterSpawn(class CCharacter *pChr)
 	pChr->GiveWeapon(WEAPON_HAMMER, false, -1);
 }
 
-bool CGameControllerBomb::OnCharacterTakeDamage(vec2 &Force, int &Dmg, int &From, int &Weapon, CCharacter &Character)
+void CGameControllerBomb::OnAppliedDamage(int &Dmg, int &From, int &Weapon, CCharacter *pCharacter)
 {
-	CPlayer *pPlayer = Character.GetPlayer();
+	CGameControllerBasePvp::OnAppliedDamage(Dmg, From, Weapon, pCharacter);
+
+	CPlayer *pPlayer = pCharacter->GetPlayer();
 	CPlayer *pKiller = GetPlayerOrNullptr(From);
 
 	if(!pKiller)
-		return false;
+		return;
 
 	if(pKiller->m_IsBomb && pKiller->m_ToBombTick > 0 && !pPlayer->m_IsBomb)
 	{
 		auto *pChr = pKiller->GetCharacter();
 		if(!pChr)
-			return false;
+			return;
 
 		GameServer()->SendBroadcast("", From);
 		pKiller->m_IsBomb = false;
@@ -203,13 +205,13 @@ bool CGameControllerBomb::OnCharacterTakeDamage(vec2 &Force, int &Dmg, int &From
 		if(pPlayer->m_ToBombTick < Config()->m_SvBombtagMinSecondsToExplosion * Server()->TickSpeed() && Config()->m_SvBombtagMinSecondsToExplosion)
 			pPlayer->m_ToBombTick = Config()->m_SvBombtagMinSecondsToExplosion * Server()->TickSpeed();
 
-		Character.GiveWeapon(Config()->m_SvBombtagBombWeapon);
-		Character.SetWeapon(Config()->m_SvBombtagBombWeapon);
-		return false;
+		pCharacter->GiveWeapon(Config()->m_SvBombtagBombWeapon);
+		pCharacter->SetWeapon(Config()->m_SvBombtagBombWeapon);
+		return;
 	}
 
 	if(Weapon != WEAPON_HAMMER)
-		return false;
+		return;
 
 	if(pPlayer->m_IsBomb)
 	{
@@ -219,10 +221,7 @@ bool CGameControllerBomb::OnCharacterTakeDamage(vec2 &Force, int &Dmg, int &From
 		// Increase stats if they killed the player
 		if(pPlayer->m_ToBombTick <= 0)
 			pKiller->m_Stats.m_Kills++;
-		return false;
 	}
-
-	return false;
 }
 
 // From CGameControllerInstagib::OnEntity

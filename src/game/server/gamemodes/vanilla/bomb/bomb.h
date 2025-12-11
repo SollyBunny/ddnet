@@ -106,7 +106,8 @@ public:
 	void OnReset() override;
 	bool DoWincheckRound() override;
 	void OnCharacterSpawn(class CCharacter *pChr) override;
-	bool OnCharacterTakeDamage(vec2 &Force, int &Dmg, int &From, int &Weapon, CCharacter &Character) override;
+	void OnAppliedDamage(int &Dmg, int &From, int &Weapon, CCharacter *pCharacter) override;
+	bool DecreaseHealthAndKill(int Dmg, int From, int Weapon, CCharacter *pCharacter) override { return false; }
 	bool OnEntity(int Index, int x, int y, int Layer, int Flags, bool Initial, int Number) override;
 	bool CanJoinTeam(int Team, int NotThisId, char *pErrorReason, int ErrorReasonSize) override;
 	void OnRoundEnd() override;
@@ -115,7 +116,6 @@ public:
 	void OnShowRoundStats(const CSqlStatsPlayer *pStats, class CPlayer *pRequestingPlayer, const char *pRequestedName) override;
 
 	bool OnSelfkill(int ClientId) override { return true; }
-	bool DecreaseHealthAndKill(int Dmg, int From, int Weapon, CCharacter *pCharacter) override { return false; }
 
 	void SetSkin(class CPlayer *pPlayer);
 	void EliminatePlayer(CPlayer *pPlayer, bool Collateral = false);
