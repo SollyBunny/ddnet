@@ -427,8 +427,8 @@ bool CGameControllerBaseFng::SkipDamage(int Dmg, int From, int Weapon, const CCh
 	return CGameControllerInstagib::SkipDamage(Dmg, From, Weapon, pCharacter, ApplyForce);
 }
 
-// warning this does not call the base pvp take damage method
-// so it has to reimplement all the relevant functionality
+// WARNING: this does not call the base pvp take damage method
+//          so it has to reimplement all the relevant functionality
 bool CGameControllerBaseFng::OnCharacterTakeDamage(vec2 &Force, int &Dmg, int &From, int &Weapon, CCharacter &Character)
 {
 	OnAnyDamage(Force, Dmg, From, Weapon, &Character);

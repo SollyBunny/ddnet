@@ -40,6 +40,17 @@ public:
 			this function was added in ddnet-insta and is a non standard controller method.
 			neither ddnet nor teeworlds have this
 
+			WARNING: if you implement a pvp mode and inherit from base pvp this method should
+			         ideally not be overridden.
+				 Have a look in base_pvp.cpp at `CGameControllerBasePvp::OnCharacterTakeDamage()`
+				 how it is implemented.
+				 If you want to track any kind of hit use `OnAnyDamage()` instead.
+				 If you want to disable damage in some situations use `SkipDamage()` instead.
+				 If you want to implement your own damage logic use `OnAppliedDamage()`.
+				 Only if you really need something custom you should use
+				 `OnCharacterTakeDamage()` but then it should call all the same methods
+				 as the base pvp version or some features will break.
+
 		Arguments:
 			Force - Reference to force. Set this vector and it will be applied to the target characters velocity
 			Dmg - Input and outoput damage that was applied. You can read and write it.

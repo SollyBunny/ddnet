@@ -29,6 +29,8 @@ int CGameControllerVanilla::SnapGameInfoExFlags(int SnappingClient, int DDRaceFl
 	return Flags;
 }
 
+// WARNING: this does not call the base pvp take damage method
+//          so it has to reimplement all the relevant functionality
 bool CGameControllerVanilla::OnCharacterTakeDamage(vec2 &Force, int &Dmg, int &From, int &Weapon, CCharacter &Character)
 {
 	if(Weapon == WEAPON_GUN || Weapon == WEAPON_SHOTGUN)
