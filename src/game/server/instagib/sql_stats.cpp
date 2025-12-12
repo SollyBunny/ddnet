@@ -9,6 +9,7 @@
 
 #include <game/server/gamecontext.h>
 #include <game/server/gamecontroller.h>
+#include <game/server/instagib/ddnet_db_utils/ddnet_db_utils.h>
 #include <game/server/instagib/extra_columns.h>
 #include <game/server/instagib/sql_stats_player.h>
 #include <game/server/player.h>
@@ -1062,25 +1063,13 @@ bool CSqlStats::CreateTableThread(IDbConnection *pSqlServer, const ISqlData *pGa
 	// apply missing migrations
 	// this is for seamless backwards compatibility
 	// upgrade database schema automatically
+	ddnet_db_utils::AddIntColumn(pSqlServer, pData->m_aName, "win_points", 0, pError, ErrorSize);
 
-	bool (*pfnAddInt)(IDbConnection *, const char *, const char *, char *, int) = nullptr;
-
-	using namespace ddnet_db_utils;
-	if(DetectBackend(pSqlServer) == ESqlBackend::SQLITE3)
-		pfnAddInt = AddColumnIntDefault0Sqlite3;
-	else if(DetectBackend(pSqlServer) == ESqlBackend::MYSQL)
-		pfnAddInt = AddColumnIntDefault0Mysql;
-
-	if(pfnAddInt)
+	// "solofng", "bolofng", "fng", "boomfng"
+	if(str_find(pData->m_aName, "fng"))
 	{
-		pfnAddInt(pSqlServer, pData->m_aName, "win_points", pError, ErrorSize);
-
-		// "solofng", "bolofng", "fng", "boomfng"
-		if(str_find(pData->m_aName, "fng"))
-		{
-			pfnAddInt(pSqlServer, pData->m_aName, "steals_from_others", pError, ErrorSize);
-			pfnAddInt(pSqlServer, pData->m_aName, "steals_by_others", pError, ErrorSize);
-		}
+		ddnet_db_utils::AddIntColumn(pSqlServer, pData->m_aName, "steals_from_others", 0, pError, ErrorSize);
+		ddnet_db_utils::AddIntColumn(pSqlServer, pData->m_aName, "steals_by_others", 0, pError, ErrorSize);
 	}
 
 	return true;
