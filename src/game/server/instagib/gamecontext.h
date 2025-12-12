@@ -24,7 +24,6 @@ public:
 	void PrintInstaCredits();
 	void AlertOnSpecialInstagibConfigs(int ClientId = -1) const;
 	void ShowCurrentInstagibConfigsMotd(int ClientId = -1, bool Force = false) const;
-	void UpdateVoteCheckboxes() const;
 	void RefreshVotes();
 	void SendBroadcastSix(const char *pText, bool Important = true);
 	void PlayerReadyStateBroadcast();
@@ -38,6 +37,7 @@ public:
 	void DeepJailIp(int AdminId, const char *pAddrStr, int Minutes);
 	void UndeepJail(CIpStorage *pEntry);
 	void ListDeepJails(int RequesterId) const;
+	void UpdateVoteCheckboxes() const;
 
 	// prints not allowed message in chat for ClientId and returns false
 	// if calling votes with chat commands such as !shuffle or /shuffle
