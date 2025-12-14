@@ -952,8 +952,6 @@ private:
 	int m_aLastUpdateTick[MAX_CLIENTS] = {0};
 	void DetectStrongHook();
 
-	vec2 GetSmoothPos(int ClientId);
-
 	int m_IsDummySwapping;
 	CCharOrder m_CharOrder;
 	int m_aSwitchStateTeam[NUM_DUMMIES];
