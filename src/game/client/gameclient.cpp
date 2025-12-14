@@ -2815,11 +2815,11 @@ void CGameClient::OnPredict()
 		CCharacter *pPredDummyChar = 0;
 		if(PredictDummy())
 		{
-			pSmoothDummyChar = m_PredSmoothingWorld.GetCharacterById(m_PredictedDummyId);
-			pPredDummyChar = m_PredictedWorld.GetCharacterById(m_PredictedDummyId);
+			pSmoothDummyChar = m_PredSmoothingWorld.GetCharacterById(m_aLocalIds[!g_Config.m_ClDummy]);
+			pPredDummyChar = m_PredictedWorld.GetCharacterById(m_aLocalIds[!g_Config.m_ClDummy]);
 		}
 		CNetObj_PlayerInput *pInputData = m_PredictedWorld.GetCharacterById(m_Snap.m_LocalClientId)->LatestInput();
-		CNetObj_PlayerInput *pDummyInputData = !pPredDummyChar ? 0 : m_PredictedWorld.GetCharacterById(m_PredictedDummyId)->LatestInput();
+		CNetObj_PlayerInput *pDummyInputData = !pPredDummyChar ? 0 : m_PredictedWorld.GetCharacterById(m_aLocalIds[!g_Config.m_ClDummy])->LatestInput();
 		bool DummyFirst = pSmoothLocalChar && pSmoothDummyChar && pSmoothDummyChar->GetCid() < pSmoothLocalChar->GetCid();
 
 		if(DummyFirst && pSmoothDummyChar && pDummyInputData)
@@ -2845,7 +2845,7 @@ void CGameClient::OnPredict()
 			if(!m_Snap.m_aCharacters[i].m_Active || !m_aLastActive[i])
 				continue;
 
-			if(i == m_PredictedDummyId || i == m_Snap.m_LocalClientId)
+			if(i == m_aLocalIds[!g_Config.m_ClDummy] || i == m_Snap.m_LocalClientId)
 			{
 				m_aClients[i].m_PrevImprovedPredPos = m_aClients[i].m_PrevPredicted.m_Pos;
 				m_aClients[i].m_ImprovedPredPos = m_aClients[i].m_Predicted.m_Pos;
