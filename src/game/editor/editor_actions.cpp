@@ -331,18 +331,44 @@ CEditorActionEditQuadPoint::CEditorActionEditQuadPoint(CEditorMap *pMap, int Gro
 
 void CEditorActionEditQuadPoint::Undo()
 {
-	std::shared_ptr<CLayerQuads> pLayerQuads = std::static_pointer_cast<CLayerQuads>(m_pLayer);
-	CQuad &Quad = pLayerQuads->m_vQuads[m_QuadIndex];
-	for(int k = 0; k < 5; k++)
-		Quad.m_aPoints[k] = m_vPreviousPoints[k];
+	Apply(m_vPreviousPoints);
 }
 
 void CEditorActionEditQuadPoint::Redo()
 {
+	Apply(m_vCurrentPoints);
+}
+
+void CEditorActionEditQuadPoint::Apply(const std::vector<CPoint> &vValue)
+{
 	std::shared_ptr<CLayerQuads> pLayerQuads = std::static_pointer_cast<CLayerQuads>(m_pLayer);
 	CQuad &Quad = pLayerQuads->m_vQuads[m_QuadIndex];
-	for(int k = 0; k < 5; k++)
-		Quad.m_aPoints[k] = m_vCurrentPoints[k];
+	dbg_assert(std::size(Quad.m_aPoints) == vValue.size(), "Expected %d values, got %d", (int)std::size(Quad.m_aPoints), (int)vValue.size());
+	std::copy_n(vValue.begin(), std::size(Quad.m_aPoints), Quad.m_aPoints);
+}
+
+CEditorActionEditQuadColor::CEditorActionEditQuadColor(CEditorMap *pMap, int GroupIndex, int LayerIndex, int QuadIndex, std::vector<CColor> const &vPreviousColors, std::vector<CColor> const &vCurrentColors) :
+	CEditorActionLayerBase(pMap, GroupIndex, LayerIndex), m_QuadIndex(QuadIndex), m_vPreviousColors(vPreviousColors), m_vCurrentColors(vCurrentColors)
+{
+	str_copy(m_aDisplayText, "Edit quad point colors");
+}
+
+void CEditorActionEditQuadColor::Undo()
+{
+	Apply(m_vPreviousColors);
+}
+
+void CEditorActionEditQuadColor::Redo()
+{
+	Apply(m_vCurrentColors);
+}
+
+void CEditorActionEditQuadColor::Apply(std::vector<CColor> &vValue)
+{
+	std::shared_ptr<CLayerQuads> pLayerQuads = std::static_pointer_cast<CLayerQuads>(m_pLayer);
+	CQuad &Quad = pLayerQuads->m_vQuads[m_QuadIndex];
+	dbg_assert(std::size(Quad.m_aColors) == vValue.size(), "Expected %d values, got %d", (int)std::size(Quad.m_aColors), (int)vValue.size());
+	std::copy_n(vValue.begin(), std::size(Quad.m_aColors), Quad.m_aColors);
 }
 
 CEditorActionEditQuadProp::CEditorActionEditQuadProp(CEditorMap *pMap, int GroupIndex, int LayerIndex, int QuadIndex, EQuadProp Prop, int Previous, int Current) :
@@ -354,9 +380,11 @@ CEditorActionEditQuadProp::CEditorActionEditQuadProp(CEditorMap *pMap, int Group
 		"pos Y",
 		"pos env",
 		"pos env offset",
+		nullptr, // color
 		"color env",
 		"color env offset"};
 	static_assert(std::size(s_apNames) == (size_t)EQuadProp::NUM_PROPS);
+	dbg_assert(Prop != EQuadProp::PROP_COLOR, "Color prop implemented by CEditorActionEditQuadPointProp");
 	str_format(m_aDisplayText, sizeof(m_aDisplayText), "Edit quad %s property in layer %d of group %d", s_apNames[(int)m_Prop], m_LayerIndex, m_GroupIndex);
 }
 
@@ -902,7 +930,7 @@ void CEditorActionEditLayerTilesProp::Undo()
 	}
 	else if(m_Prop == ETilesProp::PROP_SHIFT_BY)
 	{
-		Editor()->m_ShiftBy = m_Previous;
+		Map()->m_ShiftBy = m_Previous;
 	}
 	else if(m_Prop == ETilesProp::PROP_IMAGE)
 	{
@@ -986,7 +1014,7 @@ void CEditorActionEditLayerTilesProp::Redo()
 	}
 	else if(m_Prop == ETilesProp::PROP_SHIFT_BY)
 	{
-		Editor()->m_ShiftBy = m_Current;
+		Map()->m_ShiftBy = m_Current;
 	}
 	else if(m_Prop == ETilesProp::PROP_IMAGE)
 	{
