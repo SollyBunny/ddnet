@@ -659,7 +659,6 @@ void CGameClient::OnReset()
 
 	m_GameOver = false;
 	m_GamePaused = false;
-	m_PrevLocalId = -1;
 
 	m_SuppressEvents = false;
 	m_NewTick = false;
@@ -699,6 +698,7 @@ void CGameClient::OnReset()
 	m_HammerInput = {};
 	m_DummyFire = 0;
 	m_ReceivedDDNetPlayer = false;
+	m_ReceivedDDNetPlayerFinishTimes = false;
 
 	m_Teams.Reset();
 	m_GameWorld.Clear();
@@ -713,7 +713,6 @@ void CGameClient::OnReset()
 	std::fill(std::begin(m_aEnableSpectatorCount), std::end(m_aEnableSpectatorCount), -1);
 	std::fill(std::begin(m_aLastUpdateTick), std::end(m_aLastUpdateTick), 0);
 
-	m_PredictedDummyId = -1;
 	m_IsDummySwapping = false;
 	m_CharOrder.Reset();
 	std::fill(std::begin(m_aSwitchStateTeam), std::end(m_aSwitchStateTeam), -1);
@@ -948,7 +947,6 @@ void CGameClient::OnDummyDisconnect()
 	m_aShowOthers[1] = SHOW_OTHERS_NOT_SET;
 	m_aEnableSpectatorCount[1] = -1;
 	m_aLastNewPredictedTick[1] = -1;
-	m_PredictedDummyId = -1;
 }
 
 int CGameClient::LastRaceTick() const
@@ -1785,6 +1783,11 @@ void CGameClient::OnNewSnapshot()
 					m_aClients[Item.m_Id].m_Afk = pInfo->m_Flags & EXPLAYERFLAG_AFK;
 					m_aClients[Item.m_Id].m_Paused = pInfo->m_Flags & EXPLAYERFLAG_PAUSED;
 					m_aClients[Item.m_Id].m_Spec = pInfo->m_Flags & EXPLAYERFLAG_SPEC;
+					m_aClients[Item.m_Id].m_FinishTimeSeconds = pInfo->m_FinishTimeSeconds;
+					m_aClients[Item.m_Id].m_FinishTimeMillis = pInfo->m_FinishTimeMillis;
+
+					if(m_aClients[Item.m_Id].m_FinishTimeSeconds != FinishTime::UNSET)
+						m_ReceivedDDNetPlayerFinishTimes = true;
 
 					if(Item.m_Id == m_Snap.m_LocalClientId && (m_aClients[Item.m_Id].m_Paused || m_aClients[Item.m_Id].m_Spec))
 					{
@@ -2115,26 +2118,17 @@ void CGameClient::OnNewSnapshot()
 
 	// sort player infos by score
 	mem_copy(m_Snap.m_apInfoByScore, m_Snap.m_apInfoByName, sizeof(m_Snap.m_apInfoByScore));
-	if(Race7)
-		std::stable_sort(m_Snap.m_apInfoByScore, m_Snap.m_apInfoByScore + MAX_CLIENTS,
-			[](const CNetObj_PlayerInfo *pPlayer1, const CNetObj_PlayerInfo *pPlayer2) -> bool {
-				if(!pPlayer2)
-					return static_cast<bool>(pPlayer1);
-				if(!pPlayer1)
-					return false;
-				return (((pPlayer1->m_Score == -1) ? std::numeric_limits<int>::max() : pPlayer1->m_Score) <
-					((pPlayer2->m_Score == -1) ? std::numeric_limits<int>::max() : pPlayer2->m_Score));
-			});
-	else
-		std::stable_sort(m_Snap.m_apInfoByScore, m_Snap.m_apInfoByScore + MAX_CLIENTS,
-			[TimeScore](const CNetObj_PlayerInfo *pPlayer1, const CNetObj_PlayerInfo *pPlayer2) -> bool {
-				if(!pPlayer2)
-					return static_cast<bool>(pPlayer1);
-				if(!pPlayer1)
-					return false;
-				return (((TimeScore && pPlayer1->m_Score == -9999) ? std::numeric_limits<int>::min() : pPlayer1->m_Score) >
-					((TimeScore && pPlayer2->m_Score == -9999) ? std::numeric_limits<int>::min() : pPlayer2->m_Score));
-			});
+	auto TimeComparator = CGameClient::GetScoreComparator(TimeScore, m_ReceivedDDNetPlayerFinishTimes, Race7);
+	auto SortByTimeScore = [TimeComparator, this](const CNetObj_PlayerInfo *pPlayer1, const CNetObj_PlayerInfo *pPlayer2) -> bool {
+		if(!pPlayer2)
+			return static_cast<bool>(pPlayer1);
+		if(!pPlayer1)
+			return false;
+		if(m_ReceivedDDNetPlayerFinishTimes)
+			return TimeComparator(m_aClients[pPlayer1->m_ClientId].m_FinishTimeSeconds, m_aClients[pPlayer2->m_ClientId].m_FinishTimeSeconds, m_aClients[pPlayer1->m_ClientId].m_FinishTimeMillis, m_aClients[pPlayer2->m_ClientId].m_FinishTimeMillis);
+		return TimeComparator(pPlayer1->m_Score, pPlayer2->m_Score, 0, 0);
+	};
+	std::stable_sort(m_Snap.m_apInfoByScore, m_Snap.m_apInfoByScore + MAX_CLIENTS, SortByTimeScore);
 
 	// sort player infos by DDRace Team (and score between)
 	int Index = 0;
@@ -2337,7 +2331,11 @@ void CGameClient::OnNewSnapshot()
 	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
 		if(m_Snap.m_aCharacters[i].m_Active && (m_Snap.m_aCharacters[i].m_Cur.m_Jumped & 2) && !(m_Snap.m_aCharacters[i].m_Prev.m_Jumped & 2))
-			if(!Predict() || (i != m_Snap.m_LocalClientId && (!AntiPingPlayers() || i != m_PredictedDummyId)))
+		{
+			bool IsDummy = Client()->DummyConnected() && i == m_aLocalIds[!g_Config.m_ClDummy];
+			bool IsLocalPlayer = i == m_Snap.m_LocalClientId;
+
+			if(!Predict() || (!IsLocalPlayer && !AntiPingPlayers()) || (!IsLocalPlayer && !IsDummy))
 			{
 				vec2 Pos = mix(vec2(m_Snap.m_aCharacters[i].m_Prev.m_X, m_Snap.m_aCharacters[i].m_Prev.m_Y),
 					vec2(m_Snap.m_aCharacters[i].m_Cur.m_X, m_Snap.m_aCharacters[i].m_Cur.m_Y),
@@ -2348,7 +2346,9 @@ void CGameClient::OnNewSnapshot()
 				const float Volume = 1.0f; // TODO snd_game_volume_others
 				m_Effects.AirJump(Pos, Alpha, Volume);
 			}
+		}
 	}
+
 	if(g_Config.m_ClFreezeStars && !m_SuppressEvents)
 	{
 		for(auto &Character : m_Snap.m_aCharacters)
@@ -2388,16 +2388,56 @@ void CGameClient::OnNewSnapshot()
 		m_LastRaceTick = RaceFlag ? -m_Snap.m_pGameInfoObj->m_WarmupTimer : -1;
 	}
 
-	if(m_Snap.m_LocalClientId != m_PrevLocalId)
-		m_PredictedDummyId = m_PrevLocalId;
-	m_PrevLocalId = m_Snap.m_LocalClientId;
-
 	SnapCollectEntities(); // creates a collection that associates EntityEx snap items with the entities they belong to
 
 	UpdateLocalTuning();
 	m_IsDummySwapping = 0;
 	if(Client()->State() != IClient::STATE_DEMOPLAYBACK)
 		UpdatePrediction();
+}
+
+std::function<bool(int, int, int, int)> CGameClient::GetScoreComparator(bool TimeScore, bool ReceivedMillisecondFinishTimes, bool Race7)
+{
+	// 0.7 race score
+	if(Race7)
+	{
+		auto CompareTimeMillis07 = [](int TimeMillis1, int TimeMillis2, int, int) {
+			TimeMillis1 = TimeMillis1 == protocol7::FinishTime::NOT_FINISHED ? std::numeric_limits<int>::max() : TimeMillis1;
+			TimeMillis2 = TimeMillis2 == protocol7::FinishTime::NOT_FINISHED ? std::numeric_limits<int>::max() : TimeMillis2;
+			return TimeMillis1 < TimeMillis2;
+		};
+		return CompareTimeMillis07;
+	}
+
+	// normal scores (like points), biggest score is highest in scoreboard
+	if(!TimeScore)
+	{
+		auto CompareScore = [](int Score1, int Score2, int, int) {
+			return Score1 > Score2;
+		};
+		return CompareScore;
+	}
+
+	// 'classical' times, times are send negative, so biggest value has shortest time
+	if(!ReceivedMillisecondFinishTimes)
+	{
+		auto CompareTimeScore = [](int TimeScore1, int TimeScore2, int, int) {
+			TimeScore1 = TimeScore1 == FinishTime::NOT_FINISHED_TIMESCORE ? std::numeric_limits<int>::min() : TimeScore1;
+			TimeScore2 = TimeScore2 == FinishTime::NOT_FINISHED_TIMESCORE ? std::numeric_limits<int>::min() : TimeScore2;
+			return TimeScore1 > TimeScore2;
+		};
+		return CompareTimeScore;
+	}
+
+	// long precise times, smallest value first, subsorting by milliseconds
+	auto CompareTimeMillis = [](int TimeSeconds1, int TimeSeconds2, int TimeMillis1, int TimeMillis2) {
+		TimeSeconds1 = TimeSeconds1 == FinishTime::NOT_FINISHED_MILLIS ? std::numeric_limits<int>::max() : TimeSeconds1;
+		TimeSeconds2 = TimeSeconds2 == FinishTime::NOT_FINISHED_MILLIS ? std::numeric_limits<int>::max() : TimeSeconds2;
+		if(TimeSeconds1 == TimeSeconds2)
+			return TimeMillis1 < TimeMillis2;
+		return TimeSeconds1 < TimeSeconds2;
+	};
+	return CompareTimeMillis;
 }
 
 void CGameClient::UpdateEditorIngameMoved()
@@ -2472,7 +2512,7 @@ void CGameClient::OnPredict()
 		return;
 	CCharacter *pDummyChar = nullptr;
 	if(PredictDummy())
-		pDummyChar = m_PredictedWorld.GetCharacterById(m_PredictedDummyId);
+		pDummyChar = m_PredictedWorld.GetCharacterById(m_aLocalIds[!g_Config.m_ClDummy]);
 
 	bool RealPredTick = false;
 	// predict
@@ -2506,7 +2546,7 @@ void CGameClient::OnPredict()
 			m_aClients[m_Snap.m_LocalClientId].m_PrevPredicted = pLocalChar->GetCore();
 
 			if(pDummyChar)
-				m_aClients[m_PredictedDummyId].m_PrevPredicted = pDummyChar->GetCore();
+				m_aClients[m_aLocalIds[!g_Config.m_ClDummy]].m_PrevPredicted = pDummyChar->GetCore();
 		}
 
 		// optionally allow some movement in freeze by not predicting freeze the last one to two ticks
@@ -2534,7 +2574,7 @@ void CGameClient::OnPredict()
 			{
 				if(CCharacter *pChar = m_PredictedWorld.GetCharacterById(i))
 				{
-					if(pDummyChar == pChar || pLocalChar == pChar)
+					if(i == m_aLocalIds[0] || (Client()->DummyConnected() && i == m_aLocalIds[1]))
 						continue;
 
 					const CNetMsg_Sv_PreInput PreInput = m_aClients[i].m_aPreInputs[Tick % 200];
@@ -2615,7 +2655,7 @@ void CGameClient::OnPredict()
 			m_aClients[m_Snap.m_LocalClientId].m_Predicted = pLocalChar->GetCore();
 
 			if(pDummyChar)
-				m_aClients[m_PredictedDummyId].m_Predicted = pDummyChar->GetCore();
+				m_aClients[m_aLocalIds[!g_Config.m_ClDummy]].m_Predicted = pDummyChar->GetCore();
 		}
 
 		for(int i = 0; i < MAX_CLIENTS; i++)
@@ -2780,11 +2820,11 @@ void CGameClient::OnPredict()
 		CCharacter *pPredDummyChar = 0;
 		if(PredictDummy())
 		{
-			pSmoothDummyChar = m_PredSmoothingWorld.GetCharacterById(m_PredictedDummyId);
-			pPredDummyChar = m_PredictedWorld.GetCharacterById(m_PredictedDummyId);
+			pSmoothDummyChar = m_PredSmoothingWorld.GetCharacterById(m_aLocalIds[!g_Config.m_ClDummy]);
+			pPredDummyChar = m_PredictedWorld.GetCharacterById(m_aLocalIds[!g_Config.m_ClDummy]);
 		}
 		CNetObj_PlayerInput *pInputData = m_PredictedWorld.GetCharacterById(m_Snap.m_LocalClientId)->LatestInput();
-		CNetObj_PlayerInput *pDummyInputData = !pPredDummyChar ? 0 : m_PredictedWorld.GetCharacterById(m_PredictedDummyId)->LatestInput();
+		CNetObj_PlayerInput *pDummyInputData = !pPredDummyChar ? 0 : m_PredictedWorld.GetCharacterById(m_aLocalIds[!g_Config.m_ClDummy])->LatestInput();
 		bool DummyFirst = pSmoothLocalChar && pSmoothDummyChar && pSmoothDummyChar->GetCid() < pSmoothLocalChar->GetCid();
 
 		if(DummyFirst && pSmoothDummyChar && pDummyInputData)
@@ -2810,7 +2850,7 @@ void CGameClient::OnPredict()
 			if(!m_Snap.m_aCharacters[i].m_Active || !m_aLastActive[i])
 				continue;
 
-			if(i == m_PredictedDummyId || i == m_Snap.m_LocalClientId)
+			if(i == m_aLocalIds[!g_Config.m_ClDummy] || i == m_Snap.m_LocalClientId)
 			{
 				m_aClients[i].m_PrevImprovedPredPos = m_aClients[i].m_PrevPredicted.m_Pos;
 				m_aClients[i].m_ImprovedPredPos = m_aClients[i].m_Predicted.m_Pos;
@@ -3660,7 +3700,7 @@ void CGameClient::UpdatePrediction()
 	CCharacter *pLocalChar = m_GameWorld.GetCharacterById(m_Snap.m_LocalClientId);
 	CCharacter *pDummyChar = nullptr;
 	if(PredictDummy())
-		pDummyChar = m_GameWorld.GetCharacterById(m_PredictedDummyId);
+		pDummyChar = m_GameWorld.GetCharacterById(m_aLocalIds[!g_Config.m_ClDummy]);
 
 	// update strong and weak hook
 	if(pLocalChar && !m_Snap.m_SpecInfo.m_Active && Client()->State() != IClient::STATE_DEMOPLAYBACK && (m_aTuning[g_Config.m_ClDummy].m_PlayerCollision || m_aTuning[g_Config.m_ClDummy].m_PlayerHooking))
@@ -3745,7 +3785,7 @@ void CGameClient::UpdatePrediction()
 	for(int i = 0; i < MAX_CLIENTS; i++)
 		if(m_Snap.m_aCharacters[i].m_Active)
 		{
-			bool IsLocal = (i == m_Snap.m_LocalClientId || (PredictDummy() && i == m_PredictedDummyId));
+			bool IsLocal = (i == m_Snap.m_LocalClientId || (PredictDummy() && i == m_aLocalIds[!g_Config.m_ClDummy]));
 			int GameTeam = IsTeamPlay() ? m_aClients[i].m_Team : i;
 			m_GameWorld.NetCharAdd(i, &m_Snap.m_aCharacters[i].m_Cur,
 				m_Snap.m_aCharacters[i].m_HasExtendedData ? &m_Snap.m_aCharacters[i].m_ExtendedData : nullptr,

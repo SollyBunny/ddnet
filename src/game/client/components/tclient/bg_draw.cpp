@@ -90,7 +90,7 @@ private:
 	void AddQuads(IGraphics::CFreeformItem *pFreeformItem, int Count, ColorRGBA Color)
 	{
 		m_QuadCount += Count;
-		if(m_vQuadContainerIndexes.size() == 0)
+		if(m_vQuadContainerIndexes.empty())
 		{
 			m_vQuadContainerIndexes.push_back(m_Graphics.CreateQuadContainer(false));
 		}
@@ -128,7 +128,7 @@ public:
 	void Update(const CBgDrawItemData &Data)
 	{
 		Clear();
-		if(Data.size() == 0)
+		if(Data.empty())
 		{
 			return;
 		}
