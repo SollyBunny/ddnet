@@ -10,10 +10,10 @@
 template<typename T>
 static T color_lerp(T a, T b, float c)
 {
-	T result;
+	T Result;
 	for(size_t i = 0; i < 4; ++i)
-		result[i] = a[i] + c * (b[i] - a[i]);
-	return result;
+		Result[i] = a[i] + c * (b[i] - a[i]);
+	return Result;
 }
 
 void CRainbow::OnRender()

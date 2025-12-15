@@ -676,7 +676,7 @@ void CHud::RenderTextInfo()
 			FreezeInfo.m_ColorFeet = ColorRGBA(1.0f, 1.0f, 1.0f);
 			FreezeInfo.m_CustomColoredSkin = false;
 
-			float progressiveOffset = 0.0f;
+			float ProgressiveOffset = 0.0f;
 			float TeeSize = g_Config.m_TcFrozenHudTeeSize;
 			int MaxTees = (int)(8.3f * (m_Width / m_Height) * 13.0f / TeeSize);
 			if(!g_Config.m_ClShowfps && !g_Config.m_ClShowpred)
@@ -724,7 +724,7 @@ void CHud::RenderTextInfo()
 						if(NumInRow > MaxTees)
 						{
 							NumInRow = 1;
-							progressiveOffset = 0.0f;
+							ProgressiveOffset = 0.0f;
 							CurrentRow++;
 						}
 
@@ -732,7 +732,7 @@ void CHud::RenderTextInfo()
 						const CAnimState *pIdleState = CAnimState::GetIdle();
 						vec2 OffsetToMid;
 						CRenderTools::GetRenderTeeOffsetToRenderedTee(pIdleState, &TeeInfo, OffsetToMid);
-						vec2 TeeRenderPos(StartPos + progressiveOffset, TeeSize * (0.7f) + CurrentRow * TeeSize);
+						vec2 TeeRenderPos(StartPos + ProgressiveOffset, TeeSize * (0.7f) + CurrentRow * TeeSize);
 						float Alpha = 1.0f;
 						CNetObj_Character CurChar = GameClient()->m_aClients[i].m_RenderCur;
 						if(g_Config.m_TcShowFrozenHudSkins && Frozen)
@@ -749,7 +749,7 @@ void CHud::RenderTextInfo()
 							RenderTools()->RenderTee(pIdleState, &TeeInfo, EMOTE_PAIN, vec2(1.0f, 0.0f), TeeRenderPos, Alpha);
 						else
 							RenderTools()->RenderTee(pIdleState, &TeeInfo, CurChar.m_Emote, vec2(1.0f, 0.0f), TeeRenderPos);
-						progressiveOffset += TeeSize;
+						ProgressiveOffset += TeeSize;
 					}
 				}
 			}
