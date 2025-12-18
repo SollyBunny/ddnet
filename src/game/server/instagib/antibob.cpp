@@ -19,5 +19,5 @@ void AntibobRcon(const char *pLine)
 		log_error("antibob", "console not initialized yet");
 		return;
 	}
-	g_AntibobContext.m_pConsole->ExecuteLine(pLine);
+	g_AntibobContext.m_pConsole->ExecuteLine(pLine, IConsole::CLIENT_ID_UNSPECIFIED);
 }

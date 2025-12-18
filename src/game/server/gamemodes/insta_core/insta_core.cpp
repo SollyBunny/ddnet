@@ -3,6 +3,7 @@
 #include <base/log.h>
 #include <base/system.h>
 
+#include <engine/console.h>
 #include <engine/server/server.h>
 #include <engine/shared/config.h>
 #include <engine/shared/linereader.h>
@@ -773,7 +774,7 @@ void CGameControllerInstaCore::OnRoundEnd()
 
 	if(m_WasMysteryRound)
 	{
-		GameServer()->Console()->ExecuteFile(g_Config.m_SvMysteryRoundsResetFileName);
+		GameServer()->Console()->ExecuteFile(g_Config.m_SvMysteryRoundsResetFileName, IConsole::CLIENT_ID_UNSPECIFIED);
 		m_WasMysteryRound = false;
 	}
 
@@ -785,7 +786,7 @@ void CGameControllerInstaCore::OnRoundEnd()
 
 		if(!m_WasMysteryRound)
 		{
-			GameServer()->Console()->ExecuteFile(Config()->m_SvMysteryRoundsResetFileName);
+			GameServer()->Console()->ExecuteFile(Config()->m_SvMysteryRoundsResetFileName, IConsole::CLIENT_ID_UNSPECIFIED);
 			GameServer()->SendChat(-1, TEAM_ALL, "MYSTERY ROUND!");
 		}
 
@@ -796,7 +797,7 @@ void CGameControllerInstaCore::OnRoundEnd()
 		if(std::ranges::find(vTemp, pLine) != vTemp.end())
 			continue;
 
-		GameServer()->Console()->ExecuteLine(pLine);
+		GameServer()->Console()->ExecuteLine(pLine, IConsole::CLIENT_ID_UNSPECIFIED);
 		m_WasMysteryRound = true;
 		vTemp.emplace_back(pLine);
 	}
