@@ -949,20 +949,6 @@ public:
 	virtual void SnapPlayer6(int SnappingClient, CPlayer *pPlayer, CNetObj_ClientInfo *pClientInfo, CNetObj_PlayerInfo *pPlayerInfo) {}
 
 	/*
-		Function: SnapPlayerScore
-			Warning its value could be overwritten by `SnapPlayer6()`
-
-		Arguments:
-			SnappingClient - Client Id of the player that will receive the snapshot
-			pPlayer - CPlayer that is being snapped
-			DDRaceScore - Current value of the score set by the ddnet code
-
-		Returns:
-			return the new score value that will be included in the snapshot
-	*/
-	virtual int SnapPlayerScore(int SnappingClient, CPlayer *pPlayer, int DDRaceScore);
-
-	/*
 		Function: SnapFlagCarrierRed
 			This value is fetched and snapped by the insta core controller
 			if the gameflag teams or gameflag flags is set

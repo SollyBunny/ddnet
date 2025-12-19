@@ -19,8 +19,7 @@
 // player object
 class CPlayer
 {
-	std::optional<int> m_Score; // hack for IDEs
-	int m_Team;
+	int m_Team; // hack for IDEs
 #endif // IN_CLASS_PLAYER
 
 public:
@@ -43,6 +42,10 @@ public:
 	// it is determined by the sv_display_score config and /score chat command
 	// and used by the GetDisplayScore gamecontroller method
 	EDisplayScore m_DisplayScore = EDisplayScore::POINTS;
+
+	// this used to be a ddnet variable but it got removed there
+	// so now it is a ddnet-insta specific variable
+	std::optional<int> m_Score;
 
 	/*******************************************************************
 	 * zCatch                                                          *

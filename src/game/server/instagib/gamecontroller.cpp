@@ -91,17 +91,6 @@ void IGameController::OnDDRaceTimeLoad(class CPlayer *pPlayer, float Time)
 	pPlayer->m_Score = Time;
 }
 
-int IGameController::SnapPlayerScore(int SnappingClient, CPlayer *pPlayer, int DDRaceScore)
-{
-	if(Server()->IsSixup(SnappingClient))
-	{
-		// Times are in milliseconds for 0.7
-		return pPlayer->m_Score.has_value() && (!g_Config.m_SvHideScore || SnappingClient == pPlayer->GetCid()) ? GameServer()->Score()->PlayerData(pPlayer->GetCid())->m_BestTime * 1000 : protocol7::FinishTime::NOT_FINISHED;
-	}
-
-	return DDRaceScore;
-}
-
 int IGameController::SnapRoundStartTick(int SnappingClient)
 {
 	if(

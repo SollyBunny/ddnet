@@ -215,11 +215,16 @@ int CGameControllerBasePvp::SnapGameInfoExFlags2(int SnappingClient, int DDRaceF
 	return GAMEINFOFLAG2_HUD_AMMO | GAMEINFOFLAG2_HUD_HEALTH_ARMOR;
 }
 
-int CGameControllerBasePvp::SnapPlayerScore(int SnappingClient, CPlayer *pPlayer, int DDRaceScore)
+int CGameControllerBasePvp::SnapPlayerScore(int SnappingClient, CPlayer *pPlayer)
 {
+	// we are never interested in the score value from ddnet
+	// especially because it is also affected by `sv_hide_score` which we ignore
+	// int DDRaceScore = CGameControllerInstaCore::SnapPlayerScore(SnappingClient, pPlayer);
+
+	// TODO: the `return 0` shows wrong scores in server side demos
 	CPlayer *pSnapReceiver = GetPlayerOrNullptr(SnappingClient);
 	if(!pSnapReceiver)
-		return DDRaceScore;
+		return 0;
 
 	int Score = pPlayer->m_Score.value_or(0);
 
