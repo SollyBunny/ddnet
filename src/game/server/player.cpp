@@ -378,10 +378,6 @@ void CPlayer::Snap(int SnappingClient)
 			pPlayerInfo->m_PlayerFlags |= protocol7::PLAYERFLAG_AIM;
 		if(Server()->IsRconAuthed(m_ClientId) && ((SnappingClient >= 0 && Server()->IsRconAuthed(SnappingClient)) || !Server()->HasAuthHidden(m_ClientId)))
 			pPlayerInfo->m_PlayerFlags |= protocol7::PLAYERFLAG_ADMIN;
-		// TODO: move this into SnapPlayerFlags7
-		// ddnet-insta
-		if(!GameServer()->m_pController->IsPlayerReadyMode() || m_IsReadyToPlay)
-			pPlayerInfo->m_PlayerFlags |= protocol7::PLAYERFLAG_READY;
 
 		pPlayerInfo->m_Score = Score;
 		pPlayerInfo->m_Latency = Latency;

@@ -686,9 +686,12 @@ int CGameControllerInstaCore::SnapTeamscoreBlue(int SnappingClient)
 
 int CGameControllerInstaCore::SnapPlayerFlags7(int SnappingClient, CPlayer *pPlayer, int PlayerFlags7)
 {
+	// TODO: better server side demo support. Do not just return empty flags in that case.
 	if(SnappingClient < 0 || SnappingClient >= MAX_CLIENTS)
 		return PlayerFlags7;
 
+	if(!IsPlayerReadyMode() || pPlayer->m_IsReadyToPlay)
+		PlayerFlags7 |= protocol7::PLAYERFLAG_READY;
 	if(pPlayer->m_IsDead && (!pPlayer->GetCharacter() || !pPlayer->GetCharacter()->IsAlive()))
 		PlayerFlags7 |= protocol7::PLAYERFLAG_DEAD;
 	// hack to let 0.7 players vote as spectators
