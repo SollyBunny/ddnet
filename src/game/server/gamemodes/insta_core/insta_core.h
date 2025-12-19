@@ -5,6 +5,7 @@
 
 #include <generated/protocol7.h>
 
+#include <game/server/instagib/enums.h>
 #include <game/server/player.h>
 
 // base functionality of the ddnet-insta server
@@ -136,7 +137,7 @@ public:
 	void ApplyVanillaDamage(int &Dmg, int From, int Weapon, CCharacter *pCharacter) override;
 
 	// displays fng styled laser text points in the world
-	void MakeTextPoints(vec2 Pos, int Points, int Seconds, CClientMask Mask, int TextType = 1) const;
+	void MakeTextPoints(vec2 Pos, int Points, int Seconds, CClientMask Mask, ETextType TextType = ETextType::LASER) const;
 
 	// plays the satisfying hit sound
 	// that is used in teeworlds when a projectile causes damage

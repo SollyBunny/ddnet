@@ -331,12 +331,20 @@ inline void CGameControllerBaseFng::UpdateScoresAndDisplayPoints(CPlayer *pKille
 {
 	if(!pKiller)
 		return;
+
 	// The player already gets one score point
 	// in CGameControllerBasePvp::OnCharacterDeath()
 	pKiller->AddScore(PlayerScore - 1);
 	AddTeamscore(pKiller->GetTeam(), TeamScore);
 	if(pKiller->IsPlaying()) // NOLINT(clang-analyzer-unix.Malloc)
-		MakeTextPoints(pKiller->GetCharacter()->GetPos(), PlayerScore, Config()->m_SvTextPointsDelay, pKiller->GetCharacter()->TeamMask(), Config()->m_SvTextPoints); // NOLINT(clang-analyzer-unix.Malloc)
+	{
+		MakeTextPoints(
+			pKiller->GetCharacter()->GetPos(),
+			PlayerScore,
+			Config()->m_SvTextPointsDelay,
+			pKiller->GetCharacter()->TeamMask(),
+			(ETextType)Config()->m_SvTextPoints); // NOLINT(clang-analyzer-unix.Malloc)
+	}
 }
 
 void CGameControllerBaseFng::SnapDDNetCharacter(int SnappingClient, CCharacter *pChr, CNetObj_DDNetCharacter *pDDNetCharacter)

@@ -1191,7 +1191,7 @@ void CGameControllerInstaCore::ApplyVanillaDamage(int &Dmg, int From, int Weapon
 		GameServer()->CreateSound(pCharacter->m_Pos, SOUND_PLAYER_PAIN_SHORT);
 }
 
-void CGameControllerInstaCore::MakeTextPoints(vec2 Pos, int Points, int Seconds, CClientMask Mask, int TextType) const
+void CGameControllerInstaCore::MakeTextPoints(vec2 Pos, int Points, int Seconds, CClientMask Mask, ETextType TextType) const
 {
 	if(!g_Config.m_SvTextPoints)
 		return;
@@ -1202,10 +1202,17 @@ void CGameControllerInstaCore::MakeTextPoints(vec2 Pos, int Points, int Seconds,
 	else
 		str_format(aText, sizeof(aText), "%d", Points);
 	Pos.y -= 60.0f;
-	if(TextType == 1)
+
+	switch(TextType)
+	{
+	case ETextType::NONE:
+	case ETextType::LASER:
 		new CLaserText(&GameServer()->m_World, Mask, Pos, Server()->TickSpeed() * Seconds, aText);
-	else
+		break;
+	case ETextType::PROJECTILE:
 		new CProjectileText(&GameServer()->m_World, Mask, Pos, Server()->TickSpeed() * Seconds, aText);
+		break;
+	}
 } // NOLINT(clang-analyzer-unix.Malloc)
 
 void CGameControllerInstaCore::DoDamageHitSound(int KillerId)
