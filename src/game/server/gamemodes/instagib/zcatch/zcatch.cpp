@@ -309,7 +309,15 @@ void CGameControllerZcatch::ReleasePlayer(class CPlayer *pPlayer, const char *pM
 		pPlayer->m_WantsToJoinSpectators = false;
 	}
 	else
+	{
+		// release player back into the world
+		// if the kill is old
 		pPlayer->SetTeamNoKill(TEAM_RED);
+
+		// abort move to team spectators
+		// if the kill is recent
+		pPlayer->m_ForceTeam.m_Tick = 0;
+	}
 }
 
 bool CGameControllerZcatch::OnSelfkill(int ClientId)
