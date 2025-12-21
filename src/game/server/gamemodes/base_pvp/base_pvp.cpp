@@ -267,6 +267,11 @@ int CGameControllerBasePvp::SnapPlayerScore(int SnappingClient, CPlayer *pPlayer
 	return Score;
 }
 
+void CGameControllerBasePvp::SnapDDNetPlayer(int SnappingClient, CPlayer *pPlayer, CNetObj_DDNetPlayer *pDDNetPlayer)
+{
+	pDDNetPlayer->m_FinishTimeSeconds = FinishTime::UNSET;
+}
+
 bool CGameControllerBasePvp::IsGrenadeGameType() const
 {
 	// TODO: this should be done with some cleaner spawnweapons/available weapons enum flag thing

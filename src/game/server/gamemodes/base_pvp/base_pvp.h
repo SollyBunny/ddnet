@@ -38,6 +38,7 @@ public:
 	int SnapGameInfoExFlags(int SnappingClient, int DDRaceFlags) override;
 	int SnapGameInfoExFlags2(int SnappingClient, int DDRaceFlags) override;
 	int SnapPlayerScore(int SnappingClient, CPlayer *pPlayer) override;
+	void SnapDDNetPlayer(int SnappingClient, CPlayer *pPlayer, CNetObj_DDNetPlayer *pDDNetPlayer) override;
 	int GetDefaultWeapon(class CPlayer *pPlayer) override { return m_DefaultWeapon; }
 	void OnDDRaceTimeLoad(class CPlayer *pPlayer, float Time) override {}
 	bool LoadNewPlayerNameData(int ClientId) override;
