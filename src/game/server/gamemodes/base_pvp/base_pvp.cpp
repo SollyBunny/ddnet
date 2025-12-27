@@ -182,7 +182,7 @@ int CGameControllerBasePvp::SnapGameInfoExFlags(int SnappingClient, int DDRaceFl
 		GAMEINFOFLAG_ENTITIES_VANILLA | // ddnet-insta
 		GAMEINFOFLAG_BUG_VANILLA_BOUNCE | // ddnet-insta
 		GAMEINFOFLAG_GAMETYPE_VANILLA | // ddnet-insta
-		/* GAMEINFOFLAG_TIMESCORE | */ // ddnet-insta
+		/* GAMEINFOFLAG_TIMESCORE | */ // Unsetting this alone is not enough see also `SnapPlayerTime()`
 		/* GAMEINFOFLAG_GAMETYPE_RACE | */ // ddnet-insta
 		/* GAMEINFOFLAG_GAMETYPE_DDRACE | */ // ddnet-insta
 		/* GAMEINFOFLAG_GAMETYPE_DDNET | */ // ddnet-insta
@@ -270,7 +270,12 @@ int CGameControllerBasePvp::SnapPlayerScore(int SnappingClient, CPlayer *pPlayer
 IGameController::CFinishTime CGameControllerBasePvp::SnapPlayerTime(int SnappingClient, CPlayer *pPlayer)
 {
 	// We have to unset timescore so new ddnet clients see points
-	// instead of times in the scoreboard.
+	// instead of times in the scoreboard. Or the sorting order breaks.
+	//
+	// See those issues and prs for more details:
+	// - https://github.com/ddnet/ddnet/pull/11476
+	// - https://github.com/ddnet-insta/ddnet-insta/issues/494
+	// - https://github.com/ddnet/ddnet/issues/11467
 	return CFinishTime::Unset();
 }
 
