@@ -267,9 +267,9 @@ int CGameControllerBasePvp::SnapPlayerScore(int SnappingClient, CPlayer *pPlayer
 	return Score;
 }
 
-void CGameControllerBasePvp::SnapDDNetPlayer(int SnappingClient, CPlayer *pPlayer, CNetObj_DDNetPlayer *pDDNetPlayer)
+IGameController::CFinishTime CGameControllerBasePvp::SnapPlayerTime(int SnappingClient, CPlayer *pPlayer)
 {
-	pDDNetPlayer->m_FinishTimeSeconds = FinishTime::UNSET;
+	return CFinishTime::Unset();
 }
 
 bool CGameControllerBasePvp::IsGrenadeGameType() const
