@@ -269,6 +269,8 @@ int CGameControllerBasePvp::SnapPlayerScore(int SnappingClient, CPlayer *pPlayer
 
 IGameController::CFinishTime CGameControllerBasePvp::SnapPlayerTime(int SnappingClient, CPlayer *pPlayer)
 {
+	// We have to unset timescore so new ddnet clients see points
+	// instead of times in the scoreboard.
 	return CFinishTime::Unset();
 }
 
