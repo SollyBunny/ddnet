@@ -32,7 +32,7 @@ CGameControllerZcatch::CGameControllerZcatch(class CGameContext *pGameServer) :
 		m_pStatsTable = "zcatch_laser";
 	if(m_pStatsTable[0])
 	{
-		m_pExtraColumns = new CZCatchColumns();
+		m_pExtraColumns = new CZcatchColumns();
 		m_pSqlStats->SetExtraColumns(m_pExtraColumns);
 		m_pSqlStats->CreateTable(m_pStatsTable);
 	}

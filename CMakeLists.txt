@@ -2895,6 +2895,7 @@ if(SERVER)
     instagib/antibob.h
     instagib/chat_commands.cpp
     instagib/chat_commands.h
+    instagib/column_template.h
     instagib/ddnet_db_utils/ddnet_db_utils.cpp
     instagib/ddnet_db_utils/ddnet_db_utils.h
     instagib/entities/character.cpp

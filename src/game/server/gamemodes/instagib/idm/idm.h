@@ -2,95 +2,10 @@
 #define GAME_SERVER_GAMEMODES_INSTAGIB_IDM_IDM_H
 
 #include <game/server/gamemodes/instagib/dm.h>
-#include <game/server/instagib/extra_columns.h>
 
-class CIdmColumns : public CExtraColumns
-{
-public:
-	const char *CreateTable() override
-	{
-		return
-#define MACRO_ADD_COLUMN(name, sql_name, sql_type, bind_type, default, merge_method) sql_name "  " sql_type "  DEFAULT " default ","
-#include "sql_columns.h"
-#undef MACRO_ADD_COLUMN
-			;
-	}
-
-	const char *SelectColumns() override
-	{
-		return
-#define MACRO_ADD_COLUMN(name, sql_name, sql_type, bind_type, default, merge_method) ", " sql_name
-#include "sql_columns.h"
-#undef MACRO_ADD_COLUMN
-			;
-	}
-
-	const char *InsertColumns() override { return SelectColumns(); }
-
-	const char *UpdateColumns() override
-	{
-		return
-#define MACRO_ADD_COLUMN(name, sql_name, sql_type, bind_type, default, merge_method) ", " sql_name " = ? "
-#include "sql_columns.h"
-#undef MACRO_ADD_COLUMN
-			;
-	}
-
-	const char *InsertValues() override
-	{
-		return
-#define MACRO_ADD_COLUMN(name, sql_name, sql_type, bind_type, default, merge_method) ", ?"
-#include "sql_columns.h"
-#undef MACRO_ADD_COLUMN
-			;
-	}
-
-	void InsertBindings(int *pOffset, IDbConnection *pSqlServer, const CSqlStatsPlayer *pStats) override
-	{
-#define MACRO_ADD_COLUMN(name, sql_name, sql_type, bind_type, default, merge_method) pSqlServer->Bind##bind_type((*pOffset)++, pStats->m_##name);
-#include "sql_columns.h"
-#undef MACRO_ADD_COLUMN
-	}
-
-	void UpdateBindings(int *pOffset, IDbConnection *pSqlServer, const CSqlStatsPlayer *pStats) override
-	{
-		InsertBindings(pOffset, pSqlServer, pStats);
-	}
-
-	void Dump(const CSqlStatsPlayer *pStats, const char *pSystem = "stats") const override
-	{
-#define MACRO_ADD_COLUMN(name, sql_name, sql_type, bind_type, default, merge_method) \
-	dbg_msg(pSystem, "  %s: %d", sql_name, pStats->m_##name);
-#include "sql_columns.h"
-#undef MACRO_ADD_COLUMN
-	}
-
-	bool HasValues(const class CSqlStatsPlayer *pStats) const override
-	{
-		return false
-#define MACRO_ADD_COLUMN(name, sql_name, sql_type, bind_type, default, merge_method) \
-	|| Is##bind_type##ValueSet(pStats->m_##name)
-#include "sql_columns.h"
-#undef MACRO_ADD_COLUMN
-			;
-	}
-
-	void MergeStats(CSqlStatsPlayer *pOutputStats, const CSqlStatsPlayer *pNewStats) override
-	{
-#define MACRO_ADD_COLUMN(name, sql_name, sql_type, bind_type, default, merge_method) \
-	pOutputStats->m_##name = Merge##bind_type##merge_method(pOutputStats->m_##name, pNewStats->m_##name);
-#include "sql_columns.h"
-#undef MACRO_ADD_COLUMN
-	}
-
-	void ReadAndMergeStats(int *pOffset, IDbConnection *pSqlServer, CSqlStatsPlayer *pOutputStats, const CSqlStatsPlayer *pNewStats) override
-	{
-#define MACRO_ADD_COLUMN(name, sql_name, sql_type, bind_type, default, merge_method) \
-	pOutputStats->m_##name = Merge##bind_type##merge_method(pSqlServer->Get##bind_type((*pOffset)++), pNewStats->m_##name);
-#include "sql_columns.h"
-#undef MACRO_ADD_COLUMN
-	}
-};
+#define SQL_COLUMN_FILE <game/server/gamemodes/instagib/idm/sql_columns.h>
+#define SQL_COLUMN_CLASS CIdmColumns
+#include <game/server/instagib/column_template.h>
 
 class CGameControllerIDM : public CGameControllerInstaBaseDM
 {
