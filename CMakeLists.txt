@@ -3084,6 +3084,8 @@ if(SERVER)
     instagib/chat_commands.cpp
     instagib/chat_commands.h
     instagib/column_template.h
+    instagib/ddnet_db_utils/ddnet_db_utils.cpp
+    instagib/ddnet_db_utils/ddnet_db_utils.h
     instagib/entities/character.cpp
     instagib/entities/character.h
     instagib/entities/ddnet_pvp/vanilla_pickup.cpp
