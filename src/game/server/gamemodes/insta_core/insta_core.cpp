@@ -461,12 +461,22 @@ int CGameControllerInstaCore::GetAutoTeam(int NotThisId)
 
 bool CGameControllerInstaCore::CanJoinTeam(int Team, int NotThisId, char *pErrorReason, int ErrorReasonSize)
 {
-	const CPlayer *pPlayer = GameServer()->m_apPlayers[NotThisId];
+	const CPlayer *pPlayer = GetPlayerOrNullptr(NotThisId);
 	if(pPlayer && pPlayer->IsPaused())
 	{
 		if(pErrorReason)
 			str_copy(pErrorReason, "Use /pause first then you can kill", ErrorReasonSize);
 		return false;
+	}
+	if(pPlayer)
+	{
+		const CCharacter *pChr = pPlayer->GetCharacter();
+		// TODO: think about block gametype here, do we allow team switches while frozen?
+		if(pChr && pChr->m_FreezeTime && !IsDDRaceGameType())
+		{
+			str_format(pErrorReason, ErrorReasonSize, "You can't join %s while being frozen", GetTeamName(Team));
+			return false;
+		}
 	}
 	if(Team == TEAM_SPECTATORS || (pPlayer && pPlayer->GetTeam() != TEAM_SPECTATORS))
 		return true;
