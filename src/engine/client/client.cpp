@@ -298,7 +298,7 @@ void CClient::Rcon(const char *pCmd)
 	// TClient
 	if(str_comp_nocase(pCmd, "clear") == 0)
 	{
-		m_pConsole->ExecuteLine("clear_remote_console");
+		m_pConsole->ExecuteLine("clear_remote_console", IConsole::CLIENT_ID_UNSPECIFIED);
 		return;
 	}
 	CMsgPacker Msg(NETMSG_RCON_CMD, true);
@@ -701,7 +701,7 @@ void CClient::Connect(const char *pAddress, const char *pPassword)
 	if(!m_SendPassword)
 	{
 		m_pGameClient->SetConnectInfo(&aConnectAddrs[0]);
-		m_pConsole->ExecuteLine(g_Config.m_TcExecuteOnConnect);
+		m_pConsole->ExecuteLine(g_Config.m_TcExecuteOnConnect, IConsole::CLIENT_ID_UNSPECIFIED);
 	}
 	m_pGameClient->SetConnectInfo(nullptr);
 
@@ -2254,7 +2254,7 @@ void CClient::ProcessServerPacket(CNetChunk *pPacket, int Conn, bool Dummy)
 					{
 						m_aExecuteOnJoinDone[Conn] = true;
 						if(g_Config.m_TcExecuteOnJoin[0] != '\0')
-							m_pConsole->ExecuteLine(g_Config.m_TcExecuteOnJoin);
+							m_pConsole->ExecuteLine(g_Config.m_TcExecuteOnJoin, IConsole::CLIENT_ID_UNSPECIFIED);
 					}
 
 					// we got two snapshots until we see us self as connected

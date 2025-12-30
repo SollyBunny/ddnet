@@ -7,6 +7,7 @@
 # 2025-05-25 洛初
 # 2025-08-13 洛初
 # 2025-10-30 潘潘NO.1 & EdEnd
+# 2025-12-15 洛初
 ##### /authors #####
 
 ##### translated strings #####
@@ -63,13 +64,13 @@ Freeze stars
 == 显示冻结效果的星星动画
 
 Color frozen tee skins
-== 冻结不再是灰黑色而是自定义的颜色（无自定义默认灰黑色）
+== 被冻结的皮肤使用自定义颜色（未设置默认灰黑色）
 
 Render all custom colored feet as white feet skin
 == 将所有自定义脚部颜色渲染为白色
 
 Show position and angle (mini debug)
-== 显示位置和角度（小型调试工具）
+== 显示位置和角度（调试面板）
 
 Show your cursor when in free spectate
 == 在自由观战时显示光标
@@ -108,13 +109,13 @@ Input
 == 输入
 
 Fast Inputs (-20ms visual delay)
-== 更快的输入（-20毫秒视觉延迟）
+== 快速输入（-20毫秒视觉延迟）
 
 Anti Latency Tools
 == 延迟补偿工具
 
 Remove prediction & antiping in freeze
-== 在冻结时移除预测 & 延迟补偿
+== 冻结时禁用预测和延迟补偿
 
 Amount
 == 预测量
@@ -174,7 +175,7 @@ Unfreeze outline color
 == 解冻轮廓颜色
 
 Optimistic prediction along stable direction
-== 沿稳定方向更乐观的预测
+== 沿稳定方向进行乐观预测
 
 Negative stability buffer (for Gores)
 == 负稳定性缓冲（用于 Gores）
@@ -192,7 +193,7 @@ Show unpredicted ghosts for other players
 == 显示其他玩家未预测的影子
 
 Swap ghosts and normal players
-== 交换影子和普通玩家
+== 切换影子和玩家显示的优先级
 
 Predicted alpha
 == 预测透明度
@@ -222,7 +223,7 @@ Render tiny tees instead of circles
 == 渲染成迷你Tee而不是圆圈
 
 Use warlist groups for indicator
-== 使用敌对列表作为指示器
+== 为指示器启用敌对列表分组
 
 Indicator size
 == 显示大小
@@ -282,28 +283,28 @@ Random
 == 随机
 
 Tee Trails
-== Tee尾迹
+== Tee拖尾
 
 Enable tee trails
-== 启用Tee尾迹
+== 启用Tee拖尾
 
 Fade trail alpha
-== 淡化尾迹透明度
+== 淡化拖尾透明度
 
 Taper trail width
-== 锥形尾迹
+== 锥形拖尾
 
 Trail width
-== 尾迹宽度
+== 拖尾宽度
 
 Trail length
-== 尾迹长度
+== 拖尾长度
 
 Trail alpha
-== 尾迹透明度
+== 拖尾透明度
 
 Tee trail color
-== Tee尾迹颜色
+== Tee拖尾颜色
 
 Name:
 == 名称:
@@ -384,7 +385,7 @@ Chat Binds
 == 聊天绑定
 
 Kaomoji
-== 表情符号
+== 颜文字
 
 Status Bar
 == 状态栏
@@ -519,7 +520,7 @@ Command
 == 命令
 
 Extra tick other tees (increases other tees latency, \nmakes dragging slightly easier when using fast input)
-== 对其他tee增加帧（增加其他tee的延迟，\n使用更快的输入时使钩其他tee稍微容易一些）
+== 为其他tee增加额外帧（会增加其他tee的显示延迟，\n同时使用快速输入可使钩其他tee稍容易些）
 
 Prediction Margin
 == 预测量
@@ -534,7 +535,7 @@ Use warlist colors instead of regular colors
 == 使用敌对列表颜色而不是常规颜色
 
 Show all warlist groups
-== 显示所有敌对群组
+== 显示所有敌对列表分组
 
 Last!
 == 最后存活！
@@ -588,7 +589,7 @@ Voting
 == 投票
 
 Auto vote no to map changes when far
-== 自动拒绝地图修改
+== 跑了很久时自动拒绝地图更换投票
 
 Minimum Time
 == 最短时间
@@ -628,7 +629,7 @@ Speed
 ==  秒 (不消失)
 
 Attempt to change your name when near finish
-== 过终点前尝试改名
+== 接近终点时尝试改名
 
 Background Draw
 == 背景绘制
@@ -839,7 +840,7 @@ Unhook & hook
 == 墙体轮廓
 
 Freeze & deep
-== 冷冻轮廓与深冷轮廓
+== 冷冻与深冷轮廓
 
 Unfreeze & undeep
 == 解冻轮廓
@@ -861,28 +862,28 @@ The command is ran in console not chat
 
 [bgdraw]
 No items to write
-== 
+== 没有项目需要写入
 
 [bgdraw]
 No changes since last save
-== 
+== 自上次保存以来没有更改
 
 [Outlines]
 Width
-== 
+== 宽度
 
 Kill
-== 
+== 即死轮廓
 
 Time until strokes disappear
-== 
+== 笔迹消失时间
 
 _ or ' ' = Space
-== 
+== _ 或 ' ' = 留空（占位）
 
 Activating mod weapon on %d: %s\n
-== 
+== 赋予 %d: %s 管理武器
 
 [data_version.h]
 You have probably only installed the TClient DDNet.exe which is not supported, please use the entire TClient folder
-== 
+== 你可能只安装了 TClient 的 DDNet.exe 文件，这样不行，请使用完整的 TClient 文件夹

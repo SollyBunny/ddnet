@@ -318,12 +318,12 @@ void CBindWheel::OnRender()
 
 void CBindWheel::ExecuteBind(int Bind)
 {
-	Console()->ExecuteLine(m_vBinds[Bind].m_aCommand);
+	Console()->ExecuteLine(m_vBinds[Bind].m_aCommand, IConsole::CLIENT_ID_UNSPECIFIED);
 }
 void CBindWheel::ExecuteHoveredBind()
 {
 	if(m_SelectedBind >= 0)
-		Console()->ExecuteLine(m_vBinds[m_SelectedBind].m_aCommand);
+		Console()->ExecuteLine(m_vBinds[m_SelectedBind].m_aCommand, IConsole::CLIENT_ID_UNSPECIFIED);
 }
 
 void CBindWheel::ConfigSaveCallback(IConfigManager *pConfigManager, void *pUserData)
