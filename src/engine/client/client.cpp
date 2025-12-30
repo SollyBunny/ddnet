@@ -298,7 +298,7 @@ void CClient::Rcon(const char *pCmd)
 	// TClient
 	if(str_comp_nocase(pCmd, "clear") == 0)
 	{
-		m_pConsole->ExecuteLine("clear_remote_console");
+		m_pConsole->ExecuteLine("clear_remote_console", IConsole::CLIENT_ID_UNSPECIFIED);
 		return;
 	}
 	CMsgPacker Msg(NETMSG_RCON_CMD, true);
@@ -701,7 +701,7 @@ void CClient::Connect(const char *pAddress, const char *pPassword)
 	if(!m_SendPassword)
 	{
 		m_pGameClient->SetConnectInfo(&aConnectAddrs[0]);
-		m_pConsole->ExecuteLine(g_Config.m_TcExecuteOnConnect);
+		m_pConsole->ExecuteLine(g_Config.m_TcExecuteOnConnect, IConsole::CLIENT_ID_UNSPECIFIED);
 	}
 	m_pGameClient->SetConnectInfo(nullptr);
 
@@ -2254,7 +2254,7 @@ void CClient::ProcessServerPacket(CNetChunk *pPacket, int Conn, bool Dummy)
 					{
 						m_aExecuteOnJoinDone[Conn] = true;
 						if(g_Config.m_TcExecuteOnJoin[0] != '\0')
-							m_pConsole->ExecuteLine(g_Config.m_TcExecuteOnJoin);
+							m_pConsole->ExecuteLine(g_Config.m_TcExecuteOnJoin, IConsole::CLIENT_ID_UNSPECIFIED);
 					}
 
 					// we got two snapshots until we see us self as connected
@@ -4998,7 +4998,7 @@ int main(int argc, const char **argv)
 	{
 		if(!pStorage->FileExists(s_aConfigDomains[ConfigDomain].m_aConfigPath, IStorage::TYPE_ALL))
 			continue;
-		if(!pConsole->ExecuteFile(s_aConfigDomains[ConfigDomain].m_aConfigPath))
+		if(!pConsole->ExecuteFile(s_aConfigDomains[ConfigDomain].m_aConfigPath, IConsole::CLIENT_ID_UNSPECIFIED))
 		{
 			char aError[2048];
 			str_format(aError, sizeof(aError), "Failed to load config from '%s'.", s_aConfigDomains[ConfigDomain].m_aConfigPath);
@@ -5012,11 +5012,11 @@ int main(int argc, const char **argv)
 
 	if(pStorage->FileExists(AUTOEXEC_CLIENT_FILE, IStorage::TYPE_ALL))
 	{
-		pConsole->ExecuteFile(AUTOEXEC_CLIENT_FILE);
+		pConsole->ExecuteFile(AUTOEXEC_CLIENT_FILE, IConsole::CLIENT_ID_UNSPECIFIED);
 	}
 	else // fallback
 	{
-		pConsole->ExecuteFile(AUTOEXEC_FILE);
+		pConsole->ExecuteFile(AUTOEXEC_FILE, IConsole::CLIENT_ID_UNSPECIFIED);
 	}
 
 	if(g_Config.m_ClConfigVersion < 1)
