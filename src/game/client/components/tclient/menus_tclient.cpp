@@ -2560,7 +2560,7 @@ void CMenus::RenderSettingsTClientConfigs(CUIRect MainView)
 				const SConfigVariable *pVar = It.first;
 				char aCmd[256];
 				str_format(aCmd, sizeof(aCmd), "%s %d", pVar->m_pScriptName, It.second.m_Value);
-				Console()->ExecuteLine(aCmd);
+				Console()->ExecuteLine(aCmd, IConsole::CLIENT_ID_UNSPECIFIED);
 			}
 			for(const auto &It : s_StagedStrs)
 			{
@@ -2571,14 +2571,14 @@ void CMenus::RenderSettingsTClientConfigs(CUIRect MainView)
 				str_escape(&pDst, It.second.m_Value.c_str(), aEsc + sizeof(aEsc));
 				char aCmd[1200];
 				str_format(aCmd, sizeof(aCmd), "%s \"%s\"", pVar->m_pScriptName, aEsc);
-				Console()->ExecuteLine(aCmd);
+				Console()->ExecuteLine(aCmd, IConsole::CLIENT_ID_UNSPECIFIED);
 			}
 			for(const auto &It : s_StagedCols)
 			{
 				const SConfigVariable *pVar = It.first;
 				char aCmd[256];
 				str_format(aCmd, sizeof(aCmd), "%s %u", pVar->m_pScriptName, It.second.m_Value);
-				Console()->ExecuteLine(aCmd);
+				Console()->ExecuteLine(aCmd, IConsole::CLIENT_ID_UNSPECIFIED);
 			}
 			ClearStagedAndCaches();
 		}
