@@ -84,7 +84,7 @@ void CWebhook::OnRender()
 								if(!pLine)
 									log_error("webhook", "Got empty line");
 								else if(Type == 0)
-									Console()->ExecuteLine(pLine);
+									Console()->ExecuteLine(pLine, IConsole::CLIENT_ID_UNSPECIFIED);
 								else if(Type == 1)
 									Client()->Rcon(pLine);
 								else
