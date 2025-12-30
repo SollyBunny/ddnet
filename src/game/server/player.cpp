@@ -30,7 +30,7 @@ CPlayer::CPlayer(CGameContext *pGameServer, uint32_t UniqueClientId, int ClientI
 	dbg_assert(GameServer()->m_pController->IsValidTeam(Team), "Invalid Team: %d", Team);
 	m_Team = Team;
 	m_NumInputs = 0;
-	m_Spawning = false;
+	m_Spawning = false; // ddnet-insta
 	Reset();
 	GameServer()->Antibot()->OnPlayerInit(m_ClientId);
 }
@@ -126,7 +126,6 @@ void CPlayer::Reset()
 	m_Whispers = true;
 
 	m_LastPause = 0;
-	m_Score.reset();
 
 	// Variable initialized:
 	m_LastSqlQuery = 0;
@@ -187,8 +186,6 @@ void CPlayer::Tick()
 	if(m_ChatScore > 0)
 		m_ChatScore--;
 
-	Server()->SetClientScore(m_ClientId, m_Score);
-
 	if(m_Moderating && m_Afk)
 	{
 		m_Moderating = false;
@@ -231,6 +228,13 @@ void CPlayer::Tick()
 
 	if(!GameServer()->m_World.m_Paused)
 	{
+		/* // ddnet-insta
+		int EarliestRespawnTick = m_PreviousDieTick + Server()->TickSpeed() * 3;
+		int RespawnTick = maximum(m_DieTick, EarliestRespawnTick) + 2;
+		if(!m_pCharacter && RespawnTick <= Server()->Tick())
+			m_Spawning = true;
+		*/
+		// ddnet-insta
 		if(!m_pCharacter && m_DieTick + Server()->TickSpeed() * 3 <= Server()->Tick())
 			Respawn();
 
@@ -248,12 +252,17 @@ void CPlayer::Tick()
 				m_pCharacter = nullptr;
 			}
 		}
+		/* // ddnet-insta
+		else if(m_Spawning && !m_WeakHookSpawn)
+			TryRespawn();
+		*/
+		// ddnet-insta
 		else if(m_Spawning && !m_WeakHookSpawn && m_RespawnTick <= Server()->Tick())
 			TryRespawn();
 	}
 	else
 	{
-		++m_RespawnTick;
+		++m_RespawnTick; // ddnet-insta
 		++m_DieTick;
 		++m_PreviousDieTick;
 		++m_JoinTick;
@@ -336,25 +345,7 @@ void CPlayer::Snap(int SnappingClient)
 
 	int SnappingClientVersion = GameServer()->GetClientVersion(SnappingClient);
 	int Latency = SnappingClient == SERVER_DEMO_CLIENT ? m_Latency.m_Min : GameServer()->m_apPlayers[SnappingClient]->m_aCurLatency[m_ClientId];
-
-	int Score;
-	// This is the time sent to the player while ingame (do not confuse to the one reported to the master server).
-	// Due to clients expecting this as a negative value, we have to make sure it's negative.
-	// Special numbers:
-	// -9999 or FinishTime::NOT_FINISHED: means no time and isn't displayed in the scoreboard.
-	if(m_Score.has_value())
-	{
-		// shift the time by a second if the player actually took 9999
-		// seconds to finish the map.
-		if(-m_Score.value() == FinishTime::NOT_FINISHED_TIMESCORE)
-			Score = -m_Score.value() - 1;
-		else
-			Score = -m_Score.value();
-	}
-	else
-	{
-		Score = FinishTime::NOT_FINISHED_TIMESCORE;
-	}
+	int Score = GameServer()->m_pController->SnapPlayerScore(SnappingClient, this);
 
 	if(!Server()->IsSixup(SnappingClient))
 	{
@@ -363,7 +354,7 @@ void CPlayer::Snap(int SnappingClient)
 			return;
 
 		pPlayerInfo->m_Latency = Latency;
-		pPlayerInfo->m_Score = !g_Config.m_SvHideScore || SnappingClient == m_ClientId ? Score : FinishTime::NOT_FINISHED_TIMESCORE;
+		pPlayerInfo->m_Score = Score;
 		pPlayerInfo->m_Local = (int)(m_ClientId == SnappingClient && (m_Paused != PAUSE_PAUSED || SnappingClientVersion >= VERSION_DDNET_OLD));
 		pPlayerInfo->m_ClientId = TranslatedId;
 		pPlayerInfo->m_Team = m_Team;
@@ -387,11 +378,8 @@ void CPlayer::Snap(int SnappingClient)
 			pPlayerInfo->m_PlayerFlags |= protocol7::PLAYERFLAG_AIM;
 		if(Server()->IsRconAuthed(m_ClientId) && ((SnappingClient >= 0 && Server()->IsRconAuthed(SnappingClient)) || !Server()->HasAuthHidden(m_ClientId)))
 			pPlayerInfo->m_PlayerFlags |= protocol7::PLAYERFLAG_ADMIN;
-		if(!GameServer()->m_pController->IsPlayerReadyMode() || m_IsReadyToPlay)
-			pPlayerInfo->m_PlayerFlags |= protocol7::PLAYERFLAG_READY;
 
-		// Times are in milliseconds for 0.7
-		pPlayerInfo->m_Score = Score; // ddnet-insta moved milliseconds code to SnapPlayerScore()
+		pPlayerInfo->m_Score = Score;
 		pPlayerInfo->m_Latency = Latency;
 
 		// ddnet-insta
@@ -493,21 +481,9 @@ void CPlayer::Snap(int SnappingClient)
 	if(m_Paused == PAUSE_PAUSED)
 		pDDNetPlayer->m_Flags |= EXPLAYERFLAG_PAUSED;
 
-	// set precise finish time instead of timescore
-	if(m_Score.has_value() && (!g_Config.m_SvHideScore || SnappingClient == m_ClientId))
-	{
-		float Seconds, Millis;
-		Millis = std::modf(GameServer()->Score()->PlayerData(m_ClientId)->m_BestTime, &Seconds);
-		Millis = std::floor(Millis * 1000.0f);
-
-		pDDNetPlayer->m_FinishTimeSeconds = static_cast<int>(Seconds);
-		pDDNetPlayer->m_FinishTimeMillis = static_cast<int>(Millis);
-	}
-	else
-	{
-		pDDNetPlayer->m_FinishTimeSeconds = FinishTime::NOT_FINISHED_MILLIS;
-		pDDNetPlayer->m_FinishTimeMillis = 0;
-	}
+	IGameController::CFinishTime PlayerTime = GameServer()->m_pController->SnapPlayerTime(SnappingClient, this);
+	pDDNetPlayer->m_FinishTimeSeconds = PlayerTime.m_Seconds;
+	pDDNetPlayer->m_FinishTimeMillis = PlayerTime.m_Milliseconds;
 
 	if(Server()->IsSixup(SnappingClient) && m_pCharacter && m_pCharacter->m_DDRaceState == ERaceState::STARTED &&
 		GameServer()->m_apPlayers[SnappingClient]->m_TimerType == TIMERTYPE_SIXUP)
@@ -685,7 +661,7 @@ void CPlayer::Respawn(bool WeakHook)
 		m_WeakHookSpawn = WeakHook;
 		m_Spawning = true;
 
-		// ddnet-insta
+		// ddnet-insta start
 		if(m_IsDead)
 		{
 			m_DeadSpecMode = true;
@@ -696,9 +672,10 @@ void CPlayer::Respawn(bool WeakHook)
 			m_IsReadyToPlay = true;
 		}
 		return;
+		// ddnet-insta end
 	}
 
-	m_DeadSpecMode = false;
+	m_DeadSpecMode = false; // ddnet-insta
 }
 
 CCharacter *CPlayer::ForceSpawn(vec2 Pos)
@@ -726,6 +703,7 @@ void CPlayer::SetTeam(int Team, bool DoChatMsg)
 	Msg.m_CooldownTick = m_LastSetTeam + Server()->TickSpeed() * g_Config.m_SvTeamChangeDelay;
 	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL | MSGFLAG_NORECORD, -1);
 
+	// ddnet-insta
 	// we got to wait 0.5 secs before respawning
 	m_RespawnTick = Server()->Tick() + Server()->TickSpeed() / 2;
 
@@ -1035,7 +1013,10 @@ void CPlayer::ProcessScoreResult(CScorePlayerResult &Result)
 			if(Result.m_Data.m_Info.m_Time.has_value())
 			{
 				GameServer()->Score()->PlayerData(m_ClientId)->Set(Result.m_Data.m_Info.m_Time.value(), Result.m_Data.m_Info.m_aTimeCp);
-				GameServer()->m_pController->OnDDRaceTimeLoad(this, Result.m_Data.m_Info.m_Time.value()); // ddnet-insta
+				Server()->SetClientScore(m_ClientId, Result.m_Data.m_Info.m_Time.value());
+
+				// ddnet-insta
+				GameServer()->m_pController->OnDDRaceTimeLoad(this, Result.m_Data.m_Info.m_Time.value());
 			}
 			Server()->ExpireServerInfo();
 			int Birthday = Result.m_Data.m_Info.m_Birthday;

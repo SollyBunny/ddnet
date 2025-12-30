@@ -39,7 +39,7 @@
 
 #include <vector>
 
-// ddnet-insta
+// ddnet-insta start
 #include <game/server/gamecontroller.h>
 #include <game/server/instagib/structs.h>
 
@@ -48,6 +48,7 @@ GamemodesType &Gamemodes()
 	static GamemodesType s_Gamemodes;
 	return s_Gamemodes;
 }
+// ddnet-insta end
 
 // Not thread-safe!
 class CClientChatLogger : public ILogger
@@ -137,8 +138,8 @@ CGameContext::CGameContext(bool Resetting) :
 	m_aDeleteTempfile[0] = 0;
 	m_TeeHistorianActive = false;
 
-	m_UnstackHackCharacterOffset = 0;
-	mem_zero(m_aaLastChatMessages, sizeof(m_aaLastChatMessages));
+	m_UnstackHackCharacterOffset = 0; // ddnet-insta
+	mem_zero(m_aaLastChatMessages, sizeof(m_aaLastChatMessages)); // ddnet-insta
 }
 
 CGameContext::~CGameContext()
@@ -302,6 +303,8 @@ void CGameContext::CreateHammerHit(vec2 Pos, CClientMask Mask)
 	}
 }
 
+// ddnet-insta
+// void CGameContext::CreateExplosion(vec2 Pos, int Owner, int Weapon, bool NoDamage, int ActivatedTeam, CClientMask Mask)
 void CGameContext::CreateExplosion(vec2 Pos, int Owner, int Weapon, bool NoDamage, int ActivatedTeam, CClientMask Mask, CClientMask SprayMask)
 {
 	// ddnet-insta
@@ -369,7 +372,8 @@ void CGameContext::CreateExplosion(vec2 Pos, int Owner, int Weapon, bool NoDamag
 		}
 	}
 
-	m_pController->OnExplosionHits(Owner, aTargets, NumTargets); // ddnet-insta
+	// ddnet-insta
+	m_pController->OnExplosionHits(Owner, aTargets, NumTargets);
 }
 
 void CGameContext::CreatePlayerSpawn(vec2 Pos, CClientMask Mask)
@@ -696,7 +700,8 @@ void CGameContext::SendChat(int ChatterClientId, int Team, const char *pText, in
 	}
 	else
 	{
-		// CTeamsCore *pTeams = &m_pController->Teams().m_Core; // ddnet-insta
+		// ddnet-insta
+		// CTeamsCore *pTeams = &m_pController->Teams().m_Core;
 		CNetMsg_Sv_Chat Msg;
 		Msg.m_Team = 1;
 		Msg.m_ClientId = ChatterClientId;
@@ -720,8 +725,9 @@ void CGameContext::SendChat(int ChatterClientId, int Team, const char *pText, in
 				}
 				else
 				{
+					// ddnet-insta
 					// if(pTeams->Team(i) == Team && m_apPlayers[i]->GetTeam() != TEAM_SPECTATORS)
-					if(m_apPlayers[i]->GetTeam() == Team && m_apPlayers[i]->GetTeam() != TEAM_SPECTATORS) // ddnet-insta
+					if(m_apPlayers[i]->GetTeam() == Team && m_apPlayers[i]->GetTeam() != TEAM_SPECTATORS)
 					{
 						Server()->SendPackMsg(&Msg, MSGFLAG_VITAL | MSGFLAG_NORECORD, i);
 					}
@@ -1315,7 +1321,7 @@ void CGameContext::OnTick()
 									(IsKickVote() || IsSpecVote()) && time_get() < m_VoteCloseTime))
 			{
 				Server()->SetRconCid(IServer::RCON_CID_VOTE);
-				Console()->ExecuteLine(m_aVoteCommand);
+				Console()->ExecuteLine(m_aVoteCommand, IConsole::CLIENT_ID_UNSPECIFIED);
 				Server()->SetRconCid(IServer::RCON_CID_SERV);
 				EndVote();
 				SendChat(-1, TEAM_ALL, "Vote passed", -1, FLAG_SIX);
@@ -1326,7 +1332,7 @@ void CGameContext::OnTick()
 			else if(m_VoteEnforce == VOTE_ENFORCE_YES_ADMIN)
 			{
 				Server()->SetRconCid(IServer::RCON_CID_VOTE);
-				Console()->ExecuteLine(m_aVoteCommand);
+				Console()->ExecuteLine(m_aVoteCommand, IConsole::CLIENT_ID_UNSPECIFIED);
 				Server()->SetRconCid(IServer::RCON_CID_SERV);
 				EndVote();
 				SendChat(-1, TEAM_ALL, "Vote passed enforced by authorized player", -1, FLAG_SIX);
@@ -1736,6 +1742,8 @@ void CGameContext::OnClientEnter(int ClientId)
 	NewClientInfoMsg.m_Country = Server()->ClientCountry(ClientId);
 	NewClientInfoMsg.m_Silent = false;
 
+	pNewPlayer->m_TeeInfos = pNewPlayer->m_SkinInfoManager.TeeInfo(); // ddnet-insta
+
 	for(int p = 0; p < protocol7::NUM_SKINPARTS; p++)
 	{
 		NewClientInfoMsg.m_apSkinPartNames[p] = pNewPlayer->m_TeeInfos.m_aaSkinPartNames[p];
@@ -1766,6 +1774,8 @@ void CGameContext::OnClientEnter(int ClientId)
 			ClientInfoMsg.m_Country = Server()->ClientCountry(i);
 			ClientInfoMsg.m_Silent = 0;
 
+			pPlayer->m_TeeInfos = pPlayer->m_SkinInfoManager.TeeInfo(); // ddnet-insta
+
 			for(int p = 0; p < protocol7::NUM_SKINPARTS; p++)
 			{
 				ClientInfoMsg.m_apSkinPartNames[p] = pPlayer->m_TeeInfos.m_aaSkinPartNames[p];
@@ -1790,7 +1800,7 @@ void CGameContext::OnClientEnter(int ClientId)
 		char aBuf[128];
 		str_format(aBuf, sizeof(aBuf), "This server has an initial chat delay, you will need to wait %d seconds before talking.", g_Config.m_SvChatInitialDelay);
 		SendChatTarget(ClientId, aBuf);
-		m_Mutes.Mute(Server()->ClientAddr(ClientId), g_Config.m_SvChatInitialDelay, "Initial chat delay", true);
+		m_Mutes.Mute(Server()->ClientAddr(ClientId), g_Config.m_SvChatInitialDelay, "Initial chat delay", Server()->ClientName(ClientId), true);
 	}
 
 	LogEvent("Connect", ClientId);
@@ -2073,6 +2083,9 @@ void *CGameContext::PreProcessMsg(int *pMsgId, CUnpacker *pUnpacker, int ClientI
 			pPlayer->m_TeeInfos = CTeeInfo(pMsg7->m_apSkinPartNames, pMsg7->m_aUseCustomColors, pMsg7->m_aSkinPartColors);
 			pPlayer->m_TeeInfos.FromSixup();
 
+			pPlayer->m_SkinInfoManager.SetUserChoice(pPlayer->m_TeeInfos); // ddnet-insta
+			pPlayer->m_TeeInfos = pPlayer->m_SkinInfoManager.TeeInfo(); // ddnet-insta
+
 			str_copy(s_aRawMsg + sizeof(*pMsg), pPlayer->m_TeeInfos.m_aSkinName, sizeof(s_aRawMsg) - sizeof(*pMsg));
 
 			pMsg->m_pSkin = s_aRawMsg + sizeof(*pMsg);
@@ -2095,7 +2108,8 @@ void *CGameContext::PreProcessMsg(int *pMsgId, CUnpacker *pUnpacker, int ClientI
 
 			pPlayer->m_LastChangeInfo = Server()->Tick();
 
-			if(m_pController->OnSkinChange7(pMsg, ClientId)) // ddnet-insta
+			// ddnet-insta
+			if(m_pController->OnSkinChange7(pMsg, ClientId))
 				return nullptr;
 
 			CTeeInfo Info(pMsg->m_apSkinPartNames, pMsg->m_aUseCustomColors, pMsg->m_aSkinPartColors);
@@ -2325,6 +2339,7 @@ void CGameContext::OnSayNetMessage(const CNetMsg_Cl_Say *pMsg, int ClientId, con
 	else
 		Team = TEAM_ALL;
 
+	// ddnet-insta
 	if(m_pController->OnChatMessage(pMsg, Length, Team, pPlayer))
 		return;
 
@@ -2376,10 +2391,12 @@ void CGameContext::OnSayNetMessage(const CNetMsg_Cl_Say *pMsg, int ClientId, con
 		pPlayer->UpdatePlaytime();
 		char aCensoredMessage[256];
 		CensorMessage(aCensoredMessage, pMsg->m_pMessage, sizeof(aCensoredMessage));
+		// ddnet-insta start
 		char aChatMessage[256];
 		str_copy(aChatMessage, aCensoredMessage);
 		if(g_Config.m_SvUnstackChat)
 			InstagibUnstackChatMessage(aChatMessage, aCensoredMessage, sizeof(aChatMessage));
+		// ddnet-insta end
 		SendChat(ClientId, Team, aChatMessage, ClientId);
 	}
 }
@@ -2390,6 +2407,7 @@ void CGameContext::OnCallVoteNetMessage(const CNetMsg_Cl_CallVote *pMsg, int Cli
 		return;
 	if(RateLimitPlayerVote(ClientId) || m_VoteCloseTime)
 		return;
+	// ddnet-insta
 	if(m_apPlayers[ClientId]->GetTeam() == TEAM_SPECTATORS && !g_Config.m_SvSpectatorVotes)
 	{
 		SendChatTarget(ClientId, "Spectators aren't allowed to vote.");
@@ -2855,10 +2873,11 @@ void CGameContext::OnChangeInfoNetMessage(const CNetMsg_Cl_ChangeInfo *pMsg, int
 		SendChat(-1, TEAM_ALL, aChatText);
 
 		// reload scores
-		if(!m_pController->LoadNewPlayerNameData(ClientId)) // ddnet-insta
+		// ddnet-insta
+		if(!m_pController->LoadNewPlayerNameData(ClientId))
 		{
 			Score()->PlayerData(ClientId)->Reset();
-			m_apPlayers[ClientId]->m_Score.reset();
+			m_apPlayers[ClientId]->m_Score.reset(); // ddnet-insta (ddnet removed this line)
 			Score()->LoadPlayerData(ClientId);
 		}
 
@@ -2877,17 +2896,16 @@ void CGameContext::OnChangeInfoNetMessage(const CNetMsg_Cl_ChangeInfo *pMsg, int
 		SixupNeedsUpdate = true;
 	Server()->SetClientCountry(ClientId, pMsg->m_Country);
 
-	// ddnet-insta
-	if(m_pController->IsSkinColorChangeAllowed())
-	{
-		pPlayer->m_TeeInfos.m_UseCustomColor = pMsg->m_UseCustomColor;
-		pPlayer->m_TeeInfos.m_ColorBody = pMsg->m_ColorBody;
-		pPlayer->m_TeeInfos.m_ColorFeet = pMsg->m_ColorFeet;
-	}
+	pPlayer->m_TeeInfos.m_UseCustomColor = pMsg->m_UseCustomColor;
+	pPlayer->m_TeeInfos.m_ColorBody = pMsg->m_ColorBody;
+	pPlayer->m_TeeInfos.m_ColorFeet = pMsg->m_ColorFeet;
 
 	str_copy(pPlayer->m_TeeInfos.m_aSkinName, pMsg->m_pSkin, sizeof(pPlayer->m_TeeInfos.m_aSkinName));
 	if(!Server()->IsSixup(ClientId))
 		pPlayer->m_TeeInfos.ToSixup();
+
+	pPlayer->m_SkinInfoManager.SetUserChoice(pPlayer->m_TeeInfos); // ddnet-insta
+	pPlayer->m_TeeInfos = pPlayer->m_SkinInfoManager.TeeInfo(); // ddnet-insta
 
 	if(SixupNeedsUpdate)
 	{
@@ -3082,6 +3100,13 @@ void CGameContext::OnStartInfoNetMessage(const CNetMsg_Cl_StartInfo *pMsg, int C
 	pPlayer->m_TeeInfos.m_ColorFeet = pMsg->m_ColorFeet;
 	if(!Server()->IsSixup(ClientId))
 		pPlayer->m_TeeInfos.ToSixup();
+
+	// TODO: can this be moved to a controller method we hook at the method start?
+	pPlayer->m_SkinInfoManager.SetUserChoice(pPlayer->m_TeeInfos); // ddnet-insta
+
+	// setting tee infos is not needed because we do not send it here
+	// this is also why the code could move to the top or bottomg of this method
+	pPlayer->m_TeeInfos = pPlayer->m_SkinInfoManager.TeeInfo(); // ddnet-insta
 
 	// send clear vote options
 	CNetMsg_Sv_VoteClearOptions ClearMsg;
@@ -3335,7 +3360,7 @@ void CGameContext::ConPause(IConsole::IResult *pResult, void *pUserData)
 {
 	CGameContext *pSelf = (CGameContext *)pUserData;
 
-	pSelf->m_pController->ToggleGamePause();
+	pSelf->m_World.m_Paused ^= 1;
 }
 
 void CGameContext::ConChangeMap(IConsole::IResult *pResult, void *pUserData)
@@ -3375,11 +3400,10 @@ void CGameContext::ConRandomUnfinishedMap(IConsole::IResult *pResult, void *pUse
 void CGameContext::ConRestart(IConsole::IResult *pResult, void *pUserData)
 {
 	CGameContext *pSelf = (CGameContext *)pUserData;
-	int Seconds = pResult->NumArguments() ? std::clamp(pResult->GetInteger(0), -1, 1000) : 0;
-	if(Seconds < 0)
-		pSelf->m_pController->AbortWarmup();
+	if(pResult->NumArguments())
+		pSelf->m_pController->DoWarmup(pResult->GetInteger(0));
 	else
-		pSelf->m_pController->DoWarmup(Seconds);
+		pSelf->m_pController->StartRound();
 }
 
 static void UnescapeNewlines(char *pBuf)
@@ -3672,7 +3696,7 @@ void CGameContext::ConForceVote(IConsole::IResult *pResult, void *pUserData)
 				str_format(aBuf, sizeof(aBuf), "authorized player forced server option '%s' (%s)", pValue, pReason);
 				pSelf->SendChatTarget(-1, aBuf, FLAG_SIX);
 				pSelf->m_VoteCreator = pResult->m_ClientId;
-				pSelf->Console()->ExecuteLine(pOption->m_aCommand);
+				pSelf->Console()->ExecuteLine(pOption->m_aCommand, IConsole::CLIENT_ID_UNSPECIFIED);
 				break;
 			}
 
@@ -3698,12 +3722,12 @@ void CGameContext::ConForceVote(IConsole::IResult *pResult, void *pUserData)
 		if(!g_Config.m_SvVoteKickBantime)
 		{
 			str_format(aBuf, sizeof(aBuf), "kick %d %s", KickId, pReason);
-			pSelf->Console()->ExecuteLine(aBuf);
+			pSelf->Console()->ExecuteLine(aBuf, IConsole::CLIENT_ID_UNSPECIFIED);
 		}
 		else
 		{
 			str_format(aBuf, sizeof(aBuf), "ban %s %d %s", pSelf->Server()->ClientAddrString(KickId, false), g_Config.m_SvVoteKickBantime, pReason);
-			pSelf->Console()->ExecuteLine(aBuf);
+			pSelf->Console()->ExecuteLine(aBuf, IConsole::CLIENT_ID_UNSPECIFIED);
 		}
 	}
 	else if(str_comp_nocase(pType, "spectate") == 0)
@@ -3718,7 +3742,7 @@ void CGameContext::ConForceVote(IConsole::IResult *pResult, void *pUserData)
 		str_format(aBuf, sizeof(aBuf), "'%s' was moved to spectator (%s)", pSelf->Server()->ClientName(SpectateId), pReason);
 		pSelf->SendChatTarget(-1, aBuf);
 		str_format(aBuf, sizeof(aBuf), "set_team %d -1 %d", SpectateId, g_Config.m_SvVoteSpectateRejoindelay);
-		pSelf->Console()->ExecuteLine(aBuf);
+		pSelf->Console()->ExecuteLine(aBuf, IConsole::CLIENT_ID_UNSPECIFIED);
 	}
 }
 
@@ -3833,9 +3857,9 @@ void CGameContext::ConVote(IConsole::IResult *pResult, void *pUserData)
 	CGameContext *pSelf = (CGameContext *)pUserData;
 
 	if(str_comp_nocase(pResult->GetString(0), "yes") == 0)
-		pSelf->ForceVote(pResult->m_ClientId, true);
+		pSelf->ForceVote(true);
 	else if(str_comp_nocase(pResult->GetString(0), "no") == 0)
-		pSelf->ForceVote(pResult->m_ClientId, false);
+		pSelf->ForceVote(false);
 }
 
 void CGameContext::ConVotes(IConsole::IResult *pResult, void *pUserData)
@@ -3947,7 +3971,7 @@ void CGameContext::OnConsoleInit()
 	Console()->Register("change_map", "r[map]", CFGFLAG_SERVER | CFGFLAG_STORE, ConChangeMap, this, "Change map");
 	Console()->Register("random_map", "?i[stars] ?i[max stars]", CFGFLAG_SERVER | CFGFLAG_STORE, ConRandomMap, this, "Random map");
 	Console()->Register("random_unfinished_map", "?i[stars] ?i[max stars]", CFGFLAG_SERVER | CFGFLAG_STORE, ConRandomUnfinishedMap, this, "Random unfinished map");
-	Console()->Register("restart", "?i[seconds]", CFGFLAG_SERVER | CFGFLAG_STORE, ConRestart, this, "Restart in x seconds (-1 = abort)"); // ddnet-insta changed description to match teeworlds 0.7 restart command
+	Console()->Register("restart", "?i[seconds]", CFGFLAG_SERVER | CFGFLAG_STORE, ConRestart, this, "Restart in x seconds (0 = abort)");
 	Console()->Register("server_alert", "r[message]", CFGFLAG_SERVER, ConServerAlert, this, "Send a server alert message to all players");
 	Console()->Register("mod_alert", "v[id] r[message]", CFGFLAG_SERVER, ConModAlert, this, "Send a moderator alert message to player");
 	Console()->Register("broadcast", "r[message]", CFGFLAG_SERVER, ConBroadcast, this, "Broadcast message");
@@ -4269,6 +4293,7 @@ void CGameContext::OnInit(const void *pPersistentData)
 		}
 	}
 
+	// ddnet-insta start
 	m_pController = nullptr;
 	for(const auto &[String, Constructor] : Gamemodes())
 	{
@@ -4283,6 +4308,7 @@ void CGameContext::OnInit(const void *pPersistentData)
 		log_warn("gametype", "unknown gametype '%s' falling back to ddnet", Config()->m_SvGametype);
 		m_pController = (Gamemodes()["ddnet"])(this);
 	}
+	// ddnet-insta end
 
 	ReadCensorList();
 
@@ -4856,7 +4882,7 @@ void CGameContext::SendRecord(int ClientId)
 {
 	CNetMsg_Sv_Record Msg;
 	CNetMsg_Sv_RecordLegacy MsgLegacy;
-	MsgLegacy.m_PlayerTimeBest = Msg.m_PlayerTimeBest = round_to_int(Score()->PlayerData(ClientId)->m_BestTime * 100.0f);
+	MsgLegacy.m_PlayerTimeBest = Msg.m_PlayerTimeBest = round_to_int(Score()->PlayerData(ClientId)->m_BestTime.value_or(0.0f) * 100.0f);
 	MsgLegacy.m_ServerTimeBest = Msg.m_ServerTimeBest = m_pController->m_CurrentRecord.has_value() && !g_Config.m_SvHideScore ? round_to_int(m_pController->m_CurrentRecord.value() * 100.0f) : 0; //TODO: finish this
 	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, ClientId);
 	if(!Server()->IsSixup(ClientId) && GetClientVersion(ClientId) < VERSION_DDNET_MSG_LEGACY)
@@ -4865,7 +4891,7 @@ void CGameContext::SendRecord(int ClientId)
 	}
 }
 
-void CGameContext::SendFinish(int ClientId, float Time, float PreviousBestTime)
+void CGameContext::SendFinish(int ClientId, float Time, std::optional<float> PreviousBestTime)
 {
 	int ClientVersion = m_apPlayers[ClientId]->GetClientVersion();
 
@@ -4877,9 +4903,9 @@ void CGameContext::SendFinish(int ClientId, float Time, float PreviousBestTime)
 		MsgLegacy.m_Check = Msg.m_Check = 0;
 		MsgLegacy.m_Finish = Msg.m_Finish = 1;
 
-		if(PreviousBestTime)
+		if(PreviousBestTime.has_value())
 		{
-			float Diff100 = (Time - PreviousBestTime) * 100;
+			float Diff100 = (Time - PreviousBestTime.value()) * 100;
 			MsgLegacy.m_Check = Msg.m_Check = (int)Diff100;
 		}
 		if(VERSION_DDRACE <= ClientVersion)
@@ -4899,12 +4925,12 @@ void CGameContext::SendFinish(int ClientId, float Time, float PreviousBestTime)
 	RaceFinishMsg.m_ClientId = ClientId;
 	RaceFinishMsg.m_Time = Time * 1000;
 	RaceFinishMsg.m_Diff = 0;
-	if(PreviousBestTime)
+	if(PreviousBestTime.has_value())
 	{
-		float Diff = absolute(Time - PreviousBestTime);
-		RaceFinishMsg.m_Diff = Diff * 1000 * (Time < PreviousBestTime ? -1 : 1);
+		float Diff = absolute(Time - PreviousBestTime.value());
+		RaceFinishMsg.m_Diff = Diff * 1000 * (Time < PreviousBestTime.value() ? -1 : 1);
 	}
-	RaceFinishMsg.m_RecordPersonal = (Time < PreviousBestTime || !PreviousBestTime);
+	RaceFinishMsg.m_RecordPersonal = (!PreviousBestTime.has_value() || Time < PreviousBestTime.value());
 	RaceFinishMsg.m_RecordServer = Time < m_pController->m_CurrentRecord;
 	Server()->SendPackMsg(&RaceFinishMsg, MSGFLAG_VITAL | MSGFLAG_NORECORD, g_Config.m_SvHideScore ? ClientId : -1);
 }
@@ -5342,7 +5368,7 @@ bool CGameContext::PlayerModerating() const
 	return std::any_of(std::begin(m_apPlayers), std::end(m_apPlayers), [](const CPlayer *pPlayer) { return pPlayer && pPlayer->m_Moderating; });
 }
 
-void CGameContext::ForceVote(int EnforcerId, bool Success)
+void CGameContext::ForceVote(bool Success)
 {
 	// check if there is a vote running
 	if(!m_VoteCloseTime)

@@ -1,4 +1,4 @@
-#ifndef GAME_SERVER_GAMEMODES_BASE_PVP_PLAYER_H
+#ifndef GAME_SERVER_INSTAGIB_PLAYER_H
 // hack for headerguard linter
 #endif
 
@@ -8,20 +8,18 @@
 
 #include <game/server/instagib/enums.h>
 #include <game/server/instagib/ip_storage.h>
+#include <game/server/instagib/skin_info_manager.h>
 #include <game/server/instagib/sql_stats.h>
 #include <game/server/instagib/sql_stats_player.h>
 #include <game/server/instagib/structs.h>
-#include <game/server/teeinfo.h>
 
-#include <cstdint>
 #include <optional>
 #include <vector>
 
 // player object
 class CPlayer
 {
-	std::optional<int> m_Score; // hack for IDEs
-	int m_Team;
+	int m_Team; // hack for IDEs
 #endif // IN_CLASS_PLAYER
 
 public:
@@ -32,10 +30,6 @@ public:
 	int m_RainbowColor = 0;
 
 	std::optional<CIpStorage> m_IpStorage;
-
-	// backup of the players skin
-	// for when cosmetics like rainbow are turned off
-	CTeeInfo m_TeeInfosNoCosmetics;
 
 	void ProcessStatsResult(CInstaSqlResult &Result);
 
@@ -48,6 +42,10 @@ public:
 	// it is determined by the sv_display_score config and /score chat command
 	// and used by the GetDisplayScore gamecontroller method
 	EDisplayScore m_DisplayScore = EDisplayScore::POINTS;
+
+	// this used to be a ddnet variable but it got removed there
+	// so now it is a ddnet-insta specific variable
+	std::optional<int> m_Score;
 
 	/*******************************************************************
 	 * zCatch                                                          *
@@ -326,6 +324,20 @@ public:
 	// used for balancing
 	// to figure out which players score the least
 	int m_ScoreStartTick = 0;
+
+	enum class EBombState
+	{
+		NONE,
+		SPECTATING,
+		ACTIVE,
+		ALIVE,
+	};
+
+	EBombState m_BombState = EBombState::NONE;
+	bool m_IsBomb = false;
+	int m_ToBombTick = 0;
+
+	CSkinInfoManager m_SkinInfoManager;
 
 	// needed for clang to avoid redundant access specifier
 private:

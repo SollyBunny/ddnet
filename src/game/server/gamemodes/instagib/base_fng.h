@@ -24,7 +24,6 @@ public:
 	void SnapDDNetCharacter(int SnappingClient, CCharacter *pChr, CNetObj_DDNetCharacter *pDDNetCharacter) override;
 	CClientMask FreezeDamageIndicatorMask(class CCharacter *pChr) override;
 	bool OnSelfkill(int ClientId) override;
-	bool CanJoinTeam(int Team, int NotThisId, char *pErrorReason, int ErrorReasonSize) override;
 	bool OnLaserHit(int Bounces, int From, int Weapon, CCharacter *pVictim) override;
 	void OnShowStatsAll(const CSqlStatsPlayer *pStats, class CPlayer *pRequestingPlayer, const char *pRequestedName) override;
 	void OnShowMultis(const CSqlStatsPlayer *pStats, class CPlayer *pRequestingPlayer, const char *pRequestedName) override;

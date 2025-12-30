@@ -70,6 +70,12 @@ public:
 	int m_OwnGoals;
 
 	/*************************************
+	 * bomb                              *
+	 *************************************/
+
+	int m_CollateralKills;
+
+	/*************************************
 	 * solofng and fng                   *
 	 *************************************/
 
@@ -123,15 +129,16 @@ public:
 		m_Wallshots = 0;
 		m_TicksCaught = 0;
 		m_TicksInGame = 0;
+		m_Goals = 0;
+		m_OwnGoals = 0;
+		m_CollateralKills = 0;
 		m_BestMulti = 0;
+		for(auto &Multi : m_aMultis)
+			Multi = 0;
 		m_GotFrozen = 0;
 		m_GoldSpikes = 0;
 		m_GreenSpikes = 0;
 		m_PurpleSpikes = 0;
-
-		for(auto &Multi : m_aMultis)
-			Multi = 0;
-
 		m_Unfreezes = 0;
 		m_WrongSpikes = 0;
 		m_StealsByOthers = 0;
@@ -154,7 +161,7 @@ public:
 		// gametype specific is implemented in the gametypes callback
 	}
 
-	void Dump(CExtraColumns *pExtraColumns, const char *pSystem = "stats") const
+	void Dump(const CExtraColumns *pExtraColumns, const char *pSystem = "stats") const
 	{
 		dbg_msg(pSystem, "  points: %d", m_Points);
 		dbg_msg(pSystem, "  kills: %d", m_Kills);
@@ -170,9 +177,11 @@ public:
 			pExtraColumns->Dump(this);
 	}
 
-	bool HasValues() const
+	bool HasValues(const CExtraColumns *pExtraColumns) const
 	{
-		// TODO: add a HasValues callback in the gametype instead of listing all here
+		if(pExtraColumns && pExtraColumns->HasValues(this))
+			return true;
+
 		return m_Points ||
 		       m_Kills ||
 		       m_Deaths ||
@@ -181,22 +190,7 @@ public:
 		       m_Wins ||
 		       m_Losses ||
 		       m_ShotsFired ||
-		       m_ShotsHit ||
-		       m_FlagCaptures ||
-		       m_FlagGrabs ||
-		       m_FlaggerKills ||
-		       m_Wallshots ||
-		       m_TicksCaught ||
-		       m_TicksInGame ||
-		       m_BestMulti ||
-		       m_GotFrozen ||
-		       m_GoldSpikes ||
-		       m_GreenSpikes ||
-		       m_PurpleSpikes ||
-		       m_Unfreezes ||
-		       m_WrongSpikes ||
-		       m_StealsFromOthers ||
-		       m_StealsByOthers;
+		       m_ShotsHit;
 	}
 
 	CSqlStatsPlayer()

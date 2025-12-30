@@ -6,7 +6,7 @@
 
 #include <game/mapitems.h>
 #include <game/server/entities/character.h>
-#include <game/server/entities/ddnet_pvp/vanilla_pickup.h>
+#include <game/server/instagib/entities/ddnet_pvp/vanilla_pickup.h>
 #include <game/server/player.h>
 
 CGameControllerCTF::CGameControllerCTF(class CGameContext *pGameServer) :
@@ -15,7 +15,6 @@ CGameControllerCTF::CGameControllerCTF(class CGameContext *pGameServer) :
 	m_pGameType = "CTF*";
 	m_IsVanillaGameType = true;
 	m_GameFlags = GAMEFLAG_TEAMS | GAMEFLAG_FLAGS;
-	m_AllowSkinColorChange = true;
 	m_DefaultWeapon = WEAPON_GUN;
 
 	m_pStatsTable = "ctf";
@@ -49,6 +48,8 @@ int CGameControllerCTF::SnapGameInfoExFlags(int SnappingClient, int DDRaceFlags)
 	return Flags;
 }
 
+// WARNING: this does not call the base pvp take damage method
+//          so it has to reimplement all the relevant functionality
 bool CGameControllerCTF::OnCharacterTakeDamage(vec2 &Force, int &Dmg, int &From, int &Weapon, CCharacter &Character)
 {
 	if(Weapon == WEAPON_GUN || Weapon == WEAPON_SHOTGUN)

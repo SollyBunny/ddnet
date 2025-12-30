@@ -1,13 +1,13 @@
 #include <base/log.h>
 #include <base/system.h>
 
+#include <engine/console.h>
 #include <engine/server/server.h>
 #include <engine/shared/config.h>
 
 #include <game/server/entities/character.h>
 #include <game/server/gamecontext.h>
 #include <game/server/gamecontroller.h>
-#include <game/server/gamemodes/base_pvp/base_pvp.h>
 #include <game/server/instagib/enums.h>
 #include <game/server/player.h>
 
@@ -223,7 +223,7 @@ void CGameContext::ConchainAllowZoom(IConsole::IResult *pResult, void *pUserData
 
 	char aBuf[512];
 	str_format(aBuf, sizeof(aBuf), "antibot sv_allow_zoom %d", g_Config.m_SvAllowZoom);
-	pSelf->Console()->ExecuteLine(aBuf);
+	pSelf->Console()->ExecuteLine(aBuf, IConsole::CLIENT_ID_UNSPECIFIED);
 #endif
 }
 

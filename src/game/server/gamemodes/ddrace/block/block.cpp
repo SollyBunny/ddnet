@@ -9,12 +9,9 @@
 
 #include <game/mapitems.h>
 #include <game/server/entities/character.h>
-#include <game/server/entities/flag.h>
 #include <game/server/gamecontext.h>
 #include <game/server/gamemodes/base_pvp/base_pvp.h>
 #include <game/server/player.h>
-#include <game/server/score.h>
-#include <game/version.h>
 
 #include <optional>
 

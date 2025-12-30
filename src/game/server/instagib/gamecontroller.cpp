@@ -3,24 +3,27 @@
 #include <base/system.h>
 
 #include <engine/shared/config.h>
-#include <engine/shared/protocolglue.h>
 
 #include <generated/protocol.h>
 
 #include <game/mapitems.h>
 #include <game/server/entities/character.h>
 #include <game/server/entities/door.h>
-#include <game/server/entities/dragger.h>
-#include <game/server/entities/flag.h>
-#include <game/server/entities/gun.h>
-#include <game/server/entities/light.h>
-#include <game/server/entities/pickup.h>
-#include <game/server/entities/projectile.h>
 #include <game/server/gamecontext.h>
 #include <game/server/gamecontroller.h>
+#include <game/server/instagib/entities/flag.h>
 #include <game/server/player.h>
 #include <game/server/score.h>
-#include <game/teamscore.h>
+
+bool IGameController::IsPickupEntity(int Index) const
+{
+	return Index == ENTITY_ARMOR_1 ||
+	       Index == ENTITY_HEALTH_1 ||
+	       Index == ENTITY_WEAPON_SHOTGUN ||
+	       Index == ENTITY_WEAPON_GRENADE ||
+	       Index == ENTITY_WEAPON_LASER ||
+	       Index == ENTITY_POWERUP_NINJA;
+}
 
 void IGameController::OnCharacterDeathImpl(CCharacter *pVictim, int Killer, int Weapon, bool SendKillMsg)
 {
@@ -86,17 +89,6 @@ void IGameController::LogKillMessage(CCharacter *pVictim, int Killer, int Weapon
 void IGameController::OnDDRaceTimeLoad(class CPlayer *pPlayer, float Time)
 {
 	pPlayer->m_Score = Time;
-}
-
-int IGameController::SnapPlayerScore(int SnappingClient, CPlayer *pPlayer, int DDRaceScore)
-{
-	if(Server()->IsSixup(SnappingClient))
-	{
-		// Times are in milliseconds for 0.7
-		return pPlayer->m_Score.has_value() ? GameServer()->Score()->PlayerData(pPlayer->GetCid())->m_BestTime * 1000 : -1;
-	}
-
-	return DDRaceScore;
 }
 
 int IGameController::SnapRoundStartTick(int SnappingClient)
@@ -321,6 +313,14 @@ void IGameController::DoTeamBalance()
 
 	m_UnbalancedTick = TBALANCE_OK;
 	GameServer()->SendGameMsg(protocol7::GAMEMSG_TEAM_BALANCE, -1);
+}
+
+bool IGameController::OnLaserHit(int Bounces, int From, int Weapon, CCharacter *pVictim)
+{
+	if(UnfreezeOnLaserHit())
+		pVictim->UnFreeze();
+
+	return true;
 }
 
 void IGameController::AmmoRegen(CCharacter *pChr)

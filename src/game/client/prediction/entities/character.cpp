@@ -1299,8 +1299,7 @@ void CCharacter::ResetPrediction()
 	for(int w = 0; w < NUM_WEAPONS; w++)
 	{
 		SetWeaponGot(w, false);
-		if(w == WEAPON_GRENADE)
-			SetWeaponAmmo(w, g_Config.m_SvGrenadeAmmoRegen ? g_Config.m_SvGrenadeAmmoRegenNum : -1);
+		SetWeaponAmmo(w, -1);
 	}
 	if(m_Core.HookedPlayer() >= 0)
 	{

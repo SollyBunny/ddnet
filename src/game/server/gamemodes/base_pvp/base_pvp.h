@@ -3,9 +3,6 @@
 
 #include <game/server/gamemodes/insta_core/insta_core.h>
 #include <game/server/instagib/extra_columns.h>
-#include <game/server/instagib/sql_stats.h>
-
-#include <cstdint>
 
 // base pvp functionality such as damage
 // should be inherited from in all pvp modes such as ctf, dm, zcatch and so on
@@ -40,7 +37,8 @@ public:
 	void Tick() override;
 	int SnapGameInfoExFlags(int SnappingClient, int DDRaceFlags) override;
 	int SnapGameInfoExFlags2(int SnappingClient, int DDRaceFlags) override;
-	int SnapPlayerScore(int SnappingClient, CPlayer *pPlayer, int DDRaceScore) override;
+	int SnapPlayerScore(int SnappingClient, CPlayer *pPlayer) override;
+	CFinishTime SnapPlayerTime(int SnappingClient, CPlayer *pPlayer) override;
 	int GetDefaultWeapon(class CPlayer *pPlayer) override { return m_DefaultWeapon; }
 	void OnDDRaceTimeLoad(class CPlayer *pPlayer, float Time) override {}
 	bool LoadNewPlayerNameData(int ClientId) override;
@@ -69,10 +67,10 @@ public:
 	void ApplyFngHammerForce(CPlayer *pPlayer, CPlayer *pTarget, vec2 &Force) override;
 	void FngUnmeltHammerHit(CPlayer *pPlayer, CPlayer *pTarget, vec2 &Force) override;
 	void OnKill(class CPlayer *pVictim, class CPlayer *pKiller, int Weapon) override;
-	bool DecreaseHealthAndKill(int Dmg, int From, int Weapon, CCharacter *pCharacter) override;
-	bool SkipDamage(int Dmg, int From, int Weapon, const CCharacter *pCharacter, bool &ApplyForce) override;
 	void OnAnyDamage(vec2 &Force, int &Dmg, int &From, int &Weapon, CCharacter *pCharacter) override;
+	bool SkipDamage(int Dmg, int From, int Weapon, const CCharacter *pCharacter, bool &ApplyForce) override;
 	void OnAppliedDamage(int &Dmg, int &From, int &Weapon, CCharacter *pCharacter) override;
+	bool DecreaseHealthAndKill(int Dmg, int From, int Weapon, CCharacter *pCharacter) override;
 	bool OnCharacterTakeDamage(vec2 &Force, int &Dmg, int &From, int &Weapon, CCharacter &Character) override;
 	bool OnChatMessage(const CNetMsg_Cl_Say *pMsg, int Length, int &Team, CPlayer *pPlayer) override;
 	bool OnFireWeapon(CCharacter &Character, int &Weapon, vec2 &Direction, vec2 &MouseTarget, vec2 &ProjStartPos) override;

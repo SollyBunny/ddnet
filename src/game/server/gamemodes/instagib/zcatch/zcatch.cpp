@@ -12,25 +12,18 @@
 
 #include <game/mapitems.h>
 #include <game/server/entities/character.h>
-#include <game/server/entities/flag.h>
 #include <game/server/gamecontext.h>
 #include <game/server/gamecontroller.h>
 #include <game/server/gamemodes/instagib/base_instagib.h>
 #include <game/server/player.h>
-#include <game/server/score.h>
-#include <game/version.h>
 
 CGameControllerZcatch::CGameControllerZcatch(class CGameContext *pGameServer) :
 	CGameControllerInstagib(pGameServer)
 {
 	m_GameFlags = 0;
-	m_AllowSkinColorChange = false;
 	m_pGameType = "zCatch";
 	m_WinType = WIN_BY_SURVIVAL;
 	m_DefaultWeapon = GetDefaultWeaponBasedOnSpawnWeapons();
-
-	for(auto &Color : m_aBodyColors)
-		Color = 0;
 
 	m_pStatsTable = "";
 	if(m_SpawnWeapons == ESpawnWeapons::SPAWN_WEAPON_GRENADE)
@@ -39,7 +32,7 @@ CGameControllerZcatch::CGameControllerZcatch(class CGameContext *pGameServer) :
 		m_pStatsTable = "zcatch_laser";
 	if(m_pStatsTable[0])
 	{
-		m_pExtraColumns = new CZCatchColumns();
+		m_pExtraColumns = new CZcatchColumns();
 		m_pSqlStats->SetExtraColumns(m_pExtraColumns);
 		m_pSqlStats->CreateTable(m_pStatsTable);
 	}
@@ -281,23 +274,6 @@ CGameControllerZcatch::~CGameControllerZcatch() = default;
 void CGameControllerZcatch::Tick()
 {
 	CGameControllerInstagib::Tick();
-
-	for(CPlayer *pPlayer : GameServer()->m_apPlayers)
-	{
-		if(!pPlayer)
-			continue;
-
-		// this is wasting a bit of clock cycles setting it every tick
-		// it should be set on kill and then not be overwritten by info changes
-		// but there is no git conflict free way of doing that
-		SetCatchColors(pPlayer);
-
-		if(m_aBodyColors[pPlayer->GetCid()] != pPlayer->m_TeeInfos.m_ColorBody)
-		{
-			m_aBodyColors[pPlayer->GetCid()] = pPlayer->m_TeeInfos.m_ColorBody;
-			SendSkinBodyColor7(pPlayer->GetCid(), pPlayer->m_TeeInfos.m_ColorBody);
-		}
-	}
 }
 
 void CGameControllerZcatch::OnCharacterSpawn(class CCharacter *pChr)
@@ -306,7 +282,7 @@ void CGameControllerZcatch::OnCharacterSpawn(class CCharacter *pChr)
 
 	SetSpawnWeapons(pChr);
 
-	pChr->GetPlayer()->m_KillsThatCount = 0; // just to be sure
+	ResetKillsThatCount(pChr->GetPlayer()); // just to be sure
 }
 
 int CGameControllerZcatch::GetPlayerTeam(class CPlayer *pPlayer, bool Sixup)
@@ -333,7 +309,15 @@ void CGameControllerZcatch::ReleasePlayer(class CPlayer *pPlayer, const char *pM
 		pPlayer->m_WantsToJoinSpectators = false;
 	}
 	else
+	{
+		// release player back into the world
+		// if the kill is old
 		pPlayer->SetTeamNoKill(TEAM_RED);
+
+		// abort move to team spectators
+		// if the kill is recent
+		pPlayer->m_ForceTeam.m_Tick = 0;
+	}
 }
 
 bool CGameControllerZcatch::OnSelfkill(int ClientId)
@@ -371,10 +355,10 @@ bool CGameControllerZcatch::OnSelfkill(int ClientId)
 	// not at -2
 	//
 	// https://github.com/ddnet-insta/ddnet-insta/issues/225
-	pPlayer->m_KillsThatCount--;
+	AddToKillsThatCount(pPlayer, -1);
 	if(pPlayer->m_KillsThatCount <= 0)
 	{
-		pPlayer->m_KillsThatCount = 0;
+		ResetKillsThatCount(pPlayer);
 		for(int VictimId : pPlayer->m_vVictimIds)
 		{
 			pVictim = GameServer()->m_apPlayers[VictimId];
@@ -436,7 +420,7 @@ void CGameControllerZcatch::KillPlayer(class CPlayer *pVictim, class CPlayer *pK
 	{
 		pKiller->m_vVictimIds.emplace_back(pVictim->GetCid());
 		if(KillCounts)
-			pKiller->m_KillsThatCount++;
+			AddToKillsThatCount(pKiller, 1);
 	}
 }
 
@@ -484,7 +468,7 @@ int CGameControllerZcatch::OnCharacterDeath(class CCharacter *pVictim, class CPl
 	}
 
 	CGameControllerInstagib::OnCharacterDeath(pVictim, pKiller, WeaponId);
-	pVictim->GetPlayer()->m_KillsThatCount = 0;
+	ResetKillsThatCount(pVictim->GetPlayer());
 
 	// TODO: revisit this edge case when zcatch is done
 	//       a killer leaving while the bullet is flying
@@ -657,6 +641,7 @@ void CGameControllerZcatch::OnPlayerConnect(CPlayer *pPlayer)
 	CGameControllerInstagib::OnPlayerConnect(pPlayer);
 
 	UpdateCatchTicks(pPlayer, pPlayer->GetTeam() == TEAM_SPECTATORS ? ECatchUpdate::SPECTATE : ECatchUpdate::CONNECT);
+	pPlayer->m_SkinInfoManager.SetUseCustomColor(ESkinPrio::LOW, true);
 
 	// if a player joins as spectator that means
 	// either the in game slots are full
@@ -689,9 +674,7 @@ void CGameControllerZcatch::OnPlayerConnect(CPlayer *pPlayer)
 			DoTeamChange(pPlayer, TEAM_RED, false);
 		}
 
-		m_aBodyColors[pPlayer->GetCid()] = GetBodyColor(0);
 		SetCatchColors(pPlayer);
-		SendSkinBodyColor7(pPlayer->GetCid(), pPlayer->m_TeeInfos.m_ColorBody);
 
 		if(!CheckChangeGameState())
 		{
@@ -791,6 +774,18 @@ void CGameControllerZcatch::ReleaseAllPlayers()
 		pPlayer->m_KillerId = -1;
 		pPlayer->m_vVictimIds.clear();
 	}
+}
+
+void CGameControllerZcatch::AddToKillsThatCount(CPlayer *pPlayer, int Kills)
+{
+	pPlayer->m_KillsThatCount += Kills;
+	SetCatchColors(pPlayer);
+}
+
+void CGameControllerZcatch::ResetKillsThatCount(CPlayer *pPlayer)
+{
+	pPlayer->m_KillsThatCount = 0;
+	SetCatchColors(pPlayer);
 }
 
 CPlayer *CGameControllerZcatch::PlayerWithMostKillsThatCount()

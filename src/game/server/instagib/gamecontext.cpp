@@ -46,6 +46,9 @@ void CGameContext::PrintInstaCredits()
 
 void CGameContext::AlertOnSpecialInstagibConfigs(int ClientId) const
 {
+	if(!m_pController)
+		return;
+
 	if(g_Config.m_SvTournament)
 	{
 		SendChatTarget(ClientId, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
@@ -60,6 +63,8 @@ void CGameContext::AlertOnSpecialInstagibConfigs(int ClientId) const
 		SendChatTarget(ClientId, "WARNING: the hook kills");
 	if(g_Config.m_SvOnlyWallshotKills)
 		SendChatTarget(ClientId, "WARNING: only wallshots can kill");
+	if(g_Config.m_SvFreezeHammer && !m_pController->IsBombGameType())
+		SendChatTarget(ClientId, "WARNING: hammer freezes");
 	if(m_pController->IsInfiniteWarmup())
 		SendChatTarget(ClientId, "This is a warmup game until a restart vote is called.");
 }
@@ -140,7 +145,7 @@ void CGameContext::ShowCurrentInstagibConfigsMotd(int ClientId, bool Force) cons
 	// see https://github.com/teeworlds/teeworlds/issues/1699
 	//
 	// because we are not correctly implementing vanilla physics that should be noted
-	if(m_pController && m_pController->IsVanillaGameType())
+	if(m_pController->IsVanillaGameType())
 		str_append(aMotd, "* hammer through walls: on\n");
 
 	if(m_pController->IsFngGameType())
@@ -163,58 +168,12 @@ void CGameContext::ShowCurrentInstagibConfigsMotd(int ClientId, bool Force) cons
 		str_append(aMotd, "! WARNING: only wallshots can kill\n");
 	if(g_Config.m_SvKillHook)
 		str_append(aMotd, "! WARNING: the hook kills\n");
+	if(g_Config.m_SvFreezeHammer && !m_pController->IsBombGameType())
+		str_append(aMotd, "! WARNING: the hammer freezes\n");
 
 	CNetMsg_Sv_Motd Msg;
 	Msg.m_pMessage = aMotd;
 	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, ClientId);
-}
-
-void CGameContext::UpdateVoteCheckboxes() const
-{
-	if(!g_Config.m_SvVoteCheckboxes)
-		return;
-
-	CVoteOptionServer *pCurrent = m_pVoteOptionFirst;
-	while(pCurrent != NULL)
-	{
-		if(str_startswith(pCurrent->m_aDescription, "[ ]") || str_startswith(pCurrent->m_aDescription, "[x]"))
-		{
-			bool Checked = false;
-			int Len;
-			int Val;
-
-			if(str_startswith(pCurrent->m_aCommand, "sv_gametype "))
-			{
-				const char *pVal = pCurrent->m_aCommand + str_length("sv_gametype ");
-				Checked = str_startswith_nocase(pVal, g_Config.m_SvGametype);
-			}
-#define MACRO_CONFIG_INT(Name, ScriptName, Def, Min, Max, Flags, Desc) \
-	else if(str_startswith(pCurrent->m_aCommand, #ScriptName) && pCurrent->m_aCommand[str_length(#ScriptName)] == ' ') \
-	{ \
-		Len = str_length(#ScriptName); \
-		/* \
-		votes can directly match the command or have other commands \
-		or only start with it but then they should be delimited with a semicolon \
-		this allows to detect config option votes that also run additional commands on vote pass \
-		*/ \
-		if(pCurrent->m_aCommand[Len] != ';' && pCurrent->m_aCommand[Len] != '\0') \
-		{ \
-			Val = atoi(pCurrent->m_aCommand + Len + 1); \
-			Checked = g_Config.m_##Name == Val; \
-		} \
-	}
-#define MACRO_CONFIG_COL(Name, ScriptName, Def, Flags, Desc) // only int checkboxes for now
-#define MACRO_CONFIG_STR(Name, ScriptName, Len, Def, Flags, Desc) // only int checkboxes for now
-#include <game/server/instagib/includes/config_variables.h>
-#undef MACRO_CONFIG_INT
-#undef MACRO_CONFIG_COL
-#undef MACRO_CONFIG_STR
-
-			pCurrent->m_aDescription[1] = Checked ? 'x' : ' ';
-		}
-		pCurrent = pCurrent->m_pNext;
-	}
-	ShowCurrentInstagibConfigsMotd();
 }
 
 void CGameContext::RefreshVotes()
@@ -639,4 +598,52 @@ bool CGameContext::IsChatCmdAllowed(int ClientId) const
 		return false;
 	}
 	return true;
+}
+
+void CGameContext::UpdateVoteCheckboxes() const
+{
+	if(!g_Config.m_SvVoteCheckboxes)
+		return;
+
+	CVoteOptionServer *pCurrent = m_pVoteOptionFirst;
+	while(pCurrent != NULL)
+	{
+		if(str_startswith(pCurrent->m_aDescription, "[ ]") || str_startswith(pCurrent->m_aDescription, "[x]"))
+		{
+			bool Checked = false;
+			int Len;
+			int Val;
+
+			if(str_startswith(pCurrent->m_aCommand, "sv_gametype "))
+			{
+				const char *pVal = pCurrent->m_aCommand + str_length("sv_gametype ");
+				Checked = str_startswith_nocase(pVal, g_Config.m_SvGametype);
+			}
+#define MACRO_CONFIG_INT(Name, ScriptName, Def, Min, Max, Flags, Desc) \
+	else if(str_startswith(pCurrent->m_aCommand, #ScriptName) && pCurrent->m_aCommand[str_length(#ScriptName)] == ' ') \
+	{ \
+		Len = str_length(#ScriptName); \
+		/* \
+		votes can directly match the command or have other commands \
+		or only start with it but then they should be delimited with a semicolon \
+		this allows to detect config option votes that also run additional commands on vote pass \
+		*/ \
+		if(pCurrent->m_aCommand[Len] != ';' && pCurrent->m_aCommand[Len] != '\0') \
+		{ \
+			Val = atoi(pCurrent->m_aCommand + Len + 1); \
+			Checked = g_Config.m_##Name == Val; \
+		} \
+	}
+#define MACRO_CONFIG_COL(Name, ScriptName, Def, Flags, Desc) // only int checkboxes for now
+#define MACRO_CONFIG_STR(Name, ScriptName, Len, Def, Flags, Desc) // only int checkboxes for now
+#include <game/server/instagib/includes/config_variables.h>
+#undef MACRO_CONFIG_INT
+#undef MACRO_CONFIG_COL
+#undef MACRO_CONFIG_STR
+
+			pCurrent->m_aDescription[1] = Checked ? 'x' : ' ';
+		}
+		pCurrent = pCurrent->m_pNext;
+	}
+	ShowCurrentInstagibConfigsMotd();
 }

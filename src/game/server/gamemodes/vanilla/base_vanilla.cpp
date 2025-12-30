@@ -1,26 +1,19 @@
 #include "base_vanilla.h"
 
-#include <base/math.h>
-#include <base/system.h>
-
 #include <engine/shared/config.h>
 
 #include <generated/protocol.h>
 
 #include <game/mapitems.h>
 #include <game/server/entities/character.h>
-#include <game/server/entities/ddnet_pvp/vanilla_pickup.h>
+#include <game/server/instagib/entities/ddnet_pvp/vanilla_pickup.h>
 #include <game/server/instagib/protocol.h>
-#include <game/server/player.h>
-#include <game/server/score.h>
-#include <game/version.h>
 
 CGameControllerVanilla::CGameControllerVanilla(class CGameContext *pGameServer) :
 	CGameControllerBasePvp(pGameServer)
 {
 	m_GameFlags = 0;
 	m_IsVanillaGameType = true;
-	m_AllowSkinColorChange = true;
 	m_DefaultWeapon = WEAPON_GUN;
 }
 
@@ -36,6 +29,8 @@ int CGameControllerVanilla::SnapGameInfoExFlags(int SnappingClient, int DDRaceFl
 	return Flags;
 }
 
+// WARNING: this does not call the base pvp take damage method
+//          so it has to reimplement all the relevant functionality
 bool CGameControllerVanilla::OnCharacterTakeDamage(vec2 &Force, int &Dmg, int &From, int &Weapon, CCharacter &Character)
 {
 	if(Weapon == WEAPON_GUN || Weapon == WEAPON_SHOTGUN)

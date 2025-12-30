@@ -35,11 +35,21 @@ public:
 	//
 	//
 
-	// virtual bool OnLaserHitCharacter(vec2 From, vec2 To, class CLaser &Laser) {};
 	/*
 		Function: OnCharacterTakeDamage
 			this function was added in ddnet-insta and is a non standard controller method.
 			neither ddnet nor teeworlds have this
+
+			WARNING: if you implement a pvp mode and inherit from base pvp this method should
+				 ideally not be overridden.
+				 Have a look in base_pvp.cpp at `CGameControllerBasePvp::OnCharacterTakeDamage()`
+				 how it is implemented.
+				 If you want to track any kind of hit use `OnAnyDamage()` instead.
+				 If you want to disable damage in some situations use `SkipDamage()` instead.
+				 If you want to implement your own damage logic use `OnAppliedDamage()`.
+				 Only if you really need something custom you should use
+				 `OnCharacterTakeDamage()` but then it should call all the same methods
+				 as the base pvp version or some features will break.
 
 		Arguments:
 			Force - Reference to force. Set this vector and it will be applied to the target characters velocity
@@ -54,6 +64,21 @@ public:
 			it also sets the happy eyes if the Dmg is not zero
 	*/
 	virtual bool OnCharacterTakeDamage(vec2 &Force, int &Dmg, int &From, int &Weapon, CCharacter &Character) { return false; }
+
+	/*
+		Function: IsPickupEntity
+			Helper to check if a `Index` passed to `OnEntity()` is a pickup
+			like shield, armor or a weapon.
+			This is useful to disable pickups in your gametype.
+
+		Arguments:
+			Index - Entity index. For example `ENTITY_ARMOR_1` or `ENTITY_WEAPON_SHOTGUN`
+
+		Returns:
+			true - if the given `Index` is a weapon, health or armor pickup
+			false - otherwise
+	*/
+	virtual bool IsPickupEntity(int Index) const;
 
 	/*
 		Function: OnCharacterDeathImpl
@@ -382,7 +407,7 @@ public:
 			true - to call TakeDamage
 			false - to skip TakeDamage
 	*/
-	virtual bool OnLaserHit(int Bounces, int From, int Weapon, CCharacter *pVictim) { return true; }
+	virtual bool OnLaserHit(int Bounces, int From, int Weapon, CCharacter *pVictim);
 
 	/*
 		Function: OnHammerHit
@@ -924,20 +949,6 @@ public:
 	virtual void SnapPlayer6(int SnappingClient, CPlayer *pPlayer, CNetObj_ClientInfo *pClientInfo, CNetObj_PlayerInfo *pPlayerInfo) {}
 
 	/*
-		Function: SnapPlayerScore
-			Warning its value could be overwritten by `SnapPlayer6()`
-
-		Arguments:
-			SnappingClient - Client Id of the player that will receive the snapshot
-			pPlayer - CPlayer that is being snapped
-			DDRaceScore - Current value of the score set by the ddnet code
-
-		Returns:
-			return the new score value that will be included in the snapshot
-	*/
-	virtual int SnapPlayerScore(int SnappingClient, CPlayer *pPlayer, int DDRaceScore);
-
-	/*
 		Function: SnapFlagCarrierRed
 			This value is fetched and snapped by the insta core controller
 			if the gameflag teams or gameflag flags is set
@@ -1136,6 +1147,9 @@ public:
 	bool IsVanillaGameType() const { return m_IsVanillaGameType; }
 	virtual bool IsDDRaceGameType() const { return true; }
 	virtual bool IsFootGameType() const { return false; }
+	virtual bool IsBombGameType() const { return false; }
+	virtual bool UnfreezeOnHammerHit() const { return true; }
+	virtual bool UnfreezeOnLaserHit() const { return IsDDRaceGameType(); }
 	bool m_IsVanillaGameType = false;
 	// decides if own grenade explosions
 	// or laser wallshots should harm the own tee
@@ -1245,8 +1259,6 @@ public:
 	bool HasEnoughPlayers() const { return (IsTeamPlay() && m_aTeamSize[TEAM_RED] > 0 && m_aTeamSize[TEAM_BLUE] > 0) || (!IsTeamPlay() && m_aTeamSize[TEAM_RED] > 1); }
 	void SetGameState(EGameState GameState, int Timer = 0);
 
-	bool m_AllowSkinColorChange = true;
-
 	// protected:
 	struct CGameInfo
 	{
@@ -1319,7 +1331,6 @@ public:
 	// depends on the base pvp controller to tick
 	int m_TicksUntilShutdown = 0;
 
-	bool IsSkinColorChangeAllowed() const { return m_AllowSkinColorChange; }
 	int GameFlags() const { return m_GameFlags; }
 	void CheckGameInfo();
 	bool IsFriendlyFire(int ClientId1, int ClientId2) const;
@@ -1337,6 +1348,9 @@ public:
 	CSqlStats *m_pSqlStats = nullptr;
 	const char *m_pStatsTable = "";
 	const char *StatsTable() const { return m_pStatsTable; }
+
+	bool m_WasMysteryRound = false;
+	std::vector<std::string> m_vMysteryRounds;
 
 private:
 #ifndef IN_CLASS_IGAMECONTROLLER

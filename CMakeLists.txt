@@ -915,12 +915,12 @@ list(APPEND TARGETS_OWN rust-bridge-shared)
 
 if(TARGET_OS STREQUAL "android")
   set(CARGO_BUILD_DIR "${CARGO_NDK_TARGET}/")
-  set(CARGO_BUILD ${CMAKE_COMMAND} -E env CARGO_TARGET_DIR=${PROJECT_BINARY_DIR} DDNET_TEST_NO_LINK=1 ${RUST_CARGO} ndk --manifest-path "${PROJECT_SOURCE_DIR}/Cargo.toml" --target ${CARGO_NDK_TARGET} --platform ${CARGO_NDK_API} build)
-  set(CARGO_TEST ${CMAKE_COMMAND} -E env CARGO_TARGET_DIR=${PROJECT_BINARY_DIR} ${RUST_CARGO} ndk --target ${CARGO_NDK_TARGET} --platform ${CARGO_NDK_API} test)
+  set(CARGO_BUILD ${CMAKE_COMMAND} -E env CARGO_TARGET_DIR=${PROJECT_BINARY_DIR} DDNET_TEST_NO_LINK=1 ${RUST_CARGO} ndk --manifest-path "${PROJECT_SOURCE_DIR}/Cargo.toml" --target ${CARGO_NDK_TARGET} --platform ${CARGO_NDK_API} build --locked)
+  set(CARGO_TEST ${CMAKE_COMMAND} -E env CARGO_TARGET_DIR=${PROJECT_BINARY_DIR} ${RUST_CARGO} ndk --target ${CARGO_NDK_TARGET} --platform ${CARGO_NDK_API} test --locked)
 else()
   set(CARGO_BUILD_DIR "")
-  set(CARGO_BUILD ${CMAKE_COMMAND} -E env CARGO_TARGET_DIR=${PROJECT_BINARY_DIR} DDNET_TEST_NO_LINK=1 ${RUST_CARGO} build --manifest-path "${PROJECT_SOURCE_DIR}/Cargo.toml")
-  set(CARGO_TEST ${CMAKE_COMMAND} -E env CARGO_TARGET_DIR=${PROJECT_BINARY_DIR} ${RUST_CARGO} test)
+  set(CARGO_BUILD ${CMAKE_COMMAND} -E env CARGO_TARGET_DIR=${PROJECT_BINARY_DIR} DDNET_TEST_NO_LINK=1 ${RUST_CARGO} build --locked --manifest-path "${PROJECT_SOURCE_DIR}/Cargo.toml")
+  set(CARGO_TEST ${CMAKE_COMMAND} -E env CARGO_TARGET_DIR=${PROJECT_BINARY_DIR} ${RUST_CARGO} test --locked)
 endif()
 if(MSVC)
   list(INSERT CARGO_BUILD 0 ${CMAKE_COMMAND} -E env $<$<CONFIG:Debug>:CFLAGS=/MTd> $<$<CONFIG:Debug>:CXXFLAGS=/MTd>)
@@ -2114,6 +2114,8 @@ set_src(BASE GLOB_RECURSE src/base
   color.cpp
   color.h
   crashdump.cpp
+  dbg.cpp
+  dbg.h
   detect.h
   dynamic.h
   fs.cpp
@@ -2943,6 +2945,7 @@ if(SERVER)
     databases/mysql.cpp
     databases/sqlite.cpp
     instagib/server.cpp
+    instagib/server.h
     main.cpp
     name_ban.cpp
     name_ban.h
@@ -2967,22 +2970,12 @@ if(SERVER)
     ddracecommands.cpp
     entities/character.cpp
     entities/character.h
-    entities/ddnet_pvp/vanilla_pickup.cpp
-    entities/ddnet_pvp/vanilla_pickup.h
-    entities/ddnet_pvp/vanilla_projectile.cpp
-    entities/ddnet_pvp/vanilla_projectile.h
     entities/door.cpp
     entities/door.h
     entities/dragger.cpp
     entities/dragger.h
     entities/dragger_beam.cpp
     entities/dragger_beam.h
-    entities/flag.cpp
-    entities/flag.h
-    entities/foot/foot_pickup.cpp
-    entities/foot/foot_pickup.h
-    entities/foot/foot_projectile.cpp
-    entities/foot/foot_projectile.h
     entities/gun.cpp
     entities/gun.h
     entities/laser.cpp
@@ -3012,13 +3005,7 @@ if(SERVER)
     gamemodes/ball/foot/sql_columns.h
     gamemodes/base_pvp/base_pvp.cpp
     gamemodes/base_pvp/base_pvp.h
-    gamemodes/base_pvp/character.cpp
-    gamemodes/base_pvp/character.h
     gamemodes/base_pvp/chat.cpp
-    gamemodes/base_pvp/ctf.cpp
-    gamemodes/base_pvp/ctf.h
-    gamemodes/base_pvp/player.cpp
-    gamemodes/base_pvp/player.h
     gamemodes/ddrace/block/block.cpp
     gamemodes/ddrace/block/block.h
     gamemodes/insta_core/insta_core.cpp
@@ -3069,8 +3056,13 @@ if(SERVER)
     gamemodes/instagib/zcatch/zcatch.h
     gamemodes/mod.cpp
     gamemodes/mod.h
+    gamemodes/vanilla/base_ctf.cpp
+    gamemodes/vanilla/base_ctf.h
     gamemodes/vanilla/base_vanilla.cpp
     gamemodes/vanilla/base_vanilla.h
+    gamemodes/vanilla/bomb/bomb.cpp
+    gamemodes/vanilla/bomb/bomb.h
+    gamemodes/vanilla/bomb/sql_columns.h
     gamemodes/vanilla/ctf/ctf.cpp
     gamemodes/vanilla/ctf/ctf.h
     gamemodes/vanilla/ctf/sql_columns.h
@@ -3087,6 +3079,27 @@ if(SERVER)
     instagib/antibob.h
     instagib/chat_commands.cpp
     instagib/chat_commands.h
+    instagib/column_template.h
+    instagib/ddnet_db_utils/ddnet_db_utils.cpp
+    instagib/ddnet_db_utils/ddnet_db_utils.h
+    instagib/entities/character.cpp
+    instagib/entities/character.h
+    instagib/entities/ddnet_pvp/vanilla_pickup.cpp
+    instagib/entities/ddnet_pvp/vanilla_pickup.h
+    instagib/entities/ddnet_pvp/vanilla_projectile.cpp
+    instagib/entities/ddnet_pvp/vanilla_projectile.h
+    instagib/entities/flag.cpp
+    instagib/entities/flag.h
+    instagib/entities/foot/foot_pickup.cpp
+    instagib/entities/foot/foot_pickup.h
+    instagib/entities/foot/foot_projectile.cpp
+    instagib/entities/foot/foot_projectile.h
+    instagib/entities/text/laser.cpp
+    instagib/entities/text/laser.h
+    instagib/entities/text/projectile.cpp
+    instagib/entities/text/projectile.h
+    instagib/entities/text/text.cpp
+    instagib/entities/text/text.h
     instagib/enums.cpp
     instagib/enums.h
     instagib/extra_columns.h
@@ -3098,15 +3111,18 @@ if(SERVER)
     instagib/includes/character.h
     instagib/includes/chat_commands.h
     instagib/includes/config_variables.h
+    instagib/includes/engine/gameserver.h
+    instagib/includes/engine/server.h
+    instagib/includes/engine/server/server.h
     instagib/includes/gamecontext.h
     instagib/includes/gamecontroller.h
     instagib/includes/player.h
     instagib/includes/rcon_commands.h
     instagib/ip_storage.cpp
     instagib/ip_storage.h
-    instagib/laser_text.cpp
-    instagib/laser_text.h
     instagib/persistent_client_data.h
+    instagib/player.cpp
+    instagib/player.h
     instagib/protocol.h
     instagib/rcon_commands.cpp
     instagib/rcon_commands.h
@@ -3115,6 +3131,8 @@ if(SERVER)
     instagib/round_stats_ascii.cpp
     instagib/round_stats_csv.cpp
     instagib/round_stats_player.h
+    instagib/skin_info_manager.cpp
+    instagib/skin_info_manager.h
     instagib/sql_columns_all.h
     instagib/sql_stats.cpp
     instagib/sql_stats.h

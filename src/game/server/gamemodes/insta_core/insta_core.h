@@ -3,8 +3,9 @@
 
 #include "../DDRace.h"
 
-#include <game/server/instagib/extra_columns.h>
-#include <game/server/instagib/sql_stats.h>
+#include <generated/protocol7.h>
+
+#include <game/server/instagib/enums.h>
 #include <game/server/player.h>
 
 // base functionality of the ddnet-insta server
@@ -86,6 +87,8 @@ public:
 	void SnapPlayer6(int SnappingClient, CPlayer *pPlayer, CNetObj_ClientInfo *pClientInfo, CNetObj_PlayerInfo *pPlayerInfo) override;
 	void SnapDDNetPlayer(int SnappingClient, CPlayer *pPlayer, CNetObj_DDNetPlayer *pDDNetPlayer) override;
 	bool OnClientPacket(int ClientId, bool Sys, int MsgId, struct CNetChunk *pPacket, class CUnpacker *pUnpacker) override;
+	bool UnfreezeOnHammerHit() const override;
+	void OnRoundEnd() override;
 
 	void OnPlayerTick(class CPlayer *pPlayer);
 	void OnCharacterTick(class CCharacter *pChr);
@@ -93,6 +96,11 @@ public:
 private:
 	bool m_InvalidateConnectedIpsCache = true;
 	int m_NumConnectedIpsCached = 0;
+
+	// pPlayer is the player whose skin changed
+	// not the receiver of the message
+	// the message is sent to all 0.7 players that are in clip region
+	void SendSkinChangeToAllSixup(protocol7::CNetMsg_Sv_SkinChange *pMsg, CPlayer *pPlayer, bool ApplyNetworkClipping);
 
 public:
 	/* UpdateSpawnWeapons
@@ -129,7 +137,7 @@ public:
 	void ApplyVanillaDamage(int &Dmg, int From, int Weapon, CCharacter *pCharacter) override;
 
 	// displays fng styled laser text points in the world
-	void MakeLaserTextPoints(vec2 Pos, int Points, int Seconds, CClientMask Mask);
+	void MakeTextPoints(vec2 Pos, int Points, int Seconds, CClientMask Mask, ETextType TextType = ETextType::LASER) const;
 
 	// plays the satisfying hit sound
 	// that is used in teeworlds when a projectile causes damage
@@ -169,5 +177,8 @@ public:
 	// UniqueId unlike regular ClientIds are not reused
 	// they start at one and get incremented for every new player that gets created
 	CPlayer *GetPlayerByUniqueId(uint32_t UniqueId);
+
+	size_t m_LastMysteryLine = -1;
+	const char *GetMysteryRoundLine();
 };
 #endif // GAME_SERVER_GAMEMODES_INSTA_CORE_INSTA_CORE_H

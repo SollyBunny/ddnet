@@ -1,7 +1,6 @@
 #include "base_fng.h"
 
 #include <base/system.h>
-#include <base/types.h>
 
 #include <engine/server.h>
 #include <engine/shared/config.h>
@@ -14,7 +13,6 @@
 #include <game/server/entities/character.h>
 #include <game/server/gamecontext.h>
 #include <game/server/gamemodes/instagib/base_instagib.h>
-#include <game/server/instagib/laser_text.h>
 #include <game/server/instagib/sql_stats_player.h>
 #include <game/server/player.h>
 
@@ -333,12 +331,20 @@ inline void CGameControllerBaseFng::UpdateScoresAndDisplayPoints(CPlayer *pKille
 {
 	if(!pKiller)
 		return;
+
 	// The player already gets one score point
 	// in CGameControllerBasePvp::OnCharacterDeath()
 	pKiller->AddScore(PlayerScore - 1);
 	AddTeamscore(pKiller->GetTeam(), TeamScore);
 	if(pKiller->IsPlaying()) // NOLINT(clang-analyzer-unix.Malloc)
-		MakeLaserTextPoints(pKiller->GetCharacter()->GetPos(), PlayerScore, 3, pKiller->GetCharacter()->TeamMask()); // NOLINT(clang-analyzer-unix.Malloc)
+	{
+		MakeTextPoints(
+			pKiller->GetCharacter()->GetPos(),
+			PlayerScore,
+			Config()->m_SvTextPointsDelay,
+			pKiller->GetCharacter()->TeamMask(),
+			(ETextType)Config()->m_SvTextPoints); // NOLINT(clang-analyzer-unix.Malloc)
+	}
 }
 
 void CGameControllerBaseFng::SnapDDNetCharacter(int SnappingClient, CCharacter *pChr, CNetObj_DDNetCharacter *pDDNetCharacter)
@@ -391,23 +397,6 @@ bool CGameControllerBaseFng::OnSelfkill(int ClientId)
 	return true;
 }
 
-// called after spam protection on client team join request
-bool CGameControllerBaseFng::CanJoinTeam(int Team, int NotThisId, char *pErrorReason, int ErrorReasonSize)
-{
-	CPlayer *pPlayer = GameServer()->m_apPlayers[NotThisId];
-	if(pPlayer)
-	{
-		CCharacter *pChr = pPlayer->GetCharacter();
-		if(pChr && pChr->m_FreezeTime)
-		{
-			str_copy(pErrorReason, "You can't join spectators while being frozen", ErrorReasonSize);
-			return false;
-		}
-	}
-
-	return CGameControllerInstagib::CanJoinTeam(Team, NotThisId, pErrorReason, ErrorReasonSize);
-}
-
 bool CGameControllerBaseFng::OnLaserHit(int Bounces, int From, int Weapon, CCharacter *pVictim)
 {
 	// do not track wallshots on frozen tees
@@ -428,8 +417,8 @@ bool CGameControllerBaseFng::SkipDamage(int Dmg, int From, int Weapon, const CCh
 	return CGameControllerInstagib::SkipDamage(Dmg, From, Weapon, pCharacter, ApplyForce);
 }
 
-// warning this does not call the base pvp take damage method
-// so it has to reimplement all the relevant functionality
+// WARNING: this does not call the base pvp take damage method
+//          so it has to reimplement all the relevant functionality
 bool CGameControllerBaseFng::OnCharacterTakeDamage(vec2 &Force, int &Dmg, int &From, int &Weapon, CCharacter &Character)
 {
 	OnAnyDamage(Force, Dmg, From, Weapon, &Character);

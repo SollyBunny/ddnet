@@ -1,9 +1,3 @@
-#include "../entities/character.h"
-#include "../gamecontext.h"
-#include "../gamecontroller.h"
-#include "../player.h"
-
-#include <base/logger.h>
 #include <base/system.h>
 
 #include <engine/shared/config.h>
@@ -14,7 +8,10 @@
 
 #include <generated/protocol.h>
 
+#include <game/server/gamecontext.h>
+#include <game/server/gamecontroller.h>
 #include <game/server/instagib/strhelpers.h>
+#include <game/server/player.h>
 
 float IGameController::CalcKillDeathRatio(int Kills, int Deaths) const
 {
@@ -409,6 +406,9 @@ void IGameController::SendRoundTopMessage(int ClientId)
 		if(!pPlayer)
 			break;
 
+		if(pPlayer->GetTeam() == TEAM_SPECTATORS)
+			continue;
+
 		str_format(aBuf, sizeof(aBuf), "%d. '%s' - Accuracy: %.2f%%", i + 1, Server()->ClientName(pPlayer->GetCid()), pPlayer->m_Stats.HitAccuracy());
 		GameServer()->SendChatTarget(ClientId, aBuf);
 	}
@@ -430,6 +430,9 @@ void IGameController::SendRoundTopMessage(int ClientId)
 		CPlayer *pPlayer = apPlayers[i];
 		if(!pPlayer)
 			break;
+
+		if(pPlayer->GetTeam() == TEAM_SPECTATORS)
+			continue;
 
 		float Ratio = CalcKillDeathRatio(pPlayer->Kills(), pPlayer->Deaths());
 		str_format(aBuf, sizeof(aBuf), "%d. '%s' - Ratio: %.2f", i + 1, Server()->ClientName(pPlayer->GetCid()), Ratio);

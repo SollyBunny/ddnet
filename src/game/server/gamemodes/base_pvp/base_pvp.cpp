@@ -6,29 +6,23 @@
 #include <engine/server/server.h>
 #include <engine/shared/config.h>
 #include <engine/shared/network.h>
-#include <engine/shared/packer.h>
 #include <engine/shared/protocol.h>
 
 #include <generated/protocol.h>
 
 #include <game/race_state.h>
 #include <game/server/entities/character.h>
-#include <game/server/entities/ddnet_pvp/vanilla_projectile.h>
-#include <game/server/entities/flag.h>
 #include <game/server/gamecontroller.h>
 #include <game/server/gamemodes/insta_core/insta_core.h>
-#include <game/server/instagib/antibob.h>
+#include <game/server/instagib/entities/ddnet_pvp/vanilla_projectile.h>
+#include <game/server/instagib/entities/flag.h>
 #include <game/server/instagib/enums.h>
-#include <game/server/instagib/ip_storage.h>
-#include <game/server/instagib/laser_text.h>
 #include <game/server/instagib/sql_stats.h>
 #include <game/server/instagib/structs.h>
-#include <game/server/instagib/version.h>
 #include <game/server/player.h>
 #include <game/server/score.h>
 #include <game/server/teams.h>
 #include <game/teamscore.h>
-#include <game/version.h>
 
 #include <cstdint>
 
@@ -149,7 +143,7 @@ void CGameControllerBasePvp::OnRoundStart()
 
 void CGameControllerBasePvp::OnRoundEnd()
 {
-	dbg_msg("ddnet-insta", "match end");
+	CGameControllerInstaCore::OnRoundEnd();
 
 	if(g_Config.m_SvTournamentChatSmart)
 	{
@@ -188,7 +182,7 @@ int CGameControllerBasePvp::SnapGameInfoExFlags(int SnappingClient, int DDRaceFl
 		GAMEINFOFLAG_ENTITIES_VANILLA | // ddnet-insta
 		GAMEINFOFLAG_BUG_VANILLA_BOUNCE | // ddnet-insta
 		GAMEINFOFLAG_GAMETYPE_VANILLA | // ddnet-insta
-		/* GAMEINFOFLAG_TIMESCORE | */ // ddnet-insta
+		/* GAMEINFOFLAG_TIMESCORE | */ // Unsetting this alone is not enough see also `SnapPlayerTime()`
 		/* GAMEINFOFLAG_GAMETYPE_RACE | */ // ddnet-insta
 		/* GAMEINFOFLAG_GAMETYPE_DDRACE | */ // ddnet-insta
 		/* GAMEINFOFLAG_GAMETYPE_DDNET | */ // ddnet-insta
@@ -221,11 +215,16 @@ int CGameControllerBasePvp::SnapGameInfoExFlags2(int SnappingClient, int DDRaceF
 	return GAMEINFOFLAG2_HUD_AMMO | GAMEINFOFLAG2_HUD_HEALTH_ARMOR;
 }
 
-int CGameControllerBasePvp::SnapPlayerScore(int SnappingClient, CPlayer *pPlayer, int DDRaceScore)
+int CGameControllerBasePvp::SnapPlayerScore(int SnappingClient, CPlayer *pPlayer)
 {
+	// we are never interested in the score value from ddnet
+	// especially because it is also affected by `sv_hide_score` which we ignore
+	// int DDRaceScore = CGameControllerInstaCore::SnapPlayerScore(SnappingClient, pPlayer);
+
+	// TODO: the `return 0` shows wrong scores in server side demos
 	CPlayer *pSnapReceiver = GetPlayerOrNullptr(SnappingClient);
 	if(!pSnapReceiver)
-		return DDRaceScore;
+		return 0;
 
 	int Score = pPlayer->m_Score.value_or(0);
 
@@ -266,6 +265,18 @@ int CGameControllerBasePvp::SnapPlayerScore(int SnappingClient, CPlayer *pPlayer
 	};
 
 	return Score;
+}
+
+IGameController::CFinishTime CGameControllerBasePvp::SnapPlayerTime(int SnappingClient, CPlayer *pPlayer)
+{
+	// We have to unset timescore so new ddnet clients see points
+	// instead of times in the scoreboard. Or the sorting order breaks.
+	//
+	// See those issues and prs for more details:
+	// - https://github.com/ddnet/ddnet/pull/11476
+	// - https://github.com/ddnet-insta/ddnet-insta/issues/494
+	// - https://github.com/ddnet/ddnet/issues/11467
+	return CFinishTime::Unset();
 }
 
 bool CGameControllerBasePvp::IsGrenadeGameType() const
@@ -539,7 +550,7 @@ void CGameControllerBasePvp::SaveStatsOnDisconnect(CPlayer *pPlayer)
 {
 	if(!pPlayer)
 		return;
-	if(!pPlayer->m_Stats.HasValues())
+	if(!pPlayer->m_Stats.HasValues(m_pExtraColumns))
 		return;
 
 	// the spree can not be incremented if stat track is off
@@ -766,15 +777,13 @@ void CGameControllerBasePvp::Tick()
 
 bool CGameControllerBasePvp::OnLaserHit(int Bounces, int From, int Weapon, CCharacter *pVictim)
 {
+	CGameControllerInstaCore::OnLaserHit(Bounces, From, Weapon, pVictim);
 	CPlayer *pPlayer = GameServer()->m_apPlayers[From];
 	if(!pPlayer)
 		return true;
 
 	if(IsStatTrack() && Bounces != 0)
 		pPlayer->m_Stats.m_Wallshots++;
-
-	if(!IsFngGameType())
-		pVictim->UnFreeze();
 
 	if(g_Config.m_SvOnlyWallshotKills)
 		return Bounces != 0;
@@ -1076,6 +1085,15 @@ void CGameControllerBasePvp::OnAppliedDamage(int &Dmg, int &From, int &Weapon, C
 		if(!g_Config.m_SvFastHitFullAuto)
 			pKillerChar->m_BlockFullAutoUntilReleaseOrTick = Server()->Tick() + (FireDelay * Server()->TickSpeed() / 1000);
 		pKillerChar->m_ReloadTimer = g_Config.m_SvReloadTimeOnHit;
+	}
+
+	if(Config()->m_SvFreezeHammer && Weapon == WEAPON_HAMMER)
+	{
+		CCharacterCore NewCore = pCharacter->GetCore();
+		NewCore.m_FreezeEnd = Server()->Tick() + Config()->m_SvFreezeHammer;
+		NewCore.m_FreezeStart = Server()->Tick();
+		pCharacter->m_FreezeTime = Config()->m_SvFreezeHammer;
+		pCharacter->SetCore(NewCore);
 	}
 }
 

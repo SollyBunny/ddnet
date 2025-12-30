@@ -3,30 +3,27 @@
 #include <base/log.h>
 #include <base/system.h>
 
+#include <engine/console.h>
 #include <engine/server/server.h>
 #include <engine/shared/config.h>
+#include <engine/shared/linereader.h>
 #include <engine/shared/network.h>
 #include <engine/shared/packer.h>
 #include <engine/shared/protocol.h>
 
 #include <generated/protocol.h>
 
-#include <game/race_state.h>
 #include <game/server/entities/character.h>
-#include <game/server/entities/ddnet_pvp/vanilla_projectile.h>
-#include <game/server/entities/flag.h>
 #include <game/server/gamecontroller.h>
 #include <game/server/instagib/antibob.h>
+#include <game/server/instagib/entities/flag.h>
+#include <game/server/instagib/entities/text/laser.h>
+#include <game/server/instagib/entities/text/projectile.h>
 #include <game/server/instagib/enums.h>
 #include <game/server/instagib/ip_storage.h>
-#include <game/server/instagib/laser_text.h>
-#include <game/server/instagib/sql_stats.h>
-#include <game/server/instagib/structs.h>
 #include <game/server/instagib/version.h>
 #include <game/server/player.h>
-#include <game/server/score.h>
 #include <game/server/teams.h>
-#include <game/teamscore.h>
 #include <game/version.h>
 
 CGameControllerInstaCore::CGameControllerInstaCore(class CGameContext *pGameServer) :
@@ -35,9 +32,24 @@ CGameControllerInstaCore::CGameControllerInstaCore(class CGameContext *pGameServ
 	log_info("ddnet-insta", "initializing insta core ...");
 
 	UpdateSpawnWeapons(true, true);
-	m_AllowSkinColorChange = true;
 	m_vFrozenQuitters.clear();
 	g_AntibobContext.m_pConsole = Console();
+
+	m_vMysteryRounds.clear();
+	if(Config()->m_SvMysteryRoundsFileName[0] != '\0')
+	{
+		CLineReader LineReader;
+		if(!LineReader.OpenFile(GameServer()->m_pStorage->OpenFile(Config()->m_SvMysteryRoundsFileName, IOFLAG_READ, IStorage::TYPE_ALL)))
+		{
+			log_error("server", "failed to open mystery rounds file  '%s'", Config()->m_SvMysteryRoundsFileName);
+			return;
+		}
+		while(const char *pLine = LineReader.Get())
+		{
+			if(str_length(pLine) && pLine[0] != '#')
+				m_vMysteryRounds.emplace_back(pLine);
+		}
+	}
 }
 
 CGameControllerInstaCore::~CGameControllerInstaCore()
@@ -309,6 +321,26 @@ void CGameControllerInstaCore::Tick()
 			continue;
 
 		OnCharacterTick(pPlayer->GetCharacter());
+
+		// ratelimit the 0.7 stuff because it requires net messages
+		if(Server()->Tick() % 4 == 0)
+		{
+			if(pPlayer->m_SkinInfoManager.NeedsNetMessage7())
+			{
+				pPlayer->m_SkinInfoManager.OnSendNetMessage7();
+				CTeeInfo TeeInfo = pPlayer->m_SkinInfoManager.TeeInfo();
+				protocol7::CNetMsg_Sv_SkinChange Msg;
+				Msg.m_ClientId = pPlayer->GetCid();
+				for(int p = 0; p < protocol7::NUM_SKINPARTS; p++)
+				{
+					Msg.m_apSkinPartNames[p] = TeeInfo.m_aaSkinPartNames[p];
+					Msg.m_aSkinPartColors[p] = TeeInfo.m_aSkinPartColors[p];
+					Msg.m_aUseCustomColors[p] = TeeInfo.m_aUseCustomColors[p];
+				}
+				bool NetworkClip = pPlayer->GetCharacter()->HasRainbow();
+				SendSkinChangeToAllSixup(&Msg, pPlayer, NetworkClip);
+			}
+		}
 	}
 
 	if(g_Config.m_SvAnticamper && !GameServer()->m_World.m_Paused)
@@ -429,12 +461,22 @@ int CGameControllerInstaCore::GetAutoTeam(int NotThisId)
 
 bool CGameControllerInstaCore::CanJoinTeam(int Team, int NotThisId, char *pErrorReason, int ErrorReasonSize)
 {
-	const CPlayer *pPlayer = GameServer()->m_apPlayers[NotThisId];
+	const CPlayer *pPlayer = GetPlayerOrNullptr(NotThisId);
 	if(pPlayer && pPlayer->IsPaused())
 	{
 		if(pErrorReason)
 			str_copy(pErrorReason, "Use /pause first then you can kill", ErrorReasonSize);
 		return false;
+	}
+	if(pPlayer)
+	{
+		const CCharacter *pChr = pPlayer->GetCharacter();
+		// TODO: think about block gametype here, do we allow team switches while frozen?
+		if(pChr && pChr->m_FreezeTime && !IsDDRaceGameType())
+		{
+			str_format(pErrorReason, ErrorReasonSize, "You can't join %s while being frozen", GetTeamName(Team));
+			return false;
+		}
 	}
 	if(Team == TEAM_SPECTATORS || (pPlayer && pPlayer->GetTeam() != TEAM_SPECTATORS))
 		return true;
@@ -507,21 +549,15 @@ bool CGameControllerInstaCore::OnSkinChange7(protocol7::CNetMsg_Cl_SkinChange *p
 {
 	CPlayer *pPlayer = GameServer()->m_apPlayers[ClientId];
 
-	CTeeInfo Info(pMsg->m_apSkinPartNames, pMsg->m_aUseCustomColors, pMsg->m_aSkinPartColors);
-	Info.FromSixup();
+	// parse 0.7 info
+	pPlayer->m_TeeInfos = CTeeInfo(pMsg->m_apSkinPartNames, pMsg->m_aUseCustomColors, pMsg->m_aSkinPartColors);
+	pPlayer->m_TeeInfos.FromSixup();
 
-	CTeeInfo OldInfo = pPlayer->m_TeeInfos;
-	pPlayer->m_TeeInfos = Info;
+	// store user request
+	pPlayer->m_SkinInfoManager.SetUserChoice(pPlayer->m_TeeInfos);
 
-	// restore old color
-	if(!IsSkinColorChangeAllowed())
-	{
-		for(int p = 0; p < protocol7::NUM_SKINPARTS; p++)
-		{
-			pPlayer->m_TeeInfos.m_aSkinPartColors[p] = OldInfo.m_aSkinPartColors[p];
-			pPlayer->m_TeeInfos.m_aUseCustomColors[p] = OldInfo.m_aUseCustomColors[p];
-		}
-	}
+	// enforce server set info
+	pPlayer->m_TeeInfos = pPlayer->m_SkinInfoManager.TeeInfo();
 
 	protocol7::CNetMsg_Sv_SkinChange Msg;
 	Msg.m_ClientId = ClientId;
@@ -660,9 +696,12 @@ int CGameControllerInstaCore::SnapTeamscoreBlue(int SnappingClient)
 
 int CGameControllerInstaCore::SnapPlayerFlags7(int SnappingClient, CPlayer *pPlayer, int PlayerFlags7)
 {
+	// TODO: better server side demo support. Do not just return empty flags in that case.
 	if(SnappingClient < 0 || SnappingClient >= MAX_CLIENTS)
 		return PlayerFlags7;
 
+	if(!IsPlayerReadyMode() || pPlayer->m_IsReadyToPlay)
+		PlayerFlags7 |= protocol7::PLAYERFLAG_READY;
 	if(pPlayer->m_IsDead && (!pPlayer->GetCharacter() || !pPlayer->GetCharacter()->IsAlive()))
 		PlayerFlags7 |= protocol7::PLAYERFLAG_DEAD;
 	// hack to let 0.7 players vote as spectators
@@ -691,6 +730,16 @@ void CGameControllerInstaCore::SnapPlayer6(int SnappingClient, CPlayer *pPlayer,
 		// such as WWWWWWWWWW... which would also hide the checkmark in the end
 		StrToInts(pClientInfo->m_aName, std::size(pClientInfo->m_aName), aReady);
 	}
+
+	// TODO: can we save clock cycles here?
+	//       maybe only set it if the skin info manager has custom values
+	//       something like if(pPlayer->m_SkinInfoManager.HasValues())
+	//       which is just a cheap bool lookup
+	CTeeInfo Info = pPlayer->m_SkinInfoManager.TeeInfo();
+	StrToInts(pClientInfo->m_aSkin, std::size(pClientInfo->m_aSkin), Info.m_aSkinName);
+	pClientInfo->m_UseCustomColor = Info.m_UseCustomColor;
+	pClientInfo->m_ColorBody = Info.m_ColorBody;
+	pClientInfo->m_ColorFeet = Info.m_ColorFeet;
 }
 
 void CGameControllerInstaCore::SnapDDNetPlayer(int SnappingClient, CPlayer *pPlayer, CNetObj_DDNetPlayer *pDDNetPlayer)
@@ -724,6 +773,48 @@ bool CGameControllerInstaCore::OnClientPacket(int ClientId, bool Sys, int MsgId,
 	}
 
 	return false;
+}
+
+bool CGameControllerInstaCore::UnfreezeOnHammerHit() const
+{
+	if(IsFngGameType())
+		return false;
+	return g_Config.m_SvFreezeHammer == 0;
+}
+
+void CGameControllerInstaCore::OnRoundEnd()
+{
+	dbg_msg("ddnet-insta", "match end");
+
+	if(m_WasMysteryRound)
+	{
+		GameServer()->Console()->ExecuteFile(g_Config.m_SvMysteryRoundsResetFileName, IConsole::CLIENT_ID_UNSPECIFIED);
+		m_WasMysteryRound = false;
+	}
+
+	std::vector<std::string> vTemp;
+	while(Config()->m_SvMysteryRoundsChance && rand() % 101 <= Config()->m_SvMysteryRoundsChance)
+	{
+		if(vTemp.size() == m_vMysteryRounds.size())
+			break;
+
+		if(!m_WasMysteryRound)
+		{
+			GameServer()->Console()->ExecuteFile(Config()->m_SvMysteryRoundsResetFileName, IConsole::CLIENT_ID_UNSPECIFIED);
+			GameServer()->SendChat(-1, TEAM_ALL, "MYSTERY ROUND!");
+		}
+
+		const char *pLine = GetMysteryRoundLine();
+		if(!pLine)
+			break;
+
+		if(std::ranges::find(vTemp, pLine) != vTemp.end())
+			continue;
+
+		GameServer()->Console()->ExecuteLine(pLine, IConsole::CLIENT_ID_UNSPECIFIED);
+		m_WasMysteryRound = true;
+		vTemp.emplace_back(pLine);
+	}
 }
 
 void CGameControllerInstaCore::OnPlayerTick(class CPlayer *pPlayer)
@@ -789,6 +880,36 @@ void CGameControllerInstaCore::OnCharacterTick(CCharacter *pChr)
 {
 	if(pChr->GetPlayer()->m_PlayerFlags & PLAYERFLAG_CHATTING)
 		pChr->GetPlayer()->m_TicksSpentChatting++;
+}
+
+void CGameControllerInstaCore::SendSkinChangeToAllSixup(protocol7::CNetMsg_Sv_SkinChange *pMsg, CPlayer *pPlayer, bool ApplyNetworkClipping)
+{
+	if(!pPlayer->GetCharacter())
+		return;
+
+	if(!ApplyNetworkClipping)
+	{
+		Server()->SendPackMsg(pMsg, MSGFLAG_VITAL | MSGFLAG_NORECORD, -1);
+		return;
+	}
+
+	for(CPlayer *pReceivingPlayer : GameServer()->m_apPlayers)
+	{
+		if(!pReceivingPlayer)
+			continue;
+		if(!Server()->IsSixup(pReceivingPlayer->GetCid()))
+			continue;
+
+		const bool IsTopscorer = !GameServer()->m_pController->IsTeamPlay() && GameServer()->m_pController->HasWinningScore(pPlayer);
+
+		// never clip when in scoreboard or the top scorer
+		// to see the rainbow in scoreboard and hud in the bottom right
+		if(!(pReceivingPlayer->m_PlayerFlags & PLAYERFLAG_SCOREBOARD) && !IsTopscorer)
+			if(NetworkClipped(GameServer(), pReceivingPlayer->GetCid(), pPlayer->GetCharacter()->GetPos()))
+				continue;
+
+		Server()->SendPackMsg(pMsg, MSGFLAG_VITAL | MSGFLAG_NORECORD, pReceivingPlayer->GetCid());
+	}
 }
 
 void CGameControllerInstaCore::UpdateSpawnWeapons(bool Silent, bool Apply)
@@ -1080,9 +1201,9 @@ void CGameControllerInstaCore::ApplyVanillaDamage(int &Dmg, int From, int Weapon
 		GameServer()->CreateSound(pCharacter->m_Pos, SOUND_PLAYER_PAIN_SHORT);
 }
 
-void CGameControllerInstaCore::MakeLaserTextPoints(vec2 Pos, int Points, int Seconds, CClientMask Mask)
+void CGameControllerInstaCore::MakeTextPoints(vec2 Pos, int Points, int Seconds, CClientMask Mask, ETextType TextType) const
 {
-	if(!g_Config.m_SvLaserTextPoints)
+	if(!g_Config.m_SvTextPoints)
 		return;
 
 	char aText[16];
@@ -1091,7 +1212,17 @@ void CGameControllerInstaCore::MakeLaserTextPoints(vec2 Pos, int Points, int Sec
 	else
 		str_format(aText, sizeof(aText), "%d", Points);
 	Pos.y -= 60.0f;
-	new CLaserText(&GameServer()->m_World, Pos, Server()->TickSpeed() * Seconds, aText, Mask);
+
+	switch(TextType)
+	{
+	case ETextType::NONE:
+	case ETextType::LASER:
+		new CLaserText(&GameServer()->m_World, Mask, Pos, Server()->TickSpeed() * Seconds, aText);
+		break;
+	case ETextType::PROJECTILE:
+		new CProjectileText(&GameServer()->m_World, Mask, Pos, Server()->TickSpeed() * Seconds, aText);
+		break;
+	}
 } // NOLINT(clang-analyzer-unix.Malloc)
 
 void CGameControllerInstaCore::DoDamageHitSound(int KillerId)
@@ -1184,4 +1315,22 @@ CPlayer *CGameControllerInstaCore::GetPlayerByUniqueId(uint32_t UniqueId)
 		if(pPlayer && pPlayer->GetUniqueCid() == UniqueId)
 			return pPlayer;
 	return nullptr;
+}
+
+const char *CGameControllerInstaCore::GetMysteryRoundLine()
+{
+	if(m_vMysteryRounds.empty())
+		return nullptr;
+
+	if(m_vMysteryRounds.size() == 1)
+		return m_vMysteryRounds[0].c_str();
+
+	size_t SelectedIndex;
+	do
+	{
+		SelectedIndex = GameServer()->m_Prng.RandomBits() % m_vMysteryRounds.size();
+	} while(m_vMysteryRounds.size() > 1 && SelectedIndex == m_LastMysteryLine);
+
+	m_LastMysteryLine = SelectedIndex;
+	return m_vMysteryRounds[m_LastMysteryLine].c_str();
 }
