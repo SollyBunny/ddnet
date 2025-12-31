@@ -116,6 +116,11 @@ void CGameControllerInstaCore::OnPlayerConnect(CPlayer *pPlayer)
 	IGameController::OnPlayerConnect(pPlayer);
 	m_InvalidateConnectedIpsCache = true;
 
+	// TODO: should CPlayer::m_Score maybe not be an optional
+	//       that was a ddnet thing for unfinished maps
+	//       if we set it to 0 on join that makes little sense
+	Server()->SetClientScore(pPlayer->GetCid(), 0);
+
 	int ClientId = pPlayer->GetCid();
 	CIpStorage *pIpStorage = GameServer()->m_IpStorageController.FindEntry(Server()->ClientAddr(ClientId));
 	if(pIpStorage)
