@@ -67,6 +67,7 @@ void CPlayer::AddScore(int Score)
 		m_Stats.m_Points += Score;
 
 	m_Score = m_Score.value_or(0) + Score;
+	Server()->SetClientScore(GetCid(), m_Score);
 }
 
 void CPlayer::AddKills(int Amount)
