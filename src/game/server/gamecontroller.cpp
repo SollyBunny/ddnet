@@ -21,8 +21,6 @@
 #include <game/server/score.h>
 #include <game/teamscore.h>
 
-#include <optional>
-
 IGameController::IGameController(class CGameContext *pGameServer) :
 	m_Teams(pGameServer), m_pLoadBestTimeResult(nullptr)
 {
@@ -566,7 +564,7 @@ void IGameController::OnReset()
 		pPlayer->Respawn();
 		pPlayer->m_RespawnTick = Server()->Tick() + Server()->TickSpeed() / 2;
 		pPlayer->m_Score = 0;
-		Server()->SetClientScore(pPlayer->GetCid(), std::nullopt);
+		Server()->SetClientScore(pPlayer->GetCid(), 0);
 	}
 }
 
