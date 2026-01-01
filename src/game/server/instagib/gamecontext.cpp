@@ -62,7 +62,7 @@ const char *CGameContext::ServerInfoClientScoreKind()
 	{
 	case EScoreKind::TIME: return "time";
 	case EScoreKind::POINTS: return "points";
-	default: dbg_assert_failed("Invalid ScoreKind: %d", ScoreKind);
+	default: dbg_assert_failed("Invalid ScoreKind: %d", (int)ScoreKind);
 	}
 }
 
