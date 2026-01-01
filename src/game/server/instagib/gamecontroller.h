@@ -1055,7 +1055,7 @@ public:
 			or use different kind of scores such as time score.
 
 		Arguments:
-			pPlayer - the player whos score will be reset
+			pPlayer - the player whose score will be reset
 	*/
 	virtual void ResetPlayerScore(class CPlayer *pPlayer);
 
