@@ -32,7 +32,7 @@ void IGameController::PsvRowPlayer(const CPlayer *pPlayer, char *pBuf, size_t Si
 		"Id: %d | Name: %s | Score: %d | Kills: %d | Deaths: %d | Ratio: %.2f",
 		pPlayer->GetCid(),
 		Server()->ClientName(pPlayer->GetCid()),
-		pPlayer->m_Score.value_or(0),
+		pPlayer->m_Score,
 		pPlayer->m_Kills,
 		pPlayer->m_Deaths,
 		CalcKillDeathRatio(pPlayer->m_Kills, pPlayer->m_Deaths));
@@ -104,7 +104,7 @@ void IGameController::GetRoundEndStatsStrJson(char *pBuf, size_t Size)
 			Writer.WriteAttribute("name");
 			Writer.WriteStrValue(Server()->ClientName(pPlayer->GetCid()));
 			Writer.WriteAttribute("score");
-			Writer.WriteIntValue(pPlayer->m_Score.value_or(0));
+			Writer.WriteIntValue(pPlayer->m_Score);
 			Writer.WriteAttribute("kills");
 			Writer.WriteIntValue(pPlayer->m_Kills);
 			Writer.WriteAttribute("deaths");

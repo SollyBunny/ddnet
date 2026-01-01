@@ -608,16 +608,6 @@ void CGameControllerInstaCore::InitPlayer(CPlayer *pPlayer)
 	RoundInitPlayer(pPlayer);
 }
 
-void CGameControllerInstaCore::ResetPlayerScore(CPlayer *pPlayer)
-{
-	pPlayer->m_Score.reset();
-
-	if(ServerInfoScoreKind() == EScoreKind::TIME)
-		Server()->SetClientScore(pPlayer->GetCid(), std::nullopt);
-	else if(ServerInfoScoreKind() == EScoreKind::POINTS)
-		Server()->SetClientScore(pPlayer->GetCid(), 0);
-}
-
 void CGameControllerInstaCore::Snap(int SnappingClient)
 {
 	CGameControllerDDRace::Snap(SnappingClient);

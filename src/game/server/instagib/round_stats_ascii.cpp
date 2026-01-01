@@ -103,7 +103,7 @@ void IGameController::GetRoundEndStatsStrAsciiTable(char *pBuf, size_t SizeOfBuf
 			pPlayer->GetCid(),
 			pPlayer->GetTeamStr(),
 			Server()->ClientName(pPlayer->GetCid()),
-			pPlayer->m_Score.value_or(0),
+			pPlayer->m_Score,
 			pPlayer->m_Kills,
 			pPlayer->m_Deaths,
 			aRatio,

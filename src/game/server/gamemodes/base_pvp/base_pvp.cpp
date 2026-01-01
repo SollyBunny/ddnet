@@ -232,7 +232,7 @@ int CGameControllerBasePvp::SnapPlayerScore(int SnappingClient, CPlayer *pPlayer
 	if(!pSnapReceiver)
 		return 0;
 
-	int Score = pPlayer->m_Score.value_or(0);
+	int Score = pPlayer->m_Score;
 
 	// always force display round score if the game ended
 	// otherwise you can not see who actually won

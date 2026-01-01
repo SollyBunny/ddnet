@@ -43,11 +43,15 @@ public:
 	// and used by the GetDisplayScore gamecontroller method
 	EDisplayScore m_DisplayScore = EDisplayScore::POINTS;
 
-	// TODO: should this really be an std::optional?
-	//
 	// this used to be a ddnet variable but it got removed there
 	// so now it is a ddnet-insta specific variable
-	std::optional<int> m_Score;
+	//
+	// This used to be a ddnet ver
+	// This used to be a ddnet variable but it got removed there.
+	// In ddnet-insta it is only used for score points.
+	// Not for ddrace race times.
+	// You can get the race time like this `std::optional<float> Score = GameServer()->Score()->PlayerData(ClientId)->m_BestTime;`
+	int m_Score = 0;
 
 	/*******************************************************************
 	 * zCatch                                                          *

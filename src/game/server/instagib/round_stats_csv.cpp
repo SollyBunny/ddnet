@@ -46,7 +46,7 @@ void IGameController::GetRoundEndStatsStrCsvTeamPlay(char *pBuf, size_t Size)
 
 		CStatsPlayer *pStatsPlayer = pPlayer->GetTeam() == TEAM_RED ? &aStatsPlayerRed[i] : &aStatsPlayerBlue[i];
 		pStatsPlayer->m_Active = true;
-		pStatsPlayer->m_Score = pPlayer->m_Score.value_or(0);
+		pStatsPlayer->m_Score = pPlayer->m_Score;
 		pStatsPlayer->m_pName = Server()->ClientName(pPlayer->GetCid());
 	}
 
@@ -148,7 +148,7 @@ void IGameController::GetRoundEndStatsStrCsvNoTeamPlay(char *pBuf, size_t Size)
 		CStatsPlayer *pStatsPlayer = &aStatsPlayers[i];
 		pStatsPlayer->m_Active = true;
 		pStatsPlayer->m_IsDead = pPlayer->m_IsDead;
-		pStatsPlayer->m_Score = pPlayer->m_Score.value_or(0);
+		pStatsPlayer->m_Score = pPlayer->m_Score;
 		pStatsPlayer->m_pName = Server()->ClientName(pPlayer->GetCid());
 	}
 

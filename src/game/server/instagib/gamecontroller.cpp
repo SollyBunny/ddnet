@@ -133,8 +133,12 @@ int IGameController::GetCarriedFlag(CPlayer *pPlayer)
 
 void IGameController::ResetPlayerScore(CPlayer *pPlayer)
 {
-	pPlayer->m_Score.reset();
-	Server()->SetClientScore(pPlayer->GetCid(), std::nullopt);
+	pPlayer->m_Score = 0;
+
+	if(ServerInfoScoreKind() == EScoreKind::TIME)
+		Server()->SetClientScore(pPlayer->GetCid(), std::nullopt);
+	else if(ServerInfoScoreKind() == EScoreKind::POINTS)
+		Server()->SetClientScore(pPlayer->GetCid(), 0);
 }
 
 CClientMask IGameController::FreezeDamageIndicatorMask(class CCharacter *pChr)
@@ -212,7 +216,7 @@ int IGameController::WinPointsForWin(const CPlayer *pPlayer)
 	// But also because of anti farming reasons. Farming wins at night with a dummy and
 	// friends in an almost empty server should be rewarded less
 	// than winning on a full server.
-	int Points = pPlayer->m_Score.value_or(0);
+	int Points = pPlayer->m_Score;
 
 	// this enemie amount is rigged on public servers
 	// more correct would be the average player count during the entire game
@@ -278,7 +282,7 @@ void IGameController::DoTeamBalance()
 	{
 		if(GameServer()->m_apPlayers[i] && GameServer()->m_apPlayers[i]->GetTeam() != TEAM_SPECTATORS)
 		{
-			aPlayerScore[i] = GameServer()->m_apPlayers[i]->m_Score.value_or(0) * Server()->TickSpeed() * 60.0f /
+			aPlayerScore[i] = GameServer()->m_apPlayers[i]->m_Score * Server()->TickSpeed() * 60.0f /
 					  (Server()->Tick() - GameServer()->m_apPlayers[i]->m_ScoreStartTick);
 			aTeamScore[GameServer()->m_apPlayers[i]->GetTeam()] += aPlayerScore[i];
 		}
@@ -457,7 +461,7 @@ bool IGameController::DoWincheckRound()
 		{
 			if(!pPlayer)
 				continue;
-			int Score = pPlayer->m_Score.value_or(0);
+			int Score = pPlayer->m_Score;
 			if(Score > Topscore)
 			{
 				Topscore = Score;
@@ -796,7 +800,7 @@ bool IGameController::HasWinningScore(const CPlayer *pPlayer) const
 	}
 	else
 	{
-		int OwnScore = pPlayer->m_Score.value_or(0);
+		int OwnScore = pPlayer->m_Score;
 		if(!OwnScore)
 			return false;
 
@@ -805,7 +809,7 @@ bool IGameController::HasWinningScore(const CPlayer *pPlayer) const
 		{
 			if(!pOtherPlayer)
 				continue;
-			int Score = pOtherPlayer->m_Score.value_or(0);
+			int Score = pOtherPlayer->m_Score;
 			if(Score > Topscore)
 				Topscore = Score;
 		}
