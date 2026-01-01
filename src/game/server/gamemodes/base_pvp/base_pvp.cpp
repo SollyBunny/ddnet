@@ -177,12 +177,13 @@ void CGameControllerBasePvp::OnRoundEnd()
 
 int CGameControllerBasePvp::SnapGameInfoExFlags(int SnappingClient, int DDRaceFlags)
 {
+	CPlayer *pPlayer = GetPlayerOrNullptr(SnappingClient);
 	int Flags =
 		GAMEINFOFLAG_PREDICT_VANILLA | // ddnet-insta
 		GAMEINFOFLAG_ENTITIES_VANILLA | // ddnet-insta
 		GAMEINFOFLAG_BUG_VANILLA_BOUNCE | // ddnet-insta
 		GAMEINFOFLAG_GAMETYPE_VANILLA | // ddnet-insta
-		/* GAMEINFOFLAG_TIMESCORE | */ // Unsetting this alone is not enough see also `SnapPlayerTime()`
+		/* GAMEINFOFLAG_TIMESCORE | */ // ddnet-insta
 		/* GAMEINFOFLAG_GAMETYPE_RACE | */ // ddnet-insta
 		/* GAMEINFOFLAG_GAMETYPE_DDRACE | */ // ddnet-insta
 		/* GAMEINFOFLAG_GAMETYPE_DDNET | */ // ddnet-insta
@@ -199,6 +200,11 @@ int CGameControllerBasePvp::SnapGameInfoExFlags(int SnappingClient, int DDRaceFl
 		GAMEINFOFLAG_ENTITIES_DDRACE |
 		GAMEINFOFLAG_ENTITIES_RACE |
 		GAMEINFOFLAG_RACE;
+
+	// Unsetting this alone is not enough see also `SnapPlayerTime()`
+	if(pPlayer && PlayerScoreKind(pPlayer) == EScoreKind::TIME)
+		Flags |= GAMEINFOFLAG_TIMESCORE;
+
 	if(!g_Config.m_SvAllowZoom) //ddnet-insta
 		Flags &= ~(GAMEINFOFLAG_ALLOW_ZOOM);
 

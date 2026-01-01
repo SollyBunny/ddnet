@@ -1060,6 +1060,32 @@ public:
 	virtual void ResetPlayerScore(class CPlayer *pPlayer);
 
 	/*
+		Function: ServerInfoScoreKind
+			The ddnet master server supports two types of scores.
+			There is timescore and points score.
+			This method determines which of these types should be used
+			for the server browser. This will not be visible in game.
+			For in game scoreboard score type see the method
+			`PlayerScoreKind()`
+	*/
+	virtual EScoreKind ServerInfoScoreKind() { return EScoreKind::TIME; }
+
+	/*
+		Function: PlayerScoreKind
+			The scoreboard can show either points or times.
+			Each player can have a different type of score.
+			The actual score value that will end up in the scoreboard
+			is determined by `SnapPlayerScore()`
+
+			The type of score that will be displayed in the
+			master server is different for that see `ServerInfoScoreKind()`.
+
+		Arguments:
+			pPlayer - the player that will see the score kind in his scoreboard
+	*/
+	virtual EScoreKind PlayerScoreKind(class CPlayer *pPlayer) { return EScoreKind::TIME; }
+
+	/*
 		Function: RoundInitPlayer
 			Called for all players when a new round starts
 			And also for all players that join

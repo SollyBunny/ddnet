@@ -1,3 +1,4 @@
+#include <base/dbg.h>
 #include <base/log.h>
 #include <base/system.h>
 #include <base/types.h>
@@ -10,6 +11,7 @@
 #include <game/server/entities/character.h>
 #include <game/server/gamecontext.h>
 #include <game/server/gamecontroller.h>
+#include <game/server/instagib/enums.h>
 #include <game/server/instagib/ip_storage.h>
 #include <game/server/instagib/protocol.h>
 #include <game/server/player.h>
@@ -42,6 +44,26 @@ void CGameContext::PrintInstaCredits()
 	};
 	for(const char *pLine : CREDITS)
 		Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp", pLine);
+}
+
+const char *CGameContext::ServerInfoClientScoreKind()
+{
+	// This means that the master server can receive wrong fallback values
+	// when the server is being reloaded by an admin or round end.
+	//
+	// See those issues for more context:
+	// - https://github.com/ddnet/ddnet/issues/11296
+	// - https://github.com/ddnet/ddnet/issues/9072
+	if(!m_pController)
+		return "points";
+
+	EScoreKind ScoreKind = m_pController->ServerInfoScoreKind();
+	switch(ScoreKind)
+	{
+	case EScoreKind::TIME: return "time";
+	case EScoreKind::POINTS: return "points";
+	default: dbg_assert_failed("Invalid ScoreKind: %d", ScoreKind);
+	}
 }
 
 void CGameContext::AlertOnSpecialInstagibConfigs(int ClientId) const

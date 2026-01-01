@@ -610,18 +610,12 @@ void CGameControllerInstaCore::InitPlayer(CPlayer *pPlayer)
 
 void CGameControllerInstaCore::ResetPlayerScore(CPlayer *pPlayer)
 {
-	// TODO: this should not check ddrace type here
-	//       we need a proper way to determine timescore vs point score
-	//       something like `IsServerInfoTimeScore()` and `IsTimeScore(int ClientId)`
-	if(IsDDRaceGameType())
-	{
-		pPlayer->m_Score.reset();
-		Server()->SetClientScore(pPlayer->GetCid(), std::nullopt);
-		return;
-	}
+	pPlayer->m_Score.reset();
 
-	pPlayer->m_Score = 0;
-	Server()->SetClientScore(pPlayer->GetCid(), 0);
+	if(ServerInfoScoreKind() == EScoreKind::TIME)
+		Server()->SetClientScore(pPlayer->GetCid(), std::nullopt);
+	else if(ServerInfoScoreKind() == EScoreKind::POINTS)
+		Server()->SetClientScore(pPlayer->GetCid(), 0);
 }
 
 void CGameControllerInstaCore::Snap(int SnappingClient)

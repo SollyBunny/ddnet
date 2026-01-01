@@ -17,11 +17,10 @@ class CGameContext : public IGameServer
 	friend class IGameController;
 
 public:
-	const char *ServerInfoClientScoreKind() override { return "points"; }
-
 	// instagib/gamecontext.cpp
 	void OnInitInstagib();
 	void PrintInstaCredits();
+	const char *ServerInfoClientScoreKind() override;
 	void AlertOnSpecialInstagibConfigs(int ClientId = -1) const;
 	void ShowCurrentInstagibConfigsMotd(int ClientId = -1, bool Force = false) const;
 	void RefreshVotes();
