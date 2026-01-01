@@ -2879,8 +2879,7 @@ void CGameContext::OnChangeInfoNetMessage(const CNetMsg_Cl_ChangeInfo *pMsg, int
 		if(!m_pController->LoadNewPlayerNameData(ClientId))
 		{
 			Score()->PlayerData(ClientId)->Reset();
-			m_apPlayers[ClientId]->m_Score.reset(); // ddnet-insta (ddnet removed this line)
-			Server()->SetClientScore(ClientId, std::nullopt);
+			m_pController->ResetPlayerScore(pPlayer);
 			Score()->LoadPlayerData(ClientId);
 		}
 

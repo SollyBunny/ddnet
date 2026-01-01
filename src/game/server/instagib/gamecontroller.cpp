@@ -131,6 +131,12 @@ int IGameController::GetCarriedFlag(CPlayer *pPlayer)
 	return FLAG_NONE;
 }
 
+void IGameController::ResetPlayerScore(CPlayer *pPlayer)
+{
+	pPlayer->m_Score.reset();
+	Server()->SetClientScore(pPlayer->GetCid(), std::nullopt);
+}
+
 CClientMask IGameController::FreezeDamageIndicatorMask(class CCharacter *pChr)
 {
 	return pChr->TeamMask() & GameServer()->ClientsMaskExcludeClientVersionAndHigher(VERSION_DDNET_NEW_HUD);

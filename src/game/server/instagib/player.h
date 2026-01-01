@@ -43,6 +43,8 @@ public:
 	// and used by the GetDisplayScore gamecontroller method
 	EDisplayScore m_DisplayScore = EDisplayScore::POINTS;
 
+	// TODO: should this really be an std::optional?
+	//
 	// this used to be a ddnet variable but it got removed there
 	// so now it is a ddnet-insta specific variable
 	std::optional<int> m_Score;

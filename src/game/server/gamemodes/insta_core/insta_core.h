@@ -78,6 +78,7 @@ public:
 	void OnClientDataRestore(CPlayer *pPlayer, const CGameContext::CPersistentClientData *pData) override;
 	void RoundInitPlayer(class CPlayer *pPlayer) override;
 	void InitPlayer(class CPlayer *pPlayer) override;
+	void ResetPlayerScore(class CPlayer *pPlayer) override;
 	void Snap(int SnappingClient) override;
 	int SnapFlagCarrierRed(int SnappingClient) override;
 	int SnapFlagCarrierBlue(int SnappingClient) override;

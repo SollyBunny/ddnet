@@ -1048,6 +1048,18 @@ public:
 	virtual void InitPlayer(class CPlayer *pPlayer) {}
 
 	/*
+		Function: ResetPlayerScore
+			Called for every player on join and round start.
+			By default this sets the player score to 0.
+			You can overwrite this if you start with a different score
+			or use different kind of scores such as time score.
+
+		Arguments:
+			pPlayer - the player whos score will be reset
+	*/
+	virtual void ResetPlayerScore(class CPlayer *pPlayer);
+
+	/*
 		Function: RoundInitPlayer
 			Called for all players when a new round starts
 			And also for all players that join

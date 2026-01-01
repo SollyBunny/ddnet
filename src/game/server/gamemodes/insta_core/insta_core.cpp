@@ -26,6 +26,8 @@
 #include <game/server/teams.h>
 #include <game/version.h>
 
+#include <optional>
+
 CGameControllerInstaCore::CGameControllerInstaCore(class CGameContext *pGameServer) :
 	CGameControllerDDRace(pGameServer)
 {
@@ -115,11 +117,6 @@ void CGameControllerInstaCore::OnPlayerConnect(CPlayer *pPlayer)
 {
 	IGameController::OnPlayerConnect(pPlayer);
 	m_InvalidateConnectedIpsCache = true;
-
-	// TODO: should CPlayer::m_Score maybe not be an optional
-	//       that was a ddnet thing for unfinished maps
-	//       if we set it to 0 on join that makes little sense
-	Server()->SetClientScore(pPlayer->GetCid(), 0);
 
 	int ClientId = pPlayer->GetCid();
 	CIpStorage *pIpStorage = GameServer()->m_IpStorageController.FindEntry(Server()->ClientAddr(ClientId));
@@ -590,6 +587,7 @@ void CGameControllerInstaCore::RoundInitPlayer(CPlayer *pPlayer)
 {
 	pPlayer->m_IsDead = false;
 	pPlayer->m_KillerId = -1;
+	ResetPlayerScore(pPlayer);
 }
 
 // this is only called once on connect
@@ -604,11 +602,26 @@ void CGameControllerInstaCore::InitPlayer(CPlayer *pPlayer)
 	pPlayer->m_IsReadyToPlay = !GameServer()->m_pController->IsPlayerReadyMode();
 	pPlayer->m_DeadSpecMode = false;
 	pPlayer->m_GameStateBroadcast = false;
-	pPlayer->m_Score = 0; // ddnet-insta
 	pPlayer->m_DisplayScore = GameServer()->m_DisplayScore;
 	pPlayer->m_JoinTime = time_get();
 
 	RoundInitPlayer(pPlayer);
+}
+
+void CGameControllerInstaCore::ResetPlayerScore(CPlayer *pPlayer)
+{
+	// TODO: this should not check ddrace type here
+	//       we need a proper way to determine timescore vs point score
+	//       something like `IsServerInfoTimeScore()` and `IsTimeScore(int ClientId)`
+	if(IsDDRaceGameType())
+	{
+		pPlayer->m_Score.reset();
+		Server()->SetClientScore(pPlayer->GetCid(), std::nullopt);
+		return;
+	}
+
+	pPlayer->m_Score = 0;
+	Server()->SetClientScore(pPlayer->GetCid(), 0);
 }
 
 void CGameControllerInstaCore::Snap(int SnappingClient)

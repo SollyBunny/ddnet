@@ -563,8 +563,7 @@ void IGameController::OnReset()
 			continue;
 		pPlayer->Respawn();
 		pPlayer->m_RespawnTick = Server()->Tick() + Server()->TickSpeed() / 2;
-		pPlayer->m_Score = 0;
-		Server()->SetClientScore(pPlayer->GetCid(), 0);
+		ResetPlayerScore(pPlayer);
 	}
 }
 
