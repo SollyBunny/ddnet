@@ -63,13 +63,16 @@ public:
 	virtual void PrintModWelcome(CPlayer *pPlayer);
 
 	bool DropFlag(class CCharacter *pChr) override;
-	bool OnSelfkill(int ClientId) override;
 
 	void OnCharacterSpawn(class CCharacter *pChr) override;
 	int OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon) override;
 	void Tick() override;
 	bool OnVoteNetMessage(const CNetMsg_Cl_Vote *pMsg, int ClientId) override;
 	bool OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMsg, int ClientId) override;
+	bool OnKillNetMessage(int ClientId) override;
+	bool CanSelfkillWhileFrozen(class CPlayer *pPlayer) override;
+	bool CanSelfkill(class CPlayer *pPlayer, char *pErrorReason, int ErrorReasonSize) override;
+	bool CanUserJoinTeam(class CPlayer *pPlayer, int Team, char *pErrorReason, int ErrorReasonSize) override;
 	int GetPlayerTeam(class CPlayer *pPlayer, bool Sixup) override;
 	int GetAutoTeam(int NotThisId) override;
 	bool CanJoinTeam(int Team, int NotThisId, char *pErrorReason, int ErrorReasonSize) override;

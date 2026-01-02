@@ -382,21 +382,6 @@ CClientMask CGameControllerBaseFng::FreezeDamageIndicatorMask(class CCharacter *
 	return Mask;
 }
 
-bool CGameControllerBaseFng::OnSelfkill(int ClientId)
-{
-	CPlayer *pPlayer = GameServer()->m_apPlayers[ClientId];
-	if(!pPlayer)
-		return false;
-	CCharacter *pChr = pPlayer->GetCharacter();
-	if(!pChr)
-		return false;
-	if(!pChr->m_FreezeTime)
-		return false;
-
-	GameServer()->SendChatTarget(ClientId, "You can't kill while being frozen");
-	return true;
-}
-
 bool CGameControllerBaseFng::OnLaserHit(int Bounces, int From, int Weapon, CCharacter *pVictim)
 {
 	// do not track wallshots on frozen tees

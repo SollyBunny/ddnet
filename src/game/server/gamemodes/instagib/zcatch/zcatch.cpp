@@ -320,19 +320,17 @@ void CGameControllerZcatch::ReleasePlayer(class CPlayer *pPlayer, const char *pM
 	}
 }
 
-bool CGameControllerZcatch::OnSelfkill(int ClientId)
+void CGameControllerZcatch::OnSelfkill(CPlayer *pPlayer)
 {
-	CPlayer *pPlayer = GameServer()->m_apPlayers[ClientId];
-	if(!pPlayer)
-		return false;
+	int ClientId = pPlayer->GetCid();
 	if(pPlayer->m_vVictimIds.empty())
-		return false;
+		return;
 
 	CPlayer *pVictim = nullptr;
 	while(!pVictim)
 	{
 		if(pPlayer->m_vVictimIds.empty())
-			return false;
+			return;
 
 		int ReleaseId = pPlayer->m_vVictimIds.back();
 		pPlayer->m_vVictimIds.pop_back();
@@ -340,7 +338,7 @@ bool CGameControllerZcatch::OnSelfkill(int ClientId)
 		pVictim = GameServer()->m_apPlayers[ReleaseId];
 	}
 	if(!pVictim)
-		return false;
+		return;
 
 	char aBuf[512];
 	str_format(aBuf, sizeof(aBuf), "You were released by '%s'", Server()->ClientName(pPlayer->GetCid()));
@@ -375,8 +373,6 @@ bool CGameControllerZcatch::OnSelfkill(int ClientId)
 		SendChatTarget(ClientId, aBuf);
 		pPlayer->m_vVictimIds.clear();
 	}
-
-	return true;
 }
 
 void CGameControllerZcatch::KillPlayer(class CPlayer *pVictim, class CPlayer *pKiller, bool KillCounts)

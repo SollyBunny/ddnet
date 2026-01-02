@@ -258,10 +258,12 @@ bool CGameControllerTsmash::DecreaseHealthAndKill(int Dmg, int From, int Weapon,
 	return false;
 }
 
-bool CGameControllerTsmash::OnSelfkill(int ClientId)
+// WARNING: joining spectators still works which also kills the character
+bool CGameControllerTsmash::CanSelfkill(CPlayer *pPlayer, char *pErrorReason, int ErrorReasonSize)
 {
-	GameServer()->SendChatTarget(ClientId, "Self kill is disabled");
-	return true;
+	if(pErrorReason)
+		str_copy(pErrorReason, "Self kill is disabled", ErrorReasonSize);
+	return false;
 }
 
 REGISTER_GAMEMODE(tsmash, CGameControllerTsmash(pGameServer, false));

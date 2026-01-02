@@ -256,22 +256,6 @@ bool CGameControllerInstaCore::DropFlag(CCharacter *pChr)
 	return false;
 }
 
-bool CGameControllerInstaCore::OnSelfkill(int ClientId)
-{
-	if(!g_Config.m_SvDropFlagOnSelfkill)
-		return false;
-
-	CPlayer *pPlayer = GameServer()->m_apPlayers[ClientId];
-	if(!pPlayer)
-		return false;
-
-	CCharacter *pChr = pPlayer->GetCharacter();
-	if(!pChr)
-		return false;
-
-	return DropFlag(pChr);
-}
-
 void CGameControllerInstaCore::OnCharacterSpawn(class CCharacter *pChr)
 {
 	CPlayer *pPlayer = pChr->GetPlayer();
@@ -427,16 +411,14 @@ bool CGameControllerInstaCore::OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMs
 	if(!pPlayer)
 		return false;
 
-	if(GameServer()->m_World.m_Paused)
-	{
-		if(!g_Config.m_SvAllowTeamChangeDuringPause)
-		{
-			GameServer()->SendChatTarget(pPlayer->GetCid(), "Changing teams while the game is paused is currently disabled.");
-			return true;
-		}
-	}
-
 	int Team = pMsg->m_Team;
+	char aReason[512] = "";
+	if(!CanUserJoinTeam(pPlayer, Team, aReason, sizeof(aReason)))
+	{
+		if(aReason[0])
+			SendChatTarget(ClientId, aReason);
+		return true;
+	}
 
 	// user joins the spectators while allow spec is on
 	// we have to mark him as fake dead spec
@@ -472,6 +454,75 @@ bool CGameControllerInstaCore::OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMs
 		return true;
 	}
 	return false;
+}
+
+bool CGameControllerInstaCore::OnKillNetMessage(int ClientId)
+{
+	CPlayer *pPlayer = GetPlayerOrNullptr(ClientId);
+	if(!pPlayer)
+		return false;
+
+	if(g_Config.m_SvDropFlagOnSelfkill)
+	{
+		CCharacter *pChr = pPlayer->GetCharacter();
+		if(pChr && DropFlag(pChr))
+			return true;
+	}
+
+	char aReason[512] = "";
+	if(!CanSelfkill(pPlayer, aReason, sizeof(aReason)))
+	{
+		if(aReason[0])
+			SendChatTarget(ClientId, aReason);
+		return true;
+	}
+
+	return false;
+}
+
+bool CGameControllerInstaCore::CanSelfkillWhileFrozen(CPlayer *pPlayer)
+{
+	// TODO: think about block gametype here, do we allow team switches while frozen?
+	return IsDDRaceGameType();
+}
+
+bool CGameControllerInstaCore::CanSelfkill(CPlayer *pPlayer, char *pErrorReason, int ErrorReasonSize)
+{
+	CCharacter *pChr = pPlayer->GetCharacter();
+	bool IsFrozen = pChr && pChr->m_FreezeTime;
+
+	log_info("dbg", "is froezen %d cankillinfrzeze=%d", IsFrozen, CanSelfkillWhileFrozen(pPlayer));
+
+	if(IsFrozen && !CanSelfkillWhileFrozen(pPlayer))
+	{
+		if(pErrorReason)
+			str_copy(pErrorReason, "You can't kill while being frozen", ErrorReasonSize);
+		return false;
+	}
+
+	return true;
+}
+
+bool CGameControllerInstaCore::CanUserJoinTeam(class CPlayer *pPlayer, int Team, char *pErrorReason, int ErrorReasonSize)
+{
+	CCharacter *pChr = pPlayer->GetCharacter();
+	bool IsFrozen = pChr && pChr->m_FreezeTime;
+
+	if(IsFrozen && !CanUserJoinTeamWhileFrozen(pPlayer, Team))
+	{
+		if(pErrorReason)
+			str_format(pErrorReason, ErrorReasonSize, "You can't join %s while being frozen", GetTeamName(Team));
+		return false;
+	}
+
+	if(GameServer()->m_World.m_Paused && !g_Config.m_SvAllowTeamChangeDuringPause)
+	{
+		if(pErrorReason)
+			str_copy(pErrorReason, "Changing teams while the game is paused is currently disabled.", ErrorReasonSize);
+		return false;
+	}
+
+	return true;
 }
 
 int CGameControllerInstaCore::GetPlayerTeam(class CPlayer *pPlayer, bool Sixup)
@@ -521,16 +572,6 @@ bool CGameControllerInstaCore::CanJoinTeam(int Team, int NotThisId, char *pError
 		if(pErrorReason)
 			str_copy(pErrorReason, "Use /pause first then you can kill", ErrorReasonSize);
 		return false;
-	}
-	if(pPlayer)
-	{
-		const CCharacter *pChr = pPlayer->GetCharacter();
-		// TODO: think about block gametype here, do we allow team switches while frozen?
-		if(pChr && pChr->m_FreezeTime && !IsDDRaceGameType())
-		{
-			str_format(pErrorReason, ErrorReasonSize, "You can't join %s while being frozen", GetTeamName(Team));
-			return false;
-		}
 	}
 	if(Team == TEAM_SPECTATORS || (pPlayer && pPlayer->GetTeam() != TEAM_SPECTATORS))
 		return true;

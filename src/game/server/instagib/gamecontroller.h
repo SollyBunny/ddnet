@@ -620,6 +620,28 @@ public:
 	virtual bool OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMsg, int ClientId) { return false; }
 
 	/*
+		Function: OnKillNetMessage
+			hooks into CGameContext::OnKillNetMessage()
+			before any spam protection check.
+
+			See also `OnSelfkill()` which only will be called on successful selfkill.
+
+		Returns:
+			return true to not run the rest of CGameContext::OnKillNetMessage()
+	*/
+	virtual bool OnKillNetMessage(int ClientId) { return false; }
+
+	/*
+		Function: OnSelfkill
+			Called when the user requested a selfkill using the local console command `kill`.
+			This is only called on success. The user request can be blocked if
+			the method `CanSelfkill()` returned false.
+			If you need to catch the raw user sent event that will never be dropped
+			have a look at `OnKillNetMessage()`
+	*/
+	virtual void OnSelfkill(class CPlayer *pPlayer) {}
+
+	/*
 		Function: OnCallVoteNetMessage
 			hooks into CGameContext::OnCallVoteNetMessage()
 			before any spam protection check
@@ -1096,6 +1118,30 @@ public:
 	*/
 	virtual void RoundInitPlayer(class CPlayer *pPlayer) {}
 
+	virtual bool CanSelfkillWhileFrozen(class CPlayer *pPlayer) { return true; }
+	virtual bool CanUserJoinTeamWhileFrozen(class CPlayer *pPlayer, int Team) { return CanSelfkillWhileFrozen(pPlayer); }
+
+	/*
+		Function: CanUserJoinTeam
+			This is called when a client tries to initiate a team change.
+			There is also `CanJoinTeam()` which is called on join and checks slot limits.
+			The `CanUserJoinTeam()` only gets called when the user explicitly tries to change the team.
+
+		Arguments:
+			pPlayer - the player that attempted a manual team change
+			Team - TEAM_RED, TEAM_BLUE or TEAM_SPECTATORS
+			pErrorReason - the buffer the error will be written to, only happens on return false
+				       but it can also be empty if it should silently block it
+			ErrorReasonSize - the size of the error buffer in bytes
+
+		Returns:
+			true - if the user action is allowed
+			false - if the user action should be blocked (might write reason to pErrorReason)
+	*/
+	virtual bool CanUserJoinTeam(class CPlayer *pPlayer, int Team, char *pErrorReason, int ErrorReasonSize) { return true; }
+
+	virtual bool CanSelfkill(class CPlayer *pPlayer, char *pErrorReason, int ErrorReasonSize) { return true; }
+
 	/*
 		Function: DoTeamBalance
 			Makes sure players are evenly distributed
@@ -1343,9 +1389,6 @@ public:
 	virtual void OnFlagReturn(class CFlag *pFlag); // ddnet-insta
 	virtual void OnFlagGrab(class CFlag *pFlag); // ddnet-insta
 	virtual void OnFlagCapture(class CFlag *pFlag, float Time, int TimeTicks); // ddnet-insta
-	// return true to consume the event
-	// and suppress default ddnet selfkill behavior
-	virtual bool OnSelfkill(int ClientId) { return false; }
 	virtual void OnUpdateZcatchColorConfig() {}
 	virtual void OnUpdateSpectatorVotesConfig() {}
 	virtual bool DropFlag(class CCharacter *pChr) { return false; }

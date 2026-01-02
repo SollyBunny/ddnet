@@ -31,7 +31,7 @@ public:
 	void OnShowStatsAll(const CSqlStatsPlayer *pStats, class CPlayer *pRequestingPlayer, const char *pRequestedName) override;
 	void OnShowRoundStats(const CSqlStatsPlayer *pStats, class CPlayer *pRequestingPlayer, const char *pRequestedName) override;
 
-	bool OnSelfkill(int ClientId) override { return true; }
+	bool CanSelfkill(class CPlayer *pPlayer, char *pErrorReason, int ErrorReasonSize) override { return false; }
 
 	void SetSkin(class CPlayer *pPlayer);
 	void EliminatePlayer(CPlayer *pPlayer, bool Collateral = false);

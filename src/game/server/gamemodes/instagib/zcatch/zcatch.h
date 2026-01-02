@@ -39,7 +39,7 @@ public:
 	bool DoWincheckRound() override;
 	void OnRoundStart() override;
 	void OnRoundEnd() override;
-	bool OnSelfkill(int ClientId) override;
+	void OnSelfkill(CPlayer *pPlayer) override;
 	int GetPlayerTeam(class CPlayer *pPlayer, bool Sixup) override;
 	bool OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMsg, int ClientId) override;
 	bool IsWinner(const CPlayer *pPlayer, char *pMessage, int SizeOfMessage) override;

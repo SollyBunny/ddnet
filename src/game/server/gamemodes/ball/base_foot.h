@@ -31,7 +31,7 @@ public:
 	int SnapGameInfoExFlags(int SnappingClient, int DDRaceFlags) override;
 
 	void OnAnyDamage(vec2 &Force, int &Dmg, int &From, int &Weapon, CCharacter *pCharacter) override {} // empty
-	bool OnSelfkill(int ClientId) override { return true; }
+	bool CanSelfkill(class CPlayer *pPlayer, char *pErrorReason, int ErrorReasonSize) override { return false; }
 	bool DecreaseHealthAndKill(int Dmg, int From, int Weapon, CCharacter *pCharacter) override { return false; }
 
 	virtual void FireGrenade(CCharacter *Character, vec2 Direction, vec2 MouseTarget, vec2 ProjStartPos);
