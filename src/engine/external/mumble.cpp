@@ -14,32 +14,33 @@ struct MumbleContext* mumble_create_context() { return NULL; }
 struct MumbleContext* mumble_create_context_args(const char* name, const char* description) { return NULL; }
 void mumble_destroy_context(struct MumbleContext** context) {}
 struct MumbleLinkedMem* mumble_get_linked_mem(struct MumbleContext* context) { return context->lm; }
+// Utils
 bool mumble_relink_needed(struct MumbleContext* context) { return false; }
 bool mumble_set_name(struct MumbleContext* context, const char* name) { return false; }
 bool mumble_set_identity(struct MumbleContext* context, const char* identity) { return false; }
 bool mumble_set_context(struct MumbleContext* context, const char* mumbleContext) { return false; }
 bool mumble_set_description(struct MumbleContext* context, const char* description) { return false; }
+// Simple interface
 void mumble_2d_update(struct MumbleContext* context, float x, float y) {}
 void mumble_3d_update(struct MumbleContext* context, float x, float y, float z) {}
 
 #else
 
-#include <stdio.h>
-#include <unistd.h>
-#include <string.h>
-
 #if defined(_WIN32)
 	#include <windows.h>
 #else
+	#include <stdio.h>
+	#include <stdlib.h>
+	#include <string.h>
+	#include <unistd.h>
 	#include <sys/mman.h>
 	#include <fcntl.h>
-	#include <stdlib.h>
 #endif
 
 struct MumbleContext {
 	struct MumbleLinkedMem* lm;
 	#if defined(_WIN32)
-		HANDLE hMapObject
+		HANDLE hMapObject;
 	#else
 		int shmfd;
 		char memname[128];
@@ -52,12 +53,12 @@ struct MumbleContext* mumble_create_context() {
 	#if defined(_WIN32)
 		HANDLE hMapObject = OpenFileMappingW(FILE_MAP_ALL_ACCESS, FALSE, L"MumbleLink");
 		if (hMapObject == NULL)
-			return;
+			return NULL;
 
-		lm = (LinkedMem *) MapViewOfFile(hMapObject, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(LinkedMem));
+		lm = (struct MumbleLinkedMem*)MapViewOfFile(hMapObject, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(struct MumbleLinkedMem));
 		if (lm == NULL) {
 			CloseHandle(hMapObject);
-			return;
+			return NULL;
 		}
 	#else
 		char memname[128];
@@ -68,12 +69,7 @@ struct MumbleContext* mumble_create_context() {
 		if (shmfd < 0)
 			return NULL;
 
-		// if (ftruncate(shmfd, sizeof(struct MumbleLinkedMem)) < 0) {
-		// 	close(shmfd);
-		// 	return NULL;
-		// }
-
-		lm = (struct MumbleLinkedMem *)mmap(NULL, sizeof(struct MumbleLinkedMem), PROT_READ | PROT_WRITE, MAP_SHARED, shmfd, 0);
+		lm = (struct MumbleLinkedMem*)mmap(NULL, sizeof(struct MumbleLinkedMem), PROT_READ | PROT_WRITE, MAP_SHARED, shmfd, 0);
 
 		if (lm == (void*)(-1) || lm == NULL) {
 			close(shmfd);
