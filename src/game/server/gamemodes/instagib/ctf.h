@@ -18,8 +18,6 @@ public:
 	void OnCharacterSpawn(class CCharacter *pChr) override;
 	bool OnEntity(int Index, int x, int y, int Layer, int Flags, bool Initial, int Number) override;
 
-	bool OnVoteNetMessage(const CNetMsg_Cl_Vote *pMsg, int ClientId) override;
-
 	void FlagTick();
 
 	void OnShowStatsAll(const CSqlStatsPlayer *pStats, class CPlayer *pRequestingPlayer, const char *pRequestedName) override;

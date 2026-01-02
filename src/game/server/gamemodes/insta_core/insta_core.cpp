@@ -392,13 +392,30 @@ void CGameControllerInstaCore::Tick()
 
 bool CGameControllerInstaCore::OnVoteNetMessage(const CNetMsg_Cl_Vote *pMsg, int ClientId)
 {
-	CPlayer *pPlayer = GameServer()->m_apPlayers[ClientId];
+	CPlayer *pPlayer = GetPlayerOrNullptr(ClientId);
+	if(!pPlayer)
+		return false;
 
 	if(pPlayer->GetTeam() == TEAM_SPECTATORS && !g_Config.m_SvSpectatorVotes)
 	{
 		// SendChatTarget(ClientId, "Spectators aren't allowed to vote.");
 		return true;
 	}
+
+	CCharacter *pChr = pPlayer->GetCharacter();
+
+	if(pChr)
+	{
+		/// 1 is vote yes
+		if(g_Config.m_SvDropFlagOnVote && pMsg->m_Vote == 1)
+		{
+			// we intentionally do not return true in this case
+			// so the flag can be dropped
+			// and the vote still gets picked up at the same time
+			DropFlag(pChr);
+		}
+	}
+
 	return false;
 }
 

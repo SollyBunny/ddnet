@@ -56,30 +56,6 @@ void CGameControllerInstaBaseCTF::OnShowRoundStats(const CSqlStatsPlayer *pStats
 	GameServer()->SendChatTarget(pRequestingPlayer->GetCid(), aBuf);
 }
 
-bool CGameControllerInstaBaseCTF::OnVoteNetMessage(const CNetMsg_Cl_Vote *pMsg, int ClientId)
-{
-	if(!g_Config.m_SvDropFlagOnVote)
-		return false;
-
-	if(pMsg->m_Vote != 1) // 1 is yes
-		return false;
-
-	CPlayer *pPlayer = GameServer()->m_apPlayers[ClientId];
-	if(!pPlayer)
-		return false;
-
-	CCharacter *pChr = pPlayer->GetCharacter();
-	if(!pChr)
-		return false;
-
-	DropFlag(pChr);
-
-	// returning false here lets the vote go through
-	// so pressing vote yes as flag carrier during a vote
-	// will send an actual vote AND drop the flag
-	return false;
-}
-
 void CGameControllerInstaBaseCTF::OnCharacterSpawn(class CCharacter *pChr)
 {
 	CGameControllerBasePvp::OnCharacterSpawn(pChr);
