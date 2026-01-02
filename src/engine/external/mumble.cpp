@@ -1,10 +1,34 @@
 #include "mumble.h"
 
+#if defined(__ANDROID__)
+	#define STUB
+#endif
+
+#if defined(STUB)
+
+struct MumbleContext {
+	struct MumbleLinkedMem* lm;
+};
+
+struct MumbleContext* mumble_create_context() { return NULL; }
+struct MumbleContext* mumble_create_context_args(const char* name, const char* description) { return NULL; }
+void mumble_destroy_context(struct MumbleContext** context) {}
+struct MumbleLinkedMem* mumble_get_linked_mem(struct MumbleContext* context) { return context->lm; }
+bool mumble_relink_needed(struct MumbleContext* context) { return false; }
+bool mumble_set_name(struct MumbleContext* context, const char* name) { return false; }
+bool mumble_set_identity(struct MumbleContext* context, const char* identity) { return false; }
+bool mumble_set_context(struct MumbleContext* context, const char* mumbleContext) { return false; }
+bool mumble_set_description(struct MumbleContext* context, const char* description) { return false; }
+void mumble_2d_update(struct MumbleContext* context, float x, float y) {}
+void mumble_3d_update(struct MumbleContext* context, float x, float y, float z) {}
+
+#else
+
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
 
-#ifdef _WIN32
+#if defined(_WIN32)
 	#include <windows.h>
 #else
 	#include <sys/mman.h>
@@ -14,7 +38,7 @@
 
 struct MumbleContext {
 	struct MumbleLinkedMem* lm;
-	#ifdef _WIN32
+	#if defined(_WIN32)
 		HANDLE hMapObject
 	#else
 		int shmfd;
@@ -25,7 +49,7 @@ struct MumbleContext {
 struct MumbleContext* mumble_create_context() {
 	struct MumbleLinkedMem* lm = NULL;
 
-	#ifdef _WIN32
+	#if defined(_WIN32)
 		HANDLE hMapObject = OpenFileMappingW(FILE_MAP_ALL_ACCESS, FALSE, L"MumbleLink");
 		if (hMapObject == NULL)
 			return;
@@ -59,7 +83,7 @@ struct MumbleContext* mumble_create_context() {
 
 	struct MumbleContext* out = (struct MumbleContext*)malloc(sizeof(struct MumbleContext));
 	if (!out) {
-		#ifdef _WIN32
+		#if defined(_WIN32)
 			CloseHandle(hMapObject);
 		#else
 			munmap(lm, sizeof(struct MumbleLinkedMem));
@@ -69,7 +93,7 @@ struct MumbleContext* mumble_create_context() {
 	}
 
 	out->lm = lm;
-	#ifdef _WIN32
+	#if defined(_WIN32)
 		out->hMapObject = hMapObject;
 	#else
 		strcpy(out->memname, memname);
@@ -102,7 +126,7 @@ struct MumbleContext* mumble_create_context_args(const char* name, const char* d
 		mumble_destroy_context(&context);
 		return NULL;
 	}
-	if (!mumble_set_description(context, name)) {
+	if (!mumble_set_description(context, description)) {
 		mumble_destroy_context(&context);
 		return NULL;
 	}
@@ -116,7 +140,7 @@ void mumble_destroy_context(struct MumbleContext** context) {
 	if (*context == NULL) {
 		return;
 	}
-	#ifdef _WIN32
+	#if defined(_WIN32)
 		CloseHandle((*context)->hMapObject);
 	#else
 		munmap((*context)->lm, sizeof(struct MumbleLinkedMem));
@@ -186,3 +210,5 @@ void mumble_3d_update(struct MumbleContext* context, float x, float y, float z) 
 	context->lm->fAvatarPosition[2] = context->lm->fCameraPosition[2] = z;
 	context->lm->uiTick += 1;
 }
+
+#endif
