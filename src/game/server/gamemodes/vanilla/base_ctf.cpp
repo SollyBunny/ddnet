@@ -80,22 +80,6 @@ bool CGameControllerBaseCTF::OnVoteNetMessage(const CNetMsg_Cl_Vote *pMsg, int C
 	return false;
 }
 
-bool CGameControllerBaseCTF::OnSelfkill(int ClientId)
-{
-	if(!g_Config.m_SvDropFlagOnSelfkill)
-		return false;
-
-	CPlayer *pPlayer = GameServer()->m_apPlayers[ClientId];
-	if(!pPlayer)
-		return false;
-
-	CCharacter *pChr = pPlayer->GetCharacter();
-	if(!pChr)
-		return false;
-
-	return DropFlag(pChr);
-}
-
 void CGameControllerBaseCTF::OnCharacterSpawn(class CCharacter *pChr)
 {
 	CGameControllerBasePvp::OnCharacterSpawn(pChr);

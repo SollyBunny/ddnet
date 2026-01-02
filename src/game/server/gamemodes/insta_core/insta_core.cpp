@@ -256,6 +256,22 @@ bool CGameControllerInstaCore::DropFlag(CCharacter *pChr)
 	return false;
 }
 
+bool CGameControllerInstaCore::OnSelfkill(int ClientId)
+{
+	if(!g_Config.m_SvDropFlagOnSelfkill)
+		return false;
+
+	CPlayer *pPlayer = GameServer()->m_apPlayers[ClientId];
+	if(!pPlayer)
+		return false;
+
+	CCharacter *pChr = pPlayer->GetCharacter();
+	if(!pChr)
+		return false;
+
+	return DropFlag(pChr);
+}
+
 void CGameControllerInstaCore::OnCharacterSpawn(class CCharacter *pChr)
 {
 	CPlayer *pPlayer = pChr->GetPlayer();

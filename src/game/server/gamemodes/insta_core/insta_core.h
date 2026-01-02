@@ -63,6 +63,7 @@ public:
 	virtual void PrintModWelcome(CPlayer *pPlayer);
 
 	bool DropFlag(class CCharacter *pChr) override;
+	bool OnSelfkill(int ClientId) override;
 
 	void OnCharacterSpawn(class CCharacter *pChr) override;
 	int OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon) override;
