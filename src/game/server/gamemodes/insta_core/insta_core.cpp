@@ -237,6 +237,25 @@ void CGameControllerInstaCore::PrintModWelcome(CPlayer *pPlayer)
 	GameServer()->SendChatTarget(ClientId, "DDraceNetwork Mod. Version: " GAME_VERSION);
 }
 
+bool CGameControllerInstaCore::DropFlag(CCharacter *pChr)
+{
+	for(CFlag *pFlag : m_apFlags)
+	{
+		if(!pFlag)
+			continue;
+		if(pFlag->GetCarrier() != pChr)
+			continue;
+
+		GameServer()->CreateSoundGlobal(SOUND_CTF_DROP);
+		GameServer()->SendGameMsg(protocol7::GAMEMSG_CTF_DROP, -1);
+
+		vec2 Dir = vec2(5 * pChr->GetAimDir(), -5);
+		pFlag->Drop(Dir);
+		return true;
+	}
+	return false;
+}
+
 void CGameControllerInstaCore::OnCharacterSpawn(class CCharacter *pChr)
 {
 	CPlayer *pPlayer = pChr->GetPlayer();

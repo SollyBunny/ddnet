@@ -96,25 +96,6 @@ bool CGameControllerBaseCTF::OnSelfkill(int ClientId)
 	return DropFlag(pChr);
 }
 
-bool CGameControllerBaseCTF::DropFlag(class CCharacter *pChr)
-{
-	for(CFlag *pFlag : m_apFlags)
-	{
-		if(!pFlag)
-			continue;
-		if(pFlag->GetCarrier() != pChr)
-			continue;
-
-		GameServer()->CreateSoundGlobal(SOUND_CTF_DROP);
-		GameServer()->SendGameMsg(protocol7::GAMEMSG_CTF_DROP, -1);
-
-		vec2 Dir = vec2(5 * pChr->GetAimDir(), -5);
-		pFlag->Drop(Dir);
-		return true;
-	}
-	return false;
-}
-
 void CGameControllerBaseCTF::OnCharacterSpawn(class CCharacter *pChr)
 {
 	CGameControllerBasePvp::OnCharacterSpawn(pChr);
