@@ -86,6 +86,7 @@ target
 
 /build*
 /integration_test/*
+/source_date_epoch
 
 # IDE project files
 .cache
