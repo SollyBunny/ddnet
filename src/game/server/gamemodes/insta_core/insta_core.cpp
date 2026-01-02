@@ -410,6 +410,8 @@ bool CGameControllerInstaCore::OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMs
 	CPlayer *pPlayer = GameServer()->m_apPlayers[ClientId];
 	if(!pPlayer)
 		return false;
+	if(pPlayer->GetTeam() == pMsg->m_Team)
+		return false;
 
 	int Team = pMsg->m_Team;
 	char aReason[512] = "";
@@ -417,6 +419,26 @@ bool CGameControllerInstaCore::OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMs
 	{
 		if(aReason[0])
 			SendChatTarget(ClientId, aReason);
+
+		// If the server already requested a forced move
+		// we do not also queue a user request at the same time.
+		// Because I feel like this will have some complicated edge cases.
+		if(pPlayer->m_ForceTeam.m_Tick)
+			return true;
+
+		if(pPlayer->m_RequestedTeam.has_value())
+		{
+			pPlayer->m_RequestedTeam = std::nullopt;
+			SendChatTarget(ClientId, "Team change request aborted.");
+		}
+		else
+		{
+			pPlayer->m_RequestedTeam = {
+				.m_Team = Team};
+			char aBuf[512];
+			str_format(aBuf, sizeof(aBuf), "You will join %s once it is possible.", GetTeamName(Team));
+			SendChatTarget(ClientId, aBuf);
+		}
 		return true;
 	}
 
@@ -916,6 +938,7 @@ void CGameControllerInstaCore::OnPlayerTick(class CPlayer *pPlayer)
 {
 	pPlayer->InstagibTick();
 
+	// Server forced delayed team change
 	if(pPlayer->m_ForceTeam.m_Tick > 0 && Server()->Tick() > pPlayer->m_ForceTeam.m_Tick)
 	{
 		int WantedTeam = pPlayer->m_ForceTeam.m_Team;
@@ -924,6 +947,17 @@ void CGameControllerInstaCore::OnPlayerTick(class CPlayer *pPlayer)
 		if(WantedTeam == TEAM_SPECTATORS)
 			pPlayer->SetSpectatorId(pPlayer->m_ForceTeam.m_SpectatorId);
 		pPlayer->m_ForceTeam.m_Tick = 0;
+	}
+
+	// Pending user request to join team waiting for condition
+	if(pPlayer->m_RequestedTeam.has_value())
+	{
+		int WantedTeam = pPlayer->m_RequestedTeam.value().m_Team;
+		if(CanUserJoinTeam(pPlayer, WantedTeam, nullptr, 0))
+		{
+			pPlayer->SetTeam(WantedTeam);
+			pPlayer->m_RequestedTeam = std::nullopt;
+		}
 	}
 
 	if(GameServer()->m_World.m_Paused)
