@@ -365,7 +365,19 @@ void IGameController::OnPlayerReadyChange(CPlayer *pPlayer)
 		// change players ready state
 		pPlayer->m_IsReadyToPlay ^= 1;
 
-		if(m_GameState == IGS_GAME_RUNNING && !pPlayer->m_IsReadyToPlay)
+		if(m_GameState == IGS_GAME_PAUSED)
+		{
+			int NumUnready = 0;
+			GetPlayersReadyState(-1, &NumUnready);
+
+			log_info(
+				"ddnet-insta",
+				"'%s' is %s (%d players not ready).",
+				Server()->ClientName(pPlayer->GetCid()),
+				pPlayer->m_IsReadyToPlay ? "ready" : "not ready",
+				NumUnready);
+		}
+		else if(m_GameState == IGS_GAME_RUNNING && !pPlayer->m_IsReadyToPlay)
 		{
 			SetGameState(IGS_GAME_PAUSED, TIMER_INFINITE); // one player isn't ready -> pause the game
 			GameServer()->SendGameMsg(protocol7::GAMEMSG_GAME_PAUSED, pPlayer->GetCid(), -1);

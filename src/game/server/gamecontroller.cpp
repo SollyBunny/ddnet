@@ -12,6 +12,8 @@
 #include "gamecontext.h"
 #include "player.h"
 
+#include <base/log.h> // ddnet-insta
+
 #include <engine/shared/config.h>
 #include <engine/shared/protocolglue.h>
 
@@ -603,6 +605,9 @@ void IGameController::DoWarmup(int Seconds)
 void IGameController::Tick()
 {
 	// ddnet-insta
+	//
+	// TODO: can this entire code be moved to insta core?
+	//
 	// handle game states
 	if(m_GameState != IGS_GAME_RUNNING)
 	{
@@ -620,7 +625,11 @@ void IGameController::Tick()
 				{
 					s_LastSecs = Secs;
 					if(Secs == 1)
+					{
+						if(m_GameState == IGS_START_COUNTDOWN_UNPAUSE)
+							log_info("ddnet-insta", "resuming game.");
 						GameServer()->SendBroadcastSix("", false);
+					}
 					else
 					{
 						char aBuf[512];
