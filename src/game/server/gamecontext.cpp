@@ -4310,6 +4310,9 @@ void CGameContext::OnInit(const void *pPersistentData)
 		log_warn("gametype", "unknown gametype '%s' falling back to ddnet", Config()->m_SvGametype);
 		m_pController = (Gamemodes()["ddnet"])(this);
 	}
+	if(m_aGameType[0] && str_comp(m_aGameType, m_pController->m_pGameType))
+		m_pController->OnGameTypeChange(m_aGameType, m_pController->m_pGameType);
+	str_copy(m_aGameType, m_pController->m_pGameType);
 	// ddnet-insta end
 
 	ReadCensorList();

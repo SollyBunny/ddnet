@@ -391,6 +391,19 @@ public:
 	virtual void OnRoundEnd() {}
 
 	/*
+		Function: OnGameTypeChange
+			Called when the gamemode changes. Specifically if the controllers
+			m_pGameType string changes. This can be used for gamemode cleanup
+			that should only happen on switching to a different mode
+			and not on `reload`, map change or round end.
+
+		Arguments:
+			pOldGameType - m_pGameType string of the old controller
+			pNewGameType - m_pGameType string of the new controller
+	*/
+	virtual void OnGameTypeChange(const char *pOldGameType, const char *pNewGameType) {}
+
+	/*
 		Function: OnLaserHit
 			Will be called before Character::TakeDamage() and CGameController::OnCharacterTakeDamage()
 

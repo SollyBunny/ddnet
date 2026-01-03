@@ -54,6 +54,10 @@ public:
 	IHttp *m_pHttp;
 	CIpStorageController m_IpStorageController;
 
+	// A copy of the m_pGameType string the controller holds
+	// this is used to detect gametype changes.
+	char m_aGameType[512] = "";
+
 	// returns mutable pointer into either the offline ip storage
 	// vector or into the still connected player
 	// or nullptr if entry id is not found
