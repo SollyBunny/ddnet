@@ -60,8 +60,6 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 {
 	m_EmoteStop = -1;
 	m_LastAction = -1;
-	m_LastNoAmmoSound = -1;
-
 	// ddnet-insta
 	m_LastWeapon = GameServer()->m_pController->GetDefaultWeapon(pPlayer);
 	m_QueuedWeapon = -1;
