@@ -110,6 +110,7 @@ public:
 	static void ConRandomMapFromPool(IConsole::IResult *pResult, void *pUserData);
 	static void ConGctfAntibot(IConsole::IResult *pResult, void *pUserData);
 	static void ConKnownAntibot(IConsole::IResult *pResult, void *pUserData);
+	static void ConKickEventsAntibot(IConsole::IResult *pResult, void *pUserData);
 	static void ConDeepJailId(IConsole::IResult *pResult, void *pUserData);
 	static void ConDeepJailIp(IConsole::IResult *pResult, void *pUserData);
 	static void ConDeepJails(IConsole::IResult *pResult, void *pUserData);

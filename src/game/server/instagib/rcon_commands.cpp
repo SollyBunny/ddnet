@@ -191,6 +191,26 @@ void CGameContext::ConKnownAntibot(IConsole::IResult *pResult, void *pUserData)
 	pSelf->Antibot()->ConsoleCommand("known");
 }
 
+void CGameContext::ConKickEventsAntibot(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	const char *pEventIds = pResult->GetString(0);
+	if(str_find(pEventIds, "\""))
+	{
+		log_error("ddnet-insta", "illegal character in event ids");
+		return;
+	}
+	if(str_find(pEventIds, ";"))
+	{
+		log_error("ddnet-insta", "illegal character in event ids");
+		return;
+	}
+
+	char aCommand[512];
+	str_format(aCommand, sizeof(aCommand), "kick_events %s", pEventIds);
+	pSelf->Antibot()->ConsoleCommand(aCommand);
+}
+
 void CGameContext::ConDeepJailId(IConsole::IResult *pResult, void *pUserData)
 {
 	CGameContext *pSelf = (CGameContext *)pUserData;
