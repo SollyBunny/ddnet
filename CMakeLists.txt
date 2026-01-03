@@ -2941,6 +2941,7 @@ if(SERVER)
     instagib/ip_storage.cpp
     instagib/ip_storage.h
     instagib/persistent_client_data.h
+    instagib/persistent_data.h
     instagib/player.cpp
     instagib/player.h
     instagib/protocol.h

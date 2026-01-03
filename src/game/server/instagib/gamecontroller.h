@@ -365,6 +365,9 @@ public:
 	*/
 	virtual void OnClientDataRestore(CPlayer *pPlayer, const CGameContext::CPersistentClientData *pData) {}
 
+	virtual void OnDataPersist(CGameContext::CPersistentData *pData) {}
+	virtual void OnDataRestore(const CGameContext::CPersistentData *pData) {}
+
 	/*
 		Function: OnRoundStart
 			Will be called after OnInit when the server first launches

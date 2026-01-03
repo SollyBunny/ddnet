@@ -82,6 +82,8 @@ public:
 	bool OnSkinChange7(protocol7::CNetMsg_Cl_SkinChange *pMsg, int ClientId) override;
 	void OnClientDataPersist(CPlayer *pPlayer, CGameContext::CPersistentClientData *pData) override;
 	void OnClientDataRestore(CPlayer *pPlayer, const CGameContext::CPersistentClientData *pData) override;
+	void OnDataPersist(CGameContext::CPersistentData *pData) override;
+	void OnDataRestore(const CGameContext::CPersistentData *pData) override;
 	void RoundInitPlayer(class CPlayer *pPlayer) override;
 	void InitPlayer(class CPlayer *pPlayer) override;
 	void Snap(int SnappingClient) override;

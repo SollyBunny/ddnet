@@ -697,6 +697,16 @@ void CGameControllerInstaCore::OnClientDataRestore(CPlayer *pPlayer, const CGame
 {
 }
 
+void CGameControllerInstaCore::OnDataPersist(CGameContext::CPersistentData *pData)
+{
+	str_copy(pData->m_Insta.m_aGameType, GameServer()->m_aGameType);
+}
+
+void CGameControllerInstaCore::OnDataRestore(const CGameContext::CPersistentData *pData)
+{
+	str_copy(GameServer()->m_aGameType, pData->m_Insta.m_aGameType);
+}
+
 // called on round init and on join
 void CGameControllerInstaCore::RoundInitPlayer(CPlayer *pPlayer)
 {

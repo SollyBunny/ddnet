@@ -4310,6 +4310,8 @@ void CGameContext::OnInit(const void *pPersistentData)
 		log_warn("gametype", "unknown gametype '%s' falling back to ddnet", Config()->m_SvGametype);
 		m_pController = (Gamemodes()["ddnet"])(this);
 	}
+	if(pPersistent)
+		m_pController->OnDataRestore(pPersistent);
 	if(m_aGameType[0] && str_comp(m_aGameType, m_pController->m_pGameType))
 		m_pController->OnGameTypeChange(m_aGameType, m_pController->m_pGameType);
 	str_copy(m_aGameType, m_pController->m_pGameType);
@@ -4651,6 +4653,9 @@ void CGameContext::OnShutdown(void *pPersistentData)
 	if(pPersistent)
 	{
 		pPersistent->m_PrevGameUuid = m_GameUuid;
+
+		// ddnet-insta
+		m_pController->OnDataPersist(pPersistent);
 	}
 
 	Antibot()->RoundEnd();
