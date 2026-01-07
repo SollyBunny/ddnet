@@ -13,6 +13,7 @@
 
 #include <generated/protocol.h>
 
+#include <game/gamecore.h>
 #include <game/server/entities/character.h>
 #include <game/server/gamecontroller.h>
 #include <game/server/instagib/antibob.h>
@@ -919,6 +920,14 @@ bool CGameControllerInstaCore::UnfreezeOnHammerHit() const
 	return g_Config.m_SvFreezeHammer == 0;
 }
 
+void CGameControllerInstaCore::OnFireHook(CCharacter *pCharacter)
+{
+}
+
+void CGameControllerInstaCore::OnMissedHook(CCharacter *pCharacter)
+{
+}
+
 void CGameControllerInstaCore::OnHookAttachPlayer(CPlayer *pHookingPlayer, CPlayer *pHookedPlayer)
 {
 	if(g_Config.m_SvKillHook)
@@ -1039,6 +1048,34 @@ void CGameControllerInstaCore::OnCharacterTick(CCharacter *pChr)
 {
 	if(pChr->GetPlayer()->m_PlayerFlags & PLAYERFLAG_CHATTING)
 		pChr->GetPlayer()->m_TicksSpentChatting++;
+
+	if(pChr->m_LastHookState != pChr->m_Core.m_HookState)
+	{
+		// idle can change to HOOK_GRABBED and other states in one tick
+		// hook flying can be skipped if a tee for example hooks the ground below it
+		if(pChr->m_LastHookState == HOOK_IDLE)
+		{
+			OnFireHook(pChr);
+			if(pChr->m_Core.m_HookState == HOOK_RETRACTED ||
+				pChr->m_Core.m_HookState == HOOK_RETRACT_START ||
+				pChr->m_Core.m_HookState == HOOK_RETRACT_END)
+			{
+				OnMissedHook(pChr);
+			}
+		}
+		if(pChr->m_LastHookState == HOOK_FLYING)
+		{
+			if(pChr->m_Core.m_HookState == HOOK_IDLE ||
+				pChr->m_Core.m_HookState == HOOK_RETRACTED ||
+				pChr->m_Core.m_HookState == HOOK_RETRACT_START ||
+				pChr->m_Core.m_HookState == HOOK_RETRACT_END)
+			{
+				OnMissedHook(pChr);
+			}
+		}
+	}
+
+	pChr->m_LastHookState = pChr->m_Core.m_HookState;
 }
 
 void CGameControllerInstaCore::SendSkinChangeToAllSixup(protocol7::CNetMsg_Sv_SkinChange *pMsg, CPlayer *pPlayer, bool ApplyNetworkClipping)

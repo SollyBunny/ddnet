@@ -537,6 +537,19 @@ public:
 	virtual bool OnFireWeapon(CCharacter &Character, int &Weapon, vec2 &Direction, vec2 &MouseTarget, vec2 &ProjStartPos) { return false; }
 
 	/*
+		Function: OnFireHook
+			Called once when a players hook starts to fly.
+			See also `OnHookAttachPlayer()` for when it hits another player.
+	*/
+	virtual void OnFireHook(class CCharacter *pCharacter) {}
+
+	/*
+		Function: OnMissedHook
+			Called once for every hook that grabbed nothing.
+	*/
+	virtual void OnMissedHook(class CCharacter *pCharacter) {}
+
+	/*
 		Function: AmmoRegen
 			Called directly after FireWeapon().
 			Implements the vanilla weapon ammo reloading for the gun in ctf gametypes.
