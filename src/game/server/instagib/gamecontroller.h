@@ -66,6 +66,16 @@ public:
 	virtual bool OnCharacterTakeDamage(vec2 &Force, int &Dmg, int &From, int &Weapon, CCharacter &Character) { return false; }
 
 	/*
+		Function: OnHookAttachPlayer
+			Called once if one player hits a hook on another player.
+
+		Arguments:
+			pHookingPlayer - The player who sent the hook input and managed to grab another player.
+			pHookedPlayer - The player that got grabbed
+	*/
+	virtual void OnHookAttachPlayer(class CPlayer *pHookingPlayer, class CPlayer *pHookedPlayer) {}
+
+	/*
 		Function: IsPickupEntity
 			Helper to check if a `Index` passed to `OnEntity()` is a pickup
 			like shield, armor or a weapon.

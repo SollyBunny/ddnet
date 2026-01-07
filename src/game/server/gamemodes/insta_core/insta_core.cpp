@@ -919,6 +919,16 @@ bool CGameControllerInstaCore::UnfreezeOnHammerHit() const
 	return g_Config.m_SvFreezeHammer == 0;
 }
 
+void CGameControllerInstaCore::OnHookAttachPlayer(CPlayer *pHookingPlayer, CPlayer *pHookedPlayer)
+{
+	if(g_Config.m_SvKillHook)
+	{
+		CCharacter *pChr = pHookedPlayer->GetCharacter();
+		if(pChr)
+			pChr->TakeDamage(vec2(0, 0), 10, pHookingPlayer->GetCid(), WEAPON_GAME);
+	}
+}
+
 void CGameControllerInstaCore::OnRoundEnd()
 {
 	dbg_msg("ddnet-insta", "match end");

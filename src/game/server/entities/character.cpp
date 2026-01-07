@@ -847,12 +847,7 @@ void CCharacter::Tick()
 			Antibot()->OnHookAttach(m_pPlayer->GetCid(), true);
 		}
 		// ddnet-insta
-		if(g_Config.m_SvKillHook)
-		{
-			CCharacter *pChr = GameServer()->m_apPlayers[HookedPlayer]->GetCharacter();
-			if(pChr)
-				pChr->TakeDamage(vec2(0, 0), 10, m_pPlayer->GetCid(), WEAPON_GAME);
-		}
+		GameServer()->m_pController->OnHookAttachPlayer(m_pPlayer, GameServer()->m_apPlayers[HookedPlayer]);
 	}
 
 	// Previnput

@@ -96,6 +96,7 @@ public:
 	void SnapDDNetPlayer(int SnappingClient, CPlayer *pPlayer, CNetObj_DDNetPlayer *pDDNetPlayer) override;
 	bool OnClientPacket(int ClientId, bool Sys, int MsgId, struct CNetChunk *pPacket, class CUnpacker *pUnpacker) override;
 	bool UnfreezeOnHammerHit() const override;
+	void OnHookAttachPlayer(class CPlayer *pHookingPlayer, class CPlayer *pHookedPlayer) override;
 	void OnRoundEnd() override;
 
 	void OnPlayerTick(class CPlayer *pPlayer);
