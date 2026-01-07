@@ -123,6 +123,7 @@ MACRO_CONFIG_INT(SvHideAdmins, sv_hide_admins, 0, 0, 1, CFGFLAG_SAVE | CFGFLAG_S
 MACRO_CONFIG_INT(SvShowSettingsMotd, sv_show_settings_motd, 1, 0, 1, CFGFLAG_SERVER, "Show insta game settings in motd on join")
 MACRO_CONFIG_INT(SvUnstackChat, sv_unstack_chat, 1, 0, 1, CFGFLAG_SERVER, "Revert ddnet clients duplicated chat message stacking")
 MACRO_CONFIG_INT(SvCasualRounds, sv_casual_rounds, 1, 0, 1, CFGFLAG_SERVER, "1=start rounds automatically, 0=require restart vote to properly start game")
+MACRO_CONFIG_INT(SvAllowTeamChange, sv_allow_team_change, 1, 0, 1, CFGFLAG_SERVER, "allow players to switch teams for example from red to blue or to spectators")
 MACRO_CONFIG_INT(SvAllowTeamChangeDuringPause, sv_allow_team_change_during_pause, 1, 0, 1, CFGFLAG_SERVER, "allow players to join the game or spectators during pause")
 MACRO_CONFIG_INT(SvTournament, sv_tournament, 0, 0, 1, CFGFLAG_SERVER, "Print messages saying tournament is running. No other effects.")
 MACRO_CONFIG_STR(SvTournamentWelcomeChat, sv_tournament_welcome_chat, 900, "", CFGFLAG_SERVER, "Chat message shown in chat on join when sv_tournament is 1")

@@ -1151,10 +1151,12 @@ public:
 			ErrorReasonSize - the size of the error buffer in bytes
 
 		Returns:
-			true - if the user action is allowed
-			false - if the user action should be blocked (might write reason to pErrorReason)
+			EAllowed::YES - if the user can join this team right now
+			EAllowed::NO - if the user can not join this team
+			EAllowed::LATER - if the user can not join the team right now but possibly later
+					  in that case we queue an automated team change for when it is possible
 	*/
-	virtual bool CanUserJoinTeam(class CPlayer *pPlayer, int Team, char *pErrorReason, int ErrorReasonSize) { return true; }
+	virtual EAllowed CanUserJoinTeam(class CPlayer *pPlayer, int Team, char *pErrorReason, int ErrorReasonSize) { return EAllowed::YES; }
 
 	virtual bool CanSelfkill(class CPlayer *pPlayer, char *pErrorReason, int ErrorReasonSize) { return true; }
 

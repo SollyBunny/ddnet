@@ -44,6 +44,13 @@ enum class ETextType
 	PROJECTILE,
 };
 
+enum class EAllowed
+{
+	YES,
+	NO,
+	LATER,
+};
+
 enum class EDisplayScore
 {
 	ROUND_POINTS,

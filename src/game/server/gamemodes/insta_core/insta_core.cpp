@@ -403,7 +403,7 @@ bool CGameControllerInstaCore::OnVoteNetMessage(const CNetMsg_Cl_Vote *pMsg, int
 	return false;
 }
 
-// called before spam protection on client team join request
+// called before spam protection on client
 // return true to consume the event and not run the base controller code
 bool CGameControllerInstaCore::OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMsg, int ClientId)
 {
@@ -415,10 +415,15 @@ bool CGameControllerInstaCore::OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMs
 
 	int Team = pMsg->m_Team;
 	char aReason[512] = "";
-	if(!CanUserJoinTeam(pPlayer, Team, aReason, sizeof(aReason)))
+
+	EAllowed TeamChangeAllowed = CanUserJoinTeam(pPlayer, Team, aReason, sizeof(aReason));
+	if(TeamChangeAllowed != EAllowed::YES)
 	{
 		if(aReason[0])
 			SendChatTarget(ClientId, aReason);
+
+		if(TeamChangeAllowed != EAllowed::LATER)
+			return true;
 
 		// If the server already requested a forced move
 		// we do not also queue a user request at the same time.
@@ -513,8 +518,6 @@ bool CGameControllerInstaCore::CanSelfkill(CPlayer *pPlayer, char *pErrorReason,
 	CCharacter *pChr = pPlayer->GetCharacter();
 	bool IsFrozen = pChr && pChr->m_FreezeTime;
 
-	log_info("dbg", "is froezen %d cankillinfrzeze=%d", IsFrozen, CanSelfkillWhileFrozen(pPlayer));
-
 	if(IsFrozen && !CanSelfkillWhileFrozen(pPlayer))
 	{
 		if(pErrorReason)
@@ -525,7 +528,7 @@ bool CGameControllerInstaCore::CanSelfkill(CPlayer *pPlayer, char *pErrorReason,
 	return true;
 }
 
-bool CGameControllerInstaCore::CanUserJoinTeam(class CPlayer *pPlayer, int Team, char *pErrorReason, int ErrorReasonSize)
+EAllowed CGameControllerInstaCore::CanUserJoinTeam(class CPlayer *pPlayer, int Team, char *pErrorReason, int ErrorReasonSize)
 {
 	CCharacter *pChr = pPlayer->GetCharacter();
 	bool IsFrozen = pChr && pChr->m_FreezeTime;
@@ -534,17 +537,24 @@ bool CGameControllerInstaCore::CanUserJoinTeam(class CPlayer *pPlayer, int Team,
 	{
 		if(pErrorReason)
 			str_format(pErrorReason, ErrorReasonSize, "You can't join %s while being frozen", GetTeamName(Team));
-		return false;
+		return EAllowed::LATER;
+	}
+
+	if(!g_Config.m_SvAllowTeamChange)
+	{
+		if(pErrorReason)
+			str_copy(pErrorReason, "Changing teams is currently disabled.", ErrorReasonSize);
+		return EAllowed::NO;
 	}
 
 	if(GameServer()->m_World.m_Paused && !g_Config.m_SvAllowTeamChangeDuringPause)
 	{
 		if(pErrorReason)
 			str_copy(pErrorReason, "Changing teams while the game is paused is currently disabled.", ErrorReasonSize);
-		return false;
+		return EAllowed::NO;
 	}
 
-	return true;
+	return EAllowed::YES;
 }
 
 int CGameControllerInstaCore::GetPlayerTeam(class CPlayer *pPlayer, bool Sixup)
@@ -963,7 +973,7 @@ void CGameControllerInstaCore::OnPlayerTick(class CPlayer *pPlayer)
 	if(pPlayer->m_RequestedTeam.has_value())
 	{
 		int WantedTeam = pPlayer->m_RequestedTeam.value().m_Team;
-		if(CanUserJoinTeam(pPlayer, WantedTeam, nullptr, 0))
+		if(CanUserJoinTeam(pPlayer, WantedTeam, nullptr, 0) == EAllowed::YES)
 		{
 			pPlayer->SetTeam(WantedTeam);
 			pPlayer->m_RequestedTeam = std::nullopt;
