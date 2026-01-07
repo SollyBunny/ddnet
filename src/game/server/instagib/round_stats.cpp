@@ -111,6 +111,10 @@ void IGameController::GetRoundEndStatsStrJson(char *pBuf, size_t Size)
 			Writer.WriteIntValue(pPlayer->m_Deaths);
 			Writer.WriteAttribute("ratio");
 			Writer.WriteIntValue(CalcKillDeathRatio(pPlayer->m_Kills, pPlayer->m_Deaths));
+			Writer.WriteAttribute("shots_fired");
+			Writer.WriteIntValue(pPlayer->m_Stats.m_ShotsFired);
+			Writer.WriteAttribute("shots_hit");
+			Writer.WriteIntValue(pPlayer->m_Stats.m_ShotsHit);
 			Writer.WriteAttribute("flag_grabs");
 			Writer.WriteIntValue(pPlayer->m_Stats.m_FlagGrabs);
 			Writer.WriteAttribute("flag_captures");
