@@ -362,7 +362,10 @@ void CGameControllerBaseFng::SnapDDNetCharacter(int SnappingClient, CCharacter *
 	if(IsTeamPlay() && pChr->GetPlayer()->GetTeam() == pSnapReceiver->GetTeam())
 		IsTeamMate = true;
 	if(!IsTeamMate && pDDNetCharacter->m_FreezeEnd)
+	{
 		pDDNetCharacter->m_FreezeEnd = -1;
+		pDDNetCharacter->m_FreezeStart = 0;
+	}
 }
 
 CClientMask CGameControllerBaseFng::FreezeDamageIndicatorMask(class CCharacter *pChr)
