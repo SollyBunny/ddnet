@@ -1229,9 +1229,14 @@ bool CGameControllerBasePvp::OnTeamChatCmd(IConsole::IResult *pResult)
 	if(!pPlayer)
 		return false;
 
+	if(g_Config.m_SvAllowDDRaceTeamChange)
+	{
+		log_info("chatresp", "The /team chat command is currently disabled.");
+		return true;
+	}
 	if(pPlayer->GetTeam() != TEAM_SPECTATORS)
 	{
-		Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp", "Only spectators can join ddrace teams");
+		log_info("chatresp", "Only spectators can join ddrace teams");
 		return true;
 	}
 
