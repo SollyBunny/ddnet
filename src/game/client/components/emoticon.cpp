@@ -232,7 +232,7 @@ void CEmoticon::OnRender()
 	Graphics()->WrapClamp();
 	for(int Emote = 0; Emote < NUM_EMOTICONS; Emote++)
 	{
-		float Angle = 2.0f * pi * Emote / NUM_EMOTICONS;
+		float Angle = 2 * pi * Emote / (float)NUM_EMOTICONS;
 		if(Angle > pi)
 			Angle -= 2.0f * pi;
 
@@ -260,7 +260,7 @@ void CEmoticon::OnRender()
 
 		for(int Emote = 0; Emote < NUM_EMOTES; Emote++)
 		{
-			float Angle = 2.0f * pi * Emote / NUM_EMOTES;
+			float Angle = 2 * pi * Emote / (float)NUM_EMOTES;
 			if(Angle > pi)
 				Angle -= 2.0f * pi;
 

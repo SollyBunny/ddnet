@@ -427,7 +427,7 @@ void CMenus::RenderSettingsTee(CUIRect MainView)
 		pEmote = &g_Config.m_ClDummyDefaultEyes;
 	}
 
-	const float EyeLineSize = 40.0f;
+	const float EyeButtonSize = 40.0f;
 	const bool RenderEyesBelow = MainView.w < 750.0f;
 	CUIRect YourSkin, Checkboxes, SkinPrefix, Eyes, Button, Label;
 	MainView.HSplitTop(90.0f, &YourSkin, &MainView);
@@ -436,12 +436,12 @@ void CMenus::RenderSettingsTee(CUIRect MainView)
 		YourSkin.VSplitLeft(MainView.w * 0.45f, &YourSkin, &Checkboxes);
 		Checkboxes.VSplitLeft(MainView.w * 0.35f, &Checkboxes, &SkinPrefix);
 		MainView.HSplitTop(5.0f, nullptr, &MainView);
-		MainView.HSplitTop(EyeLineSize, &Eyes, &MainView);
-		Eyes.VSplitRight(EyeLineSize * NUM_EMOTES + 5.0f * (NUM_EMOTES - 1), nullptr, &Eyes);
+		MainView.HSplitTop(EyeButtonSize, &Eyes, &MainView);
+		Eyes.VSplitRight(EyeButtonSize * (float)NUM_EMOTES + 5.0f * (float)(NUM_EMOTES - 1), nullptr, &Eyes);
 	}
 	else
 	{
-		YourSkin.VSplitRight(3 * EyeLineSize + 2 * 5.0f, &YourSkin, &Eyes);
+		YourSkin.VSplitRight(3 * EyeButtonSize + 2 * 5.0f, &YourSkin, &Eyes);
 		const float RemainderWidth = YourSkin.w;
 		YourSkin.VSplitLeft(RemainderWidth * 0.4f, &YourSkin, &Checkboxes);
 		Checkboxes.VSplitLeft(RemainderWidth * 0.35f, &Checkboxes, &SkinPrefix);
@@ -660,21 +660,21 @@ void CMenus::RenderSettingsTee(CUIRect MainView)
 	// Default eyes
 	{
 		CTeeRenderInfo EyeSkinInfo = OwnSkinInfo;
-		EyeSkinInfo.m_Size = EyeLineSize;
+		EyeSkinInfo.m_Size = EyeButtonSize;
 		vec2 OffsetToMid;
 		CRenderTools::GetRenderTeeOffsetToRenderedTee(CAnimState::GetIdle(), &EyeSkinInfo, OffsetToMid);
 
 		CUIRect EyesRow;
-		Eyes.HSplitTop(EyeLineSize, &EyesRow, &Eyes);
+		Eyes.HSplitTop(EyeButtonSize, &EyesRow, &Eyes);
 		static CButtonContainer s_aEyeButtons[NUM_EMOTES];
 		for(int CurrentEyeEmote = 0; CurrentEyeEmote < NUM_EMOTES; CurrentEyeEmote++)
 		{
-			EyesRow.VSplitLeft(EyeLineSize, &Button, &EyesRow);
+			EyesRow.VSplitLeft(EyeButtonSize, &Button, &EyesRow);
 			EyesRow.VSplitLeft(5.0f, nullptr, &EyesRow);
 			if(!RenderEyesBelow && (CurrentEyeEmote + 1) % 3 == 0)
 			{
 				Eyes.HSplitTop(5.0f, nullptr, &Eyes);
-				Eyes.HSplitTop(EyeLineSize, &EyesRow, &Eyes);
+				Eyes.HSplitTop(EyeButtonSize, &EyesRow, &Eyes);
 			}
 
 			const ColorRGBA EyeButtonColor = ColorRGBA(1.0f, 1.0f, 1.0f, 0.25f + (*pEmote == CurrentEyeEmote ? 0.25f : 0.0f));
@@ -1846,7 +1846,7 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 	CUIRect TabBar, LeftView, RightView, Button;
 
 	MainView.HSplitTop(20.0f, &TabBar, &MainView);
-	const float TabWidth = TabBar.w / NUMBER_OF_APPEARANCE_TABS;
+	const float TabWidth = TabBar.w / (float)NUMBER_OF_APPEARANCE_TABS;
 	static CButtonContainer s_aPageTabs[NUMBER_OF_APPEARANCE_TABS] = {};
 	const char *apTabNames[NUMBER_OF_APPEARANCE_TABS] = {
 		Localize("HUD"),
