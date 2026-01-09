@@ -200,9 +200,9 @@ void CEmoticon::OnRender()
 	m_SelectedEmote = -1;
 	m_SelectedEyeEmote = -1;
 	if(length(m_SelectorMouse) > s_InnerOuterMouseBoundaryRadius)
-		m_SelectedEmote = PositiveMod(std::round(SelectorAngle / (2.0f * pi) * NUM_EMOTICONS), NUM_EMOTICONS);
+		m_SelectedEmote = PositiveMod(std::round(SelectorAngle / (2.0f * pi) * (float)NUM_EMOTICONS), NUM_EMOTICONS);
 	else if(length(m_SelectorMouse) > s_InnerMouseLimitRadius)
-		m_SelectedEyeEmote = PositiveMod(std::round(SelectorAngle / (2.0f * pi) * NUM_EMOTES), NUM_EMOTES);
+		m_SelectedEyeEmote = PositiveMod(std::round(SelectorAngle / (2.0f * pi) * (float)NUM_EMOTES), NUM_EMOTES);
 
 	if(m_SelectedEmote != -1)
 	{
