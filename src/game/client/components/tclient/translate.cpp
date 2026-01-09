@@ -41,7 +41,7 @@ static void UrlEncode(const char *pText, char *pOut, size_t Length)
 const char *ITranslateBackend::EncodeTarget(const char *pTarget) const
 {
 	if(!pTarget || pTarget[0] == '\0')
-		return CConfig::ms_pTcTranslateTarget;
+		return DefaultConfig::TcTranslateTarget;
 	return pTarget;
 }
 
@@ -280,7 +280,7 @@ public:
 	const char *EncodeTarget(const char *pTarget) const override
 	{
 		if(!pTarget || pTarget[0] == '\0')
-			return CConfig::ms_pTcTranslateTarget;
+			return DefaultConfig::TcTranslateTarget;
 		if(str_comp_nocase(pTarget, "zh") == 0)
 			return "zh-cn";
 		return pTarget;
