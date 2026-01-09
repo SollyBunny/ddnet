@@ -77,6 +77,7 @@ namespace DefaultConfig
 // #include "config_variables.h"
 #define SET_CONFIG_DOMAIN(CONFIGDOMAIN) ; // TClient
 #include "config_includes.h"
+#undef SET_CONFIG_DOMAIN
 #undef MACRO_CONFIG_INT
 #undef MACRO_CONFIG_COL
 #undef MACRO_CONFIG_STR

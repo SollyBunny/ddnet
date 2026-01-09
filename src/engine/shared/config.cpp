@@ -316,6 +316,7 @@ void CConfigManager::Init()
 	}
 #define SET_CONFIG_DOMAIN(_ConfigDomain) ConfigDomain = _ConfigDomain;
 #include "config_includes.h"
+#undef SET_CONFIG_DOMAIN
 #undef MACRO_CONFIG_INT
 #undef MACRO_CONFIG_COL
 #undef MACRO_CONFIG_STR
