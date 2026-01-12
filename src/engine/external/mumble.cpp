@@ -1,10 +1,10 @@
 #include "mumble.h"
 
-#if defined(__ANDROID__)
-	#define STUB
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
+	#define MUMBLE_STUB
 #endif
 
-#if defined(STUB)
+#if defined(MUMBLE_STUB)
 
 struct MumbleContext {
 	struct MumbleLinkedMem* lm;
@@ -26,11 +26,12 @@ void mumble_3d_update(struct MumbleContext* context, float x, float y, float z) 
 
 #else
 
+#include <stdlib.h>
+
 #if defined(_WIN32)
 	#include <windows.h>
 #else
 	#include <stdio.h>
-	#include <stdlib.h>
 	#include <string.h>
 	#include <unistd.h>
 	#include <sys/mman.h>
