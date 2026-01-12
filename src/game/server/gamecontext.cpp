@@ -2879,7 +2879,7 @@ void CGameContext::OnChangeInfoNetMessage(const CNetMsg_Cl_ChangeInfo *pMsg, int
 		if(!m_pController->LoadNewPlayerNameData(ClientId))
 		{
 			Score()->PlayerData(ClientId)->Reset();
-			m_apPlayers[ClientId]->m_Score.reset(); // ddnet-insta (ddnet removed this line)
+			m_pController->ResetPlayerScore(pPlayer);
 			Score()->LoadPlayerData(ClientId);
 		}
 
@@ -3033,7 +3033,7 @@ void CGameContext::OnKillNetMessage(const CNetMsg_Cl_Kill *pMsg, int ClientId)
 	if(m_World.m_Paused)
 		return;
 
-	if(m_pController->OnSelfkill(ClientId)) // ddnet-insta
+	if(m_pController->OnKillNetMessage(ClientId)) // ddnet-insta
 		return;
 
 	if(IsRunningKickOrSpecVote(ClientId) && GetDDRaceTeam(ClientId))
@@ -4310,6 +4310,11 @@ void CGameContext::OnInit(const void *pPersistentData)
 		log_warn("gametype", "unknown gametype '%s' falling back to ddnet", Config()->m_SvGametype);
 		m_pController = (Gamemodes()["ddnet"])(this);
 	}
+	if(pPersistent)
+		m_pController->OnDataRestore(pPersistent);
+	if(m_aGameType[0] && str_comp(m_aGameType, m_pController->m_pGameType))
+		m_pController->OnGameTypeChange(m_aGameType, m_pController->m_pGameType);
+	str_copy(m_aGameType, m_pController->m_pGameType);
 	// ddnet-insta end
 
 	ReadCensorList();
@@ -4395,22 +4400,15 @@ void CGameContext::OnInit(const void *pPersistentData)
 
 void CGameContext::CreateAllEntities(bool Initial)
 {
-	const CMapItemLayerTilemap *pTileMap = m_Layers.GameLayer();
-	const CTile *pTiles = static_cast<CTile *>(Kernel()->RequestInterface<IMap>()->GetData(pTileMap->m_Data));
+	const CTile *pTiles = m_Collision.GameLayer();
+	const CTile *pFront = m_Collision.FrontLayer();
+	const CSwitchTile *pSwitch = m_Collision.SwitchLayer();
 
-	const CTile *pFront = nullptr;
-	if(m_Layers.FrontLayer())
-		pFront = static_cast<CTile *>(Kernel()->RequestInterface<IMap>()->GetData(m_Layers.FrontLayer()->m_Front));
-
-	const CSwitchTile *pSwitch = nullptr;
-	if(m_Layers.SwitchLayer())
-		pSwitch = static_cast<CSwitchTile *>(Kernel()->RequestInterface<IMap>()->GetData(m_Layers.SwitchLayer()->m_Switch));
-
-	for(int y = 0; y < pTileMap->m_Height; y++)
+	for(int y = 0; y < m_Collision.GetHeight(); y++)
 	{
-		for(int x = 0; x < pTileMap->m_Width; x++)
+		for(int x = 0; x < m_Collision.GetWidth(); x++)
 		{
-			const int Index = y * pTileMap->m_Width + x;
+			const int Index = y * m_Collision.GetWidth() + x;
 
 			// Game layer
 			{
@@ -4648,6 +4646,9 @@ void CGameContext::OnShutdown(void *pPersistentData)
 	if(pPersistent)
 	{
 		pPersistent->m_PrevGameUuid = m_GameUuid;
+
+		// ddnet-insta
+		m_pController->OnDataPersist(pPersistent);
 	}
 
 	Antibot()->RoundEnd();

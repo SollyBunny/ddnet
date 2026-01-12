@@ -44,6 +44,13 @@ enum class ETextType
 	PROJECTILE,
 };
 
+enum class EAllowed
+{
+	YES,
+	NO,
+	LATER,
+};
+
 enum class EDisplayScore
 {
 	ROUND_POINTS,
@@ -58,6 +65,14 @@ enum class EDisplayScore
 	ROUND_KILLS,
 
 	NUM_SCORES,
+};
+
+// The in game scoreboard and the master server player list
+// can have a points or time score.
+enum class EScoreKind
+{
+	TIME,
+	POINTS,
 };
 
 #define DISPLAY_SCORE_VALUES "points, round_points, spree, current_spree, win_points, wins, kills, round_kills"

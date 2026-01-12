@@ -73,6 +73,7 @@ public:
 	const class CPlayer *GetPlayer() const { return m_pPlayer; }
 	int HookedPlayer() const { return m_Core.HookedPlayer(); }
 	CNetObj_PlayerInput GetLatestInput() { return m_LatestInput; }
+	int m_LastHookState = HOOK_IDLE;
 
 	// Foot
 	void LoseBall();

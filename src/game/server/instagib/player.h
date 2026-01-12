@@ -45,7 +45,13 @@ public:
 
 	// this used to be a ddnet variable but it got removed there
 	// so now it is a ddnet-insta specific variable
-	std::optional<int> m_Score;
+	//
+	// This used to be a ddnet ver
+	// This used to be a ddnet variable but it got removed there.
+	// In ddnet-insta it is only used for score points.
+	// Not for ddrace race times.
+	// You can get the race time like this `std::optional<float> Score = GameServer()->Score()->PlayerData(ClientId)->m_BestTime;`
+	int m_Score = 0;
 
 	/*******************************************************************
 	 * zCatch                                                          *
@@ -122,7 +128,8 @@ public:
 	// debug broadcast with current game state
 	bool m_GameStateBroadcast;
 
-	// data class for delayed team change
+	// Data class for delayed team change.
+	// The team change is forced by the server and has to happen.
 	class CForceTeam
 	{
 	public:
@@ -139,7 +146,20 @@ public:
 	};
 
 	// Force *this* player to a different team with a delay
+	// See also `m_RequestedTeam` for user requested pending team changes.
 	CForceTeam m_ForceTeam;
+
+	class CRequestedTeam
+	{
+	public:
+		// Should be TEAM_RED, TEAM_BLUE or TEAM_SPECTATORS
+		int m_Team = 0;
+	};
+
+	// Pending team change requested by the user but currently blocked by the server.
+	// Will be executed at a later point in time or aborted.
+	// See also `m_ForceTeam` for time delayed team moves forced by the server.
+	std::optional<CRequestedTeam> m_RequestedTeam = std::nullopt;
 
 	/*******************************************************************
 	 * teeworlds core logic                                            *

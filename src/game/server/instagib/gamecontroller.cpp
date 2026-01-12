@@ -131,6 +131,16 @@ int IGameController::GetCarriedFlag(CPlayer *pPlayer)
 	return FLAG_NONE;
 }
 
+void IGameController::ResetPlayerScore(CPlayer *pPlayer)
+{
+	pPlayer->m_Score = 0;
+
+	if(ServerInfoScoreKind() == EScoreKind::TIME)
+		Server()->SetClientScore(pPlayer->GetCid(), std::nullopt);
+	else if(ServerInfoScoreKind() == EScoreKind::POINTS)
+		Server()->SetClientScore(pPlayer->GetCid(), 0);
+}
+
 CClientMask IGameController::FreezeDamageIndicatorMask(class CCharacter *pChr)
 {
 	return pChr->TeamMask() & GameServer()->ClientsMaskExcludeClientVersionAndHigher(VERSION_DDNET_NEW_HUD);
@@ -206,7 +216,7 @@ int IGameController::WinPointsForWin(const CPlayer *pPlayer)
 	// But also because of anti farming reasons. Farming wins at night with a dummy and
 	// friends in an almost empty server should be rewarded less
 	// than winning on a full server.
-	int Points = pPlayer->m_Score.value_or(0);
+	int Points = pPlayer->m_Score;
 
 	// this enemie amount is rigged on public servers
 	// more correct would be the average player count during the entire game
@@ -272,7 +282,7 @@ void IGameController::DoTeamBalance()
 	{
 		if(GameServer()->m_apPlayers[i] && GameServer()->m_apPlayers[i]->GetTeam() != TEAM_SPECTATORS)
 		{
-			aPlayerScore[i] = GameServer()->m_apPlayers[i]->m_Score.value_or(0) * Server()->TickSpeed() * 60.0f /
+			aPlayerScore[i] = GameServer()->m_apPlayers[i]->m_Score * Server()->TickSpeed() * 60.0f /
 					  (Server()->Tick() - GameServer()->m_apPlayers[i]->m_ScoreStartTick);
 			aTeamScore[GameServer()->m_apPlayers[i]->GetTeam()] += aPlayerScore[i];
 		}
@@ -355,7 +365,19 @@ void IGameController::OnPlayerReadyChange(CPlayer *pPlayer)
 		// change players ready state
 		pPlayer->m_IsReadyToPlay ^= 1;
 
-		if(m_GameState == IGS_GAME_RUNNING && !pPlayer->m_IsReadyToPlay)
+		if(m_GameState == IGS_GAME_PAUSED)
+		{
+			int NumUnready = 0;
+			GetPlayersReadyState(-1, &NumUnready);
+
+			log_info(
+				"ddnet-insta",
+				"'%s' is %s (%d players not ready).",
+				Server()->ClientName(pPlayer->GetCid()),
+				pPlayer->m_IsReadyToPlay ? "ready" : "not ready",
+				NumUnready);
+		}
+		else if(m_GameState == IGS_GAME_RUNNING && !pPlayer->m_IsReadyToPlay)
 		{
 			SetGameState(IGS_GAME_PAUSED, TIMER_INFINITE); // one player isn't ready -> pause the game
 			GameServer()->SendGameMsg(protocol7::GAMEMSG_GAME_PAUSED, pPlayer->GetCid(), -1);
@@ -451,7 +473,7 @@ bool IGameController::DoWincheckRound()
 		{
 			if(!pPlayer)
 				continue;
-			int Score = pPlayer->m_Score.value_or(0);
+			int Score = pPlayer->m_Score;
 			if(Score > Topscore)
 			{
 				Topscore = Score;
@@ -790,7 +812,7 @@ bool IGameController::HasWinningScore(const CPlayer *pPlayer) const
 	}
 	else
 	{
-		int OwnScore = pPlayer->m_Score.value_or(0);
+		int OwnScore = pPlayer->m_Score;
 		if(!OwnScore)
 			return false;
 
@@ -799,7 +821,7 @@ bool IGameController::HasWinningScore(const CPlayer *pPlayer) const
 		{
 			if(!pOtherPlayer)
 				continue;
-			int Score = pOtherPlayer->m_Score.value_or(0);
+			int Score = pOtherPlayer->m_Score;
 			if(Score > Topscore)
 				Topscore = Score;
 		}

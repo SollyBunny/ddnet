@@ -555,12 +555,15 @@ bool CGameControllerBasePvp::OnChatMessage(const CNetMsg_Cl_Say *pMsg, int Lengt
 	}
 
 	// ddnet-insta bang commands
-	// allow sending "!" to chat or "!!" or "! " or "!¼"
-	// swallow all other ! prefixed chat messages
-	if(pMsg->m_pMessage[0] == '!' && pMsg->m_pMessage[1] && str_isalphanumeric(pMsg->m_pMessage[1]))
+	if(g_Config.m_SvBangCommands >= 0)
 	{
-		ParseChatCmd('!', ClientId, pMsg->m_pMessage + 1);
-		return true;
+		// allow sending "!" to chat or "!!" or "! " or "!¼"
+		// swallow all other ! prefixed chat messages
+		if(pMsg->m_pMessage[0] == '!' && pMsg->m_pMessage[1] && str_isalphanumeric(pMsg->m_pMessage[1]))
+		{
+			ParseChatCmd('!', ClientId, pMsg->m_pMessage + 1);
+			return true;
+		}
 	}
 
 	return false;

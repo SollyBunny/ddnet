@@ -23,7 +23,7 @@ const char *CServer::GetRandomMapFromPool()
 		return "";
 	}
 
-	int RandIdx = secure_rand() % m_vMapPool.size();
+	int RandIdx = secure_rand_below(m_vMapPool.size());
 	const char *pMap = m_vMapPool[RandIdx].c_str();
 
 	char aBuf[512];

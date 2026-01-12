@@ -17,11 +17,10 @@ class CGameContext : public IGameServer
 	friend class IGameController;
 
 public:
-	const char *ServerInfoClientScoreKind() override { return "points"; }
-
 	// instagib/gamecontext.cpp
 	void OnInitInstagib();
 	void PrintInstaCredits();
+	const char *ServerInfoClientScoreKind() override;
 	void AlertOnSpecialInstagibConfigs(int ClientId = -1) const;
 	void ShowCurrentInstagibConfigsMotd(int ClientId = -1, bool Force = false) const;
 	void RefreshVotes();
@@ -54,6 +53,10 @@ public:
 	int m_UnstackHackCharacterOffset;
 	IHttp *m_pHttp;
 	CIpStorageController m_IpStorageController;
+
+	// A copy of the m_pGameType string the controller holds
+	// this is used to detect gametype changes.
+	char m_aGameType[512] = "";
 
 	// returns mutable pointer into either the offline ip storage
 	// vector or into the still connected player
@@ -107,6 +110,7 @@ public:
 	static void ConRandomMapFromPool(IConsole::IResult *pResult, void *pUserData);
 	static void ConGctfAntibot(IConsole::IResult *pResult, void *pUserData);
 	static void ConKnownAntibot(IConsole::IResult *pResult, void *pUserData);
+	static void ConKickEventsAntibot(IConsole::IResult *pResult, void *pUserData);
 	static void ConDeepJailId(IConsole::IResult *pResult, void *pUserData);
 	static void ConDeepJailIp(IConsole::IResult *pResult, void *pUserData);
 	static void ConDeepJails(IConsole::IResult *pResult, void *pUserData);

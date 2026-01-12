@@ -60,8 +60,6 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 {
 	m_EmoteStop = -1;
 	m_LastAction = -1;
-	m_LastNoAmmoSound = -1;
-
 	// ddnet-insta
 	m_LastWeapon = GameServer()->m_pController->GetDefaultWeapon(pPlayer);
 	m_QueuedWeapon = -1;
@@ -389,7 +387,9 @@ void CCharacter::HandleNinja()
 void CCharacter::DoWeaponSwitch()
 {
 	// make sure we can switch
-	if(m_ReloadTimer != 0 || m_QueuedWeapon == -1 || m_Core.m_aWeapons[WEAPON_NINJA].m_Got || !m_Core.m_aWeapons[m_QueuedWeapon].m_Got)
+	if(m_ReloadTimer != 0 || m_QueuedWeapon == -1)
+		return;
+	if(m_Core.m_aWeapons[WEAPON_NINJA].m_Got || !m_Core.m_aWeapons[m_QueuedWeapon].m_Got)
 		return;
 
 	// switch Weapon
@@ -849,12 +849,7 @@ void CCharacter::Tick()
 			Antibot()->OnHookAttach(m_pPlayer->GetCid(), true);
 		}
 		// ddnet-insta
-		if(g_Config.m_SvKillHook)
-		{
-			CCharacter *pChr = GameServer()->m_apPlayers[HookedPlayer]->GetCharacter();
-			if(pChr)
-				pChr->TakeDamage(vec2(0, 0), 10, m_pPlayer->GetCid(), WEAPON_GAME);
-		}
+		GameServer()->m_pController->OnHookAttachPlayer(m_pPlayer, GameServer()->m_apPlayers[HookedPlayer]);
 	}
 
 	// Previnput

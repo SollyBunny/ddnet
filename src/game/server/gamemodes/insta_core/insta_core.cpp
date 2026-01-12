@@ -13,6 +13,7 @@
 
 #include <generated/protocol.h>
 
+#include <game/gamecore.h>
 #include <game/server/entities/character.h>
 #include <game/server/gamecontroller.h>
 #include <game/server/instagib/antibob.h>
@@ -25,6 +26,8 @@
 #include <game/server/player.h>
 #include <game/server/teams.h>
 #include <game/version.h>
+
+#include <optional>
 
 CGameControllerInstaCore::CGameControllerInstaCore(class CGameContext *pGameServer) :
 	CGameControllerDDRace(pGameServer)
@@ -235,6 +238,25 @@ void CGameControllerInstaCore::PrintModWelcome(CPlayer *pPlayer)
 	GameServer()->SendChatTarget(ClientId, "DDraceNetwork Mod. Version: " GAME_VERSION);
 }
 
+bool CGameControllerInstaCore::DropFlag(CCharacter *pChr)
+{
+	for(CFlag *pFlag : m_apFlags)
+	{
+		if(!pFlag)
+			continue;
+		if(pFlag->GetCarrier() != pChr)
+			continue;
+
+		GameServer()->CreateSoundGlobal(SOUND_CTF_DROP);
+		GameServer()->SendGameMsg(protocol7::GAMEMSG_CTF_DROP, -1);
+
+		vec2 Dir = vec2(5 * pChr->GetAimDir(), -5);
+		pFlag->Drop(Dir);
+		return true;
+	}
+	return false;
+}
+
 void CGameControllerInstaCore::OnCharacterSpawn(class CCharacter *pChr)
 {
 	CPlayer *pPlayer = pChr->GetPlayer();
@@ -355,34 +377,76 @@ void CGameControllerInstaCore::Tick()
 
 bool CGameControllerInstaCore::OnVoteNetMessage(const CNetMsg_Cl_Vote *pMsg, int ClientId)
 {
-	CPlayer *pPlayer = GameServer()->m_apPlayers[ClientId];
+	CPlayer *pPlayer = GetPlayerOrNullptr(ClientId);
+	if(!pPlayer)
+		return false;
 
 	if(pPlayer->GetTeam() == TEAM_SPECTATORS && !g_Config.m_SvSpectatorVotes)
 	{
 		// SendChatTarget(ClientId, "Spectators aren't allowed to vote.");
 		return true;
 	}
+
+	CCharacter *pChr = pPlayer->GetCharacter();
+
+	if(pChr)
+	{
+		/// 1 is vote yes
+		if(g_Config.m_SvDropFlagOnVote && pMsg->m_Vote == 1)
+		{
+			// we intentionally do not return true in this case
+			// so the flag can be dropped
+			// and the vote still gets picked up at the same time
+			DropFlag(pChr);
+		}
+	}
+
 	return false;
 }
 
-// called before spam protection on client team join request
+// called before spam protection on client
 // return true to consume the event and not run the base controller code
 bool CGameControllerInstaCore::OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMsg, int ClientId)
 {
 	CPlayer *pPlayer = GameServer()->m_apPlayers[ClientId];
 	if(!pPlayer)
 		return false;
-
-	if(GameServer()->m_World.m_Paused)
-	{
-		if(!g_Config.m_SvAllowTeamChangeDuringPause)
-		{
-			GameServer()->SendChatTarget(pPlayer->GetCid(), "Changing teams while the game is paused is currently disabled.");
-			return true;
-		}
-	}
+	if(pPlayer->GetTeam() == pMsg->m_Team)
+		return false;
 
 	int Team = pMsg->m_Team;
+	char aReason[512] = "";
+
+	EAllowed TeamChangeAllowed = CanUserJoinTeam(pPlayer, Team, aReason, sizeof(aReason));
+	if(TeamChangeAllowed != EAllowed::YES)
+	{
+		if(aReason[0])
+			SendChatTarget(ClientId, aReason);
+
+		if(TeamChangeAllowed != EAllowed::LATER)
+			return true;
+
+		// If the server already requested a forced move
+		// we do not also queue a user request at the same time.
+		// Because I feel like this will have some complicated edge cases.
+		if(pPlayer->m_ForceTeam.m_Tick)
+			return true;
+
+		if(pPlayer->m_RequestedTeam.has_value())
+		{
+			pPlayer->m_RequestedTeam = std::nullopt;
+			SendChatTarget(ClientId, "Team change request aborted.");
+		}
+		else
+		{
+			pPlayer->m_RequestedTeam = {
+				.m_Team = Team};
+			char aBuf[512];
+			str_format(aBuf, sizeof(aBuf), "You will join %s once it is possible.", GetTeamName(Team));
+			SendChatTarget(ClientId, aBuf);
+		}
+		return true;
+	}
 
 	// user joins the spectators while allow spec is on
 	// we have to mark him as fake dead spec
@@ -418,6 +482,80 @@ bool CGameControllerInstaCore::OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMs
 		return true;
 	}
 	return false;
+}
+
+bool CGameControllerInstaCore::OnKillNetMessage(int ClientId)
+{
+	CPlayer *pPlayer = GetPlayerOrNullptr(ClientId);
+	if(!pPlayer)
+		return false;
+
+	if(g_Config.m_SvDropFlagOnSelfkill)
+	{
+		CCharacter *pChr = pPlayer->GetCharacter();
+		if(pChr && DropFlag(pChr))
+			return true;
+	}
+
+	char aReason[512] = "";
+	if(!CanSelfkill(pPlayer, aReason, sizeof(aReason)))
+	{
+		if(aReason[0])
+			SendChatTarget(ClientId, aReason);
+		return true;
+	}
+
+	return false;
+}
+
+bool CGameControllerInstaCore::CanSelfkillWhileFrozen(CPlayer *pPlayer)
+{
+	// TODO: think about block gametype here, do we allow team switches while frozen?
+	return IsDDRaceGameType();
+}
+
+bool CGameControllerInstaCore::CanSelfkill(CPlayer *pPlayer, char *pErrorReason, int ErrorReasonSize)
+{
+	CCharacter *pChr = pPlayer->GetCharacter();
+	bool IsFrozen = pChr && pChr->m_FreezeTime;
+
+	if(IsFrozen && !CanSelfkillWhileFrozen(pPlayer))
+	{
+		if(pErrorReason)
+			str_copy(pErrorReason, "You can't kill while being frozen", ErrorReasonSize);
+		return false;
+	}
+
+	return true;
+}
+
+EAllowed CGameControllerInstaCore::CanUserJoinTeam(class CPlayer *pPlayer, int Team, char *pErrorReason, int ErrorReasonSize)
+{
+	CCharacter *pChr = pPlayer->GetCharacter();
+	bool IsFrozen = pChr && pChr->m_FreezeTime;
+
+	if(IsFrozen && !CanUserJoinTeamWhileFrozen(pPlayer, Team))
+	{
+		if(pErrorReason)
+			str_format(pErrorReason, ErrorReasonSize, "You can't join %s while being frozen", GetTeamName(Team));
+		return EAllowed::LATER;
+	}
+
+	if(!g_Config.m_SvAllowTeamChange)
+	{
+		if(pErrorReason)
+			str_copy(pErrorReason, "Changing teams is currently disabled.", ErrorReasonSize);
+		return EAllowed::NO;
+	}
+
+	if(GameServer()->m_World.m_Paused && !g_Config.m_SvAllowTeamChangeDuringPause)
+	{
+		if(pErrorReason)
+			str_copy(pErrorReason, "Changing teams while the game is paused is currently disabled.", ErrorReasonSize);
+		return EAllowed::NO;
+	}
+
+	return EAllowed::YES;
 }
 
 int CGameControllerInstaCore::GetPlayerTeam(class CPlayer *pPlayer, bool Sixup)
@@ -467,16 +605,6 @@ bool CGameControllerInstaCore::CanJoinTeam(int Team, int NotThisId, char *pError
 		if(pErrorReason)
 			str_copy(pErrorReason, "Use /pause first then you can kill", ErrorReasonSize);
 		return false;
-	}
-	if(pPlayer)
-	{
-		const CCharacter *pChr = pPlayer->GetCharacter();
-		// TODO: think about block gametype here, do we allow team switches while frozen?
-		if(pChr && pChr->m_FreezeTime && !IsDDRaceGameType())
-		{
-			str_format(pErrorReason, ErrorReasonSize, "You can't join %s while being frozen", GetTeamName(Team));
-			return false;
-		}
 	}
 	if(Team == TEAM_SPECTATORS || (pPlayer && pPlayer->GetTeam() != TEAM_SPECTATORS))
 		return true;
@@ -580,11 +708,22 @@ void CGameControllerInstaCore::OnClientDataRestore(CPlayer *pPlayer, const CGame
 {
 }
 
+void CGameControllerInstaCore::OnDataPersist(CGameContext::CPersistentData *pData)
+{
+	str_copy(pData->m_Insta.m_aGameType, GameServer()->m_aGameType);
+}
+
+void CGameControllerInstaCore::OnDataRestore(const CGameContext::CPersistentData *pData)
+{
+	str_copy(GameServer()->m_aGameType, pData->m_Insta.m_aGameType);
+}
+
 // called on round init and on join
 void CGameControllerInstaCore::RoundInitPlayer(CPlayer *pPlayer)
 {
 	pPlayer->m_IsDead = false;
 	pPlayer->m_KillerId = -1;
+	ResetPlayerScore(pPlayer);
 }
 
 // this is only called once on connect
@@ -599,7 +738,6 @@ void CGameControllerInstaCore::InitPlayer(CPlayer *pPlayer)
 	pPlayer->m_IsReadyToPlay = !GameServer()->m_pController->IsPlayerReadyMode();
 	pPlayer->m_DeadSpecMode = false;
 	pPlayer->m_GameStateBroadcast = false;
-	pPlayer->m_Score = 0; // ddnet-insta
 	pPlayer->m_DisplayScore = GameServer()->m_DisplayScore;
 	pPlayer->m_JoinTime = time_get();
 
@@ -782,6 +920,24 @@ bool CGameControllerInstaCore::UnfreezeOnHammerHit() const
 	return g_Config.m_SvFreezeHammer == 0;
 }
 
+void CGameControllerInstaCore::OnFireHook(CCharacter *pCharacter)
+{
+}
+
+void CGameControllerInstaCore::OnMissedHook(CCharacter *pCharacter)
+{
+}
+
+void CGameControllerInstaCore::OnHookAttachPlayer(CPlayer *pHookingPlayer, CPlayer *pHookedPlayer)
+{
+	if(g_Config.m_SvKillHook)
+	{
+		CCharacter *pChr = pHookedPlayer->GetCharacter();
+		if(pChr)
+			pChr->TakeDamage(vec2(0, 0), 10, pHookingPlayer->GetCid(), WEAPON_GAME);
+	}
+}
+
 void CGameControllerInstaCore::OnRoundEnd()
 {
 	dbg_msg("ddnet-insta", "match end");
@@ -821,6 +977,7 @@ void CGameControllerInstaCore::OnPlayerTick(class CPlayer *pPlayer)
 {
 	pPlayer->InstagibTick();
 
+	// Server forced delayed team change
 	if(pPlayer->m_ForceTeam.m_Tick > 0 && Server()->Tick() > pPlayer->m_ForceTeam.m_Tick)
 	{
 		int WantedTeam = pPlayer->m_ForceTeam.m_Team;
@@ -829,6 +986,17 @@ void CGameControllerInstaCore::OnPlayerTick(class CPlayer *pPlayer)
 		if(WantedTeam == TEAM_SPECTATORS)
 			pPlayer->SetSpectatorId(pPlayer->m_ForceTeam.m_SpectatorId);
 		pPlayer->m_ForceTeam.m_Tick = 0;
+	}
+
+	// Pending user request to join team waiting for condition
+	if(pPlayer->m_RequestedTeam.has_value())
+	{
+		int WantedTeam = pPlayer->m_RequestedTeam.value().m_Team;
+		if(CanUserJoinTeam(pPlayer, WantedTeam, nullptr, 0) == EAllowed::YES)
+		{
+			pPlayer->SetTeam(WantedTeam);
+			pPlayer->m_RequestedTeam = std::nullopt;
+		}
 	}
 
 	if(GameServer()->m_World.m_Paused)
@@ -880,6 +1048,34 @@ void CGameControllerInstaCore::OnCharacterTick(CCharacter *pChr)
 {
 	if(pChr->GetPlayer()->m_PlayerFlags & PLAYERFLAG_CHATTING)
 		pChr->GetPlayer()->m_TicksSpentChatting++;
+
+	if(pChr->m_LastHookState != pChr->m_Core.m_HookState)
+	{
+		// idle can change to HOOK_GRABBED and other states in one tick
+		// hook flying can be skipped if a tee for example hooks the ground below it
+		if(pChr->m_LastHookState == HOOK_IDLE)
+		{
+			OnFireHook(pChr);
+			if(pChr->m_Core.m_HookState == HOOK_RETRACTED ||
+				pChr->m_Core.m_HookState == HOOK_RETRACT_START ||
+				pChr->m_Core.m_HookState == HOOK_RETRACT_END)
+			{
+				OnMissedHook(pChr);
+			}
+		}
+		if(pChr->m_LastHookState == HOOK_FLYING)
+		{
+			if(pChr->m_Core.m_HookState == HOOK_IDLE ||
+				pChr->m_Core.m_HookState == HOOK_RETRACTED ||
+				pChr->m_Core.m_HookState == HOOK_RETRACT_START ||
+				pChr->m_Core.m_HookState == HOOK_RETRACT_END)
+			{
+				OnMissedHook(pChr);
+			}
+		}
+	}
+
+	pChr->m_LastHookState = pChr->m_Core.m_HookState;
 }
 
 void CGameControllerInstaCore::SendSkinChangeToAllSixup(protocol7::CNetMsg_Sv_SkinChange *pMsg, CPlayer *pPlayer, bool ApplyNetworkClipping)

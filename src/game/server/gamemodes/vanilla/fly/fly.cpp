@@ -38,7 +38,7 @@ void CGameControllerFly::Tick()
 
 int CGameControllerFly::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon)
 {
-	int OldScore = pVictim->GetPlayer()->m_Score.value_or(0);
+	int OldScore = pVictim->GetPlayer()->m_Score;
 
 	// spike kills
 	const int LastToucherId = pVictim->GetPlayer()->m_LastToucher.has_value() ? pVictim->GetPlayer()->m_LastToucher.value().m_ClientId : -1;
@@ -72,7 +72,7 @@ int CGameControllerFly::OnCharacterDeath(class CCharacter *pVictim, class CPlaye
 	// we revert to the original score
 	// because in fly selfkills or running into spikes
 	// is not supposed to decrement the score
-	int NewScore = pVictim->GetPlayer()->m_Score.value_or(0);
+	int NewScore = pVictim->GetPlayer()->m_Score;
 	if(NewScore + 1 == OldScore)
 	{
 		pVictim->GetPlayer()->m_Score = OldScore;

@@ -66,7 +66,8 @@ void CPlayer::AddScore(int Score)
 	if(Score > 0 && GameServer()->m_pController && GameServer()->m_pController->IsStatTrack())
 		m_Stats.m_Points += Score;
 
-	m_Score = m_Score.value_or(0) + Score;
+	m_Score += Score;
+	Server()->SetClientScore(GetCid(), m_Score);
 }
 
 void CPlayer::AddKills(int Amount)

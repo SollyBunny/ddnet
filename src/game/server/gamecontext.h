@@ -19,6 +19,7 @@
 #include <game/server/instagib/enums.h> // ddnet-insta
 #include <game/server/instagib/ip_storage.h> // ddnet-insta
 #include <game/server/instagib/persistent_client_data.h> // ddnet-insta
+#include <game/server/instagib/persistent_data.h> // ddnet-insta
 #include <game/voting.h>
 
 #include <map>
@@ -190,6 +191,10 @@ class CGameContext : public IGameServer
 
 	struct CPersistentData
 	{
+		// ddnet-insta
+		CInstaPersistentData m_Insta;
+
+		// ddnet
 		CUuid m_PrevGameUuid;
 	};
 

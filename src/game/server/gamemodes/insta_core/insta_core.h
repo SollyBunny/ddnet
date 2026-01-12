@@ -62,11 +62,17 @@ public:
 	// called on join
 	virtual void PrintModWelcome(CPlayer *pPlayer);
 
+	bool DropFlag(class CCharacter *pChr) override;
+
 	void OnCharacterSpawn(class CCharacter *pChr) override;
 	int OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon) override;
 	void Tick() override;
 	bool OnVoteNetMessage(const CNetMsg_Cl_Vote *pMsg, int ClientId) override;
 	bool OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMsg, int ClientId) override;
+	bool OnKillNetMessage(int ClientId) override;
+	bool CanSelfkillWhileFrozen(class CPlayer *pPlayer) override;
+	bool CanSelfkill(class CPlayer *pPlayer, char *pErrorReason, int ErrorReasonSize) override;
+	EAllowed CanUserJoinTeam(class CPlayer *pPlayer, int Team, char *pErrorReason, int ErrorReasonSize) override;
 	int GetPlayerTeam(class CPlayer *pPlayer, bool Sixup) override;
 	int GetAutoTeam(int NotThisId) override;
 	bool CanJoinTeam(int Team, int NotThisId, char *pErrorReason, int ErrorReasonSize) override;
@@ -76,6 +82,8 @@ public:
 	bool OnSkinChange7(protocol7::CNetMsg_Cl_SkinChange *pMsg, int ClientId) override;
 	void OnClientDataPersist(CPlayer *pPlayer, CGameContext::CPersistentClientData *pData) override;
 	void OnClientDataRestore(CPlayer *pPlayer, const CGameContext::CPersistentClientData *pData) override;
+	void OnDataPersist(CGameContext::CPersistentData *pData) override;
+	void OnDataRestore(const CGameContext::CPersistentData *pData) override;
 	void RoundInitPlayer(class CPlayer *pPlayer) override;
 	void InitPlayer(class CPlayer *pPlayer) override;
 	void Snap(int SnappingClient) override;
@@ -88,6 +96,9 @@ public:
 	void SnapDDNetPlayer(int SnappingClient, CPlayer *pPlayer, CNetObj_DDNetPlayer *pDDNetPlayer) override;
 	bool OnClientPacket(int ClientId, bool Sys, int MsgId, struct CNetChunk *pPacket, class CUnpacker *pUnpacker) override;
 	bool UnfreezeOnHammerHit() const override;
+	void OnFireHook(class CCharacter *pCharacter) override;
+	void OnMissedHook(class CCharacter *pCharacter) override;
+	void OnHookAttachPlayer(class CPlayer *pHookingPlayer, class CPlayer *pHookedPlayer) override;
 	void OnRoundEnd() override;
 
 	void OnPlayerTick(class CPlayer *pPlayer);

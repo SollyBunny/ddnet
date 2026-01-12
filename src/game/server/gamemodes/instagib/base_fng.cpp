@@ -362,7 +362,10 @@ void CGameControllerBaseFng::SnapDDNetCharacter(int SnappingClient, CCharacter *
 	if(IsTeamPlay() && pChr->GetPlayer()->GetTeam() == pSnapReceiver->GetTeam())
 		IsTeamMate = true;
 	if(!IsTeamMate && pDDNetCharacter->m_FreezeEnd)
+	{
 		pDDNetCharacter->m_FreezeEnd = -1;
+		pDDNetCharacter->m_FreezeStart = 0;
+	}
 }
 
 CClientMask CGameControllerBaseFng::FreezeDamageIndicatorMask(class CCharacter *pChr)
@@ -380,21 +383,6 @@ CClientMask CGameControllerBaseFng::FreezeDamageIndicatorMask(class CCharacter *
 		Mask.reset(pPlayer->GetCid());
 	}
 	return Mask;
-}
-
-bool CGameControllerBaseFng::OnSelfkill(int ClientId)
-{
-	CPlayer *pPlayer = GameServer()->m_apPlayers[ClientId];
-	if(!pPlayer)
-		return false;
-	CCharacter *pChr = pPlayer->GetCharacter();
-	if(!pChr)
-		return false;
-	if(!pChr->m_FreezeTime)
-		return false;
-
-	GameServer()->SendChatTarget(ClientId, "You can't kill while being frozen");
-	return true;
 }
 
 bool CGameControllerBaseFng::OnLaserHit(int Bounces, int From, int Weapon, CCharacter *pVictim)

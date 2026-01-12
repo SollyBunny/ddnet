@@ -66,6 +66,16 @@ public:
 	virtual bool OnCharacterTakeDamage(vec2 &Force, int &Dmg, int &From, int &Weapon, CCharacter &Character) { return false; }
 
 	/*
+		Function: OnHookAttachPlayer
+			Called once if one player hits a hook on another player.
+
+		Arguments:
+			pHookingPlayer - The player who sent the hook input and managed to grab another player.
+			pHookedPlayer - The player that got grabbed
+	*/
+	virtual void OnHookAttachPlayer(class CPlayer *pHookingPlayer, class CPlayer *pHookedPlayer) {}
+
+	/*
 		Function: IsPickupEntity
 			Helper to check if a `Index` passed to `OnEntity()` is a pickup
 			like shield, armor or a weapon.
@@ -365,6 +375,9 @@ public:
 	*/
 	virtual void OnClientDataRestore(CPlayer *pPlayer, const CGameContext::CPersistentClientData *pData) {}
 
+	virtual void OnDataPersist(CGameContext::CPersistentData *pData) {}
+	virtual void OnDataRestore(const CGameContext::CPersistentData *pData) {}
+
 	/*
 		Function: OnRoundStart
 			Will be called after OnInit when the server first launches
@@ -389,6 +402,19 @@ public:
 			consider using `OnRoundStart()`
 	*/
 	virtual void OnRoundEnd() {}
+
+	/*
+		Function: OnGameTypeChange
+			Called when the gamemode changes. Specifically if the controllers
+			m_pGameType string changes. This can be used for gamemode cleanup
+			that should only happen on switching to a different mode
+			and not on `reload`, map change or round end.
+
+		Arguments:
+			pOldGameType - m_pGameType string of the old controller
+			pNewGameType - m_pGameType string of the new controller
+	*/
+	virtual void OnGameTypeChange(const char *pOldGameType, const char *pNewGameType) {}
 
 	/*
 		Function: OnLaserHit
@@ -511,6 +537,19 @@ public:
 	virtual bool OnFireWeapon(CCharacter &Character, int &Weapon, vec2 &Direction, vec2 &MouseTarget, vec2 &ProjStartPos) { return false; }
 
 	/*
+		Function: OnFireHook
+			Called once when a players hook starts to fly.
+			See also `OnHookAttachPlayer()` for when it hits another player.
+	*/
+	virtual void OnFireHook(class CCharacter *pCharacter) {}
+
+	/*
+		Function: OnMissedHook
+			Called once for every hook that grabbed nothing.
+	*/
+	virtual void OnMissedHook(class CCharacter *pCharacter) {}
+
+	/*
 		Function: AmmoRegen
 			Called directly after FireWeapon().
 			Implements the vanilla weapon ammo reloading for the gun in ctf gametypes.
@@ -618,6 +657,28 @@ public:
 			return true to not run the rest of CGameContext::OnSetTeamNetMessage()
 	*/
 	virtual bool OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMsg, int ClientId) { return false; }
+
+	/*
+		Function: OnKillNetMessage
+			hooks into CGameContext::OnKillNetMessage()
+			before any spam protection check.
+
+			See also `OnSelfkill()` which only will be called on successful selfkill.
+
+		Returns:
+			return true to not run the rest of CGameContext::OnKillNetMessage()
+	*/
+	virtual bool OnKillNetMessage(int ClientId) { return false; }
+
+	/*
+		Function: OnSelfkill
+			Called when the user requested a selfkill using the local console command `kill`.
+			This is only called on success. The user request can be blocked if
+			the method `CanSelfkill()` returned false.
+			If you need to catch the raw user sent event that will never be dropped
+			have a look at `OnKillNetMessage()`
+	*/
+	virtual void OnSelfkill(class CPlayer *pPlayer) {}
 
 	/*
 		Function: OnCallVoteNetMessage
@@ -1048,6 +1109,44 @@ public:
 	virtual void InitPlayer(class CPlayer *pPlayer) {}
 
 	/*
+		Function: ResetPlayerScore
+			Called for every player on join and round start.
+			By default this sets the player score to 0.
+			You can overwrite this if you start with a different score
+			or use different kind of scores such as time score.
+
+		Arguments:
+			pPlayer - the player whose score will be reset
+	*/
+	virtual void ResetPlayerScore(class CPlayer *pPlayer);
+
+	/*
+		Function: ServerInfoScoreKind
+			The ddnet master server supports two types of scores.
+			There is timescore and points score.
+			This method determines which of these types should be used
+			for the server browser. This will not be visible in game.
+			For in game scoreboard score type see the method
+			`PlayerScoreKind()`
+	*/
+	virtual EScoreKind ServerInfoScoreKind() { return EScoreKind::TIME; }
+
+	/*
+		Function: PlayerScoreKind
+			The scoreboard can show either points or times.
+			Each player can have a different type of score.
+			The actual score value that will end up in the scoreboard
+			is determined by `SnapPlayerScore()`
+
+			The type of score that will be displayed in the
+			master server is different for that see `ServerInfoScoreKind()`.
+
+		Arguments:
+			pPlayer - the player that will see the score kind in his scoreboard
+	*/
+	virtual EScoreKind PlayerScoreKind(class CPlayer *pPlayer) { return EScoreKind::TIME; }
+
+	/*
 		Function: RoundInitPlayer
 			Called for all players when a new round starts
 			And also for all players that join
@@ -1057,6 +1156,32 @@ public:
 			pPlayer - player that was connected on round start
 	*/
 	virtual void RoundInitPlayer(class CPlayer *pPlayer) {}
+
+	virtual bool CanSelfkillWhileFrozen(class CPlayer *pPlayer) { return true; }
+	virtual bool CanUserJoinTeamWhileFrozen(class CPlayer *pPlayer, int Team) { return CanSelfkillWhileFrozen(pPlayer); }
+
+	/*
+		Function: CanUserJoinTeam
+			This is called when a client tries to initiate a team change.
+			There is also `CanJoinTeam()` which is called on join and checks slot limits.
+			The `CanUserJoinTeam()` only gets called when the user explicitly tries to change the team.
+
+		Arguments:
+			pPlayer - the player that attempted a manual team change
+			Team - TEAM_RED, TEAM_BLUE or TEAM_SPECTATORS
+			pErrorReason - the buffer the error will be written to, only happens on return false
+				       but it can also be empty if it should silently block it
+			ErrorReasonSize - the size of the error buffer in bytes
+
+		Returns:
+			EAllowed::YES - if the user can join this team right now
+			EAllowed::NO - if the user can not join this team
+			EAllowed::LATER - if the user can not join the team right now but possibly later
+					  in that case we queue an automated team change for when it is possible
+	*/
+	virtual EAllowed CanUserJoinTeam(class CPlayer *pPlayer, int Team, char *pErrorReason, int ErrorReasonSize) { return EAllowed::YES; }
+
+	virtual bool CanSelfkill(class CPlayer *pPlayer, char *pErrorReason, int ErrorReasonSize) { return true; }
 
 	/*
 		Function: DoTeamBalance
@@ -1305,9 +1430,6 @@ public:
 	virtual void OnFlagReturn(class CFlag *pFlag); // ddnet-insta
 	virtual void OnFlagGrab(class CFlag *pFlag); // ddnet-insta
 	virtual void OnFlagCapture(class CFlag *pFlag, float Time, int TimeTicks); // ddnet-insta
-	// return true to consume the event
-	// and suppress default ddnet selfkill behavior
-	virtual bool OnSelfkill(int ClientId) { return false; }
 	virtual void OnUpdateZcatchColorConfig() {}
 	virtual void OnUpdateSpectatorVotesConfig() {}
 	virtual bool DropFlag(class CCharacter *pChr) { return false; }

@@ -56,65 +56,6 @@ void CGameControllerBaseCTF::OnShowRoundStats(const CSqlStatsPlayer *pStats, cla
 	GameServer()->SendChatTarget(pRequestingPlayer->GetCid(), aBuf);
 }
 
-bool CGameControllerBaseCTF::OnVoteNetMessage(const CNetMsg_Cl_Vote *pMsg, int ClientId)
-{
-	if(!g_Config.m_SvDropFlagOnVote)
-		return false;
-
-	if(pMsg->m_Vote != 1) // 1 is yes
-		return false;
-
-	CPlayer *pPlayer = GameServer()->m_apPlayers[ClientId];
-	if(!pPlayer)
-		return false;
-
-	CCharacter *pChr = pPlayer->GetCharacter();
-	if(!pChr)
-		return false;
-
-	DropFlag(pChr);
-
-	// returning false here lets the vote go through
-	// so pressing vote yes as flag carrier during a vote
-	// will send an actual vote AND drop the flag
-	return false;
-}
-
-bool CGameControllerBaseCTF::OnSelfkill(int ClientId)
-{
-	if(!g_Config.m_SvDropFlagOnSelfkill)
-		return false;
-
-	CPlayer *pPlayer = GameServer()->m_apPlayers[ClientId];
-	if(!pPlayer)
-		return false;
-
-	CCharacter *pChr = pPlayer->GetCharacter();
-	if(!pChr)
-		return false;
-
-	return DropFlag(pChr);
-}
-
-bool CGameControllerBaseCTF::DropFlag(class CCharacter *pChr)
-{
-	for(CFlag *pFlag : m_apFlags)
-	{
-		if(!pFlag)
-			continue;
-		if(pFlag->GetCarrier() != pChr)
-			continue;
-
-		GameServer()->CreateSoundGlobal(SOUND_CTF_DROP);
-		GameServer()->SendGameMsg(protocol7::GAMEMSG_CTF_DROP, -1);
-
-		vec2 Dir = vec2(5 * pChr->GetAimDir(), -5);
-		pFlag->Drop(Dir);
-		return true;
-	}
-	return false;
-}
-
 void CGameControllerBaseCTF::OnCharacterSpawn(class CCharacter *pChr)
 {
 	CGameControllerBasePvp::OnCharacterSpawn(pChr);

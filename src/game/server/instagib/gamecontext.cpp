@@ -1,3 +1,4 @@
+#include <base/dbg.h>
 #include <base/log.h>
 #include <base/system.h>
 #include <base/types.h>
@@ -10,6 +11,7 @@
 #include <game/server/entities/character.h>
 #include <game/server/gamecontext.h>
 #include <game/server/gamecontroller.h>
+#include <game/server/instagib/enums.h>
 #include <game/server/instagib/ip_storage.h>
 #include <game/server/instagib/protocol.h>
 #include <game/server/player.h>
@@ -42,6 +44,26 @@ void CGameContext::PrintInstaCredits()
 	};
 	for(const char *pLine : CREDITS)
 		Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp", pLine);
+}
+
+const char *CGameContext::ServerInfoClientScoreKind()
+{
+	// This means that the master server can receive wrong fallback values
+	// when the server is being reloaded by an admin or round end.
+	//
+	// See those issues for more context:
+	// - https://github.com/ddnet/ddnet/issues/11296
+	// - https://github.com/ddnet/ddnet/issues/9072
+	if(!m_pController)
+		return "points";
+
+	EScoreKind ScoreKind = m_pController->ServerInfoScoreKind();
+	switch(ScoreKind)
+	{
+	case EScoreKind::TIME: return "time";
+	case EScoreKind::POINTS: return "points";
+	default: dbg_assert_failed("Invalid ScoreKind: %d", (int)ScoreKind);
+	}
 }
 
 void CGameContext::AlertOnSpecialInstagibConfigs(int ClientId) const
@@ -291,6 +313,7 @@ void CGameContext::SendGameMsg(int GameMsgId, int ParaI1, int ClientId) const
 	CMsgPacker Msg(protocol7::NETMSGTYPE_SV_GAMEMSG, false, true);
 	Msg.AddInt(GameMsgId);
 	Msg.AddInt(ParaI1);
+	int PauseId = std::clamp(ParaI1, 0, Server()->MaxClients() - 1);
 	if(ClientId != -1 && Server()->IsSixup(ClientId))
 	{
 		Server()->SendMsg(&Msg, MSGFLAG_VITAL, ClientId);
@@ -309,11 +332,13 @@ void CGameContext::SendGameMsg(int GameMsgId, int ParaI1, int ClientId) const
 		if(GameMsgId == protocol7::GAMEMSG_GAME_PAUSED)
 		{
 			char aBuf[512];
-			int PauseId = std::clamp(ParaI1, 0, Server()->MaxClients() - 1);
 			str_format(aBuf, sizeof(aBuf), "'%s' initiated a pause. If you are ready do /ready", Server()->ClientName(PauseId));
 			SendChatTarget(i, aBuf);
 		}
 	}
+
+	if(GameMsgId == protocol7::GAMEMSG_GAME_PAUSED)
+		log_info("ddnet-insta", "'%s' initiated a pause.", Server()->ClientName(PauseId));
 }
 
 void CGameContext::SendGameMsg(int GameMsgId, int ParaI1, int ParaI2, int ParaI3, int ClientId) const
