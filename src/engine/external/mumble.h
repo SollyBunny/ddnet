@@ -71,7 +71,7 @@ struct MumbleContext;
  *
  * @see mumble_create_context_args
  */
-struct MumbleContext* mumble_create_context();
+struct MumbleContext* mumble_create_context(void);
 
 /**
  * Same as @ref mumble_create_context but sets name and description
