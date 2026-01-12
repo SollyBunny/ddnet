@@ -200,9 +200,9 @@ void CEmoticon::OnRender()
 	m_SelectedEmote = -1;
 	m_SelectedEyeEmote = -1;
 	if(length(m_SelectorMouse) > s_InnerOuterMouseBoundaryRadius)
-		m_SelectedEmote = PositiveMod(std::round(SelectorAngle / (2.0f * pi) * NUM_EMOTICONS), NUM_EMOTICONS);
+		m_SelectedEmote = PositiveMod(std::round(SelectorAngle / (2.0f * pi) * (float)NUM_EMOTICONS), NUM_EMOTICONS);
 	else if(length(m_SelectorMouse) > s_InnerMouseLimitRadius)
-		m_SelectedEyeEmote = PositiveMod(std::round(SelectorAngle / (2.0f * pi) * NUM_EMOTES), NUM_EMOTES);
+		m_SelectedEyeEmote = PositiveMod(std::round(SelectorAngle / (2.0f * pi) * (float)NUM_EMOTES), NUM_EMOTES);
 
 	if(m_SelectedEmote != -1)
 	{
@@ -232,7 +232,7 @@ void CEmoticon::OnRender()
 	Graphics()->WrapClamp();
 	for(int Emote = 0; Emote < NUM_EMOTICONS; Emote++)
 	{
-		float Angle = 2.0f * pi * Emote / NUM_EMOTICONS;
+		float Angle = 2 * pi * Emote / (float)NUM_EMOTICONS;
 		if(Angle > pi)
 			Angle -= 2.0f * pi;
 
@@ -260,7 +260,7 @@ void CEmoticon::OnRender()
 
 		for(int Emote = 0; Emote < NUM_EMOTES; Emote++)
 		{
-			float Angle = 2.0f * pi * Emote / NUM_EMOTES;
+			float Angle = 2 * pi * Emote / (float)NUM_EMOTES;
 			if(Angle > pi)
 				Angle -= 2.0f * pi;
 

@@ -1,39 +1,67 @@
+#define _CRT_SECURE_NO_WARNINGS // MSVC
+
 #include "mumble.h"
 
-#include <stdio.h>
-#include <unistd.h>
-#include <string.h>
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
+	#define MUMBLE_STUB
+#endif
 
-#ifdef _WIN32
+#if defined(MUMBLE_STUB)
+
+struct MumbleContext {
+	struct MumbleLinkedMem* lm;
+};
+
+struct MumbleContext* mumble_create_context(void) { return NULL; }
+struct MumbleContext* mumble_create_context_args(const char* name, const char* description) { (void)name; (void)description; return NULL; }
+void mumble_destroy_context(struct MumbleContext** context) { (void)context; }
+struct MumbleLinkedMem* mumble_get_linked_mem(struct MumbleContext* context) { return context->lm; }
+// Utils
+bool mumble_relink_needed(struct MumbleContext* context) { (void)context; return false; }
+bool mumble_set_name(struct MumbleContext* context, const char* name) { (void)context; (void)name; return false; }
+bool mumble_set_identity(struct MumbleContext* context, const char* identity) { (void)context; (void)identity; return false; }
+bool mumble_set_context(struct MumbleContext* context, const char* mumbleContext) { (void)context; (void)mumbleContext; return false; }
+bool mumble_set_description(struct MumbleContext* context, const char* description) { (void)context; (void)description; return false; }
+// Simple interface
+void mumble_2d_update(struct MumbleContext* context, float x, float y) { (void)context; (void)x; (void)y; }
+void mumble_3d_update(struct MumbleContext* context, float x, float y, float z) { (void)context; (void)x; (void)y; (void)z; }
+
+#else
+
+#include <stdlib.h>
+
+#if defined(_WIN32)
 	#include <windows.h>
 #else
+	#include <stdio.h>
+	#include <string.h>
+	#include <unistd.h>
 	#include <sys/mman.h>
 	#include <fcntl.h>
-	#include <stdlib.h>
 #endif
 
 struct MumbleContext {
 	struct MumbleLinkedMem* lm;
-	#ifdef _WIN32
-		HANDLE hMapObject
+	#if defined(_WIN32)
+		HANDLE hMapObject;
 	#else
 		int shmfd;
 		char memname[128];
 	#endif
 };
 
-struct MumbleContext* mumble_create_context() {
+struct MumbleContext* mumble_create_context(void) {
 	struct MumbleLinkedMem* lm = NULL;
 
-	#ifdef _WIN32
+	#if defined(_WIN32)
 		HANDLE hMapObject = OpenFileMappingW(FILE_MAP_ALL_ACCESS, FALSE, L"MumbleLink");
 		if (hMapObject == NULL)
-			return;
+			return NULL;
 
-		lm = (LinkedMem *) MapViewOfFile(hMapObject, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(LinkedMem));
+		lm = (struct MumbleLinkedMem*)MapViewOfFile(hMapObject, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(struct MumbleLinkedMem));
 		if (lm == NULL) {
 			CloseHandle(hMapObject);
-			return;
+			return NULL;
 		}
 	#else
 		char memname[128];
@@ -44,12 +72,7 @@ struct MumbleContext* mumble_create_context() {
 		if (shmfd < 0)
 			return NULL;
 
-		// if (ftruncate(shmfd, sizeof(struct MumbleLinkedMem)) < 0) {
-		// 	close(shmfd);
-		// 	return NULL;
-		// }
-
-		lm = (struct MumbleLinkedMem *)mmap(NULL, sizeof(struct MumbleLinkedMem), PROT_READ | PROT_WRITE, MAP_SHARED, shmfd, 0);
+		lm = (struct MumbleLinkedMem*)mmap(NULL, sizeof(struct MumbleLinkedMem), PROT_READ | PROT_WRITE, MAP_SHARED, shmfd, 0);
 
 		if (lm == (void*)(-1) || lm == NULL) {
 			close(shmfd);
@@ -59,7 +82,7 @@ struct MumbleContext* mumble_create_context() {
 
 	struct MumbleContext* out = (struct MumbleContext*)malloc(sizeof(struct MumbleContext));
 	if (!out) {
-		#ifdef _WIN32
+		#if defined(_WIN32)
 			CloseHandle(hMapObject);
 		#else
 			munmap(lm, sizeof(struct MumbleLinkedMem));
@@ -69,7 +92,7 @@ struct MumbleContext* mumble_create_context() {
 	}
 
 	out->lm = lm;
-	#ifdef _WIN32
+	#if defined(_WIN32)
 		out->hMapObject = hMapObject;
 	#else
 		strcpy(out->memname, memname);
@@ -102,7 +125,7 @@ struct MumbleContext* mumble_create_context_args(const char* name, const char* d
 		mumble_destroy_context(&context);
 		return NULL;
 	}
-	if (!mumble_set_description(context, name)) {
+	if (!mumble_set_description(context, description)) {
 		mumble_destroy_context(&context);
 		return NULL;
 	}
@@ -116,7 +139,7 @@ void mumble_destroy_context(struct MumbleContext** context) {
 	if (*context == NULL) {
 		return;
 	}
-	#ifdef _WIN32
+	#if defined(_WIN32)
 		CloseHandle((*context)->hMapObject);
 	#else
 		munmap((*context)->lm, sizeof(struct MumbleLinkedMem));
@@ -159,7 +182,11 @@ bool mumble_set_context(struct MumbleContext* context, const char* mumbleContext
 	if (len + 1 > sizeof(context->lm->context))
 		return false;
 	strcpy((char*)context->lm->context, mumbleContext);
-	context->lm->context_len = len;
+	#ifdef _WIN32
+		context->lm->context_len = (UINT32)len;
+	#else
+		context->lm->context_len = (uint32_t)len;
+	#endif
 	return true;
 }
 
@@ -186,3 +213,5 @@ void mumble_3d_update(struct MumbleContext* context, float x, float y, float z) 
 	context->lm->fAvatarPosition[2] = context->lm->fCameraPosition[2] = z;
 	context->lm->uiTick += 1;
 }
+
+#endif
