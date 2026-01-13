@@ -8,6 +8,14 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#if !defined(MUMBLE_STUB) && (defined(__ANDROID__) || defined(__EMSCRIPTEN__))
+	#define MUMBLE_STUB 1
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Shared memory layout for the Mumble Link positional audio plugin.
  *
@@ -185,5 +193,9 @@ void mumble_2d_update(struct MumbleContext* context, float x, float y);
  * @param z Z coordinate of the player.
  */
 void mumble_3d_update(struct MumbleContext* context, float x, float y, float z);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

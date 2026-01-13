@@ -2,11 +2,7 @@
 
 #include "mumble.h"
 
-#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
-	#define MUMBLE_STUB
-#endif
-
-#if defined(MUMBLE_STUB)
+#if MUMBLE_STUB == 1
 
 struct MumbleContext {
 	struct MumbleLinkedMem* lm;
@@ -32,8 +28,13 @@ void mumble_3d_update(struct MumbleContext* context, float x, float y, float z) 
 
 #if defined(_WIN32)
 	#include <windows.h>
-	_Static_assert(sizeof(uint32_t) == sizeof(UINT32), "uint32 and UINT32");
-	_Static_assert(sizeof(uint32_t) == sizeof(DWORD), "uint32 and DWORD");
+	#if defined(__cplusplus) || (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L)
+		static_assert(sizeof(uint32_t) == sizeof(UINT32), "uint32 and UINT32 must be the same size");
+		static_assert(sizeof(uint32_t) == sizeof(DWORD), "uint32 and DWORD must be the same size");
+	#else
+		_Static_assert(sizeof(uint32_t) == sizeof(UINT32), "uint32 and UINT32 must be the same size");
+		_Static_assert(sizeof(uint32_t) == sizeof(DWORD), "uint32 and DWORD must be the same size");
+	#endif
 #else
 	#include <stdio.h>
 	#include <string.h>
