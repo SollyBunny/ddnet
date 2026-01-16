@@ -1,7 +1,7 @@
 #ifndef GAME_SERVER_GAMEMODES_INSTA_CORE_INSTA_CORE_H
 #define GAME_SERVER_GAMEMODES_INSTA_CORE_INSTA_CORE_H
 
-#include "../DDRace.h"
+#include "../ddnet.h"
 
 #include <generated/protocol7.h>
 
@@ -21,7 +21,7 @@
 // even ones not included in ddnet-insta. So everything that can not be turned off
 // or ignored and could bother someone should go into the base pvp controller.
 // Everything else into the insta core controller.
-class CGameControllerInstaCore : public CGameControllerDDRace
+class CGameControllerInstaCore : public CGameControllerDDNet
 {
 public:
 	CGameControllerInstaCore(class CGameContext *pGameServer);

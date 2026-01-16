@@ -14,7 +14,7 @@
 
 void CGameControllerBasePvp::DoWarmup(int Seconds)
 {
-	CGameControllerDDRace::DoWarmup(Seconds);
+	CGameControllerDDNet::DoWarmup(Seconds);
 
 	if(Seconds)
 	{

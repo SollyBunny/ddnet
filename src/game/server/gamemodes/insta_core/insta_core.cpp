@@ -30,7 +30,7 @@
 #include <optional>
 
 CGameControllerInstaCore::CGameControllerInstaCore(class CGameContext *pGameServer) :
-	CGameControllerDDRace(pGameServer)
+	CGameControllerDDNet(pGameServer)
 {
 	log_info("ddnet-insta", "initializing insta core ...");
 
@@ -98,7 +98,7 @@ void CGameControllerInstaCore::OnCreditsChatCmd(IConsole::IResult *pResult, void
 
 void CGameControllerInstaCore::OnReset()
 {
-	CGameControllerDDRace::OnReset();
+	CGameControllerDDNet::OnReset();
 
 	for(CPlayer *pPlayer : GameServer()->m_apPlayers)
 	{
@@ -291,7 +291,7 @@ void CGameControllerInstaCore::OnCharacterSpawn(class CCharacter *pChr)
 
 int CGameControllerInstaCore::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon)
 {
-	CGameControllerDDRace::OnCharacterDeath(pVictim, pKiller, Weapon);
+	CGameControllerDDNet::OnCharacterDeath(pVictim, pKiller, Weapon);
 
 	if(pVictim->HasRainbow())
 		pVictim->Rainbow(false);
@@ -320,7 +320,7 @@ int CGameControllerInstaCore::OnCharacterDeath(class CCharacter *pVictim, class 
 
 void CGameControllerInstaCore::Tick()
 {
-	CGameControllerDDRace::Tick();
+	CGameControllerDDNet::Tick();
 	GameServer()->m_IpStorageController.OnTick(Server()->Tick());
 
 	if(m_TicksUntilShutdown)
@@ -746,7 +746,7 @@ void CGameControllerInstaCore::InitPlayer(CPlayer *pPlayer)
 
 void CGameControllerInstaCore::Snap(int SnappingClient)
 {
-	CGameControllerDDRace::Snap(SnappingClient);
+	CGameControllerDDNet::Snap(SnappingClient);
 
 	// it is a bit of a mess that 0.6 has both teamscore
 	// and flag carriers in one object

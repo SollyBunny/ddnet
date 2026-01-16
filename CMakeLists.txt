@@ -560,6 +560,7 @@ endif()
 if(TARGET_OS AND TARGET_OS STREQUAL "mac")
   find_program(CMAKE_OTOOL otool)
   find_program(DMGBUILD dmgbuild)
+  set(DMGBUILD_FOUND ${DMGBUILD})
 endif()
 
 set(VULKAN_SHADER_FILE_LIST "" CACHE STRING "Vulkan shader file list")
@@ -596,9 +597,6 @@ function(show_dependency_status OUTPUT_NAME NAME)
 endfunction()
 
 show_dependency_status("Curl" CURL)
-if(TARGET_OS AND TARGET_OS STREQUAL "mac")
-  show_dependency_status("Dmg tools" DMGTOOLS)
-endif()
 if(CLIENT AND VIDEORECORDER)
   show_dependency_status("FFmpeg" FFMPEG)
 endif()
@@ -2818,8 +2816,6 @@ if(SERVER)
     gamecontext.h
     gamecontroller.cpp
     gamecontroller.h
-    gamemodes/DDRace.cpp
-    gamemodes/DDRace.h
     gamemodes/ball/base_foot.cpp
     gamemodes/ball/base_foot.h
     gamemodes/ball/foot/foot.cpp
@@ -2828,6 +2824,8 @@ if(SERVER)
     gamemodes/base_pvp/base_pvp.cpp
     gamemodes/base_pvp/base_pvp.h
     gamemodes/base_pvp/chat.cpp
+    gamemodes/ddnet.cpp
+    gamemodes/ddnet.h
     gamemodes/ddrace/block/block.cpp
     gamemodes/ddrace/block/block.h
     gamemodes/insta_core/insta_core.cpp
@@ -3558,7 +3556,7 @@ else()
 endif()
 
 set(PACKAGE_TARGETS)
-if(CLIENT AND DMGBUILD)
+if(CLIENT AND DMGBUILD_FOUND)
   file(MAKE_DIRECTORY bundle/client/)
   file(MAKE_DIRECTORY bundle/server/)
   configure_file(other/bundle/client/Info.plist.in bundle/client/Info.plist)

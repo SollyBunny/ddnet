@@ -3,7 +3,7 @@
 #include "gamecontext.h"
 
 #include "entities/character.h"
-#include "gamemodes/DDRace.h"
+#include "gamemodes/ddnet.h"
 #include "gamemodes/mod.h"
 #include "player.h"
 #include "score.h"
