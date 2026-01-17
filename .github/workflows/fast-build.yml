@@ -1,4 +1,4 @@
-name: Fast-Build
+name: Fast Build
 
 on:
   push:
