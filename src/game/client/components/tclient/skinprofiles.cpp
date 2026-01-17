@@ -52,7 +52,7 @@ void CSkinProfiles::ApplyProfile(int Dummy, const CProfile &Profile)
 		(Dummy ? g_Config.m_ClDummyColorBody : g_Config.m_ClPlayerColorBody) = Profile.m_BodyColor;
 		(Dummy ? g_Config.m_ClDummyColorFeet : g_Config.m_ClPlayerColorFeet) = Profile.m_FeetColor;
 	}
-	if(g_Config.m_TcProfileEmote && Profile.m_Emote != -1)
+	if(g_Config.m_TcProfileEmote && Profile.m_Emote > 0 && Profile.m_Emote < NUM_EMOTES)
 		(Dummy ? g_Config.m_ClDummyDefaultEyes : g_Config.m_ClPlayerDefaultEyes) = Profile.m_Emote;
 	if(g_Config.m_TcProfileName && strlen(Profile.m_Name) != 0)
 		str_copy(Dummy ? g_Config.m_ClDummyName : g_Config.m_PlayerName, Profile.m_Name); // TODO m_ClPlayerName
