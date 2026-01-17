@@ -232,7 +232,6 @@ void CGameControllerBomb::OnAppliedDamage(int &Dmg, int &From, int &Weapon, CCha
 		// Increase stats if they killed the player
 		if(pPlayer->m_ToBombTick <= 0)
 		{
-			pKiller->AddKill();
 			ExplodeBomb(pPlayer, pKiller);
 		}
 	}
