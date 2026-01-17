@@ -369,13 +369,15 @@ We use [Javadoc style block comments](https://www.doxygen.nl/manual/docblocks.ht
 
 ## Localization
 
-We use [Weblate](https://hosted.weblate.org/engage/ddnet/) to translate user-facing strings in the DDNet client.
-Register on Weblate to contribute to the translation project.
-Refer to the [Weblate documentation](https://docs.weblate.org/en/latest/index.html) for an introduction into translating with Weblate.
-To suggest adding translation for another language: [open an issue on GitHub](https://github.com/ddnet/ddnet/issues/new).
+TClient does not use Weblate, translation files are found in `data/tclient/languages`.
 
-The translation files in the `data/languages` folder should not be changed manually by translators.
-Maintainers will update the translation files for releases based on the translations on Weblate.
+~~We use [Weblate](https://hosted.weblate.org/engage/ddnet/) to translate user-facing strings in the DDNet client.~~
+~~Register on Weblate to contribute to the translation project.~
+~~Refer to the [Weblate documentation](https://docs.weblate.org/en/latest/index.~~html) for an introduction into translating with Weblate.~~
+~~To suggest adding translation for another language: [open an issue on GitHub](https://github.com/ddnet/ddnet/issues/new).~~
+
+~~The translation files in the `data/languages` folder should not be changed manually by translators.~~
+~~Maintainers will update the translation files for releases based on the translations on Weblate.~~
 
 ## Commit messages
 
