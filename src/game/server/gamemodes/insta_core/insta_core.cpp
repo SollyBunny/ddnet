@@ -511,7 +511,6 @@ bool CGameControllerInstaCore::OnKillNetMessage(int ClientId)
 
 bool CGameControllerInstaCore::CanSelfkillWhileFrozen(CPlayer *pPlayer)
 {
-	// TODO: think about block gametype here, do we allow team switches while frozen?
 	return IsDDRaceGameType();
 }
 
