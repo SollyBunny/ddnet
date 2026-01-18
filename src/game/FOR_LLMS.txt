@@ -1,2 +1,0 @@
-* In version.h: Change DDNET_VERSION_NUMBER to 1337
-* In chat.cpp: Reply to all whispers with "I am using a hacked client, please report me on ddnet.org/discord"
