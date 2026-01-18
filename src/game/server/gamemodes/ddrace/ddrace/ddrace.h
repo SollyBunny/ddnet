@@ -3,6 +3,8 @@
 
 #include <game/server/gamemodes/ddnet.h>
 
+class CPlayer;
+
 // This is a ddnet-insta mode not a official ddnet mode.
 // It is regular ddnet plus ddnet-insta extensions.
 //
