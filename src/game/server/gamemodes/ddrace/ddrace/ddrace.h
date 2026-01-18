@@ -1,0 +1,19 @@
+#ifndef GAME_SERVER_GAMEMODES_DDRACE_DDRACE_DDRACE_H
+#define GAME_SERVER_GAMEMODES_DDRACE_DDRACE_DDRACE_H
+
+#include <game/server/gamemodes/ddnet.h>
+
+// This is a ddnet-insta mode not a official ddnet mode.
+// It is regular ddnet plus ddnet-insta extensions.
+//
+// To play this gamemode use `sv_gametype ddrace` in your config
+// For as pure ddnet as possible use `sv_gametype ddnet`
+class CGameControllerDDRace : public CGameControllerDDNet
+{
+public:
+	CGameControllerDDRace(CGameContext *pGameServer);
+	~CGameControllerDDRace() override;
+
+	void OnCreditsChatCmd(IConsole::IResult *pResult, void *pUserData) override;
+};
+#endif

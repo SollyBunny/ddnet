@@ -2828,6 +2828,8 @@ if(SERVER)
     gamemodes/ddnet.h
     gamemodes/ddrace/block/block.cpp
     gamemodes/ddrace/block/block.h
+    gamemodes/ddrace/ddrace/ddrace.cpp
+    gamemodes/ddrace/ddrace/ddrace.h
     gamemodes/insta_core/insta_core.cpp
     gamemodes/insta_core/insta_core.h
     gamemodes/instagib/base_fng.cpp
