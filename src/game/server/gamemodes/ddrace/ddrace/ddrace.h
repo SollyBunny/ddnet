@@ -15,5 +15,6 @@ public:
 	~CGameControllerDDRace() override;
 
 	void OnCreditsChatCmd(IConsole::IResult *pResult, void *pUserData) override;
+	bool OnTeamChatCmd(IConsole::IResult *pResult) override;
 };
 #endif

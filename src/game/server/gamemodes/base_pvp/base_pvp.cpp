@@ -1232,6 +1232,8 @@ bool CGameControllerBasePvp::OnTeamChatCmd(IConsole::IResult *pResult)
 	if(!pPlayer)
 		return false;
 
+	if(CGameControllerInstaCore::OnTeamChatCmd(pResult))
+		return true;
 	if(g_Config.m_SvAllowDDRaceTeamChange)
 	{
 		log_info("chatresp", "The /team chat command is currently disabled.");

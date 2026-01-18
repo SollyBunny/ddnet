@@ -1,5 +1,9 @@
 #include "ddrace.h"
 
+#include <base/log.h>
+
+#include <engine/shared/config.h>
+
 #include <game/server/entities/character.h>
 #include <game/server/gamecontext.h>
 #include <game/server/gamemodes/ddnet.h>
@@ -29,6 +33,21 @@ void CGameControllerDDRace::OnCreditsChatCmd(IConsole::IResult *pResult, void *p
 	};
 	for(const char *pLine : CREDITS)
 		GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp", pLine);
+}
+
+bool CGameControllerDDRace::OnTeamChatCmd(IConsole::IResult *pResult)
+{
+	CPlayer *pPlayer = GetPlayerOrNullptr(pResult->m_ClientId);
+	if(!pPlayer)
+		return false;
+
+	if(!g_Config.m_SvAllowDDRaceTeamChange)
+	{
+		log_info("chatresp", "The /team chat command is currently disabled.");
+		return true;
+	}
+
+	return false;
 }
 
 REGISTER_GAMEMODE(ddrace, CGameControllerDDRace(pGameServer));
