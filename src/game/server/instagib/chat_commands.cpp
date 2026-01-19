@@ -306,14 +306,14 @@ void CGameContext::ConStatsRound(IConsole::IResult *pResult, void *pUserData)
 	if(pPlayer->m_Stats.m_ShotsFired)
 		str_format(aUntrackedOrAccuracy, sizeof(aUntrackedOrAccuracy), " (%.2f%% hit accuracy)", pPlayer->m_Stats.HitAccuracy());
 	if(!pSelf->m_pController->IsStatTrack())
-		str_format(aUntrackedOrAccuracy, sizeof(aUntrackedOrAccuracy), " (%d untracked)", pPlayer->m_Kills);
+		str_format(aUntrackedOrAccuracy, sizeof(aUntrackedOrAccuracy), " (%d untracked)", pPlayer->m_RoundStats.m_Kills);
 	str_format(aBuf, sizeof(aBuf), "~ Kills: %d%s", pPlayer->m_Stats.m_Kills, aUntrackedOrAccuracy);
 	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp", aBuf);
 
 	char aUntracked[512];
 	aUntracked[0] = '\0';
 	if(!pSelf->m_pController->IsStatTrack())
-		str_format(aUntracked, sizeof(aUntracked), " (%d untracked)", pPlayer->m_Deaths);
+		str_format(aUntracked, sizeof(aUntracked), " (%d untracked)", pPlayer->m_RoundStats.m_Deaths);
 	str_format(aBuf, sizeof(aBuf), "~ Deaths: %d%s", pPlayer->m_Stats.m_Deaths, aUntracked);
 	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp", aBuf);
 

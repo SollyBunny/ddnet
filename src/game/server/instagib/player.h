@@ -1,3 +1,4 @@
+#include <game/server/instagib/round_stats_player.h>
 #ifndef GAME_SERVER_INSTAGIB_PLAYER_H
 // hack for headerguard linter
 #endif
@@ -231,8 +232,7 @@ public:
 
 	// all metrics in m_Stats are protected by anti farm
 	// and might not be incremented if not enough players are connected
-	// see stats directly in CPlayer such as CPlayer::m_Kills for stats
-	// that are always counted
+	// see CPlayer::m_RoundStats for stats that are always counted
 	CSqlStatsPlayer m_Stats;
 
 	// these are the all time stats of that player
@@ -248,6 +248,11 @@ public:
 	// if you need the correct up to date stats of a players name you have to do a new db request
 	CSqlStatsPlayer m_SavedStats;
 
+	// stats that are reset on round end and are always tracked
+	// no anti farm protection and not saved to database
+	// see m_Stats and m_SavedStats for stats that get saved
+	CRoundStatsPlayer m_RoundStats;
+
 	// currently active unterminated killing spree
 	int Spree() const { return m_Spree; }
 
@@ -261,10 +266,6 @@ public:
 	void AddDeath() { AddDeaths(1); }
 	void AddKills(int Amount);
 	void AddDeaths(int Amount);
-
-	// tracked per round no matter what
-	int m_Kills = 0;
-	int m_Deaths = 0;
 
 	// resets round stats and sql stats
 	void ResetStats();

@@ -95,7 +95,11 @@ void IGameController::GetRoundEndStatsStrAsciiTable(char *pBuf, size_t SizeOfBuf
 			continue;
 
 		char aRatio[16];
-		str_format(aRatio, sizeof(aRatio), "%.1f%%", CalcKillDeathRatio(pPlayer->m_Kills, pPlayer->m_Deaths));
+		str_format(
+			aRatio,
+			sizeof(aRatio),
+			"%.1f%%",
+			CalcKillDeathRatio(pPlayer->m_RoundStats.m_Kills, pPlayer->m_RoundStats.m_Deaths));
 		str_format(
 			aRow,
 			sizeof(aRow),
@@ -104,8 +108,8 @@ void IGameController::GetRoundEndStatsStrAsciiTable(char *pBuf, size_t SizeOfBuf
 			pPlayer->GetTeamStr(),
 			Server()->ClientName(pPlayer->GetCid()),
 			pPlayer->m_Score,
-			pPlayer->m_Kills,
-			pPlayer->m_Deaths,
+			pPlayer->m_RoundStats.m_Kills,
+			pPlayer->m_RoundStats.m_Deaths,
 			aRatio,
 			pPlayer->m_Stats.m_FlagGrabs,
 			pPlayer->m_Stats.m_FlagCaptures);
