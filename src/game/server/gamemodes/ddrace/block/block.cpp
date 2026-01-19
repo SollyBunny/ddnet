@@ -92,31 +92,17 @@ void CGameControllerBlock::OnCharacterDeathImpl(CCharacter *pVictim, int Killer,
 
 	if(pKiller && pKiller != pVictim->GetPlayer() && pVictim->m_FreezeTime)
 	{
-		OnKill(pVictim->GetPlayer(), pKiller, Weapon);
-		pKiller->IncrementScore();
-
 		int KillMsgWeapon = LastToucher.value().m_Weapon;
 		if(KillMsgWeapon == WEAPON_HOOK)
 			KillMsgWeapon = WEAPON_NINJA;
 
-		// kill message
-		CNetMsg_Sv_KillMsg Msg;
-		Msg.m_Killer = pKiller->GetCid();
-		Msg.m_Victim = pVictim->GetPlayer()->GetCid();
-		Msg.m_Weapon = KillMsgWeapon;
-		Msg.m_ModeSpecial = 0;
-		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
-
-		// we already sent a custom kill message with killer
-		// so hide the suicide in the kill feed
-		SendKillMsg = false;
-
 		// count the kill
-		CGameControllerBasePvp::OnCharacterDeathImpl(pVictim, Killer, Weapon, SendKillMsg);
+		CGameControllerBasePvp::OnCharacterDeathImpl(pVictim, pKiller->GetCid(), KillMsgWeapon, SendKillMsg);
 		return;
 	}
 
 	// do not count the kill
+	CGameControllerBasePvp::OnCharacterDeathImpl(pVictim, Killer, Weapon, SendKillMsg);
 }
 
 REGISTER_GAMEMODE(block, CGameControllerBlock(pGameServer));
