@@ -35,6 +35,15 @@ void CGameControllerDDRace::OnCreditsChatCmd(IConsole::IResult *pResult, void *p
 		GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp", pLine);
 }
 
+void CGameControllerDDRace::OnCharacterSpawn(class CCharacter *pChr)
+{
+	CGameControllerInstaCore::OnCharacterSpawn(pChr);
+
+	// give default weapons
+	pChr->GiveWeapon(WEAPON_HAMMER, false, -1);
+	pChr->GiveWeapon(WEAPON_GUN, false, 10);
+}
+
 bool CGameControllerDDRace::OnTeamChatCmd(IConsole::IResult *pResult)
 {
 	return CGameControllerInstaCore::OnTeamChatCmd(pResult);

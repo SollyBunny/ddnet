@@ -16,6 +16,7 @@ public:
 	CGameControllerDDRace(CGameContext *pGameServer);
 	~CGameControllerDDRace() override;
 
+	void OnCharacterSpawn(class CCharacter *pChr) override;
 	void OnCreditsChatCmd(IConsole::IResult *pResult, void *pUserData) override;
 	bool OnTeamChatCmd(IConsole::IResult *pResult) override;
 };
