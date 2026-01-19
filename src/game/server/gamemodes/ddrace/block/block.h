@@ -15,5 +15,6 @@ public:
 	void OnCharacterDeathImpl(CCharacter *pVictim, int Killer, int Weapon, bool SendKillMsg) override;
 	bool CanSelfkillWhileFrozen(class CPlayer *pPlayer) override { return true; }
 	bool HasSuicidePenalty(CPlayer *pPlayer) const override { return false; }
+	bool IsDDRaceGameType() const override { return true; }
 };
 #endif
