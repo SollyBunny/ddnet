@@ -154,9 +154,28 @@ void CGameControllerInstaCore::OnPlayerConnect(CPlayer *pPlayer)
 // so controllers inheriting can easier reimplement parts they want
 void CGameControllerInstaCore::OnPlayerDisconnect(class CPlayer *pPlayer, const char *pReason)
 {
+	// ddnet.cpp start
+	int ClientId = pPlayer->GetCid();
+	bool WasModerator = pPlayer->m_Moderating && Server()->ClientIngame(ClientId);
+	// ddnet.cpp end
+
+	// we do NOT call the parent that is why we have to sync ddnet.cpp
+	// IGameController::OnPlayerDisconnect(pPlayer, pReason);
 	InstaCoreDisconnect(pPlayer, pReason);
 	pPlayer->OnDisconnect();
 	PrintDisconnect(pPlayer, pReason);
+
+	// ddnet.cpp start
+	if(!GameServer()->PlayerModerating() && WasModerator)
+		GameServer()->SendChat(-1, TEAM_ALL, "Server kick/spec votes are no longer actively moderated.");
+
+	if(g_Config.m_SvTeam != SV_TEAM_FORCED_SOLO)
+		Teams().SetForceCharacterTeam(ClientId, TEAM_FLOCK);
+
+	for(int Team = TEAM_FLOCK + 1; Team < TEAM_SUPER; Team++)
+		if(Teams().IsInvited(Team, ClientId))
+			Teams().SetClientInvited(Team, ClientId, false);
+	// ddnet.cpp end
 }
 
 // Holds all core logic. Should not contain code that can be possibly unwanted
