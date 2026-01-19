@@ -90,6 +90,9 @@ void CCustomCommunities::OnInit()
 
 void CCustomCommunities::OnConsoleInit()
 {
+	// Load Custom Communities from the file before the serverbrowser tries to use it
+	LoadCustomCommunitiesDDNetInfo();
+
 	Console()->Chain(
 		"tc_custom_communities_url", [](IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData) {
 			pfnCallback(pResult, pCallbackUserData);

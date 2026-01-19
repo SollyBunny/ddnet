@@ -81,5 +81,6 @@ void CMumble::OnRender()
 
 void CMumble::OnConsoleInit()
 {
-	Console()->Register("mumble_reconnect", "", CFGFLAG_CLIENT, [](IConsole::IResult *pResult, void *pUserData) { ((CMumble *)pUserData)->MakeContext(); }, this, "Reconnect to Mumble");
+	const auto pfnFunc = [](IConsole::IResult *pResult, void *pUserData) { ((CMumble *)pUserData)->MakeContext(); };
+	Console()->Register("mumble_reconnect", "", CFGFLAG_CLIENT, pfnFunc, this, "Reconnect to Mumble");
 }

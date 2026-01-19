@@ -1,4 +1,4 @@
-name: Fast-Build
+name: Fast Build
 
 on:
   push:
@@ -19,22 +19,18 @@ jobs:
           cmake-args: -G Ninja -DCMAKE_BUILD_TYPE=Release -DDISCORD=ON -DDISCORD_DYNAMIC=ON -DWEBSOCKETS=OFF -DPREFER_BUNDLED_LIBS=ON -DAUTOUPDATE=ON
           cmake-init-env: CXXFLAGS= 
           package-file: "*-linux_x86_64.tar.xz"
-          fancy: true
         - os: macOS-latest
           cmake-args: -G Ninja -DCMAKE_BUILD_TYPE=Release -DDISCORD=ON -DWEBSOCKETS=OFF -DPREFER_BUNDLED_LIBS=ON -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 -DCMAKE_SYSTEM_IGNORE_PATH=/usr/lib -DCMAKE_FIND_FRAMEWORK=LAST
           cmake-init-env: CXXFLAGS= 
           package-file: "*-macos.dmg"
-          fancy: false
         - os: windows-latest
           cmake-args: -A x64 -DDISCORD=ON -DTOOLS=OFF -DAUTOUPDATE=ON
           cmake-init-env: CXXFLAGS= LDFLAGS=
           package-file: "*-win64.zip"
-          fancy: false
         # - os: windows-latest
         #   cmake-args: -A Win32 -DDISCORD=ON
         #   cmake-init-env: CXXFLAGS= LDFLAGS=
         #   package-file: "*-win32.zip"
-        #   fancy: false
     steps:
     - uses: actions/checkout@v4
       with:

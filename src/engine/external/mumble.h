@@ -6,11 +6,14 @@
 
 #include <wchar.h>
 #include <stdbool.h>
+#include <stdint.h>
 
-#ifdef _WIN32
-	#include <windows.h>
-#else
-	#include <stdint.h>
+#if !defined(MUMBLE_STUB) && (defined(__ANDROID__) || defined(__EMSCRIPTEN__))
+	#define MUMBLE_STUB 1
+#endif
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 /**
@@ -28,13 +31,8 @@
  * @see mumble_3d_update
  */
 struct MumbleLinkedMem {
-	#ifdef _WIN32
-		UINT32 uiVersion; ///< Structure, should always be 2. May be 0 when the plugin unlinks
-		DWORD uiTick; ///< Tick of the game, increment after update
-	#else
-		uint32_t uiVersion; ///< Structure, should always be 2. May be 0 when the plugin unlinks
-		uint32_t uiTick; ///< Tick of the game, increment after update
-	#endif
+	uint32_t uiVersion; ///< Structure, should always be 2. May be 0 when the plugin unlinks
+	uint32_t uiTick; ///< Tick of the game, increment after update
 	float fAvatarPosition[3]; ///< Position of the mouth
 	float fAvatarFront[3]; ///< Direction of the mouth
 	float fAvatarTop[3]; ///< Direction of up for the mouth (perpendicular to fAvatarFront)
@@ -43,11 +41,7 @@ struct MumbleLinkedMem {
 	float fCameraFront[3]; ///< Direction of the ears
 	float fCameraTop[3]; ///< Direction of up for the ears (perpendicular to fCameraFront)
 	wchar_t identity[256]; ///< Name of the player in game (can be connection ID, account ID or arbritrary data, eg. JSON)
-	#ifdef _WIN32
-		UINT32 context_len; ///< Number of characters in context
-	#else
-		uint32_t context_len; ///< Number of characters in context
-	#endif
+	uint32_t context_len; ///< Number of characters in context
 	unsigned char context[256]; ///< Should be equal for players that should hear eachother, for example the server address, port and the player team
 	wchar_t description[2048]; ///< Description of the game
 };
@@ -199,5 +193,9 @@ void mumble_2d_update(struct MumbleContext* context, float x, float y);
  * @param z Z coordinate of the player.
  */
 void mumble_3d_update(struct MumbleContext* context, float x, float y, float z);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
