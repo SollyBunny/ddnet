@@ -3022,6 +3022,8 @@ if(SERVER)
     gamemodes/base_pvp/base_pvp.cpp
     gamemodes/base_pvp/base_pvp.h
     gamemodes/base_pvp/chat.cpp
+    gamemodes/ddnet.cpp
+    gamemodes/ddnet.h
     gamemodes/ddrace/block/block.cpp
     gamemodes/ddrace/block/block.h
     gamemodes/ddrace/ddrace/ddrace.cpp
