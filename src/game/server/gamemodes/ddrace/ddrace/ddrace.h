@@ -1,7 +1,7 @@
 #ifndef GAME_SERVER_GAMEMODES_DDRACE_DDRACE_DDRACE_H
 #define GAME_SERVER_GAMEMODES_DDRACE_DDRACE_DDRACE_H
 
-#include <game/server/gamemodes/ddnet.h>
+#include <game/server/gamemodes/insta_core/insta_core.h>
 
 class CPlayer;
 
@@ -10,7 +10,7 @@ class CPlayer;
 //
 // To play this gamemode use `sv_gametype ddrace` in your config
 // For as pure ddnet as possible use `sv_gametype ddnet`
-class CGameControllerDDRace : public CGameControllerDDNet
+class CGameControllerDDRace : public CGameControllerInstaCore
 {
 public:
 	CGameControllerDDRace(CGameContext *pGameServer);

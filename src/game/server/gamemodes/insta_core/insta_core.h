@@ -5,7 +5,7 @@
 
 #include <generated/protocol7.h>
 
-#include <game/server/gamemodes/ddrace/ddrace/ddrace.h>
+#include <game/server/gamemodes/ddnet.h>
 #include <game/server/instagib/enums.h>
 #include <game/server/player.h>
 
@@ -22,7 +22,7 @@
 // even ones not included in ddnet-insta. So everything that can not be turned off
 // or ignored and could bother someone should go into the base pvp controller.
 // Everything else into the insta core controller.
-class CGameControllerInstaCore : public CGameControllerDDRace
+class CGameControllerInstaCore : public CGameControllerDDNet
 {
 public:
 	CGameControllerInstaCore(class CGameContext *pGameServer);

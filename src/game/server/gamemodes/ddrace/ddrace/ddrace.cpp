@@ -6,11 +6,11 @@
 
 #include <game/server/entities/character.h>
 #include <game/server/gamecontext.h>
-#include <game/server/gamemodes/ddnet.h>
+#include <game/server/gamemodes/insta_core/insta_core.h>
 #include <game/server/player.h>
 
 CGameControllerDDRace::CGameControllerDDRace(CGameContext *pGameServer) :
-	CGameControllerDDNet(pGameServer)
+	CGameControllerInstaCore(pGameServer)
 {
 	m_GameFlags = 0;
 	m_pGameType = "ddrace";
@@ -37,17 +37,7 @@ void CGameControllerDDRace::OnCreditsChatCmd(IConsole::IResult *pResult, void *p
 
 bool CGameControllerDDRace::OnTeamChatCmd(IConsole::IResult *pResult)
 {
-	CPlayer *pPlayer = GetPlayerOrNullptr(pResult->m_ClientId);
-	if(!pPlayer)
-		return false;
-
-	if(!g_Config.m_SvAllowDDRaceTeamChange)
-	{
-		log_info("chatresp", "The /team chat command is currently disabled.");
-		return true;
-	}
-
-	return false;
+	return CGameControllerInstaCore::OnTeamChatCmd(pResult);
 }
 
 REGISTER_GAMEMODE(ddrace, CGameControllerDDRace(pGameServer));
