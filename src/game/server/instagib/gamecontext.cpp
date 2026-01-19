@@ -182,7 +182,7 @@ void CGameContext::ShowCurrentInstagibConfigsMotd(int ClientId, bool Force) cons
 
 	if(g_Config.m_SvSwapFlags)
 		str_append(aMotd, "! WARNING: flag spawns are swapped\n");
-	if(g_Config.m_SvAllowZoom)
+	if(g_Config.m_SvAllowZoom && !m_pController->IsDDRaceGameType())
 		str_append(aMotd, "! WARNING: using zoom is allowed\n");
 	if(g_Config.m_SvOnlyHookKills)
 		str_append(aMotd, "! WARNING: only hooked enemies can be killed\n");
