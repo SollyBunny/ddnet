@@ -255,6 +255,22 @@ Like TSmash but with teams.
 A football (soccer) teamplay mode. Where the grenade is your ball.
 And you have to score it into the enemy goal.
 
+### ddrace
+
+``sv_gametype ddrace``
+
+The core idea of ddnet-insta is basically everything but ddrace. But ddrace still works.
+It is regular ddnet plus all the ddnet-insta extensions such as the rcon command `rainbow`,
+anticamper and all the other features that can be disabled or do not directly interrupt the ddrace gameplay.
+
+### ddnet
+
+``sv_gametype ddnet``
+
+This is as pure ddnet as possible. Some ddnet-insta specific extensions will still be visible such as rcon commands and chat commands.
+But most of these will not work. This gametype is not really recommended. Either use actual official [ddnet](https://github.com/ddnet/ddnet)
+for pure ddnet without bugs. Or use `sv_gametype ddrace` for ddnet plus all the ddnet-insta features.
+
 # Configs
 
 ddnet-insta inherited all configs from ddnet. So make sure to also check ddnet's documentation.
