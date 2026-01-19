@@ -97,6 +97,21 @@ void CGameControllerInstaCore::OnCreditsChatCmd(IConsole::IResult *pResult, void
 	GameServer()->PrintInstaCredits();
 }
 
+bool CGameControllerInstaCore::OnTeamChatCmd(IConsole::IResult *pResult)
+{
+	CPlayer *pPlayer = GetPlayerOrNullptr(pResult->m_ClientId);
+	if(!pPlayer)
+		return false;
+
+	if(!g_Config.m_SvAllowDDRaceTeamChange)
+	{
+		log_info("chatresp", "The /team chat command is currently disabled.");
+		return true;
+	}
+
+	return CGameControllerDDNet::OnTeamChatCmd(pResult);
+}
+
 void CGameControllerInstaCore::OnReset()
 {
 	CGameControllerDDNet::OnReset();

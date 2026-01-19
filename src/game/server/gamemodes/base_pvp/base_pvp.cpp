@@ -1234,11 +1234,6 @@ bool CGameControllerBasePvp::OnTeamChatCmd(IConsole::IResult *pResult)
 
 	if(CGameControllerInstaCore::OnTeamChatCmd(pResult))
 		return true;
-	if(g_Config.m_SvAllowDDRaceTeamChange)
-	{
-		log_info("chatresp", "The /team chat command is currently disabled.");
-		return true;
-	}
 	if(pPlayer->GetTeam() != TEAM_SPECTATORS)
 	{
 		log_info("chatresp", "Only spectators can join ddrace teams");

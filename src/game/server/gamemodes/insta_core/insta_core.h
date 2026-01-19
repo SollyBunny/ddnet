@@ -39,6 +39,7 @@ public:
 	void SendChatSpectators(const char *pMessage, int Flags);
 
 	void OnCreditsChatCmd(IConsole::IResult *pResult, void *pUserData) override;
+	bool OnTeamChatCmd(IConsole::IResult *pResult) override;
 
 	void OnReset() override;
 	void OnInit() override;
