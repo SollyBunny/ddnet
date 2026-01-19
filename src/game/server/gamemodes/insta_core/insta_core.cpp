@@ -922,14 +922,17 @@ bool CGameControllerInstaCore::UnfreezeOnHammerHit() const
 
 void CGameControllerInstaCore::OnFireHook(CCharacter *pCharacter)
 {
+	pCharacter->GetPlayer()->m_RoundStats.m_Hooks++;
 }
 
 void CGameControllerInstaCore::OnMissedHook(CCharacter *pCharacter)
 {
+	pCharacter->GetPlayer()->m_RoundStats.m_HooksMissed++;
 }
 
 void CGameControllerInstaCore::OnHookAttachPlayer(CPlayer *pHookingPlayer, CPlayer *pHookedPlayer)
 {
+	pHookingPlayer->m_RoundStats.m_HooksHitPlayer++;
 	if(g_Config.m_SvKillHook)
 	{
 		CCharacter *pChr = pHookedPlayer->GetCharacter();

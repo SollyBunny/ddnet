@@ -578,6 +578,9 @@ NOT IMPLEMENTED YET
                         "kills": 3,
                         "deaths": 1,
                         "ratio": 3,
+                        "hooks": 0,
+                        "hooks_missed": 0,
+                        "hooks_hit_player": 0,
                         "flag_grabs": 3,
                         "flag_captures": 2
                 },
@@ -589,6 +592,9 @@ NOT IMPLEMENTED YET
                         "kills": 0,
                         "deaths": 3,
                         "ratio": 0,
+                        "hooks": 4,
+                        "hooks_missed": 1,
+                        "hooks_hit_player": 2,
                         "flag_grabs": 0,
                         "flag_captures": 0
                 }
