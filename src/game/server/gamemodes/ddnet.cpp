@@ -258,4 +258,4 @@ void CGameControllerDDNet::DoTeamChange(class CPlayer *pPlayer, int Team, bool D
 	IGameController::DoTeamChange(pPlayer, Team, DoChatMsg);
 }
 
-REGISTER_GAMEMODE(ddnet, CGameControllerDDRace(pGameServer));
+REGISTER_GAMEMODE(ddnet, CGameControllerDDNet(pGameServer));

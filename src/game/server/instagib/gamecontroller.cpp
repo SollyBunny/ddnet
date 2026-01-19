@@ -831,6 +831,11 @@ bool IGameController::HasWinningScore(const CPlayer *pPlayer) const
 	return false;
 }
 
+bool IGameController::HasSuicidePenalty(CPlayer *pPlayer) const
+{
+	return g_Config.m_SvSuicidePenalty;
+}
+
 void IGameController::OnPauseChatCmd(IConsole::IResult *pResult, void *pUserData)
 {
 	if(IsDDRaceGameType())

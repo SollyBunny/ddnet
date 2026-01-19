@@ -10,6 +10,7 @@ enum
 	MAX_MULTIS = 11,
 };
 
+// See also `CRoundStatsPlayer`
 class CSqlStatsPlayer
 {
 public:

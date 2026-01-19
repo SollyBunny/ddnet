@@ -39,6 +39,7 @@ public:
 	int SnapGameInfoExFlags2(int SnappingClient, int DDRaceFlags) override;
 	int SnapPlayerScore(int SnappingClient, CPlayer *pPlayer) override;
 	CFinishTime SnapPlayerTime(int SnappingClient, CPlayer *pPlayer) override;
+	CFinishTime SnapMapBestTime(int SnappingClient) override { return CFinishTime::Unset(); }
 	EScoreKind ServerInfoScoreKind() override { return EScoreKind::POINTS; }
 	EScoreKind PlayerScoreKind(class CPlayer *pPlayer) override { return EScoreKind::POINTS; }
 	int GetDefaultWeapon(class CPlayer *pPlayer) override { return m_DefaultWeapon; }

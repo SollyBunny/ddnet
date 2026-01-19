@@ -3024,6 +3024,8 @@ if(SERVER)
     gamemodes/base_pvp/chat.cpp
     gamemodes/ddrace/block/block.cpp
     gamemodes/ddrace/block/block.h
+    gamemodes/ddrace/ddrace/ddrace.cpp
+    gamemodes/ddrace/ddrace/ddrace.h
     gamemodes/insta_core/insta_core.cpp
     gamemodes/insta_core/insta_core.h
     gamemodes/instagib/base_fng.cpp
@@ -3070,8 +3072,6 @@ if(SERVER)
     gamemodes/instagib/zcatch/track_caught_time.cpp
     gamemodes/instagib/zcatch/zcatch.cpp
     gamemodes/instagib/zcatch/zcatch.h
-    gamemodes/ddnet.cpp
-    gamemodes/ddnet.h
     gamemodes/mod.cpp
     gamemodes/mod.h
     gamemodes/vanilla/base_ctf.cpp

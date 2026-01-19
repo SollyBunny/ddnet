@@ -17,8 +17,7 @@
 
 void CPlayer::ResetStats()
 {
-	m_Kills = 0;
-	m_Deaths = 0;
+	m_RoundStats.Reset();
 	m_Stats.Reset();
 }
 
@@ -75,7 +74,7 @@ void CPlayer::AddKills(int Amount)
 	if(GameServer()->m_pController->IsStatTrack())
 		m_Stats.m_Kills += Amount;
 
-	m_Kills += Amount;
+	m_RoundStats.m_Kills += Amount;
 }
 
 void CPlayer::AddDeaths(int Amount)
@@ -83,7 +82,7 @@ void CPlayer::AddDeaths(int Amount)
 	if(GameServer()->m_pController->IsStatTrack())
 		m_Stats.m_Deaths += Amount;
 
-	m_Deaths += Amount;
+	m_RoundStats.m_Deaths += Amount;
 }
 
 void CPlayer::InstagibTick()

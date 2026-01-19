@@ -19,6 +19,7 @@ SKIP_FILES=(
 	src/game/server/gamemodes/instagib/itdm/itdm.h
 	src/game/server/gamemodes/vanilla/ctf/ctf.h
 	src/game/server/gamemodes/vanilla/dm/dm.h
+	src/game/server/gamemodes/ddnet.h
 )
 
 VERBOSE=0

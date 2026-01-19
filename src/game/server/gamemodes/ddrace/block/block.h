@@ -12,6 +12,9 @@ public:
 	void OnCharacterSpawn(class CCharacter *pChr) override;
 	void Tick() override;
 	bool SkipDamage(int Dmg, int From, int Weapon, const CCharacter *pCharacter, bool &ApplyForce) override;
-	int OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon) override;
+	void OnCharacterDeathImpl(CCharacter *pVictim, int Killer, int Weapon, bool SendKillMsg) override;
+	bool CanSelfkillWhileFrozen(class CPlayer *pPlayer) override { return true; }
+	bool HasSuicidePenalty(CPlayer *pPlayer) const override { return false; }
+	bool IsDDRaceGameType() const override { return true; }
 };
 #endif

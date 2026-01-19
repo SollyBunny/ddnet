@@ -1436,6 +1436,20 @@ public:
 	virtual bool HasWinningScore(const CPlayer *pPlayer) const;
 
 	/*
+		Function: HasSuicidePenalty
+			Determines if suicide by sending a kill message
+			or death in the world will be punished by losing one score point
+
+		Arguments:
+			pPlayer - affected player
+
+		Returns:
+			true - to remove 1 score point on suicide
+			false - to do nothing on suicide
+	*/
+	virtual bool HasSuicidePenalty(CPlayer *pPlayer) const;
+
+	/*
 		Variable: m_GamePauseStartTime
 
 		gets set to time_get() when a player pauses the game

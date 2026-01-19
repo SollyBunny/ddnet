@@ -9,12 +9,13 @@
 
 #include <game/server/entities/character.h>
 #include <game/server/gamecontroller.h>
+#include <game/server/gamemodes/insta_core/insta_core.h>
 #include <game/server/instagib/strhelpers.h>
 #include <game/server/player.h>
 
 void CGameControllerBasePvp::DoWarmup(int Seconds)
 {
-	CGameControllerDDRace::DoWarmup(Seconds);
+	CGameControllerInstaCore::DoWarmup(Seconds);
 
 	if(Seconds)
 	{

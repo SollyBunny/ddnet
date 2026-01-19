@@ -139,6 +139,9 @@ void CGameControllerBasePvp::OnRoundStart()
 
 		RoundInitPlayer(pPlayer);
 	}
+
+	if(Config()->m_SvShuffleOnRoundStart)
+		GameServer()->ShuffleTeams();
 }
 
 void CGameControllerBasePvp::OnRoundEnd()
@@ -656,7 +659,7 @@ int CGameControllerBasePvp::OnCharacterDeath(class CCharacter *pVictim, class CP
 
 	if(SuicideOrWorld)
 	{
-		if(g_Config.m_SvSuicidePenalty)
+		if(HasSuicidePenalty(pVictim->GetPlayer()))
 			pVictim->GetPlayer()->DecrementScore();
 	}
 	else
@@ -1229,11 +1232,8 @@ bool CGameControllerBasePvp::OnTeamChatCmd(IConsole::IResult *pResult)
 	if(!pPlayer)
 		return false;
 
-	if(g_Config.m_SvAllowDDRaceTeamChange)
-	{
-		log_info("chatresp", "The /team chat command is currently disabled.");
+	if(CGameControllerInstaCore::OnTeamChatCmd(pResult))
 		return true;
-	}
 	if(pPlayer->GetTeam() != TEAM_SPECTATORS)
 	{
 		log_info("chatresp", "Only spectators can join ddrace teams");

@@ -12,6 +12,7 @@
 #include <game/alloc.h> // ddnet-insta
 #include <game/server/instagib/enums.h> // ddnet-insta
 #include <game/server/instagib/ip_storage.h> // ddnet-insta
+#include <game/server/instagib/round_stats_player.h> // ddnet-insta
 #include <game/server/instagib/skin_info_manager.h> // ddnet-insta
 #include <game/server/instagib/sql_stats.h> // ddnet-insta
 #include <game/server/instagib/sql_stats_player.h> // ddnet-insta

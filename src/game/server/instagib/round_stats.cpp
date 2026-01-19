@@ -33,9 +33,9 @@ void IGameController::PsvRowPlayer(const CPlayer *pPlayer, char *pBuf, size_t Si
 		pPlayer->GetCid(),
 		Server()->ClientName(pPlayer->GetCid()),
 		pPlayer->m_Score,
-		pPlayer->m_Kills,
-		pPlayer->m_Deaths,
-		CalcKillDeathRatio(pPlayer->m_Kills, pPlayer->m_Deaths));
+		pPlayer->m_RoundStats.m_Kills,
+		pPlayer->m_RoundStats.m_Deaths,
+		CalcKillDeathRatio(pPlayer->m_RoundStats.m_Kills, pPlayer->m_RoundStats.m_Deaths));
 	if(WinType() == WIN_BY_SURVIVAL)
 	{
 		str_format(aBuf, sizeof(aBuf), " | Alive: %s", pPlayer->m_IsDead ? "no" : "yes");
@@ -106,11 +106,17 @@ void IGameController::GetRoundEndStatsStrJson(char *pBuf, size_t Size)
 			Writer.WriteAttribute("score");
 			Writer.WriteIntValue(pPlayer->m_Score);
 			Writer.WriteAttribute("kills");
-			Writer.WriteIntValue(pPlayer->m_Kills);
+			Writer.WriteIntValue(pPlayer->m_RoundStats.m_Kills);
 			Writer.WriteAttribute("deaths");
-			Writer.WriteIntValue(pPlayer->m_Deaths);
+			Writer.WriteIntValue(pPlayer->m_RoundStats.m_Deaths);
 			Writer.WriteAttribute("ratio");
-			Writer.WriteIntValue(CalcKillDeathRatio(pPlayer->m_Kills, pPlayer->m_Deaths));
+			Writer.WriteIntValue(CalcKillDeathRatio(pPlayer->m_RoundStats.m_Kills, pPlayer->m_RoundStats.m_Deaths));
+			Writer.WriteAttribute("hooks");
+			Writer.WriteIntValue(pPlayer->m_RoundStats.m_Hooks);
+			Writer.WriteAttribute("hooks_missed");
+			Writer.WriteIntValue(pPlayer->m_RoundStats.m_HooksMissed);
+			Writer.WriteAttribute("hooks_hit_player");
+			Writer.WriteIntValue(pPlayer->m_RoundStats.m_HooksHitPlayer);
 			Writer.WriteAttribute("shots_fired");
 			Writer.WriteIntValue(pPlayer->m_Stats.m_ShotsFired);
 			Writer.WriteAttribute("shots_hit");

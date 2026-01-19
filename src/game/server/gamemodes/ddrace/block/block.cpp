@@ -64,21 +64,27 @@ bool CGameControllerBlock::SkipDamage(int Dmg, int From, int Weapon, const CChar
 	return true;
 }
 
-int CGameControllerBlock::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon)
+void CGameControllerBlock::OnCharacterDeathImpl(CCharacter *pVictim, int Killer, int Weapon, bool SendKillMsg)
 {
+	CPlayer *pKiller = GetPlayerOrNullptr(Killer);
 	// this is a edge case
 	// probably caused by admin abuse or something like that
 	// this can only happen if a player was killed by damage
 	// which should not happen in block
 	if(pKiller && pKiller != pVictim->GetPlayer())
 	{
-		return CGameControllerBasePvp::OnCharacterDeath(pVictim, pKiller, Weapon);
+		CGameControllerBasePvp::OnCharacterDeathImpl(pVictim, Killer, Weapon, SendKillMsg);
+		return;
 	}
 	std::optional<CLastToucher> &LastToucher = pVictim->GetPlayer()->m_LastToucher;
 
 	// died alone without any killer
 	if(!LastToucher.has_value())
-		return 0; // do not count the kill
+	{
+		// do not count the kill
+		CGameControllerBasePvp::OnCharacterDeathImpl(pVictim, Killer, Weapon, SendKillMsg);
+		return;
+	}
 
 	int LastToucherId = LastToucher.value().m_ClientId;
 	if(LastToucherId >= 0 && LastToucherId < MAX_CLIENTS)
@@ -86,28 +92,17 @@ int CGameControllerBlock::OnCharacterDeath(class CCharacter *pVictim, class CPla
 
 	if(pKiller && pKiller != pVictim->GetPlayer() && pVictim->m_FreezeTime)
 	{
-		OnKill(pVictim->GetPlayer(), pKiller, Weapon);
-		pKiller->IncrementScore();
-
-		// TODO: the kill message will also be sent in CCharacter::Die which is a bit annoying
 		int KillMsgWeapon = LastToucher.value().m_Weapon;
 		if(KillMsgWeapon == WEAPON_HOOK)
 			KillMsgWeapon = WEAPON_NINJA;
 
-		// kill message
-		CNetMsg_Sv_KillMsg Msg;
-		Msg.m_Killer = pKiller->GetCid();
-		Msg.m_Victim = pVictim->GetPlayer()->GetCid();
-		Msg.m_Weapon = KillMsgWeapon;
-		Msg.m_ModeSpecial = 0;
-		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
-
 		// count the kill
-		return CGameControllerBasePvp::OnCharacterDeath(pVictim, pKiller, Weapon);
+		CGameControllerBasePvp::OnCharacterDeathImpl(pVictim, pKiller->GetCid(), KillMsgWeapon, SendKillMsg);
+		return;
 	}
 
 	// do not count the kill
-	return 0;
+	CGameControllerBasePvp::OnCharacterDeathImpl(pVictim, Killer, Weapon, SendKillMsg);
 }
 
 REGISTER_GAMEMODE(block, CGameControllerBlock(pGameServer));

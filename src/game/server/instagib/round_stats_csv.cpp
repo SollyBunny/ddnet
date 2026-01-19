@@ -1,5 +1,3 @@
-#include "round_stats_player.h"
-
 #include <generated/protocol.h>
 
 #include <game/server/gamecontext.h>
@@ -14,6 +12,15 @@ void IGameController::GetRoundEndStatsStrCsv(char *pBuf, size_t Size)
 	else
 		GetRoundEndStatsStrCsvNoTeamPlay(pBuf, Size);
 }
+
+class CCsvStatsPlayer
+{
+public:
+	const char *m_pName = "";
+	int m_Score = 0;
+	int m_Active = false;
+	bool m_IsDead = false;
+};
 
 void IGameController::GetRoundEndStatsStrCsvTeamPlay(char *pBuf, size_t Size)
 {
@@ -31,8 +38,8 @@ void IGameController::GetRoundEndStatsStrCsvTeamPlay(char *pBuf, size_t Size)
 	str_format(aBuf, sizeof(aBuf), "red, %d, blue, %d\n", ScoreRed, ScoreBlue);
 	str_append(pBuf, aBuf, Size);
 
-	CStatsPlayer aStatsPlayerRed[MAX_CLIENTS];
-	CStatsPlayer aStatsPlayerBlue[MAX_CLIENTS];
+	CCsvStatsPlayer aStatsPlayerRed[MAX_CLIENTS];
+	CCsvStatsPlayer aStatsPlayerBlue[MAX_CLIENTS];
 
 	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
@@ -44,25 +51,25 @@ void IGameController::GetRoundEndStatsStrCsvTeamPlay(char *pBuf, size_t Size)
 		if(pPlayer->GetTeam() > TEAM_BLUE)
 			continue;
 
-		CStatsPlayer *pStatsPlayer = pPlayer->GetTeam() == TEAM_RED ? &aStatsPlayerRed[i] : &aStatsPlayerBlue[i];
+		CCsvStatsPlayer *pStatsPlayer = pPlayer->GetTeam() == TEAM_RED ? &aStatsPlayerRed[i] : &aStatsPlayerBlue[i];
 		pStatsPlayer->m_Active = true;
 		pStatsPlayer->m_Score = pPlayer->m_Score;
 		pStatsPlayer->m_pName = Server()->ClientName(pPlayer->GetCid());
 	}
 
 	std::stable_sort(aStatsPlayerRed, aStatsPlayerRed + MAX_CLIENTS,
-		[](const CStatsPlayer &p1, const CStatsPlayer &p2) -> bool {
+		[](const CCsvStatsPlayer &p1, const CCsvStatsPlayer &p2) -> bool {
 			return p1.m_Score > p2.m_Score;
 		});
 	std::stable_sort(aStatsPlayerBlue, aStatsPlayerBlue + MAX_CLIENTS,
-		[](const CStatsPlayer &p1, const CStatsPlayer &p2) -> bool {
+		[](const CCsvStatsPlayer &p1, const CCsvStatsPlayer &p2) -> bool {
 			return p1.m_Score > p2.m_Score;
 		});
 
 	int RedIndex = 0;
 	int BlueIndex = 0;
-	const CStatsPlayer *pRed = &aStatsPlayerRed[RedIndex];
-	const CStatsPlayer *pBlue = &aStatsPlayerBlue[BlueIndex];
+	const CCsvStatsPlayer *pRed = &aStatsPlayerRed[RedIndex];
+	const CCsvStatsPlayer *pBlue = &aStatsPlayerBlue[BlueIndex];
 	while(pRed || pBlue)
 	{
 		// mom: "we have pop() at home"
@@ -135,7 +142,7 @@ void IGameController::GetRoundEndStatsStrCsvNoTeamPlay(char *pBuf, size_t Size)
 		str_append(pBuf, ", alive", Size);
 	str_append(pBuf, "\n", Size);
 
-	CStatsPlayer aStatsPlayers[MAX_CLIENTS];
+	CCsvStatsPlayer aStatsPlayers[MAX_CLIENTS];
 
 	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
@@ -145,7 +152,7 @@ void IGameController::GetRoundEndStatsStrCsvNoTeamPlay(char *pBuf, size_t Size)
 		if(!IsPlaying(pPlayer))
 			continue;
 
-		CStatsPlayer *pStatsPlayer = &aStatsPlayers[i];
+		CCsvStatsPlayer *pStatsPlayer = &aStatsPlayers[i];
 		pStatsPlayer->m_Active = true;
 		pStatsPlayer->m_IsDead = pPlayer->m_IsDead;
 		pStatsPlayer->m_Score = pPlayer->m_Score;
@@ -153,11 +160,11 @@ void IGameController::GetRoundEndStatsStrCsvNoTeamPlay(char *pBuf, size_t Size)
 	}
 
 	std::stable_sort(aStatsPlayers, aStatsPlayers + MAX_CLIENTS,
-		[](const CStatsPlayer &p1, const CStatsPlayer &p2) -> bool {
+		[](const CCsvStatsPlayer &p1, const CCsvStatsPlayer &p2) -> bool {
 			return p1.m_Score > p2.m_Score;
 		});
 
-	for(CStatsPlayer Player : aStatsPlayers)
+	for(CCsvStatsPlayer Player : aStatsPlayers)
 	{
 		if(!Player.m_Active)
 			continue;

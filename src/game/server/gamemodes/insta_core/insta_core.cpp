@@ -16,6 +16,7 @@
 #include <game/gamecore.h>
 #include <game/server/entities/character.h>
 #include <game/server/gamecontroller.h>
+#include <game/server/gamemodes/ddnet.h>
 #include <game/server/instagib/antibob.h>
 #include <game/server/instagib/entities/flag.h>
 #include <game/server/instagib/entities/text/laser.h>
@@ -30,7 +31,7 @@
 #include <optional>
 
 CGameControllerInstaCore::CGameControllerInstaCore(class CGameContext *pGameServer) :
-	CGameControllerDDRace(pGameServer)
+	CGameControllerDDNet(pGameServer)
 {
 	log_info("ddnet-insta", "initializing insta core ...");
 
@@ -96,9 +97,24 @@ void CGameControllerInstaCore::OnCreditsChatCmd(IConsole::IResult *pResult, void
 	GameServer()->PrintInstaCredits();
 }
 
+bool CGameControllerInstaCore::OnTeamChatCmd(IConsole::IResult *pResult)
+{
+	CPlayer *pPlayer = GetPlayerOrNullptr(pResult->m_ClientId);
+	if(!pPlayer)
+		return false;
+
+	if(!g_Config.m_SvAllowDDRaceTeamChange)
+	{
+		log_info("chatresp", "The /team chat command is currently disabled.");
+		return true;
+	}
+
+	return CGameControllerDDNet::OnTeamChatCmd(pResult);
+}
+
 void CGameControllerInstaCore::OnReset()
 {
-	CGameControllerDDRace::OnReset();
+	CGameControllerDDNet::OnReset();
 
 	for(CPlayer *pPlayer : GameServer()->m_apPlayers)
 	{
@@ -153,9 +169,28 @@ void CGameControllerInstaCore::OnPlayerConnect(CPlayer *pPlayer)
 // so controllers inheriting can easier reimplement parts they want
 void CGameControllerInstaCore::OnPlayerDisconnect(class CPlayer *pPlayer, const char *pReason)
 {
+	// ddnet.cpp start
+	int ClientId = pPlayer->GetCid();
+	bool WasModerator = pPlayer->m_Moderating && Server()->ClientIngame(ClientId);
+	// ddnet.cpp end
+
+	// we do NOT call the parent that is why we have to sync ddnet.cpp
+	// IGameController::OnPlayerDisconnect(pPlayer, pReason);
 	InstaCoreDisconnect(pPlayer, pReason);
 	pPlayer->OnDisconnect();
 	PrintDisconnect(pPlayer, pReason);
+
+	// ddnet.cpp start
+	if(!GameServer()->PlayerModerating() && WasModerator)
+		GameServer()->SendChat(-1, TEAM_ALL, "Server kick/spec votes are no longer actively moderated.");
+
+	if(g_Config.m_SvTeam != SV_TEAM_FORCED_SOLO)
+		Teams().SetForceCharacterTeam(ClientId, TEAM_FLOCK);
+
+	for(int Team = TEAM_FLOCK + 1; Team < TEAM_SUPER; Team++)
+		if(Teams().IsInvited(Team, ClientId))
+			Teams().SetClientInvited(Team, ClientId, false);
+	// ddnet.cpp end
 }
 
 // Holds all core logic. Should not contain code that can be possibly unwanted
@@ -291,7 +326,7 @@ void CGameControllerInstaCore::OnCharacterSpawn(class CCharacter *pChr)
 
 int CGameControllerInstaCore::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon)
 {
-	CGameControllerDDRace::OnCharacterDeath(pVictim, pKiller, Weapon);
+	CGameControllerDDNet::OnCharacterDeath(pVictim, pKiller, Weapon);
 
 	if(pVictim->HasRainbow())
 		pVictim->Rainbow(false);
@@ -320,7 +355,7 @@ int CGameControllerInstaCore::OnCharacterDeath(class CCharacter *pVictim, class 
 
 void CGameControllerInstaCore::Tick()
 {
-	CGameControllerDDRace::Tick();
+	CGameControllerDDNet::Tick();
 	GameServer()->m_IpStorageController.OnTick(Server()->Tick());
 
 	if(m_TicksUntilShutdown)
@@ -510,7 +545,6 @@ bool CGameControllerInstaCore::OnKillNetMessage(int ClientId)
 
 bool CGameControllerInstaCore::CanSelfkillWhileFrozen(CPlayer *pPlayer)
 {
-	// TODO: think about block gametype here, do we allow team switches while frozen?
 	return IsDDRaceGameType();
 }
 
@@ -746,7 +780,7 @@ void CGameControllerInstaCore::InitPlayer(CPlayer *pPlayer)
 
 void CGameControllerInstaCore::Snap(int SnappingClient)
 {
-	CGameControllerDDRace::Snap(SnappingClient);
+	CGameControllerDDNet::Snap(SnappingClient);
 
 	// it is a bit of a mess that 0.6 has both teamscore
 	// and flag carriers in one object
@@ -922,14 +956,17 @@ bool CGameControllerInstaCore::UnfreezeOnHammerHit() const
 
 void CGameControllerInstaCore::OnFireHook(CCharacter *pCharacter)
 {
+	pCharacter->GetPlayer()->m_RoundStats.m_Hooks++;
 }
 
 void CGameControllerInstaCore::OnMissedHook(CCharacter *pCharacter)
 {
+	pCharacter->GetPlayer()->m_RoundStats.m_HooksMissed++;
 }
 
 void CGameControllerInstaCore::OnHookAttachPlayer(CPlayer *pHookingPlayer, CPlayer *pHookedPlayer)
 {
+	pHookingPlayer->m_RoundStats.m_HooksHitPlayer++;
 	if(g_Config.m_SvKillHook)
 	{
 		CCharacter *pChr = pHookedPlayer->GetCharacter();

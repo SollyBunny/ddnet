@@ -38,8 +38,6 @@ void CGameControllerFly::Tick()
 
 int CGameControllerFly::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon)
 {
-	int OldScore = pVictim->GetPlayer()->m_Score;
-
 	// spike kills
 	const int LastToucherId = pVictim->GetPlayer()->m_LastToucher.has_value() ? pVictim->GetPlayer()->m_LastToucher.value().m_ClientId : -1;
 	if(LastToucherId >= 0 && LastToucherId < MAX_CLIENTS)
@@ -62,22 +60,6 @@ int CGameControllerFly::OnCharacterDeath(class CCharacter *pVictim, class CPlaye
 		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
 	}
 	int ModeSpecial = CGameControllerCTF::OnCharacterDeath(pVictim, pKiller, Weapon);
-
-	// TODO: this hack should be removed by using the config sv_suicide_penalty
-	//       and default configs per gametype
-	//       see https://github.com/ddnet-insta/ddnet-insta/pull/433
-	//       and https://github.com/ddnet-insta/ddnet-insta/issues/308
-
-	// if the player is punished for the selfkill
-	// we revert to the original score
-	// because in fly selfkills or running into spikes
-	// is not supposed to decrement the score
-	int NewScore = pVictim->GetPlayer()->m_Score;
-	if(NewScore + 1 == OldScore)
-	{
-		pVictim->GetPlayer()->m_Score = OldScore;
-	}
-
 	return ModeSpecial;
 }
 
