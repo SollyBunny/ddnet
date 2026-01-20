@@ -375,7 +375,7 @@ void IGameController::PublishRoundEndStats()
 	// as json easily
 	//
 	// but a 32v32 will still overflow
-	char aStats[16384];
+	char aStats[65536];
 	aStats[0] = '\0';
 	if(g_Config.m_SvRoundStatsDiscordWebhooks[0] != '\0')
 	{
