@@ -64,6 +64,9 @@ public:
 	// called on join
 	virtual void PrintModWelcome(CPlayer *pPlayer);
 
+	// Call this in your tick method if you want ctf (capture the flag) flags
+	virtual void FlagTick();
+
 	bool DropFlag(class CCharacter *pChr) override;
 	void OnFlagReturn(CFlag *pFlag, CPlayer *pPlayer) override;
 	void OnFlagGrab(CFlag *pFlag) override;
