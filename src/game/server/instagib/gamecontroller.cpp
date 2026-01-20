@@ -755,10 +755,6 @@ void IGameController::SetGameState(EGameState GameState, int Timer)
 	}
 }
 
-void IGameController::OnFlagCapture(CFlag *pFlag, float Time, int TimeTicks)
-{
-}
-
 int IGameController::GetCidByName(const char *pName)
 {
 	int ClientId = -1;

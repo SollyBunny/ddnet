@@ -1441,7 +1441,7 @@ public:
 	virtual void OnFlagReturn(class CFlag *pFlag, class CPlayer *pPlayer) {}
 
 	virtual void OnFlagGrab(class CFlag *pFlag) {}
-	virtual void OnFlagCapture(class CFlag *pFlag, float Time, int TimeTicks); // ddnet-insta
+	virtual void OnFlagCapture(class CFlag *pFlag, float Time, int TimeTicks) {}
 	virtual void OnUpdateZcatchColorConfig() {}
 	virtual void OnUpdateSpectatorVotesConfig() {}
 	virtual bool DropFlag(class CCharacter *pChr) { return false; }

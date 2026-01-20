@@ -298,26 +298,6 @@ bool CGameControllerBasePvp::IsGrenadeGameType() const
 	return IsVanillaGameType() || m_pGameType[0] == 'g';
 }
 
-void CGameControllerBasePvp::OnFlagCapture(class CFlag *pFlag, float Time, int TimeTicks)
-{
-	if(!pFlag)
-		return;
-	if(!pFlag->m_pCarrier)
-		return;
-	if(TimeTicks <= 0)
-		return;
-
-	int ClientId = pFlag->m_pCarrier->GetPlayer()->GetCid();
-
-	// TODO: find a better way to check if there is a grenade or not
-	bool Grenade = IsGrenadeGameType();
-
-	char aTimestamp[TIMESTAMP_STR_LENGTH];
-	str_timestamp_format(aTimestamp, sizeof(aTimestamp), FORMAT_SPACE); // 2019-04-02 19:41:58
-
-	m_pSqlStats->SaveFastcap(ClientId, TimeTicks, aTimestamp, Grenade, IsStatTrack());
-}
-
 bool CGameControllerBasePvp::ForceNetworkClipping(const CEntity *pEntity, int SnappingClient, vec2 CheckPos)
 {
 	if(!g_Config.m_SvStrictSnapDistance)

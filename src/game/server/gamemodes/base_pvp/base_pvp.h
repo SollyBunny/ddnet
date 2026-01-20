@@ -86,7 +86,6 @@ public:
 	void OnRoundEnd() override;
 	bool IsGrenadeGameType() const override;
 	bool IsDDRaceGameType() const override { return false; }
-	void OnFlagCapture(class CFlag *pFlag, float Time, int TimeTicks) override;
 	bool ForceNetworkClipping(const CEntity *pEntity, int SnappingClient, vec2 CheckPos) override;
 	bool ForceNetworkClippingLine(const CEntity *pEntity, int SnappingClient, vec2 StartPos, vec2 EndPos) override;
 

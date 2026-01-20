@@ -125,20 +125,6 @@ bool CGameControllerInstaBaseCTF::CanBeMovedOnBalance(int ClientId)
 	return GetCarriedFlag(GameServer()->m_apPlayers[ClientId]) == FLAG_NONE;
 }
 
-void CGameControllerInstaBaseCTF::OnFlagCapture(class CFlag *pFlag, float Time, int TimeTicks)
-{
-	CGameControllerInstagib::OnFlagCapture(pFlag, Time, TimeTicks);
-
-	if(!pFlag)
-		return;
-	if(!pFlag->m_pCarrier)
-		return;
-
-	CPlayer *pPlayer = pFlag->m_pCarrier->GetPlayer();
-	if(IsStatTrack())
-		pPlayer->m_Stats.m_FlagCaptures++;
-}
-
 void CGameControllerInstaBaseCTF::FlagTick()
 {
 	if(GameServer()->m_World.m_ResetRequested || GameServer()->m_World.m_Paused)

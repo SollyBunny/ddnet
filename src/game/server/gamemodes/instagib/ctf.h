@@ -12,8 +12,6 @@ public:
 	void Tick() override;
 	int OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon) override;
 	bool CanBeMovedOnBalance(int ClientId) override;
-	void OnFlagGrab(class CFlag *pFlag) override;
-	void OnFlagCapture(class CFlag *pFlag, float Time, int TimeTicks) override;
 	void OnCharacterSpawn(class CCharacter *pChr) override;
 	bool OnEntity(int Index, int x, int y, int Layer, int Flags, bool Initial, int Number) override;
 

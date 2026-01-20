@@ -327,6 +327,32 @@ void CGameControllerInstaCore::OnFlagGrab(CFlag *pFlag)
 		pPlayer->m_Stats.m_FlagGrabs++;
 }
 
+void CGameControllerInstaCore::OnFlagCapture(CFlag *pFlag, float Time, int TimeTicks)
+{
+	CGameControllerDDNet::OnFlagCapture(pFlag, Time, TimeTicks);
+
+	if(!pFlag)
+		return;
+	if(!pFlag->GetCarrier())
+		return;
+
+	CPlayer *pPlayer = pFlag->GetCarrier()->GetPlayer();
+	int ClientId = pPlayer->GetCid();
+	if(TimeTicks > 0)
+	{
+		// TODO: find a better way to check if there is a grenade or not
+		bool Grenade = IsGrenadeGameType();
+
+		char aTimestamp[TIMESTAMP_STR_LENGTH];
+		str_timestamp_format(aTimestamp, sizeof(aTimestamp), FORMAT_SPACE); // 2019-04-02 19:41:58
+
+		m_pSqlStats->SaveFastcap(ClientId, TimeTicks, aTimestamp, Grenade, IsStatTrack());
+	}
+
+	if(IsStatTrack())
+		pPlayer->m_Stats.m_FlagCaptures++;
+}
+
 void CGameControllerInstaCore::OnCharacterSpawn(class CCharacter *pChr)
 {
 	CPlayer *pPlayer = pChr->GetPlayer();
