@@ -125,9 +125,9 @@ bool CGameControllerBaseCTF::CanBeMovedOnBalance(int ClientId)
 	return GetCarriedFlag(GameServer()->m_apPlayers[ClientId]) == FLAG_NONE;
 }
 
-void CGameControllerBaseCTF::OnFlagReturn(CFlag *pFlag)
+void CGameControllerBaseCTF::OnFlagReturn(CFlag *pFlag, CPlayer *pPlayer)
 {
-	CGameControllerBasePvp::OnFlagReturn(pFlag);
+	CGameControllerBasePvp::OnFlagReturn(pFlag, pPlayer);
 
 	GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", "flag_return");
 	GameServer()->SendGameMsg(protocol7::GAMEMSG_CTF_RETURN, -1);

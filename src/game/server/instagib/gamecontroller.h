@@ -1427,7 +1427,19 @@ public:
 	};
 
 	virtual bool DoWincheckRound(); // returns true when the match is over
-	virtual void OnFlagReturn(class CFlag *pFlag); // ddnet-insta
+
+	/*
+		Function: OnFlagReturn
+			logs the flag return message to the console and logfile
+			plays the flag return sound
+
+		Arguments:
+			pPlayer - player that touched their own flag and returned it
+				  or nullptr if it was returned by despawn due to timer
+				  or killtiles or falling out of the world
+	*/
+	virtual void OnFlagReturn(class CFlag *pFlag, class CPlayer *pPlayer);
+
 	virtual void OnFlagGrab(class CFlag *pFlag); // ddnet-insta
 	virtual void OnFlagCapture(class CFlag *pFlag, float Time, int TimeTicks); // ddnet-insta
 	virtual void OnUpdateZcatchColorConfig() {}

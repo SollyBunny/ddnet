@@ -3,6 +3,8 @@
 
 #include <game/server/gamemodes/base_pvp/base_pvp.h>
 
+class CPlayer;
+
 class CGameControllerBaseCTF : public CGameControllerBasePvp
 {
 public:
@@ -10,9 +12,9 @@ public:
 	~CGameControllerBaseCTF() override;
 
 	void Tick() override;
-	int OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon) override;
+	int OnCharacterDeath(class CCharacter *pVictim, CPlayer *pKiller, int Weapon) override;
 	bool CanBeMovedOnBalance(int ClientId) override;
-	void OnFlagReturn(class CFlag *pFlag) override;
+	void OnFlagReturn(class CFlag *pFlag, CPlayer *pPlayer) override;
 	void OnFlagGrab(class CFlag *pFlag) override;
 	void OnFlagCapture(class CFlag *pFlag, float Time, int TimeTicks) override;
 	void OnCharacterSpawn(class CCharacter *pChr) override;
@@ -20,7 +22,7 @@ public:
 
 	void FlagTick();
 
-	void OnShowStatsAll(const CSqlStatsPlayer *pStats, class CPlayer *pRequestingPlayer, const char *pRequestedName) override;
-	void OnShowRoundStats(const CSqlStatsPlayer *pStats, class CPlayer *pRequestingPlayer, const char *pRequestedName) override;
+	void OnShowStatsAll(const CSqlStatsPlayer *pStats, CPlayer *pRequestingPlayer, const char *pRequestedName) override;
+	void OnShowRoundStats(const CSqlStatsPlayer *pStats, CPlayer *pRequestingPlayer, const char *pRequestedName) override;
 };
 #endif
