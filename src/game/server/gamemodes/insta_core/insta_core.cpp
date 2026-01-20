@@ -325,6 +325,12 @@ void CGameControllerInstaCore::OnFlagGrab(CFlag *pFlag)
 	CPlayer *pPlayer = pFlag->GetCarrier()->GetPlayer();
 	if(IsStatTrack())
 		pPlayer->m_Stats.m_FlagGrabs++;
+
+	log_info("game", "flag_grab player='%d:%s' team=%d",
+		pPlayer->GetCid(),
+		Server()->ClientName(pFlag->GetCarrier()->GetPlayer()->GetCid()),
+		pPlayer->GetTeam());
+	GameServer()->SendGameMsg(protocol7::GAMEMSG_CTF_GRAB, pFlag->m_Team, -1);
 }
 
 void CGameControllerInstaCore::OnFlagCapture(CFlag *pFlag, float Time, int TimeTicks)

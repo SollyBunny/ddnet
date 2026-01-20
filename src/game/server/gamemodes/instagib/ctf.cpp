@@ -231,16 +231,7 @@ void CGameControllerInstaBaseCTF::FlagTick()
 						AddTeamscore(FlagColor ^ 1, 1);
 
 					pFlag->Grab(apCloseCCharacters[i]);
-
 					pFlag->GetCarrier()->GetPlayer()->IncrementScore();
-
-					char aBuf[256];
-					str_format(aBuf, sizeof(aBuf), "flag_grab player='%d:%s' team=%d",
-						pFlag->GetCarrier()->GetPlayer()->GetCid(),
-						Server()->ClientName(pFlag->GetCarrier()->GetPlayer()->GetCid()),
-						pFlag->GetCarrier()->GetPlayer()->GetTeam());
-					GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", aBuf);
-					GameServer()->SendGameMsg(protocol7::GAMEMSG_CTF_GRAB, FlagColor, -1);
 					break;
 				}
 			}
