@@ -1461,7 +1461,9 @@ void CClient::ProcessServerInfo(int RawType, NETADDR *pFrom, const void *pData, 
 		//
 		// SERVERINFO_EXTENDED_MORE doesn't carry any server
 		// information, so just skip it.
-		if(net_addr_comp(&ServerAddress(), pFrom) == 0 && RawType != SERVERINFO_EXTENDED_MORE)
+		if(m_aNetClient[CONN_MAIN].State() == NETSTATE_ONLINE &&
+			ServerAddress() == *pFrom &&
+			RawType != SERVERINFO_EXTENDED_MORE)
 		{
 			// Only accept server info that has a type that is
 			// newer or equal to something the server already sent
@@ -4068,7 +4070,7 @@ void CClient::DemoRecorder_Start(const char *pFilename, bool WithTimestamp, int 
 		m_pMap->Sha256(),
 		m_pMap->Crc(),
 		"client",
-		m_pMap->MapSize(),
+		m_pMap->Size(),
 		nullptr,
 		m_pMap->File(),
 		nullptr,
@@ -5080,7 +5082,7 @@ void CClient::RaceRecord_Start(const char *pFilename)
 		m_pMap->Sha256(),
 		m_pMap->Crc(),
 		"client",
-		m_pMap->MapSize(),
+		m_pMap->Size(),
 		nullptr,
 		m_pMap->File(),
 		nullptr,
