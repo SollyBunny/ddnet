@@ -412,6 +412,8 @@ void CGameControllerInstaCore::OnFlagReturn(CFlag *pFlag, CPlayer *pPlayer)
 
 	if(pPlayer)
 	{
+		pPlayer->m_RoundStats.m_FlagReturns++;
+
 		// flag returned by player
 		log_info("game", "flag_return player='%d:%s' team=%d",
 			pPlayer->GetCid(),

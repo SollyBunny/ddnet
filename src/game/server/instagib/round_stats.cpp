@@ -125,6 +125,10 @@ void IGameController::GetRoundEndStatsStrJson(char *pBuf, size_t Size)
 			Writer.WriteIntValue(pPlayer->m_Stats.m_FlagGrabs);
 			Writer.WriteAttribute("flag_captures");
 			Writer.WriteIntValue(pPlayer->m_Stats.m_FlagCaptures);
+			Writer.WriteAttribute("flag_returns");
+			Writer.WriteIntValue(pPlayer->m_RoundStats.m_FlagReturns);
+			Writer.WriteAttribute("flagger_kills");
+			Writer.WriteIntValue(pPlayer->m_Stats.m_FlaggerKills);
 			Writer.EndObject();
 		}
 		Writer.EndArray();

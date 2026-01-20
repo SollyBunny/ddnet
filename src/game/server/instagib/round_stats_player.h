@@ -24,6 +24,10 @@ public:
 	// counting all hooks that attached to another player
 	int m_HooksHitPlayer;
 
+	// how many own dropped flags *this* player touched
+	// and returned them to the own base
+	int m_FlagReturns;
+
 	// Called on round end/start and player join
 	void Reset()
 	{
@@ -32,6 +36,7 @@ public:
 		m_Hooks = 0;
 		m_HooksMissed = 0;
 		m_HooksHitPlayer = 0;
+		m_FlagReturns = 0;
 	}
 
 	CRoundStatsPlayer()
