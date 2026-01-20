@@ -190,6 +190,7 @@ void CGameControllerBaseCTF::FlagTick()
 					GameServer()->m_pController->OnFlagCapture(pFlag, Diff, Server()->Tick() - pFlag->GetGrabTick());
 					GameServer()->SendGameMsg(protocol7::GAMEMSG_CTF_CAPTURE, FlagColor, pFlag->GetCarrier()->GetPlayer()->GetCid(), Diff, -1);
 					GameServer()->CreateSoundGlobal(SOUND_CTF_CAPTURE);
+
 					for(CFlag *pF : m_apFlags)
 						pF->Reset();
 				}
