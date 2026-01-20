@@ -1438,7 +1438,7 @@ public:
 				  or nullptr if it was returned by despawn due to timer
 				  or killtiles or falling out of the world
 	*/
-	virtual void OnFlagReturn(class CFlag *pFlag, class CPlayer *pPlayer);
+	virtual void OnFlagReturn(class CFlag *pFlag, class CPlayer *pPlayer) {}
 
 	virtual void OnFlagGrab(class CFlag *pFlag); // ddnet-insta
 	virtual void OnFlagCapture(class CFlag *pFlag, float Time, int TimeTicks); // ddnet-insta

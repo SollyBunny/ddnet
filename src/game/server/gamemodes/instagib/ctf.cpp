@@ -125,15 +125,6 @@ bool CGameControllerInstaBaseCTF::CanBeMovedOnBalance(int ClientId)
 	return GetCarriedFlag(GameServer()->m_apPlayers[ClientId]) == FLAG_NONE;
 }
 
-void CGameControllerInstaBaseCTF::OnFlagReturn(CFlag *pFlag, CPlayer *pPlayer)
-{
-	CGameControllerBasePvp::OnFlagReturn(pFlag, pPlayer);
-
-	GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", "flag_return");
-	GameServer()->SendGameMsg(protocol7::GAMEMSG_CTF_RETURN, -1);
-	GameServer()->CreateSoundGlobal(SOUND_CTF_RETURN);
-}
-
 void CGameControllerInstaBaseCTF::OnFlagGrab(class CFlag *pFlag)
 {
 	if(!pFlag)

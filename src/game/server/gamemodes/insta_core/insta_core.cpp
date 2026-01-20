@@ -292,6 +292,15 @@ bool CGameControllerInstaCore::DropFlag(CCharacter *pChr)
 	return false;
 }
 
+void CGameControllerInstaCore::OnFlagReturn(CFlag *pFlag, CPlayer *pPlayer)
+{
+	CGameControllerDDNet::OnFlagReturn(pFlag, pPlayer);
+
+	GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", "flag_return");
+	GameServer()->SendGameMsg(protocol7::GAMEMSG_CTF_RETURN, -1);
+	GameServer()->CreateSoundGlobal(SOUND_CTF_RETURN);
+}
+
 void CGameControllerInstaCore::OnCharacterSpawn(class CCharacter *pChr)
 {
 	CPlayer *pPlayer = pChr->GetPlayer();
