@@ -755,10 +755,6 @@ void IGameController::SetGameState(EGameState GameState, int Timer)
 	}
 }
 
-void IGameController::OnFlagGrab(CFlag *pFlag)
-{
-}
-
 void IGameController::OnFlagCapture(CFlag *pFlag, float Time, int TimeTicks)
 {
 }

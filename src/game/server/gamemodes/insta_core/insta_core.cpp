@@ -313,6 +313,20 @@ void CGameControllerInstaCore::OnFlagReturn(CFlag *pFlag, CPlayer *pPlayer)
 	GameServer()->CreateSoundGlobal(SOUND_CTF_RETURN);
 }
 
+void CGameControllerInstaCore::OnFlagGrab(CFlag *pFlag)
+{
+	if(!pFlag)
+		return;
+	if(!pFlag->IsAtStand())
+		return;
+	if(!pFlag->GetCarrier())
+		return;
+
+	CPlayer *pPlayer = pFlag->GetCarrier()->GetPlayer();
+	if(IsStatTrack())
+		pPlayer->m_Stats.m_FlagGrabs++;
+}
+
 void CGameControllerInstaCore::OnCharacterSpawn(class CCharacter *pChr)
 {
 	CPlayer *pPlayer = pChr->GetPlayer();

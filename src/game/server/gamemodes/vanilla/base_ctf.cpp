@@ -125,20 +125,6 @@ bool CGameControllerBaseCTF::CanBeMovedOnBalance(int ClientId)
 	return GetCarriedFlag(GameServer()->m_apPlayers[ClientId]) == FLAG_NONE;
 }
 
-void CGameControllerBaseCTF::OnFlagGrab(class CFlag *pFlag)
-{
-	if(!pFlag)
-		return;
-	if(!pFlag->IsAtStand())
-		return;
-	if(!pFlag->GetCarrier())
-		return;
-
-	CPlayer *pPlayer = pFlag->GetCarrier()->GetPlayer();
-	if(IsStatTrack())
-		pPlayer->m_Stats.m_FlagGrabs++;
-}
-
 void CGameControllerBaseCTF::OnFlagCapture(class CFlag *pFlag, float Time, int TimeTicks)
 {
 	CGameControllerBasePvp::OnFlagCapture(pFlag, Time, TimeTicks);

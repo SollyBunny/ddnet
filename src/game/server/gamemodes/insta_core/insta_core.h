@@ -66,6 +66,7 @@ public:
 
 	bool DropFlag(class CCharacter *pChr) override;
 	void OnFlagReturn(CFlag *pFlag, CPlayer *pPlayer) override;
+	void OnFlagGrab(CFlag *pFlag) override;
 
 	void OnCharacterSpawn(class CCharacter *pChr) override;
 	int OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon) override;
