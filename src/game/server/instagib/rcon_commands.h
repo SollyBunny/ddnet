@@ -31,6 +31,8 @@ CONSOLE_COMMAND("add_map_to_pool", "s[map name]", CFGFLAG_SERVER, ConAddMapToPoo
 CONSOLE_COMMAND("clear_map_pool", "", CFGFLAG_SERVER, ConClearMapPool, this, "Clears pool used by random_map_from_pool command")
 CONSOLE_COMMAND("random_map_from_pool", "", CFGFLAG_SERVER, ConRandomMapFromPool, this, "Changes to random map from pool (see add_map_to_pool)")
 
+CONSOLE_COMMAND("post_stats", "", CFGFLAG_SERVER, ConPostStats, this, "Publish round stats before round end without clearing them (see *round_stats* configs for more info")
+
 CONSOLE_COMMAND("gctf_antibot", "", CFGFLAG_SERVER, ConGctfAntibot, this, "runs the antibot command gctf (depends on closed source module)")
 CONSOLE_COMMAND("known_antibot", "", CFGFLAG_SERVER, ConKnownAntibot, this, "runs the antibot command known (depends on antibob antibot module)")
 CONSOLE_COMMAND("kick_events_antibot", "s[comma sep event ids]", CFGFLAG_SERVER, ConKickEventsAntibot, this, "runs the antibot command kick_events (depends on antibob antibot module)")

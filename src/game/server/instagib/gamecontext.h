@@ -109,6 +109,7 @@ public:
 	static void ConAddMapToPool(IConsole::IResult *pResult, void *pUserData);
 	static void ConClearMapPool(IConsole::IResult *pResult, void *pUserData);
 	static void ConRandomMapFromPool(IConsole::IResult *pResult, void *pUserData);
+	static void ConPostStats(IConsole::IResult *pResult, void *pUserData);
 	static void ConGctfAntibot(IConsole::IResult *pResult, void *pUserData);
 	static void ConKnownAntibot(IConsole::IResult *pResult, void *pUserData);
 	static void ConKickEventsAntibot(IConsole::IResult *pResult, void *pUserData);

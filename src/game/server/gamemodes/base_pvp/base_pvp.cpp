@@ -155,7 +155,7 @@ void CGameControllerBasePvp::OnRoundEnd()
 		g_Config.m_SvTournamentChat = 0;
 	}
 
-	PublishRoundEndStats();
+	PublishRoundEndStats(true);
 	if(g_Config.m_SvPrintRoundStats)
 		SendRoundTopMessage(-1);
 

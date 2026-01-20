@@ -1,3 +1,4 @@
+#include <base/log.h>
 #include <base/system.h>
 
 #include <engine/shared/config.h>
@@ -369,7 +370,7 @@ void IGameController::PublishRoundEndStatsStrHttp(const char *pStr)
 	}
 }
 
-void IGameController::PublishRoundEndStats()
+bool IGameController::PublishRoundEndStats(bool LogStats)
 {
 	// should be able to fit a 10v10 player game
 	// as json easily
@@ -377,24 +378,35 @@ void IGameController::PublishRoundEndStats()
 	// but a 32v32 will still overflow
 	char aStats[65536];
 	aStats[0] = '\0';
+	int NumSent = 0;
 	if(g_Config.m_SvRoundStatsDiscordWebhooks[0] != '\0')
 	{
+		NumSent++;
 		GetRoundEndStatsStrDiscord(aStats, sizeof(aStats));
 		PublishRoundEndStatsStrDiscord(aStats);
-		dbg_msg("ddnet-insta", "publishing round stats to discord:\n%s", aStats);
+		log_info("ddnet-insta", "publishing round stats to discord");
 	}
 	if(g_Config.m_SvRoundStatsHttpEndpoints[0] != '\0')
 	{
+		NumSent++;
 		GetRoundEndStatsStrHttp(aStats, sizeof(aStats));
 		PublishRoundEndStatsStrHttp(aStats);
-		dbg_msg("ddnet-insta", "publishing round stats to custom http endpoint:\n%s", aStats);
+		log_info("ddnet-insta", "publishing round stats to custom http endpoint");
 	}
 	if(g_Config.m_SvRoundStatsOutputFile[0] != '\0')
 	{
+		NumSent++;
 		GetRoundEndStatsStrFile(aStats, sizeof(aStats));
 		PublishRoundEndStatsStrFile(aStats);
-		dbg_msg("ddnet-insta", "publishing round stats to file:\n%s", aStats);
+		log_info("ddnet-insta", "publishing round stats to file");
 	}
+
+	if(aStats[0] && LogStats)
+	{
+		log_info("ddnet-insta", "%s", aStats);
+	}
+
+	return NumSent != 0;
 }
 
 void IGameController::SendRoundTopMessage(int ClientId)

@@ -154,6 +154,18 @@ void CGameContext::ConRandomMapFromPool(IConsole::IResult *pResult, void *pUserD
 		pSelf->m_pController->ChangeMap(pMap);
 }
 
+void CGameContext::ConPostStats(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	if(!pSelf->m_pController)
+		return;
+
+	if(!pSelf->m_pController->PublishRoundEndStats(false))
+	{
+		log_warn("ddnet-insta", "no round stats format configured check the README.md and search for round_stats");
+	}
+}
+
 void CGameContext::ConGctfAntibot(IConsole::IResult *pResult, void *pUserData)
 {
 	CGameContext *pSelf = (CGameContext *)pUserData;
