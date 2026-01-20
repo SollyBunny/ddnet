@@ -248,15 +248,7 @@ void CGameControllerInstaBaseCTF::FlagTick()
 					{
 						CCharacter *pChr = apCloseCCharacters[i];
 						pChr->GetPlayer()->IncrementScore();
-
-						char aBuf[256];
-						str_format(aBuf, sizeof(aBuf), "flag_return player='%d:%s' team=%d",
-							pChr->GetPlayer()->GetCid(),
-							Server()->ClientName(pChr->GetPlayer()->GetCid()),
-							pChr->GetPlayer()->GetTeam());
-						GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", aBuf);
-						GameServer()->SendGameMsg(protocol7::GAMEMSG_CTF_RETURN, -1);
-						GameServer()->CreateSoundGlobal(SOUND_CTF_RETURN);
+						OnFlagReturn(pFlag, pChr->GetPlayer());
 						pFlag->Reset();
 					}
 				}

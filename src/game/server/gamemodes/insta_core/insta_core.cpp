@@ -296,7 +296,19 @@ void CGameControllerInstaCore::OnFlagReturn(CFlag *pFlag, CPlayer *pPlayer)
 {
 	CGameControllerDDNet::OnFlagReturn(pFlag, pPlayer);
 
-	GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", "flag_return");
+	if(pPlayer)
+	{
+		// flag returned by player
+		log_info("game", "flag_return player='%d:%s' team=%d",
+			pPlayer->GetCid(),
+			Server()->ClientName(pPlayer->GetCid()),
+			pPlayer->GetTeam());
+	}
+	else
+	{
+		// flag returned by timeout, out of world or kill tile
+		log_info("game", "flag_return");
+	}
 	GameServer()->SendGameMsg(protocol7::GAMEMSG_CTF_RETURN, -1);
 	GameServer()->CreateSoundGlobal(SOUND_CTF_RETURN);
 }
