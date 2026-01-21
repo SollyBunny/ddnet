@@ -1,6 +1,7 @@
 #include "sql_stats.h"
 
 #include <base/log.h>
+#include <base/str.h>
 #include <base/system.h>
 
 #include <engine/server/databases/connection.h>
@@ -1070,6 +1071,13 @@ bool CSqlStats::CreateTableThread(IDbConnection *pSqlServer, const ISqlData *pGa
 	{
 		ddnet_db_utils::AddIntColumn(pSqlServer, pData->m_aName, "steals_from_others", 0, pError, ErrorSize);
 		ddnet_db_utils::AddIntColumn(pSqlServer, pData->m_aName, "steals_by_others", 0, pError, ErrorSize);
+	}
+
+	// "zcatch_grenade", "zcatch_laser"
+	if(str_startswith(pData->m_aName, "zcatch"))
+	{
+		ddnet_db_utils::RenameColumn(pSqlServer, pData->m_aName, "ticks_caught", "ticks_dead", pError, ErrorSize);
+		ddnet_db_utils::RenameColumn(pSqlServer, pData->m_aName, "ticks_in_game", "ticks_alive", pError, ErrorSize);
 	}
 
 	return true;
