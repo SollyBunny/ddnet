@@ -48,10 +48,10 @@ void CGameControllerZcatch::OnShowStatsAll(const CSqlStatsPlayer *pStats, class 
 	str_format(aBuf, sizeof(aBuf), "~ Win points: %d", pStats->m_WinPoints);
 	GameServer()->SendChatTarget(pRequestingPlayer->GetCid(), aBuf);
 
-	str_format(aBuf, sizeof(aBuf), "~ Seconds in game: %d", pStats->m_TicksInGame / Server()->TickSpeed());
+	str_format(aBuf, sizeof(aBuf), "~ Seconds in game: %d", pStats->m_TicksAlive / Server()->TickSpeed());
 	GameServer()->SendChatTarget(pRequestingPlayer->GetCid(), aBuf);
 
-	str_format(aBuf, sizeof(aBuf), "~ Seconds caught: %d", pStats->m_TicksCaught / Server()->TickSpeed());
+	str_format(aBuf, sizeof(aBuf), "~ Seconds caught: %d", pStats->m_TicksDead / Server()->TickSpeed());
 	GameServer()->SendChatTarget(pRequestingPlayer->GetCid(), aBuf);
 }
 
@@ -60,10 +60,10 @@ void CGameControllerZcatch::OnShowRoundStats(const CSqlStatsPlayer *pStats, clas
 	CGameControllerInstagib::OnShowRoundStats(pStats, pRequestingPlayer, pRequestedName);
 
 	char aBuf[512];
-	str_format(aBuf, sizeof(aBuf), "~ Seconds in game: %d", pStats->m_TicksInGame / Server()->TickSpeed());
+	str_format(aBuf, sizeof(aBuf), "~ Seconds in game: %d", pStats->m_TicksAlive / Server()->TickSpeed());
 	GameServer()->SendChatTarget(pRequestingPlayer->GetCid(), aBuf);
 
-	str_format(aBuf, sizeof(aBuf), "~ Seconds caught: %d", pStats->m_TicksCaught / Server()->TickSpeed());
+	str_format(aBuf, sizeof(aBuf), "~ Seconds caught: %d", pStats->m_TicksDead / Server()->TickSpeed());
 	GameServer()->SendChatTarget(pRequestingPlayer->GetCid(), aBuf);
 
 	str_format(aBuf, sizeof(aBuf), "~ Kills that give points on win: %d", pRequestingPlayer->m_KillsThatCount);

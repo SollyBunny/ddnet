@@ -63,7 +63,7 @@ void CGameControllerZcatch::UpdateCatchTicks(class CPlayer *pPlayer, ECatchUpdat
 			// dbg_assert(pPlayer->m_IsDead == true, "alive player had dead tick set on round end");
 
 			str_format(aBuf, sizeof(aBuf), "'%s' was caught for %d ticks", Server()->ClientName(pPlayer->GetCid()), Ticks);
-			pPlayer->m_Stats.m_TicksCaught += Ticks;
+			pPlayer->m_Stats.m_TicksDead += Ticks;
 		}
 		else if(pPlayer->m_AliveSinceTick)
 		{
@@ -71,7 +71,7 @@ void CGameControllerZcatch::UpdateCatchTicks(class CPlayer *pPlayer, ECatchUpdat
 			dbg_assert(pPlayer->m_IsDead == false, "dead player had alive tick set on round end");
 
 			str_format(aBuf, sizeof(aBuf), "'%s' was in game for %d ticks", Server()->ClientName(pPlayer->GetCid()), Ticks);
-			pPlayer->m_Stats.m_TicksInGame += Ticks;
+			pPlayer->m_Stats.m_TicksAlive += Ticks;
 		}
 
 		pPlayer->m_DeadSinceTick = 0;
@@ -90,7 +90,7 @@ void CGameControllerZcatch::UpdateCatchTicks(class CPlayer *pPlayer, ECatchUpdat
 			str_format(aBuf, sizeof(aBuf), "'%s' got caught and was alive for %d ticks", Server()->ClientName(pPlayer->GetCid()), Ticks);
 			if(g_Config.m_SvDebugCatch)
 				SendChat(-1, TEAM_ALL, aBuf);
-			pPlayer->m_Stats.m_TicksInGame += Ticks;
+			pPlayer->m_Stats.m_TicksAlive += Ticks;
 		}
 		else if(g_Config.m_SvDebugCatch)
 		{
@@ -111,7 +111,7 @@ void CGameControllerZcatch::UpdateCatchTicks(class CPlayer *pPlayer, ECatchUpdat
 			str_format(aBuf, sizeof(aBuf), "'%s' got released and was dead for %d ticks", Server()->ClientName(pPlayer->GetCid()), Ticks);
 			if(g_Config.m_SvDebugCatch)
 				SendChat(-1, TEAM_ALL, aBuf);
-			pPlayer->m_Stats.m_TicksCaught += Ticks;
+			pPlayer->m_Stats.m_TicksDead += Ticks;
 		}
 		else if(g_Config.m_SvDebugCatch)
 		{

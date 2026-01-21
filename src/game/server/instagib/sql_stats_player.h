@@ -60,8 +60,8 @@ public:
 	 * zCatch                            *
 	 *************************************/
 
-	int m_TicksCaught; // TODO: this is not tracked yet
-	int m_TicksInGame; // TODO: this is not tracked yet
+	int m_TicksDead;
+	int m_TicksAlive;
 
 	/*************************************
 	 * foot                              *
@@ -128,8 +128,8 @@ public:
 		m_FlagGrabs = 0;
 		m_FlaggerKills = 0;
 		m_Wallshots = 0;
-		m_TicksCaught = 0;
-		m_TicksInGame = 0;
+		m_TicksDead = 0;
+		m_TicksAlive = 0;
 		m_Goals = 0;
 		m_OwnGoals = 0;
 		m_CollateralKills = 0;
