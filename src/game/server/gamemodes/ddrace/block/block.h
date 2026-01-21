@@ -16,5 +16,6 @@ public:
 	bool CanSelfkillWhileFrozen(class CPlayer *pPlayer) override { return true; }
 	bool HasSuicidePenalty(CPlayer *pPlayer) const override { return false; }
 	bool IsDDRaceGameType() const override { return true; }
+	bool IsBlockGameType() const override { return true; }
 };
 #endif

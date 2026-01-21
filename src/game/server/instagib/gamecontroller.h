@@ -1271,6 +1271,7 @@ public:
 	virtual bool IsZcatchGameType() const { return false; }
 	bool IsVanillaGameType() const { return m_IsVanillaGameType; }
 	virtual bool IsDDRaceGameType() const { return true; }
+	virtual bool IsBlockGameType() const { return false; }
 	virtual bool IsFootGameType() const { return false; }
 	virtual bool IsBombGameType() const { return false; }
 	virtual bool UnfreezeOnHammerHit() const { return true; }
