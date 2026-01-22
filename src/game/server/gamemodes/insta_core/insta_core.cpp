@@ -1113,7 +1113,15 @@ bool CGameControllerInstaCore::SendClientInfo7(const protocol7::CNetMsg_Sv_Clien
 	CPlayer *pPlayer = GetPlayerOrNullptr(Info.m_ClientId);
 	if(pPlayer)
 		Info.m_Team = GetPlayerTeam(pPlayer, true);
-	Server()->SendPackMsg(pClientInfo, MSGFLAG_VITAL | MSGFLAG_NORECORD, ClientId);
+	Server()->SendPackMsg(&Info, MSGFLAG_VITAL | MSGFLAG_NORECORD, ClientId);
+	return true;
+}
+
+bool CGameControllerInstaCore::SendClientDrop7(const protocol7::CNetMsg_Sv_ClientDrop *pMsg, int ClientId)
+{
+	protocol7::CNetMsg_Sv_ClientDrop Msg = *pMsg;
+	// CPlayer *pPlayer = GetPlayerOrNullptr(Msg.m_ClientId);
+	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL | MSGFLAG_NORECORD, ClientId);
 	return true;
 }
 

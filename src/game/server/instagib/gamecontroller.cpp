@@ -163,6 +163,14 @@ bool IGameController::SendClientInfo7(
 	return true;
 }
 
+bool IGameController::SendClientDrop7(
+	const protocol7::CNetMsg_Sv_ClientDrop *pMsg,
+	int ClientId)
+{
+	Server()->SendPackMsg(pMsg, MSGFLAG_VITAL | MSGFLAG_NORECORD, ClientId);
+	return true;
+}
+
 int IGameController::GetPlayerTeam(CPlayer *pPlayer, bool Sixup)
 {
 	return pPlayer->GetTeam();

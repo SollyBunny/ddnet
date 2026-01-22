@@ -731,6 +731,25 @@ public:
 		int ClientId);
 
 	/*
+		Function: SendClientDrop7
+			Called every time the server sends a 0.7
+			Sv_ClientDrop net message.
+			You can overwrite this to read the values being sent
+			and also alter them.
+			And also abort the send by not calling Server()->SendPackMsg()
+
+		Arguments:
+			pMsg - the info that was filled by the ddnet-server that it would like to send
+			ClientId - Client that receives this net message
+
+		Returns:
+			return true when the message was actually sent
+	*/
+	virtual bool SendClientDrop7(
+		const protocol7::CNetMsg_Sv_ClientDrop *pMsg,
+		int ClientId);
+
+	/*
 		Function: GetPlayerTeam
 			wraps CPlayer::GetTeam()
 			to spoof fake teams for different versions

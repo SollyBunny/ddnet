@@ -1921,7 +1921,9 @@ void CGameContext::OnClientDrop(int ClientId, const char *pReason)
 	Msg.m_ClientId = ClientId;
 	Msg.m_pReason = pReason;
 	Msg.m_Silent = false;
-	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL | MSGFLAG_NORECORD, -1);
+	// ddnet-insta uses a loop instead of -1 and SendClientDrop7 instead of SendPackMsg
+	for(int i = 0; i < MAX_CLIENTS; i++)
+		m_pController->SendClientDrop7(&Msg, i);
 
 	Server()->ExpireServerInfo();
 }
@@ -2938,7 +2940,8 @@ void CGameContext::OnChangeInfoNetMessage(const CNetMsg_Cl_ChangeInfo *pMsg, int
 		{
 			if(i != ClientId)
 			{
-				Server()->SendPackMsg(&Drop, MSGFLAG_VITAL | MSGFLAG_NORECORD, i);
+				// ddnet-insta uses SendClientDrop7 instead of SendPackMsg
+				m_pController->SendClientDrop7(&Drop, i);
 				// ddnet-insta uses SendClientInfo7 instead of SendPackMsg
 				m_pController->SendClientInfo7(&Info, i);
 			}
