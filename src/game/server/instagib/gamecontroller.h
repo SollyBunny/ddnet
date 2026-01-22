@@ -712,12 +712,32 @@ public:
 	virtual bool OnVoteNetMessage(const CNetMsg_Cl_Vote *pMsg, int ClientId) { return false; }
 
 	/*
+		Function: SendClientInfo7
+			Called every time the server sends a 0.7
+			Sv_ClientInfo net message.
+			You can overwrite this to read the values being sent
+			and also alter them.
+			And also abort the send by not calling Server()->SendPackMsg()
+
+		Arguments:
+			pClientInfo - the client info that was filled by the ddnet-server that it would like to send
+			ClientId - Client that receives this net message
+
+		Returns:
+			return true when the message was actually sent
+	*/
+	virtual bool SendClientInfo7(
+		const protocol7::CNetMsg_Sv_ClientInfo *pClientInfo,
+		int ClientId);
+
+	/*
 		Function: GetPlayerTeam
 			wraps CPlayer::GetTeam()
 			to spoof fake teams for different versions
 			this can be used to place players into spec for 0.6 and dead spec for 0.7
 
 		Arguments:
+			pPlayer - The player who we ask for the team
 			Sixup - will be true if that team value is sent to a 0.7 connection and false otherwise
 
 		Returns:

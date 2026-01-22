@@ -12,6 +12,7 @@
 #include <engine/shared/protocol.h>
 
 #include <generated/protocol.h>
+#include <generated/protocol7.h>
 
 #include <game/gamecore.h>
 #include <game/server/entities/character.h>
@@ -1104,6 +1105,16 @@ void CGameControllerInstaCore::SnapDDNetPlayer(int SnappingClient, CPlayer *pPla
 
 	if(g_Config.m_SvHideAdmins && Server()->GetAuthedState(SnappingClient) == AUTHED_NO)
 		pDDNetPlayer->m_AuthLevel = AUTHED_NO;
+}
+
+bool CGameControllerInstaCore::SendClientInfo7(const protocol7::CNetMsg_Sv_ClientInfo *pClientInfo, int ClientId)
+{
+	protocol7::CNetMsg_Sv_ClientInfo Info = *pClientInfo;
+	CPlayer *pPlayer = GetPlayerOrNullptr(Info.m_ClientId);
+	if(pPlayer)
+		Info.m_Team = GetPlayerTeam(pPlayer, true);
+	Server()->SendPackMsg(pClientInfo, MSGFLAG_VITAL | MSGFLAG_NORECORD, ClientId);
+	return true;
 }
 
 bool CGameControllerInstaCore::OnClientPacket(int ClientId, bool Sys, int MsgId, CNetChunk *pPacket, CUnpacker *pUnpacker)

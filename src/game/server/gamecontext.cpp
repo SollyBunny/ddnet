@@ -1736,7 +1736,7 @@ void CGameContext::OnClientEnter(int ClientId)
 	protocol7::CNetMsg_Sv_ClientInfo NewClientInfoMsg;
 	NewClientInfoMsg.m_ClientId = ClientId;
 	NewClientInfoMsg.m_Local = 0;
-	NewClientInfoMsg.m_Team = m_pController->GetPlayerTeam(pNewPlayer, true); // ddnet-insta
+	NewClientInfoMsg.m_Team = pNewPlayer->GetTeam();
 	NewClientInfoMsg.m_pName = Server()->ClientName(ClientId);
 	NewClientInfoMsg.m_pClan = Server()->ClientClan(ClientId);
 	NewClientInfoMsg.m_Country = Server()->ClientCountry(ClientId);
@@ -1760,7 +1760,7 @@ void CGameContext::OnClientEnter(int ClientId)
 		CPlayer *pPlayer = m_apPlayers[i];
 
 		if(Server()->IsSixup(i))
-			Server()->SendPackMsg(&NewClientInfoMsg, MSGFLAG_VITAL | MSGFLAG_NORECORD, i);
+			m_pController->SendClientInfo7(&NewClientInfoMsg, i); // ddnet-insta uses SendClientInfo7 instead of SendPackMsg
 
 		if(Server()->IsSixup(ClientId))
 		{
@@ -1768,7 +1768,7 @@ void CGameContext::OnClientEnter(int ClientId)
 			protocol7::CNetMsg_Sv_ClientInfo ClientInfoMsg;
 			ClientInfoMsg.m_ClientId = i;
 			ClientInfoMsg.m_Local = 0;
-			ClientInfoMsg.m_Team = m_pController->GetPlayerTeam(pPlayer, true); // ddnet-insta
+			ClientInfoMsg.m_Team = pPlayer->GetTeam();
 			ClientInfoMsg.m_pName = Server()->ClientName(i);
 			ClientInfoMsg.m_pClan = Server()->ClientClan(i);
 			ClientInfoMsg.m_Country = Server()->ClientCountry(i);
@@ -1783,7 +1783,8 @@ void CGameContext::OnClientEnter(int ClientId)
 				ClientInfoMsg.m_aSkinPartColors[p] = pPlayer->m_TeeInfos.m_aSkinPartColors[p];
 			}
 
-			Server()->SendPackMsg(&ClientInfoMsg, MSGFLAG_VITAL | MSGFLAG_NORECORD, ClientId);
+			// ddnet-insta uses SendClientInfo7 instead of SendPackMsg
+			m_pController->SendClientInfo7(&ClientInfoMsg, i);
 		}
 	}
 
@@ -1791,7 +1792,8 @@ void CGameContext::OnClientEnter(int ClientId)
 	if(Server()->IsSixup(ClientId))
 	{
 		NewClientInfoMsg.m_Local = 1;
-		Server()->SendPackMsg(&NewClientInfoMsg, MSGFLAG_VITAL | MSGFLAG_NORECORD, ClientId);
+		// ddnet-insta uses SendClientInfo7 instead of SendPackMsg
+		m_pController->SendClientInfo7(&NewClientInfoMsg, ClientId);
 	}
 
 	// initial chat delay
@@ -2937,7 +2939,8 @@ void CGameContext::OnChangeInfoNetMessage(const CNetMsg_Cl_ChangeInfo *pMsg, int
 			if(i != ClientId)
 			{
 				Server()->SendPackMsg(&Drop, MSGFLAG_VITAL | MSGFLAG_NORECORD, i);
-				Server()->SendPackMsg(&Info, MSGFLAG_VITAL | MSGFLAG_NORECORD, i);
+				// ddnet-insta uses SendClientInfo7 instead of SendPackMsg
+				m_pController->SendClientInfo7(&Info, i);
 			}
 		}
 	}

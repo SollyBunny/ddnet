@@ -155,6 +155,14 @@ int IGameController::FreeInGameSlots()
 	return maximum(0, Slots - Players);
 }
 
+bool IGameController::SendClientInfo7(
+	const protocol7::CNetMsg_Sv_ClientInfo *pClientInfo,
+	int ClientId)
+{
+	Server()->SendPackMsg(pClientInfo, MSGFLAG_VITAL | MSGFLAG_NORECORD, ClientId);
+	return true;
+}
+
 int IGameController::GetPlayerTeam(CPlayer *pPlayer, bool Sixup)
 {
 	return pPlayer->GetTeam();
