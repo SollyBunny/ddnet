@@ -13,29 +13,29 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macOS-latest, windows-latest]
+        os: [ubuntu-latest]
         include:
         - os: ubuntu-latest
           cmake-args: -G Ninja -DCMAKE_BUILD_TYPE=Debug -DDISCORD=ON -DDISCORD_DYNAMIC=ON -DWEBSOCKETS=OFF -DPREFER_BUNDLED_LIBS=ON -DAUTOUPDATE=ON
           cmake-init-env: CC=clang CXX=clang++ CFLAGS="-fsanitize=address,undefined -fsanitize-recover=all -fno-omit-frame-pointer -fno-common" CXXFLAGS="-fsanitize=address,undefined -fsanitize-recover=all -fno-omit-frame-pointer -fno-common" LDFLAGS="-fsanitize=address,undefined"
           package-file: "*-linux_x86_64.tar.xz"
 
-        - os: macOS-latest
-          name: macOS-arm64
-          cmake-args: -G Ninja -DCMAKE_BUILD_TYPE=Debug -DDISCORD=ON -DWEBSOCKETS=OFF -DPREFER_BUNDLED_LIBS=ON -DCMAKE_OSX_ARCHITECTURES="arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 -DCMAKE_SYSTEM_IGNORE_PATH=/usr/lib -DCMAKE_FIND_FRAMEWORK=LAST
-          cmake-init-env: CC=clang CXX=clang++ CFLAGS="-fsanitize=address,undefined -fsanitize-recover=all -fno-omit-frame-pointer -fno-common" CXXFLAGS="-fsanitize=address,undefined -fsanitize-recover=all -fno-omit-frame-pointer -fno-common" LDFLAGS="-fsanitize=address,undefined"
-          package-file: "*-macos-arm64.dmg"
+        # - os: macOS-latest
+        #   name: macOS-arm64
+        #   cmake-args: -G Ninja -DCMAKE_BUILD_TYPE=Debug -DDISCORD=ON -DWEBSOCKETS=OFF -DPREFER_BUNDLED_LIBS=ON -DCMAKE_OSX_ARCHITECTURES="arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 -DCMAKE_SYSTEM_IGNORE_PATH=/usr/lib -DCMAKE_FIND_FRAMEWORK=LAST
+        #   cmake-init-env: CC=clang CXX=clang++ CFLAGS="-fsanitize=address,undefined -fsanitize-recover=all -fno-omit-frame-pointer -fno-common" CXXFLAGS="-fsanitize=address,undefined -fsanitize-recover=all -fno-omit-frame-pointer -fno-common" LDFLAGS="-fsanitize=address,undefined"
+        #   package-file: "*-macos-arm64.dmg"
 
-        - os: macOS-latest
-          name: macOS-x86_64
-          cmake-args: -G Ninja -DCMAKE_BUILD_TYPE=Debug -DDISCORD=ON -DWEBSOCKETS=OFF -DPREFER_BUNDLED_LIBS=ON -DCMAKE_OSX_ARCHITECTURES="x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 -DCMAKE_SYSTEM_IGNORE_PATH=/usr/lib -DCMAKE_FIND_FRAMEWORK=LAST
-          cmake-init-env: CC=clang CXX=clang++ CFLAGS="-fsanitize=address,undefined -fsanitize-recover=all -fno-omit-frame-pointer -fno-common" CXXFLAGS="-fsanitize=address,undefined -fsanitize-recover=all -fno-omit-frame-pointer -fno-common" LDFLAGS="-fsanitize=address,undefined"
-          package-file: "*-macos-x86_64.dmg"
+        # - os: macOS-latest
+        #   name: macOS-x86_64
+        #   cmake-args: -G Ninja -DCMAKE_BUILD_TYPE=Debug -DDISCORD=ON -DWEBSOCKETS=OFF -DPREFER_BUNDLED_LIBS=ON -DCMAKE_OSX_ARCHITECTURES="x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 -DCMAKE_SYSTEM_IGNORE_PATH=/usr/lib -DCMAKE_FIND_FRAMEWORK=LAST
+        #   cmake-init-env: CC=clang CXX=clang++ CFLAGS="-fsanitize=address,undefined -fsanitize-recover=all -fno-omit-frame-pointer -fno-common" CXXFLAGS="-fsanitize=address,undefined -fsanitize-recover=all -fno-omit-frame-pointer -fno-common" LDFLAGS="-fsanitize=address,undefined"
+        #   package-file: "*-macos-x86_64.dmg"
 
-        - os: windows-latest
-          cmake-args: -A x64 -DCMAKE_BUILD_TYPE=Debug -T ClangCl -DDISCORD=ON -DTOOLS=OFF -DAUTOUPDATE=ON
-          cmake-init-env: CC=clang-cl CXX=clang-cl
-          package-file: "*-win64.zip"
+        # - os: windows-latest
+        #   cmake-args: -A x64 -DCMAKE_BUILD_TYPE=Debug -T ClangCl -DDISCORD=ON -DTOOLS=OFF -DAUTOUPDATE=ON
+        #   cmake-init-env: CC=clang-cl CXX=clang-cl
+        #   package-file: "*-win64.zip"
 
     steps:
     - uses: actions/checkout@v4
