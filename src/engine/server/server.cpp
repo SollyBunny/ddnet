@@ -260,7 +260,6 @@ CServer::CServer()
 
 	m_ServerInfoFirstRequest = 0;
 	m_ServerInfoNumRequests = 0;
-	m_ServerInfoNeedsUpdate = false;
 
 #ifdef CONF_FAMILY_UNIX
 	m_ConnLoggingSocketCreated = false;
@@ -2596,6 +2595,12 @@ void CServer::ExpireServerInfo()
 	m_ServerInfoNeedsUpdate = true;
 }
 
+void CServer::ExpireServerInfoAndQueueResend()
+{
+	m_ServerInfoNeedsUpdate = true;
+	m_ServerInfoNeedsResend = true;
+}
+
 void CServer::UpdateRegisterServerInfo()
 {
 	// count the players
@@ -2765,6 +2770,7 @@ void CServer::UpdateServerInfo(bool Resend)
 				}
 			}
 		}
+		m_ServerInfoNeedsResend = false;
 	}
 
 	m_ServerInfoNeedsUpdate = false;
@@ -3169,7 +3175,7 @@ int CServer::Run()
 
 		m_GameStartTime = time_get();
 
-		UpdateServerInfo();
+		UpdateServerInfo(false);
 		while(m_RunServer < STOPPING)
 		{
 			if(NonActive)
@@ -3247,7 +3253,7 @@ int CServer::Run()
 					{
 						break;
 					}
-					UpdateServerInfo(true);
+					ExpireServerInfo();
 				}
 				else
 				{
@@ -3333,7 +3339,9 @@ int CServer::Run()
 				m_pRegister->Update();
 
 				if(m_ServerInfoNeedsUpdate)
-					UpdateServerInfo();
+				{
+					UpdateServerInfo(m_ServerInfoNeedsResend);
+				}
 
 				Antibot()->OnEngineTick();
 
@@ -4107,7 +4115,7 @@ void CServer::ConchainSpecialInfoupdate(IConsole::IResult *pResult, void *pUserD
 	{
 		CServer *pThis = static_cast<CServer *>(pUserData);
 		str_clean_whitespaces(pThis->Config()->m_SvName);
-		pThis->UpdateServerInfo(true);
+		pThis->ExpireServerInfoAndQueueResend();
 	}
 }
 

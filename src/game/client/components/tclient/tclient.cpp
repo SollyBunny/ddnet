@@ -236,17 +236,18 @@ void CTClient::OnMessage(int MsgType, void *pRawMsg)
 
 						char aBuf[MAX_NAME_LENGTH + 4];
 						str_format(aBuf, sizeof(aBuf), "\'%s\'", GameClient()->m_aClients[i].m_aName);
-						if(str_find_nocase(aBuf, pMsg->m_pDescription) == 0)
+						if(str_find_nocase(pMsg->m_pDescription, aBuf) != nullptr)
 						{
 							pVoteCaller = &GameClient()->m_aClients[i];
 							CallerId = i;
+							break;
 						}
 					}
 					if(pVoteCaller)
 					{
 						bool Friend = pVoteCaller->m_Friend;
 						bool SameTeam = GameClient()->m_Teams.Team(GameClient()->m_Snap.m_LocalClientId) == pVoteCaller->m_Team && pVoteCaller->m_Team != 0;
-						bool MySelf = CallerId == GameClient()->m_Snap.m_LocalClientId;
+						bool MySelf = CallerId == LocalId;
 
 						if(!Friend && !SameTeam && !MySelf)
 						{
