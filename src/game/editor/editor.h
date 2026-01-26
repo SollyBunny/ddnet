@@ -521,8 +521,6 @@ public:
 	CQuadArtParameters m_QuadArtParameters;
 	void AddQuadArt(bool IgnoreHistory = false);
 
-	void PlaceBorderTiles();
-
 	// editor_ui.cpp
 	void UpdateTooltip(const void *pId, const CUIRect *pRect, const char *pToolTip);
 	ColorRGBA GetButtonColor(const void *pId, int Checked);
@@ -699,9 +697,6 @@ public:
 	static bool ReplaceSoundCallback(const char *pFilename, int StorageType, void *pUser);
 	static bool AddImage(const char *pFilename, int StorageType, void *pUser);
 	static bool AddSound(const char *pFilename, int StorageType, void *pUser);
-
-	bool IsEnvelopeUsed(int EnvelopeIndex) const;
-	void RemoveUnusedEnvelopes();
 
 	static bool IsVanillaImage(const char *pImage);
 
