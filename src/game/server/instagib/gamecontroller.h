@@ -1291,7 +1291,6 @@ public:
 	*/
 	virtual int FreeInGameSlots();
 	virtual CClientMask FreezeDamageIndicatorMask(CCharacter *pChr);
-	virtual void OnDDRaceTimeLoad(class CPlayer *pPlayer, float Time);
 
 	// See also ddnet's SetArmorProgress() and ddnet-insta's SetArmorProgressEmpty()
 	// used to keep armor progress bar in ddnet gametype

@@ -1014,9 +1014,6 @@ void CPlayer::ProcessScoreResult(CScorePlayerResult &Result)
 			{
 				GameServer()->Score()->PlayerData(m_ClientId)->Set(Result.m_Data.m_Info.m_Time.value(), Result.m_Data.m_Info.m_aTimeCp);
 				Server()->SetClientScore(m_ClientId, Result.m_Data.m_Info.m_Time.value());
-
-				// ddnet-insta
-				GameServer()->m_pController->OnDDRaceTimeLoad(this, Result.m_Data.m_Info.m_Time.value());
 			}
 			Server()->ExpireServerInfo();
 			int Birthday = Result.m_Data.m_Info.m_Birthday;

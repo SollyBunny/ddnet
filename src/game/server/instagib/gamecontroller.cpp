@@ -86,11 +86,6 @@ void IGameController::LogKillMessage(CCharacter *pVictim, int Killer, int Weapon
 	}
 }
 
-void IGameController::OnDDRaceTimeLoad(class CPlayer *pPlayer, float Time)
-{
-	pPlayer->m_Score = Time;
-}
-
 int IGameController::SnapRoundStartTick(int SnappingClient)
 {
 	if(
