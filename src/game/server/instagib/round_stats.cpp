@@ -113,8 +113,6 @@ void IGameController::GetRoundEndStatsStrJson(char *pBuf, size_t Size)
 				Writer.WriteIntValue(pPlayer->m_RoundStats.m_Kills);
 				Writer.WriteAttribute("deaths");
 				Writer.WriteIntValue(pPlayer->m_RoundStats.m_Deaths);
-				Writer.WriteAttribute("ratio");
-				Writer.WriteIntValue(CalcKillDeathRatio(pPlayer->m_RoundStats.m_Kills, pPlayer->m_RoundStats.m_Deaths));
 			}
 			Writer.WriteAttribute("hooks");
 			Writer.WriteIntValue(pPlayer->m_RoundStats.m_Hooks);
