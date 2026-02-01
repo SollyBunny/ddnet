@@ -1809,7 +1809,7 @@ void CGameContext::OnClientEnter(int ClientId)
 			}
 
 			// ddnet-insta uses SendClientInfo7 instead of SendPackMsg
-			m_pController->SendClientInfo7(&ClientInfoMsg, i);
+			m_pController->SendClientInfo7(&ClientInfoMsg, ClientId);
 		}
 	}
 
