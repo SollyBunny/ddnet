@@ -353,7 +353,7 @@ class CGameContext : public IGameServer
 	void OnShutdown(void *pPersistentData) override;
 
 	void OnTick() override;
-	void OnSnap(int ClientId, bool GlobalSnap) override;
+	void OnSnap(int ClientId, bool GlobalSnap, bool RecordingDemo) override;
 	void OnPostGlobalSnap() override;
 
 	void UpdatePlayerMaps();
@@ -477,6 +477,7 @@ private:
 	static void ConUnLaser(IConsole::IResult *pResult, void *pUserData);
 	static void ConUnJetpack(IConsole::IResult *pResult, void *pUserData);
 	static void ConUnEndlessJump(IConsole::IResult *pResult, void *pUserData);
+	static void ConSetSwitch(IConsole::IResult *pResult, void *pUserData);
 	static void ConUnWeapons(IConsole::IResult *pResult, void *pUserData);
 	static void ConAddWeapon(IConsole::IResult *pResult, void *pUserData);
 	static void ConRemoveWeapon(IConsole::IResult *pResult, void *pUserData);
@@ -578,6 +579,7 @@ private:
 	static void ConPracticeUnNinja(IConsole::IResult *pResult, void *pUserData);
 	static void ConPracticeEndlessHook(IConsole::IResult *pResult, void *pUserData);
 	static void ConPracticeUnEndlessHook(IConsole::IResult *pResult, void *pUserData);
+	static void ConPracticeSetSwitch(IConsole::IResult *pResult, void *pUserData);
 	static void ConPracticeToggleInvincible(IConsole::IResult *pResult, void *pUserData);
 	static void ConPracticeToggleCollision(IConsole::IResult *pResult, void *pUserData);
 	static void ConPracticeToggleHookCollision(IConsole::IResult *pResult, void *pUserData);
