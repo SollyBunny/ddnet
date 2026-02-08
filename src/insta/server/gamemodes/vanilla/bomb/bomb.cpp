@@ -1,5 +1,7 @@
 #include "bomb.h"
 
+#include <base/log.h>
+
 #include <engine/server.h>
 #include <engine/shared/config.h>
 #include <engine/shared/linereader.h>
@@ -327,18 +329,18 @@ void CGameControllerBomb::OnRoundEnd()
 	{
 		if(!pPlayer)
 			continue;
-
-		if(pPlayer->m_BombState != CPlayer::EBombState::ALIVE)
+		if(!IsWinner(pPlayer, nullptr, 0))
 			continue;
 
 		char aBuf[128];
-		str_format(aBuf, sizeof(aBuf), "'%s' won the round!", Server()->ClientName(pPlayer->GetCid()));
+		str_format(
+			aBuf,
+			sizeof(aBuf),
+			"'%s' won the round!%s",
+			Server()->ClientName(pPlayer->GetCid()),
+			pPlayer->m_IsBomb ? " (as bomb! +1 extra win point)" : "");
 		GameServer()->SendChat(-1, TEAM_ALL, aBuf);
 		WinnerAnnounced = true;
-
-		pPlayer->m_Stats.m_Wins++;
-		pPlayer->m_Stats.m_Losses--;
-		pPlayer->AddScore(1);
 		break;
 	}
 
@@ -393,6 +395,49 @@ bool CGameControllerBomb::IsPlaying(const CPlayer *pPlayer)
 	//
 	// only spectators that are in state SPECTATING are considered pure spectators
 	return CGameControllerBasePvp::IsPlaying(pPlayer) || pPlayer->m_BombState == CPlayer::EBombState::DEAD;
+}
+
+int CGameControllerBomb::WinPointsForWin(const CPlayer *pPlayer)
+{
+	int Kills = pPlayer->m_RoundStats.m_Kills;
+	int Points = 0;
+	// yes it is possible to make 0 win points
+	// even if winning
+	if(Kills < 1) // 0
+		Points = 0;
+	else if(Kills <= 6) // 1-6
+		Points = 1;
+	else if(Kills <= 8) // 7-8
+		Points = 2;
+	else if(Kills == 9) // 9
+		Points = 3;
+	else if(Kills == 10) // 10
+		Points = 5;
+	else if(Kills == 11) // 11
+		Points = 7;
+	else if(Kills == 12) // 12
+		Points = 9;
+	else if(Kills == 13) // 13
+		Points = 11;
+	else if(Kills == 14) // 14
+		Points = 12;
+	else if(Kills == 15) // 15
+		Points = 14;
+	else // 16+
+		Points = 16;
+
+	// https://github.com/ddnet-insta/ddnet-insta/issues/551
+	if(pPlayer->m_IsBomb)
+		Points++;
+
+	log_info(
+		"bomb",
+		"player '%s' earned %d win_points for winning with %d kills%s",
+		Server()->ClientName(pPlayer->GetCid()),
+		Points,
+		Kills,
+		pPlayer->m_IsBomb ? " (win as bomb bonus)" : "");
+	return Points;
 }
 
 void CGameControllerBomb::OnShowStatsAll(const CSqlStatsPlayer *pStats, class CPlayer *pRequestingPlayer, const char *pRequestedName)
