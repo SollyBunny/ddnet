@@ -171,6 +171,12 @@ bool CGameControllerBomb::DoWincheckRound()
 	if(!m_RoundActive || m_Warmup > 0)
 		return false;
 
+	// also allow winning by reaching scorelimit
+	// if sv_scorelimit is set
+	// https://github.com/ddnet-insta/ddnet-insta/issues/558
+	if(IGameController::DoWincheckRound())
+		return true;
+
 	if(Server()->ClientCount() <= 1)
 	{
 		EndRound();
