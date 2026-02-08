@@ -1,5 +1,6 @@
 #include "bomb.h"
 
+#include <base/dbg.h>
 #include <base/log.h>
 
 #include <engine/server.h>
@@ -59,12 +60,6 @@ void CGameControllerBomb::Tick()
 			continue;
 
 		pPlayer->ResetLastToucherAfterSeconds(3);
-
-		if(!m_RoundActive)
-			continue;
-
-		if(pPlayer->m_BombState == CPlayer::EBombState::DEAD && !m_Warmup && pPlayer->GetTeam() != TEAM_SPECTATORS)
-			pPlayer->SetTeamRaw(TEAM_SPECTATORS);
 	}
 
 	if(m_RoundActive)
@@ -109,10 +104,10 @@ void CGameControllerBomb::OnReset()
 		if(!pPlayer)
 			continue;
 
-		if(pPlayer->m_BombState >= CPlayer::EBombState::DEAD)
+		pPlayer->m_IsBomb = false;
+		if(pPlayer->m_BombState != CPlayer::EBombState::SPECTATING)
 		{
 			pPlayer->m_BombState = CPlayer::EBombState::DEAD;
-			pPlayer->m_IsBomb = false;
 		}
 	}
 	m_RoundActive = false;
@@ -120,8 +115,7 @@ void CGameControllerBomb::OnReset()
 
 int CGameControllerBomb::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon)
 {
-	pVictim->GetPlayer()->m_BombState = CPlayer::EBombState::DEAD;
-	pVictim->GetPlayer()->m_IsBomb = false;
+	EliminatePlayer(pVictim->GetPlayer());
 	return CGameControllerBasePvp::OnCharacterDeath(pVictim, pKiller, Weapon);
 }
 
@@ -230,7 +224,6 @@ void CGameControllerBomb::OnCharacterSpawn(class CCharacter *pChr)
 	pChr->GiveWeapon(WEAPON_HAMMER, false, -1);
 }
 
-
 void CGameControllerBomb::OnPlayerConnect(CPlayer *pPlayer)
 {
 	CGameControllerBasePvp::OnPlayerConnect(pPlayer);
@@ -312,28 +305,13 @@ bool CGameControllerBomb::CanJoinTeam(int Team, int NotThisId, char *pErrorReaso
 	if(!pPlayer)
 		return false;
 
-	if(!m_RoundActive && Team != TEAM_SPECTATORS)
+	if(m_RoundActive && Team != TEAM_SPECTATORS)
 	{
 		if(pErrorReason)
-			str_copy(pErrorReason, "", ErrorReasonSize);
-		// TODO: CanJoinTeam should be pure and not set any kind of bomb state
-		pPlayer->m_BombState = CPlayer::EBombState::DEAD;
-		return true;
+			str_copy(pErrorReason, "Wait until round end", ErrorReasonSize);
+		return false;
 	}
-
-	if(Team == TEAM_SPECTATORS)
-	{
-		if(pErrorReason)
-			str_copy(pErrorReason, "You are a spectator now\nYou won't join when a new round begins", ErrorReasonSize);
-		pPlayer->m_BombState = CPlayer::EBombState::SPECTATING;
-		pPlayer->m_IsBomb = false;
-		return true;
-	}
-
-	if(pErrorReason)
-		str_copy(pErrorReason, "You will join the game when the round is over", ErrorReasonSize);
-	pPlayer->m_BombState = CPlayer::EBombState::DEAD;
-	return false;
+	return true;
 }
 
 void CGameControllerBomb::OnRoundEnd()
@@ -501,15 +479,17 @@ void CGameControllerBomb::SetSkin(CPlayer *pPlayer)
 
 void CGameControllerBomb::EliminatePlayer(CPlayer *pPlayer, bool Collateral)
 {
+	if(pPlayer->m_BombState == CPlayer::EBombState::DEAD)
+		return;
+
 	char aBuf[128];
 	str_format(aBuf, sizeof(aBuf), "'%s' eliminated%s!", Server()->ClientName(pPlayer->GetCid()), Collateral ? " by collateral damage" : "");
 	GameServer()->SendChat(-1, TEAM_ALL, aBuf);
 
-	if(pPlayer->m_IsBomb)
-	{
-		pPlayer->m_IsBomb = false;
-		pPlayer->m_BombState = CPlayer::EBombState::DEAD;
-	}
+	pPlayer->m_IsBomb = false;
+	pPlayer->m_BombState = CPlayer::EBombState::DEAD;
+	dbg_assert(pPlayer->GetTeam() != TEAM_SPECTATORS, "spectator got eliminated");
+	pPlayer->SetTeamRaw(TEAM_SPECTATORS);
 }
 
 void CGameControllerBomb::ExplodeBomb(CPlayer *pPlayer, CPlayer *pKiller)
@@ -554,7 +534,6 @@ void CGameControllerBomb::ExplodeBomb(CPlayer *pPlayer, CPlayer *pKiller)
 
 	GameServer()->CreateExplosion(pPlayer->m_ViewPos, pPlayer->GetCid(), WEAPON_GAME, true, 0);
 	GameServer()->CreateSound(pPlayer->m_ViewPos, SOUND_GRENADE_EXPLODE);
-	pPlayer->m_BombState = CPlayer::EBombState::DEAD;
 }
 
 void CGameControllerBomb::UpdateTimer()
