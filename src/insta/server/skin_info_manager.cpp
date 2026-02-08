@@ -160,8 +160,5 @@ CTeeInfo CSkinInfoManager::TeeInfo()
 	Info.m_ColorFeet = ColorFeet();
 	Info.m_UseCustomColor = UseCustomColor();
 
-	// TODO: do we need to support setting 0.7 specific skins?
-	Info.ToSixup();
-
 	return Info;
 }
