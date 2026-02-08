@@ -11,6 +11,7 @@
 #include <game/server/gamecontext.h>
 #include <game/server/player.h>
 
+#include <insta/server/gamemodes/base_pvp/base_pvp.h>
 #include <insta/server/skin_info_manager.h>
 
 #include <random>
@@ -371,6 +372,27 @@ bool CGameControllerBomb::IsWinner(const CPlayer *pPlayer, char *pMessage, int S
 	// 	str_copy(pMessage, "+1 win was saved on your name (see /rank_wins).", SizeOfMessage);
 
 	return true;
+}
+
+bool CGameControllerBomb::IsLoser(const CPlayer *pPlayer)
+{
+	// you can only win running games
+	// so you can also only lose running games
+	if(m_RoundActive)
+		return false;
+
+	// rage quit as dead player is counted as a loss
+	// qutting mid game while being alive is not
+	return pPlayer->m_BombState == CPlayer::EBombState::DEAD;
+}
+
+bool CGameControllerBomb::IsPlaying(const CPlayer *pPlayer)
+{
+	// in bomb in game players and spectators that are waiting to join
+	// are considered active players
+	//
+	// only spectators that are in state SPECTATING are considered pure spectators
+	return CGameControllerBasePvp::IsPlaying(pPlayer) || pPlayer->m_BombState == CPlayer::EBombState::DEAD;
 }
 
 void CGameControllerBomb::OnShowStatsAll(const CSqlStatsPlayer *pStats, class CPlayer *pRequestingPlayer, const char *pRequestedName)
