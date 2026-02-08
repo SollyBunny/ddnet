@@ -60,10 +60,6 @@ void CGameControllerBomb::Tick()
 
 		pPlayer->ResetLastToucherAfterSeconds(3);
 
-		// In the source code it was done via GetAutoTeam, but it crashes...
-		if(pPlayer->m_BombState == CPlayer::EBombState::NONE)
-			pPlayer->m_BombState = pPlayer->GetTeam() == TEAM_SPECTATORS ? CPlayer::EBombState::SPECTATING : CPlayer::EBombState::DEAD;
-
 		if(!m_RoundActive)
 			continue;
 
@@ -232,6 +228,17 @@ void CGameControllerBomb::OnCharacterSpawn(class CCharacter *pChr)
 		return;
 
 	pChr->GiveWeapon(WEAPON_HAMMER, false, -1);
+}
+
+
+void CGameControllerBomb::OnPlayerConnect(CPlayer *pPlayer)
+{
+	CGameControllerBasePvp::OnPlayerConnect(pPlayer);
+
+	if(pPlayer->GetTeam() == TEAM_SPECTATORS)
+	{
+		pPlayer->m_BombState = CPlayer::EBombState::SPECTATING;
+	}
 }
 
 void CGameControllerBomb::OnAppliedDamage(int &Dmg, int &From, int &Weapon, CCharacter *pCharacter)

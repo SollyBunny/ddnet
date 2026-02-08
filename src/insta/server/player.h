@@ -348,13 +348,12 @@ public:
 
 	enum class EBombState
 	{
-		NONE,
 		SPECTATING,
 		DEAD,
 		ALIVE,
 	};
 
-	EBombState m_BombState = EBombState::NONE;
+	EBombState m_BombState = EBombState::DEAD;
 	bool m_IsBomb = false;
 	int m_ToBombTick = 0;
 

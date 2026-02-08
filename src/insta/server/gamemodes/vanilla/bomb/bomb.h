@@ -24,6 +24,7 @@ public:
 	void OnCharacterDeathImpl(CCharacter *pVictim, int Killer, int Weapon, bool SendKillMsg) override;
 	bool DoWincheckRound() override;
 	void OnCharacterSpawn(class CCharacter *pChr) override;
+	void OnPlayerConnect(CPlayer *pPlayer) override;
 	void OnAppliedDamage(int &Dmg, int &From, int &Weapon, CCharacter *pCharacter) override;
 	bool DecreaseHealthAndKill(int Dmg, int From, int Weapon, CCharacter *pCharacter) override { return false; }
 	bool OnEntity(int Index, int x, int y, int Layer, int Flags, bool Initial, int Number) override;
