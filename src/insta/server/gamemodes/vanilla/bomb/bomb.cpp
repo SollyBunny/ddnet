@@ -582,8 +582,7 @@ void CGameControllerBomb::StartBombRound()
 	{
 		if(!pPlayer)
 			continue;
-
-		if(pPlayer->m_BombState != CPlayer::EBombState::DEAD)
+		if(pPlayer->m_BombState == CPlayer::EBombState::SPECTATING)
 			continue;
 
 		pPlayer->SetTeamRaw(TEAM_FLOCK);
