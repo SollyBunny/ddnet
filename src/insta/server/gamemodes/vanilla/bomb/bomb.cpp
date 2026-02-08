@@ -309,6 +309,7 @@ bool CGameControllerBomb::CanJoinTeam(int Team, int NotThisId, char *pErrorReaso
 	{
 		if(pErrorReason)
 			str_copy(pErrorReason, "", ErrorReasonSize);
+		// TODO: CanJoinTeam should be pure and not set any kind of bomb state
 		pPlayer->m_BombState = CPlayer::EBombState::DEAD;
 		return true;
 	}
