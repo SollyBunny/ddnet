@@ -9,6 +9,7 @@
 #include <game/mapitems.h>
 #include <game/server/entities/character.h>
 #include <game/server/gamecontext.h>
+#include <game/server/player.h>
 
 #include <insta/server/skin_info_manager.h>
 
@@ -345,6 +346,31 @@ void CGameControllerBomb::OnRoundEnd()
 
 	DoWarmup(3);
 	CGameControllerBasePvp::OnRoundEnd();
+}
+
+bool CGameControllerBomb::IsWinner(const CPlayer *pPlayer, char *pMessage, int SizeOfMessage)
+{
+	if(pMessage && SizeOfMessage)
+		pMessage[0] = '\0';
+
+	// you can only win as last alive player
+	// used for disconnect IsWinner check
+	if(AmountOfPlayers(CPlayer::EBombState::ALIVE) > 1)
+		return false;
+	if(pPlayer->GetTeam() == TEAM_SPECTATORS)
+		return false;
+	// // TODO: use this
+	// if(pPlayer->m_IsDead)
+	// 	return false;
+	if(pPlayer->m_BombState != CPlayer::EBombState::ALIVE)
+		return false;
+	if(!m_RoundActive)
+		return false;
+
+	// if(pMessage)
+	// 	str_copy(pMessage, "+1 win was saved on your name (see /rank_wins).", SizeOfMessage);
+
+	return true;
 }
 
 void CGameControllerBomb::OnShowStatsAll(const CSqlStatsPlayer *pStats, class CPlayer *pRequestingPlayer, const char *pRequestedName)
