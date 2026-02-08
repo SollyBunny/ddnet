@@ -21,6 +21,7 @@ public:
 	void Tick() override;
 	void OnReset() override;
 	int OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon) override;
+	void OnCharacterDeathImpl(CCharacter *pVictim, int Killer, int Weapon, bool SendKillMsg) override;
 	bool DoWincheckRound() override;
 	void OnCharacterSpawn(class CCharacter *pChr) override;
 	void OnAppliedDamage(int &Dmg, int &From, int &Weapon, CCharacter *pCharacter) override;

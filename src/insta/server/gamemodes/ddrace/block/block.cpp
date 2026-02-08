@@ -88,8 +88,7 @@ void CGameControllerBlock::OnCharacterDeathImpl(CCharacter *pVictim, int Killer,
 	}
 
 	int LastToucherId = LastToucher.value().m_ClientId;
-	if(LastToucherId >= 0 && LastToucherId < MAX_CLIENTS)
-		pKiller = GameServer()->m_apPlayers[LastToucherId];
+	pKiller = GetPlayerOrNullptr(LastToucherId);
 
 	if(pKiller && pKiller != pVictim->GetPlayer() && pVictim->m_FreezeTime)
 	{

@@ -4,6 +4,8 @@
 #include <engine/shared/config.h>
 #include <engine/shared/linereader.h>
 
+#include <generated/protocol.h>
+
 #include <game/mapitems.h>
 #include <game/server/entities/character.h>
 #include <game/server/gamecontext.h>
@@ -51,6 +53,8 @@ void CGameControllerBomb::Tick()
 	{
 		if(!pPlayer)
 			continue;
+
+		pPlayer->ResetLastToucherAfterSeconds(3);
 
 		// In the source code it was done via GetAutoTeam, but it crashes...
 		if(pPlayer->m_BombState == CPlayer::EBombState::NONE)
@@ -117,9 +121,45 @@ void CGameControllerBomb::OnReset()
 int CGameControllerBomb::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon)
 {
 	pVictim->GetPlayer()->m_BombState = CPlayer::EBombState::DEAD;
-	ExplodeBomb(pVictim->GetPlayer());
-
+	pVictim->GetPlayer()->m_IsBomb = false;
 	return CGameControllerBasePvp::OnCharacterDeath(pVictim, pKiller, Weapon);
+}
+
+void CGameControllerBomb::OnCharacterDeathImpl(CCharacter *pVictim, int Killer, int Weapon, bool SendKillMsg)
+{
+	CPlayer *pKiller = GetPlayerOrNullptr(Killer);
+	// if the hammer directly caused a bomb explosion
+	if(pKiller && pKiller != pVictim->GetPlayer())
+	{
+		CGameControllerBasePvp::OnCharacterDeathImpl(pVictim, Killer, Weapon, SendKillMsg);
+		return;
+	}
+	std::optional<CLastToucher> &LastToucher = pVictim->GetPlayer()->m_LastToucher;
+
+	// died alone without any killer
+	if(!LastToucher.has_value())
+	{
+		// do not count the kill
+		CGameControllerBasePvp::OnCharacterDeathImpl(pVictim, Killer, Weapon, SendKillMsg);
+		return;
+	}
+
+	int LastToucherId = LastToucher.value().m_ClientId;
+	pKiller = GetPlayerOrNullptr(LastToucherId);
+
+	if(pKiller && pKiller != pVictim->GetPlayer())
+	{
+		int KillMsgWeapon = LastToucher.value().m_Weapon;
+		if(KillMsgWeapon == WEAPON_HOOK)
+			KillMsgWeapon = WEAPON_NINJA;
+
+		// count the kill
+		CGameControllerBasePvp::OnCharacterDeathImpl(pVictim, pKiller->GetCid(), KillMsgWeapon, SendKillMsg);
+		return;
+	}
+
+	// do not count the kill
+	CGameControllerBasePvp::OnCharacterDeathImpl(pVictim, Killer, Weapon, SendKillMsg);
 }
 
 bool CGameControllerBomb::DoWincheckRound()
@@ -399,7 +439,11 @@ void CGameControllerBomb::ExplodeBomb(CPlayer *pPlayer, CPlayer *pKiller)
 	GameServer()->m_World.RemoveEntitiesFromPlayer(pPlayer->GetCid());
 	EliminatePlayer(pPlayer, Collateral);
 	if(pPlayer->GetCharacter())
-		pPlayer->GetCharacter()->Die(pKiller ? pKiller->GetCid() : pPlayer->GetCid(), Config()->m_SvBombtagBombWeapon);
+	{
+		pPlayer->GetCharacter()->Die(
+			pKiller ? pKiller->GetCid() : pPlayer->GetCid(),
+			pKiller ? (int)WEAPON_HAMMER : (int)WEAPON_GAME);
+	}
 
 	GameServer()->CreateExplosion(pPlayer->m_ViewPos, pPlayer->GetCid(), WEAPON_GAME, true, 0);
 	GameServer()->CreateSound(pPlayer->m_ViewPos, SOUND_GRENADE_EXPLODE);
