@@ -255,6 +255,13 @@ Like TSmash but with teams.
 A football (soccer) teamplay mode. Where the grenade is your ball.
 And you have to score it into the enemy goal.
 
+### block
+
+``sv_gametype block``
+
+A ddrace based gametype where the goal is to kill others by throwing them into freeze tiles.
+It is a free for all mode where one kill gives one point and first to reach the scorelimit wins.
+
 ### ddrace
 
 ``sv_gametype ddrace``
