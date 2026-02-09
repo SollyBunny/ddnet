@@ -617,7 +617,7 @@ void CGameControllerBomb::StartBombRound()
 
 void CGameControllerBomb::MakeRandomBomb(int Count)
 {
-	int Playing[MAX_CLIENTS];
+	int aPlayingIds[MAX_CLIENTS] = {-1};
 	int Players = 0;
 
 	for(const auto &pPlayer : GameServer()->m_apPlayers)
@@ -626,22 +626,22 @@ void CGameControllerBomb::MakeRandomBomb(int Count)
 			continue;
 
 		if(!pPlayer->m_IsDead)
-			Playing[Players++] = pPlayer->GetCid();
+			aPlayingIds[Players++] = pPlayer->GetCid();
 	}
 
-	std::shuffle(Playing, Playing + Players, M_S_RANDOM_ENGINE);
+	std::shuffle(aPlayingIds, aPlayingIds + Players, M_S_RANDOM_ENGINE);
 	if(Count > Players)
 		Count = Players;
 
 	for(int i = 0; i < Count; i++)
 	{
-		MakeBomb(Playing[i], Config()->m_SvBombtagSecondsToExplosion * Server()->TickSpeed());
+		MakeBomb(aPlayingIds[i], Config()->m_SvBombtagSecondsToExplosion * Server()->TickSpeed());
 	}
 }
 
 void CGameControllerBomb::MakeBomb(int ClientId, int Ticks)
 {
-	CPlayer *pPlayer = GameServer()->m_apPlayers[ClientId];
+	CPlayer *pPlayer = GetPlayerOrNullptr(ClientId);
 	if(!pPlayer)
 		return;
 
