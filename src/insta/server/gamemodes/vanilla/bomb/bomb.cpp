@@ -539,7 +539,6 @@ void CGameControllerBomb::ExplodeBomb(CPlayer *pPlayer, CPlayer *pKiller)
 		return;
 
 	// Collateral damage
-	bool Collateral = false;
 	if(!pKiller && Config()->m_SvBombtagCollateralDamage)
 	{
 		for(auto *pTempPlayer : GameServer()->m_apPlayers)
@@ -555,17 +554,22 @@ void CGameControllerBomb::ExplodeBomb(CPlayer *pPlayer, CPlayer *pKiller)
 
 			if(distance(pTempPlayer->m_ViewPos, pPlayer->m_ViewPos) <= 96)
 			{
-				Collateral = true;
-				pKiller = pTempPlayer;
-				pTempPlayer->m_Stats.m_CollateralKills++;
-				break;
+				EliminatePlayer(pTempPlayer, true);
+				// TODO: calling Die() is a bit odd after calling EliminatePlayer()
+				//       or is it? If death eliminates you elimination should cause death
+				//       otherwise you have a loop... but eh idk this should be cleaned up smh
+				//       just not doing that right now
+				//       we could also just call Die() and it calls eliminate then
+				if(pTempPlayer->GetCharacter())
+					pTempPlayer->GetCharacter()->Die(pPlayer->GetCid(), WEAPON_GAME);
+				pPlayer->m_Stats.m_CollateralKills++;
 			}
 		}
 	}
 
 	// We remove the projectiles of a player who has already exploded.
 	GameServer()->m_World.RemoveEntitiesFromPlayer(pPlayer->GetCid());
-	EliminatePlayer(pPlayer, Collateral);
+	EliminatePlayer(pPlayer);
 	if(pPlayer->GetCharacter())
 	{
 		pPlayer->GetCharacter()->Die(
