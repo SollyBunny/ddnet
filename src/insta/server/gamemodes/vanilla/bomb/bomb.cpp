@@ -25,6 +25,7 @@ CGameControllerBomb::CGameControllerBomb(class CGameContext *pGameServer) :
 	CGameControllerBasePvp(pGameServer)
 {
 	m_pGameType = "BOMB";
+	m_WinType = WIN_BY_SURVIVAL;
 	m_GameFlags = 0;
 
 	m_DefaultWeapon = WEAPON_HAMMER;
