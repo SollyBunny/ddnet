@@ -47,8 +47,8 @@ public:
 	void StartBombRound();
 	void MakeRandomBomb(int Count);
 	void MakeBomb(int ClientId, int Ticks);
-	int AmountOfPlayers(CPlayer::EBombState State) const;
 	int AmountOfBombs() const;
+	void JoinAllPlayers();
 
 	bool IsBombGameType() const override { return true; }
 

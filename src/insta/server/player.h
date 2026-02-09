@@ -346,14 +346,6 @@ public:
 	// to figure out which players score the least
 	int m_ScoreStartTick = 0;
 
-	enum class EBombState
-	{
-		SPECTATING,
-		DEAD,
-		ALIVE,
-	};
-
-	EBombState m_BombState = EBombState::DEAD;
 	bool m_IsBomb = false;
 	int m_ToBombTick = 0;
 

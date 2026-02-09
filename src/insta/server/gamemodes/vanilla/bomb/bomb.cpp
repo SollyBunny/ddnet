@@ -72,22 +72,19 @@ void CGameControllerBomb::Tick()
 	}
 	else
 	{
-		if(AmountOfPlayers(CPlayer::EBombState::DEAD) == 1)
+		switch(Server()->Tick() % (Server()->TickSpeed() * 3))
 		{
-			switch(Server()->Tick() % (Server()->TickSpeed() * 3))
-			{
-			case 50:
-				GameServer()->SendBroadcast("Waiting for players.", -1);
-				break;
-			case 100:
-				GameServer()->SendBroadcast("Waiting for players..", -1);
-				break;
-			case 0:
-				GameServer()->SendBroadcast("Waiting for players...", -1);
-				break;
-			}
+		case 50:
+			GameServer()->SendBroadcast("Waiting for players.", -1);
+			break;
+		case 100:
+			GameServer()->SendBroadcast("Waiting for players..", -1);
+			break;
+		case 0:
+			GameServer()->SendBroadcast("Waiting for players...", -1);
+			break;
 		}
-		if(AmountOfPlayers(CPlayer::EBombState::DEAD) + AmountOfPlayers(CPlayer::EBombState::ALIVE) > 1 && !m_Warmup)
+		if(NumActivePlayers() > 1 && !m_Warmup)
 		{
 			GameServer()->SendBroadcast("Game started", -1);
 			StartBombRound();
@@ -105,10 +102,6 @@ void CGameControllerBomb::OnReset()
 			continue;
 
 		pPlayer->m_IsBomb = false;
-		if(pPlayer->m_BombState != CPlayer::EBombState::SPECTATING)
-		{
-			pPlayer->m_BombState = CPlayer::EBombState::DEAD;
-		}
 	}
 	m_RoundActive = false;
 }
@@ -170,12 +163,15 @@ bool CGameControllerBomb::DoWincheckRound()
 	if(Server()->ClientCount() <= 1)
 	{
 		EndRound();
+		JoinAllPlayers();
 		return true;
 	}
 
-	if(AmountOfBombs() == 0 || AmountOfPlayers(CPlayer::EBombState::ALIVE) <= 1)
+	int AlivePlayers = NumNonDeadActivePlayers();
+
+	if(AmountOfBombs() == 0 || AlivePlayers <= 1)
 	{
-		if(AmountOfPlayers(CPlayer::EBombState::ALIVE) >= 2)
+		if(AlivePlayers >= 2)
 		{
 			int Alive = 0;
 			for(auto *pPlayer : GameServer()->m_apPlayers)
@@ -183,19 +179,22 @@ bool CGameControllerBomb::DoWincheckRound()
 				if(!pPlayer)
 					continue;
 
-				if(pPlayer->m_BombState == CPlayer::EBombState::ALIVE && !pPlayer->m_IsBomb)
+				if(!pPlayer->m_IsDead && !pPlayer->m_IsBomb)
 					Alive++;
 			}
+			// TODO: why is the wincheck creating bombs?
 			MakeRandomBomb(std::ceil((Alive / (float)Config()->m_SvBombtagBombsPerPlayer) - (Config()->m_SvBombtagBombsPerPlayer == 1 ? 1 : 0)));
 		}
 		else
 		{
 			// A hack to avoid the end-of-round window.
 			OnRoundEnd();
+			JoinAllPlayers();
 			return false;
 		}
 	}
 
+	// TODO: why is this logic in the wincheck?
 	for(auto *pPlayer : GameServer()->m_apPlayers)
 	{
 		if(!pPlayer)
@@ -228,9 +227,18 @@ void CGameControllerBomb::OnPlayerConnect(CPlayer *pPlayer)
 {
 	CGameControllerBasePvp::OnPlayerConnect(pPlayer);
 
-	if(pPlayer->GetTeam() == TEAM_SPECTATORS)
+	if(m_RoundActive)
 	{
-		pPlayer->m_BombState = CPlayer::EBombState::SPECTATING;
+		// helps with "reload" command see https://github.com/ddnet-insta/ddnet-insta/issues/555
+		// also its nice if players that are just a little bit late can still join
+		// this can't really be abused with reconnects because the time window is so tight
+		int RoundSeconds = (Server()->Tick() - m_RoundStartTick) / Server()->TickSpeed();
+		if(RoundSeconds > 2)
+		{
+			pPlayer->m_IsDead = true;
+			pPlayer->SetTeamRaw(TEAM_SPECTATORS);
+			GameServer()->SendChatTarget(pPlayer->GetCid(), "You have to wait for the round to end before you can join");
+		}
 	}
 }
 
@@ -305,7 +313,7 @@ bool CGameControllerBomb::CanJoinTeam(int Team, int NotThisId, char *pErrorReaso
 	if(!pPlayer)
 		return false;
 
-	if(m_RoundActive && Team != TEAM_SPECTATORS)
+	if(pPlayer->m_IsDead && Team != TEAM_SPECTATORS)
 	{
 		if(pErrorReason)
 			str_copy(pErrorReason, "Wait until round end", ErrorReasonSize);
@@ -350,14 +358,11 @@ bool CGameControllerBomb::IsWinner(const CPlayer *pPlayer, char *pMessage, int S
 
 	// you can only win as last alive player
 	// used for disconnect IsWinner check
-	if(AmountOfPlayers(CPlayer::EBombState::ALIVE) > 1)
+	if(NumNonDeadActivePlayers() > 1)
 		return false;
 	if(pPlayer->GetTeam() == TEAM_SPECTATORS)
 		return false;
-	// // TODO: use this
-	// if(pPlayer->m_IsDead)
-	// 	return false;
-	if(pPlayer->m_BombState != CPlayer::EBombState::ALIVE)
+	if(pPlayer->m_IsDead)
 		return false;
 	if(!m_RoundActive)
 		return false;
@@ -377,7 +382,7 @@ bool CGameControllerBomb::IsLoser(const CPlayer *pPlayer)
 
 	// rage quit as dead player is counted as a loss
 	// qutting mid game while being alive is not
-	return pPlayer->m_BombState == CPlayer::EBombState::DEAD;
+	return pPlayer->m_IsDead;
 }
 
 bool CGameControllerBomb::IsPlaying(const CPlayer *pPlayer)
@@ -386,7 +391,7 @@ bool CGameControllerBomb::IsPlaying(const CPlayer *pPlayer)
 	// are considered active players
 	//
 	// only spectators that are in state SPECTATING are considered pure spectators
-	return CGameControllerBasePvp::IsPlaying(pPlayer) || pPlayer->m_BombState == CPlayer::EBombState::DEAD;
+	return CGameControllerBasePvp::IsPlaying(pPlayer) || pPlayer->m_IsDead;
 }
 
 int CGameControllerBomb::WinPointsForWin(const CPlayer *pPlayer)
@@ -479,7 +484,7 @@ void CGameControllerBomb::SetSkin(CPlayer *pPlayer)
 
 void CGameControllerBomb::EliminatePlayer(CPlayer *pPlayer, bool Collateral)
 {
-	if(pPlayer->m_BombState == CPlayer::EBombState::DEAD)
+	if(pPlayer->m_IsDead)
 		return;
 
 	char aBuf[128];
@@ -487,7 +492,7 @@ void CGameControllerBomb::EliminatePlayer(CPlayer *pPlayer, bool Collateral)
 	GameServer()->SendChat(-1, TEAM_ALL, aBuf);
 
 	pPlayer->m_IsBomb = false;
-	pPlayer->m_BombState = CPlayer::EBombState::DEAD;
+	pPlayer->m_IsDead = true;
 	dbg_assert(pPlayer->GetTeam() != TEAM_SPECTATORS, "spectator got eliminated");
 	pPlayer->SetTeamRaw(TEAM_SPECTATORS);
 }
@@ -561,11 +566,11 @@ void CGameControllerBomb::StartBombRound()
 	{
 		if(!pPlayer)
 			continue;
-		if(pPlayer->m_BombState == CPlayer::EBombState::SPECTATING)
+		if(!pPlayer->m_IsDead)
 			continue;
 
-		pPlayer->SetTeamRaw(TEAM_FLOCK);
-		pPlayer->m_BombState = CPlayer::EBombState::ALIVE;
+		pPlayer->SetTeamRaw(TEAM_GAME);
+		pPlayer->m_IsDead = false;
 		Players++;
 
 		// Instant appearance after the start of the game
@@ -584,7 +589,7 @@ void CGameControllerBomb::MakeRandomBomb(int Count)
 		if(!pPlayer)
 			continue;
 
-		if(pPlayer->m_BombState == CPlayer::EBombState::ALIVE)
+		if(!pPlayer->m_IsDead)
 			Playing[Players++] = pPlayer->GetCid();
 	}
 
@@ -620,17 +625,6 @@ void CGameControllerBomb::MakeBomb(int ClientId, int Ticks)
 	GameServer()->SendBroadcast("You are the new bomb!\nHit another player before the time runs out!", ClientId);
 }
 
-int CGameControllerBomb::AmountOfPlayers(CPlayer::EBombState State) const
-{
-	int Amount = 0;
-	for(const auto &pPlayer : GameServer()->m_apPlayers)
-	{
-		if(pPlayer && pPlayer->m_BombState == State)
-			Amount++;
-	}
-	return Amount;
-}
-
 int CGameControllerBomb::AmountOfBombs() const
 {
 	int Amount = 0;
@@ -640,6 +634,21 @@ int CGameControllerBomb::AmountOfBombs() const
 			Amount++;
 	}
 	return Amount;
+}
+
+void CGameControllerBomb::JoinAllPlayers()
+{
+	for(CPlayer *pPlayer : GameServer()->m_apPlayers)
+	{
+		if(!pPlayer)
+			continue;
+		// do not auto join players that are
+		// intentionally spectator on round start
+		if(!pPlayer->m_IsDead)
+			continue;
+
+		pPlayer->SetTeamRaw(TEAM_GAME);
+	}
 }
 
 REGISTER_GAMEMODE(bomb, CGameControllerBomb(pGameServer));
