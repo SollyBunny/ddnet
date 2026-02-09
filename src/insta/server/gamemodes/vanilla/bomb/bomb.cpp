@@ -376,6 +376,11 @@ bool CGameControllerBomb::OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMsg, in
 		return true;
 	}
 
+	if(pMsg->m_Team == TEAM_SPECTATORS)
+		pPlayer->m_WantsToStaySpectator = true;
+	else
+		pPlayer->m_WantsToStaySpectator = false;
+
 	return CGameControllerBasePvp::OnSetTeamNetMessage(pMsg, ClientId);
 }
 
@@ -674,12 +679,13 @@ void CGameControllerBomb::JoinAllPlayers()
 		{
 			DoTeamChange(pPlayer, TEAM_SPECTATORS, true);
 			pPlayer->m_WantsToJoinSpectators = false;
+			pPlayer->m_WantsToStaySpectator = true;
 			pPlayer->m_IsDead = false;
 			continue;
 		}
 		// do not auto join players that are
 		// intentionally spectator on round start
-		if(!pPlayer->m_IsDead)
+		if(pPlayer->m_WantsToStaySpectator)
 			continue;
 
 		pPlayer->SetTeamRaw(TEAM_GAME);
