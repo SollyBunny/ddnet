@@ -630,6 +630,8 @@ void CGameControllerBomb::MakeRandomBomb(int Count)
 	}
 
 	std::shuffle(Playing, Playing + Players, M_S_RANDOM_ENGINE);
+	if(Count > Players)
+		Count = Players;
 
 	for(int i = 0; i < Count; i++)
 	{
