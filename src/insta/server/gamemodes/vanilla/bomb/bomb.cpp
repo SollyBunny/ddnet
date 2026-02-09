@@ -517,6 +517,9 @@ void CGameControllerBomb::SetSkin(CPlayer *pPlayer)
 
 void CGameControllerBomb::EliminatePlayer(CPlayer *pPlayer, bool Collateral)
 {
+	// https://github.com/ddnet-insta/ddnet-insta/issues/570
+	if(!m_RoundActive)
+		return;
 	if(pPlayer->m_IsDead)
 		return;
 
