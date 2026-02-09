@@ -39,8 +39,6 @@ public:
 	void OnShowStatsAll(const CSqlStatsPlayer *pStats, class CPlayer *pRequestingPlayer, const char *pRequestedName) override;
 	void OnShowRoundStats(const CSqlStatsPlayer *pStats, class CPlayer *pRequestingPlayer, const char *pRequestedName) override;
 
-	bool CanSelfkill(class CPlayer *pPlayer, char *pErrorReason, int ErrorReasonSize) override { return false; }
-
 	void SetSkin(class CPlayer *pPlayer);
 	void EliminatePlayer(CPlayer *pPlayer, bool Collateral = false);
 	void ExplodeBomb(CPlayer *pPlayer, CPlayer *pKiller = nullptr);
