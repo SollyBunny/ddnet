@@ -901,7 +901,9 @@ void CGameControllerInstaCore::SendDeathInfoMessage(CCharacter *pVictim, int Kil
 	// and send the special weapons to custom clients that support it
 	// so they can render a nice icon in the kill feed
 	if(Weapon == WEAPON_HOOK)
-		Weapon = WEAPON_NINJA;
+		Weapon = WEAPON_GAME;
+	if(Weapon == WEAPON_BOMB)
+		Weapon = WEAPON_GAME;
 
 	CGameControllerDDNet::SendDeathInfoMessage(pVictim, Killer, Weapon, ModeSpecial);
 }

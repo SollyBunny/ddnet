@@ -16,6 +16,10 @@ enum
 	// ddnet-insta special weapon
 	// not supported by the protocol or client
 	WEAPON_HOOK = WEAPON_GAME - 1,
+
+	// ddnet-insta special weapon
+	// not supported by the protocol or client
+	WEAPON_BOMB = WEAPON_GAME - 2,
 };
 
 // ddnet-insta can show text in the world

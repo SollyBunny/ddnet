@@ -109,7 +109,7 @@ void CGameControllerBomb::OnReset()
 
 int CGameControllerBomb::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon)
 {
-	EliminatePlayer(pVictim->GetPlayer());
+	EliminatePlayer(pVictim->GetPlayer(), Weapon);
 	return CGameControllerBasePvp::OnCharacterDeath(pVictim, pKiller, Weapon);
 }
 
@@ -137,12 +137,12 @@ void CGameControllerBomb::OnCharacterDeathImpl(CCharacter *pVictim, int Killer, 
 
 	if(pKiller && pKiller != pVictim->GetPlayer())
 	{
-		int KillMsgWeapon = LastToucher.value().m_Weapon;
-		if(KillMsgWeapon == WEAPON_HOOK)
-			KillMsgWeapon = WEAPON_NINJA;
-
 		// count the kill
-		CGameControllerBasePvp::OnCharacterDeathImpl(pVictim, pKiller->GetCid(), KillMsgWeapon, SendKillMsg);
+		CGameControllerBasePvp::OnCharacterDeathImpl(
+			pVictim,
+			pKiller->GetCid(),
+			LastToucher.value().m_Weapon,
+			SendKillMsg);
 		return;
 	}
 
@@ -515,13 +515,15 @@ void CGameControllerBomb::SetSkin(CPlayer *pPlayer)
 	pPlayer->m_SkinInfoManager.UnsetAll(ESkinPrio::HIGH);
 }
 
-void CGameControllerBomb::EliminatePlayer(CPlayer *pPlayer, bool Collateral)
+void CGameControllerBomb::EliminatePlayer(CPlayer *pPlayer, int Weapon)
 {
 	// https://github.com/ddnet-insta/ddnet-insta/issues/570
 	if(!m_RoundActive)
 		return;
 	if(pPlayer->m_IsDead)
 		return;
+
+	bool Collateral = Weapon == WEAPON_BOMB;
 
 	char aBuf[128];
 	str_format(aBuf, sizeof(aBuf), "'%s' eliminated%s!", Server()->ClientName(pPlayer->GetCid()), Collateral ? " by collateral damage" : "");
@@ -535,6 +537,8 @@ void CGameControllerBomb::EliminatePlayer(CPlayer *pPlayer, bool Collateral)
 
 void CGameControllerBomb::ExplodeBomb(CPlayer *pPlayer, CPlayer *pKiller)
 {
+	dbg_assert(pPlayer->GetCharacter(), "dead player with cid=%d exploded", pPlayer->GetCid());
+
 	if(!pPlayer->m_IsBomb)
 		return;
 
@@ -554,14 +558,7 @@ void CGameControllerBomb::ExplodeBomb(CPlayer *pPlayer, CPlayer *pKiller)
 
 			if(distance(pTempPlayer->m_ViewPos, pPlayer->m_ViewPos) <= 96)
 			{
-				EliminatePlayer(pTempPlayer, true);
-				// TODO: calling Die() is a bit odd after calling EliminatePlayer()
-				//       or is it? If death eliminates you elimination should cause death
-				//       otherwise you have a loop... but eh idk this should be cleaned up smh
-				//       just not doing that right now
-				//       we could also just call Die() and it calls eliminate then
-				if(pTempPlayer->GetCharacter())
-					pTempPlayer->GetCharacter()->Die(pPlayer->GetCid(), WEAPON_GAME);
+				pTempPlayer->GetCharacter()->Die(pPlayer->GetCid(), WEAPON_BOMB);
 				pPlayer->m_Stats.m_CollateralKills++;
 			}
 		}
@@ -569,14 +566,9 @@ void CGameControllerBomb::ExplodeBomb(CPlayer *pPlayer, CPlayer *pKiller)
 
 	// We remove the projectiles of a player who has already exploded.
 	GameServer()->m_World.RemoveEntitiesFromPlayer(pPlayer->GetCid());
-	EliminatePlayer(pPlayer);
-	if(pPlayer->GetCharacter())
-	{
-		pPlayer->GetCharacter()->Die(
-			pKiller ? pKiller->GetCid() : pPlayer->GetCid(),
-			pKiller ? (int)WEAPON_HAMMER : (int)WEAPON_GAME);
-	}
-
+	pPlayer->GetCharacter()->Die(
+		pKiller ? pKiller->GetCid() : pPlayer->GetCid(),
+		pKiller ? (int)WEAPON_HAMMER : (int)WEAPON_GAME);
 	GameServer()->CreateExplosion(pPlayer->m_ViewPos, pPlayer->GetCid(), WEAPON_GAME, true, 0);
 	GameServer()->CreateSound(pPlayer->m_ViewPos, SOUND_GRENADE_EXPLODE);
 }

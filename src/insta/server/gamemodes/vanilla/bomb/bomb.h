@@ -40,7 +40,7 @@ public:
 	void OnShowRoundStats(const CSqlStatsPlayer *pStats, class CPlayer *pRequestingPlayer, const char *pRequestedName) override;
 
 	void SetSkin(class CPlayer *pPlayer);
-	void EliminatePlayer(CPlayer *pPlayer, bool Collateral = false);
+	void EliminatePlayer(CPlayer *pPlayer, int Weapon);
 	void ExplodeBomb(CPlayer *pPlayer, CPlayer *pKiller = nullptr);
 	void UpdateTimer();
 	void StartBombRound();
