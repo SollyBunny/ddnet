@@ -892,6 +892,20 @@ bool CGameControllerInstaCore::CanSpawn(int Team, vec2 *pOutPos, int DDTeam)
 	return Eval.m_Got;
 }
 
+void CGameControllerInstaCore::SendDeathInfoMessage(CCharacter *pVictim, int Killer, int Weapon, int ModeSpecial)
+{
+	// we can not send arbitrary values as weapon
+	// otherwise the client drops it
+	// maybe one day we could get some client support from ddnet or
+	// https://github.com/ddnet-community/community-protocol
+	// and send the special weapons to custom clients that support it
+	// so they can render a nice icon in the kill feed
+	if(Weapon == WEAPON_HOOK)
+		Weapon = WEAPON_NINJA;
+
+	CGameControllerDDNet::SendDeathInfoMessage(pVictim, Killer, Weapon, ModeSpecial);
+}
+
 bool CGameControllerInstaCore::OnSkinChange7(protocol7::CNetMsg_Cl_SkinChange *pMsg, int ClientId)
 {
 	CPlayer *pPlayer = GameServer()->m_apPlayers[ClientId];

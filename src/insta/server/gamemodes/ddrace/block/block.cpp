@@ -92,12 +92,12 @@ void CGameControllerBlock::OnCharacterDeathImpl(CCharacter *pVictim, int Killer,
 
 	if(pKiller && pKiller != pVictim->GetPlayer() && pVictim->m_FreezeTime)
 	{
-		int KillMsgWeapon = LastToucher.value().m_Weapon;
-		if(KillMsgWeapon == WEAPON_HOOK)
-			KillMsgWeapon = WEAPON_NINJA;
-
 		// count the kill
-		CGameControllerBasePvp::OnCharacterDeathImpl(pVictim, pKiller->GetCid(), KillMsgWeapon, SendKillMsg);
+		CGameControllerBasePvp::OnCharacterDeathImpl(
+			pVictim,
+			pKiller->GetCid(),
+			LastToucher.value().m_Weapon,
+			SendKillMsg);
 		return;
 	}
 

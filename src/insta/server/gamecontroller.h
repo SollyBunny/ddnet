@@ -124,7 +124,7 @@ public:
 			ModeSpecial - 0 in most cases can hold information if a flagger made a kill or was killed
 				      see https://github.com/MilkeeyCat/ddnet_protocol/issues/143 for more details
 	*/
-	void SendDeathInfoMessage(CCharacter *pVictim, int Killer, int Weapon, int ModeSpecial);
+	virtual void SendDeathInfoMessage(CCharacter *pVictim, int Killer, int Weapon, int ModeSpecial);
 
 	/*
 		Function: SendDeathEvent

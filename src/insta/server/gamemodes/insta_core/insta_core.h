@@ -86,6 +86,7 @@ public:
 	bool IsValidTeam(int Team) override;
 	const char *GetTeamName(int Team) override;
 	bool CanSpawn(int Team, vec2 *pOutPos, int DDTeam) override;
+	void SendDeathInfoMessage(CCharacter *pVictim, int Killer, int Weapon, int ModeSpecial) override;
 	bool OnSkinChange7(protocol7::CNetMsg_Cl_SkinChange *pMsg, int ClientId) override;
 	void OnClientDataPersist(CPlayer *pPlayer, CGameContext::CPersistentClientData *pData) override;
 	void OnClientDataRestore(CPlayer *pPlayer, const CGameContext::CPersistentClientData *pData) override;
