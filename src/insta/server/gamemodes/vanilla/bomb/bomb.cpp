@@ -316,6 +316,8 @@ bool CGameControllerBomb::CanJoinTeam(int Team, int NotThisId, char *pErrorReaso
 
 	if(pPlayer->m_IsDead && Team != TEAM_SPECTATORS)
 	{
+		// TODO: this error message is overwritten by the
+		//       "You will join the spectators once the round ends" message
 		if(pErrorReason)
 			str_copy(pErrorReason, "Wait until round end", ErrorReasonSize);
 		return false;
@@ -350,6 +352,31 @@ void CGameControllerBomb::OnRoundEnd()
 
 	DoWarmup(3);
 	CGameControllerBasePvp::OnRoundEnd();
+}
+
+// called before spam protection on client team join request
+bool CGameControllerBomb::OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMsg, int ClientId)
+{
+	if(GameServer()->m_World.m_Paused)
+		return false;
+	CPlayer *pPlayer = GameServer()->m_apPlayers[ClientId];
+	if(!pPlayer)
+		return false;
+
+	if(pPlayer->m_IsDead && m_RoundActive && pMsg->m_Team == TEAM_GAME)
+	{
+		pPlayer->m_WantsToJoinSpectators = !pPlayer->m_WantsToJoinSpectators;
+		char aBuf[512];
+		if(pPlayer->m_WantsToJoinSpectators)
+			str_copy(aBuf, "You will join the spectators once the round ends");
+		else
+			str_copy(aBuf, "You will join the game once the round ends");
+
+		GameServer()->SendBroadcast(aBuf, ClientId);
+		return true;
+	}
+
+	return CGameControllerBasePvp::OnSetTeamNetMessage(pMsg, ClientId);
 }
 
 bool CGameControllerBomb::IsWinner(const CPlayer *pPlayer, char *pMessage, int SizeOfMessage)
@@ -643,6 +670,13 @@ void CGameControllerBomb::JoinAllPlayers()
 	{
 		if(!pPlayer)
 			continue;
+		if(pPlayer->m_WantsToJoinSpectators)
+		{
+			DoTeamChange(pPlayer, TEAM_SPECTATORS, true);
+			pPlayer->m_WantsToJoinSpectators = false;
+			pPlayer->m_IsDead = false;
+			continue;
+		}
 		// do not auto join players that are
 		// intentionally spectator on round start
 		if(!pPlayer->m_IsDead)
