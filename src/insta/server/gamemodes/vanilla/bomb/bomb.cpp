@@ -73,22 +73,25 @@ void CGameControllerBomb::Tick()
 	}
 	else
 	{
-		switch(Server()->Tick() % (Server()->TickSpeed() * 3))
-		{
-		case 50:
-			GameServer()->SendBroadcast("Waiting for players.", -1);
-			break;
-		case 100:
-			GameServer()->SendBroadcast("Waiting for players..", -1);
-			break;
-		case 0:
-			GameServer()->SendBroadcast("Waiting for players...", -1);
-			break;
-		}
 		if(NumActivePlayers() > 1 && !m_Warmup)
 		{
 			GameServer()->SendBroadcast("Game started", -1);
 			StartBombRound();
+		}
+		else if(!m_Warmup)
+		{
+			switch(Server()->Tick() % (Server()->TickSpeed() * 3))
+			{
+			case 50:
+				GameServer()->SendBroadcast("Waiting for players.", -1);
+				break;
+			case 100:
+				GameServer()->SendBroadcast("Waiting for players..", -1);
+				break;
+			case 0:
+				GameServer()->SendBroadcast("Waiting for players...", -1);
+				break;
+			}
 		}
 	}
 }
@@ -350,6 +353,7 @@ void CGameControllerBomb::OnRoundEnd()
 	if(!WinnerAnnounced)
 		GameServer()->SendChat(-1, TEAM_ALL, "Noone won the round!");
 
+	m_RoundActive = false;
 	DoWarmup(3);
 	CGameControllerBasePvp::OnRoundEnd();
 }
@@ -598,7 +602,7 @@ void CGameControllerBomb::StartBombRound()
 	{
 		if(!pPlayer)
 			continue;
-		if(!pPlayer->m_IsDead)
+		if(pPlayer->m_WantsToStaySpectator)
 			continue;
 
 		pPlayer->SetTeamRaw(TEAM_GAME);
