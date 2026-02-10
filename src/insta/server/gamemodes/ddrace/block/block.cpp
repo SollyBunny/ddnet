@@ -90,9 +90,14 @@ void CGameControllerBlock::OnCharacterDeathImpl(CCharacter *pVictim, int Killer,
 	int LastToucherId = LastToucher.value().m_ClientId;
 	pKiller = GetPlayerOrNullptr(LastToucherId);
 
-	if(pKiller && pKiller != pVictim->GetPlayer() && pVictim->m_FreezeTime)
+	// any kind of death in freeze counts as block
+	// so does a death caused by the world such as spikes
+	// but a selfkill while being unfrozen should never count as kill
+	// https://github.com/ddnet-insta/ddnet-insta/issues/554
+	bool CountKill = pVictim->m_FreezeTime || Weapon == WEAPON_WORLD;
+
+	if(pKiller && pKiller != pVictim->GetPlayer() && CountKill)
 	{
-		// count the kill
 		CGameControllerBasePvp::OnCharacterDeathImpl(
 			pVictim,
 			pKiller->GetCid(),
