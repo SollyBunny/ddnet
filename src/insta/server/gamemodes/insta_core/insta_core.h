@@ -110,6 +110,7 @@ public:
 	void OnMissedHook(class CCharacter *pCharacter) override;
 	void OnHookAttachPlayer(class CPlayer *pHookingPlayer, class CPlayer *pHookedPlayer) override;
 	void OnRoundEnd() override;
+	bool IsPureDDNetGameType() const override { return false; }
 
 	void OnPlayerTick(class CPlayer *pPlayer);
 	void OnCharacterTick(class CCharacter *pChr);

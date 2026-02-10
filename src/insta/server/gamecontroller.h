@@ -1309,7 +1309,16 @@ public:
 	virtual bool IsFngGameType() const { return false; }
 	virtual bool IsZcatchGameType() const { return false; }
 	bool IsVanillaGameType() const { return m_IsVanillaGameType; }
+
+	// https://github.com/ddnet-insta/ddnet-insta/issues/364
+	// returns true if sv_gametype is "ddnet"
+	// in that case it should behave as close to unmodified ddnet as possible
+	virtual bool IsPureDDNetGameType() const { return true; }
+
+	// https://github.com/ddnet-insta/ddnet-insta/issues/364
+	// returns true if sv_gametype is "ddnet" or "ddrace"
 	virtual bool IsDDRaceGameType() const { return true; }
+
 	virtual bool IsBlockGameType() const { return false; }
 	virtual bool IsFootGameType() const { return false; }
 	virtual bool IsBombGameType() const { return false; }
