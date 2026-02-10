@@ -9,7 +9,7 @@ For build instructions visit the [ddnet repo](https://github.com/ddnet/ddnet).
 A ddnet based pvp mod. With the focus on correct 0.6 and 0.7 support and staying close to and up to date with ddnet.
 While being highly configurable and feature rich.
 
-Implementing most of the relevant pvp gametypes: ctf, dm, gctf, ictf, gdm, idm, gtdm, itdm, zCatch, bolofng, solofng, boomfng, fng, tsmash, foot
+Implementing most of the relevant pvp gametypes: ctf, dm, gctf, ictf, gdm, idm, gtdm, itdm, zCatch, bolofng, solofng, boomfng, fng, tsmash, foot, bomb, block
 
 # Project name and scope
 
@@ -254,6 +254,14 @@ Like TSmash but with teams.
 
 A football (soccer) teamplay mode. Where the grenade is your ball.
 And you have to score it into the enemy goal.
+
+### bomb
+
+``sv_gametype bomb``
+
+One or more players get randomly selected as bomb which they can pass on
+by hitting others. The bomb has a timer. The player that holds the bomb when it explodes or dies otherwise gets eliminated.
+Last to survive wins.
 
 ### block
 
