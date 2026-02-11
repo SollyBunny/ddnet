@@ -1483,6 +1483,11 @@ public:
 
 	float CalcKillDeathRatio(int Kills, int Deaths) const;
 
+	// Get current stats as json for one player
+	// this is for now only used for stats publish to http
+	// in ddrace like gametypes
+	void GetPlayerStatsStr(class CPlayer *pPlayer, char *pBuf, size_t Size);
+
 	void GetRoundEndStatsStrCsv(char *pBuf, size_t Size);
 	void GetRoundEndStatsStrCsvTeamPlay(char *pBuf, size_t Size);
 	void GetRoundEndStatsStrCsvNoTeamPlay(char *pBuf, size_t Size);

@@ -1229,6 +1229,43 @@ void CGameControllerInstaCore::OnRoundEnd()
 	}
 }
 
+bool CGameControllerInstaCore::OnRaceFinish(CPlayer *pPlayer, int TimeTicks, const char *pTimestamp)
+{
+	if(g_Config.m_SvRaceStatsHttpEndpoints[0] != '\0')
+	{
+		char aStats[4048];
+		GetPlayerStatsStr(pPlayer, aStats, sizeof(aStats));
+
+		const int PayloadSize = str_length(aStats);
+		const char *pUrls = g_Config.m_SvRaceStatsHttpEndpoints;
+		char aUrl[1024];
+
+		while((pUrls = str_next_token(pUrls, ",", aUrl, sizeof(aUrl))))
+		{
+			std::shared_ptr<CHttpRequest> pHttp = HttpPost(aUrl, (const unsigned char *)aStats, PayloadSize);
+			pHttp->LogProgress(HTTPLOG::FAILURE);
+			pHttp->IpResolve(IPRESOLVE::V4);
+			pHttp->Timeout(CTimeout{4000, 15000, 500, 5});
+			pHttp->HeaderString("Content-Type", "application/json");
+			GameServer()->m_pHttp->Run(pHttp);
+		}
+
+		log_info("ddnet-insta", "published player stats on finish:\n%s", aStats);
+	}
+	return false;
+}
+
+bool CGameControllerInstaCore::OnRaceStart(int ClientId)
+{
+	if(g_Config.m_SvClearStatsOnRaceStart)
+	{
+		CPlayer *pPlayer = GetPlayerOrNullptr(ClientId);
+		if(pPlayer)
+			pPlayer->ResetStats();
+	}
+	return false;
+}
+
 void CGameControllerInstaCore::OnPlayerTick(class CPlayer *pPlayer)
 {
 	pPlayer->InstagibTick();

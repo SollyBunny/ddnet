@@ -110,6 +110,8 @@ public:
 	void OnMissedHook(class CCharacter *pCharacter) override;
 	void OnHookAttachPlayer(class CPlayer *pHookingPlayer, class CPlayer *pHookedPlayer) override;
 	void OnRoundEnd() override;
+	bool OnRaceFinish(class CPlayer *pPlayer, int TimeTicks, const char *pTimestamp) override;
+	bool OnRaceStart(int ClientId) override;
 	bool IsPureDDNetGameType() const override { return false; }
 
 	void OnPlayerTick(class CPlayer *pPlayer);

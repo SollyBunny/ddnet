@@ -131,6 +131,7 @@ Below is a list of all the settings that were added in ddnet-insta.
 + `sv_round_stats_format_http` 0=csv 1=psv 2=ascii table 3=markdown table 4=json
 + `sv_round_stats_format_file` 0=csv 1=psv 2=ascii table 3=markdown table 4=json
 + `sv_print_round_stats` print top players in chat on round end
++ `sv_clear_stats_on_race_start` Delete players round stats without saving them when touching the start line
 + `sv_kill_tile_destroys_ball` Destroy the ball when it touches death tile (only foot)
 + `sv_ball_bounce_friction` The ball looses that much speed after a bounce (only foot)
 + `sv_ball_explode` Should the grenades explode (only foot)
@@ -155,6 +156,7 @@ Below is a list of all the settings that were added in ddnet-insta.
 + `sv_round_stats_discord_webhooks` If set will post score stats there on round end. Can be a comma separated list.
 + `sv_round_stats_http_endpoints` If set will post score stats there on round end. Can be a comma separated list.
 + `sv_round_stats_output_file` If set will write score stats there on round end
++ `sv_race_stats_http_endpoints` publish stats on finish for each player individually
 + `sv_mystery_rounds_filename` File which contains mystery round commands, one round per line.
 + `sv_mystery_rounds_reset_filename` File which contains the commands to execute after a mystery round.
 

@@ -153,6 +153,7 @@ function(insta_patch_server)
       round_stats.cpp
       round_stats_ascii.cpp
       round_stats_csv.cpp
+      round_stats_one_player.cpp
       round_stats_player.h
       skin_info_manager.cpp
       skin_info_manager.h
