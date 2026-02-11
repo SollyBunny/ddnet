@@ -12,7 +12,7 @@ Because this is not the case in ddnet and ddnet-insta regularly merges into it
 the git log is not fully following this but all commits made directly to this repository have to follow it.
 
 
-The prefixes are mostyl non standard ones here is a list of prefixes you should use:
+The prefixes are mostly non standard ones here is a list of prefixes you should use:
 - `logs:` if your commit only changes the servers log output
 - `refactor:` if there is a internal change that the end user can not observe
 - `fix:` If you fix a bug. If you fix a bug that is mode specific it is preferred to do `zcatch: fix respawn logic` instead.
