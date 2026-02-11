@@ -628,6 +628,23 @@ public:
 	virtual bool OnSetDDRaceTeam(int ClientId, int Team) { return false; }
 
 	/*
+		Function: OnRaceFinish
+			Called when a player finishes the race (from ddnet).
+			By touching the finish line.
+
+		Arguments:
+			pPlayer - the player that just finished
+			TimeTicks - how many ticks the race took from start to end
+				    to get the time in seconds you can do this
+				    float Time = TimeTicks / (float)Server()->TickSpeed();
+			pTimestamp - string of at which date exactly the finish happened
+
+		Returns:
+			return true to not run the ddnet code and drop the finish event
+	*/
+	virtual bool OnRaceFinish(class CPlayer *pPlayer, int TimeTicks, const char *pTimestamp) { return false; }
+
+	/*
 		Function: OnChangeInfoNetMessage
 			hooks into CGameContext::OnChangeInfoNetMessage()
 			after spam protection check

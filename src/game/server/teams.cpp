@@ -752,6 +752,9 @@ void CGameTeams::OnFinish(CPlayer *pPlayer, int TimeTicks, const char *pTimestam
 {
 	if(!pPlayer || !pPlayer->IsPlaying())
 		return;
+	// ddnet-insta
+	if(m_pGameContext->m_pController && m_pGameContext->m_pController->OnRaceFinish(pPlayer, TimeTicks, pTimestamp))
+		return;
 
 	float Time = TimeTicks / (float)Server()->TickSpeed();
 
