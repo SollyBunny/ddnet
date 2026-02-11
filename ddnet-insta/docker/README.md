@@ -1,8 +1,8 @@
 # Building the Server with Docker
 
 ```shell
-cd ddnet-insta/
-docker buildx build -t insta:latest -f Dockerfile ..
+cd ddnet-insta/docker
+docker buildx build -t insta:latest -f Dockerfile ../..
 
 # Run server
 docker run -d \
