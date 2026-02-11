@@ -52,7 +52,7 @@ More information about the cli tool can be found [here](https://github.com/ddnet
 
 # Docker
 
-There are official builds and docker files. For more information see [./ddnet-insta/README.md](./ddnet-insta/README.md).
+There are official builds and docker files. For more information see [./ddnet-insta/docker/README.md](./ddnet-insta/docker/README.md).
 
 # Features
 
