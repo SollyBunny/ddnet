@@ -7,6 +7,8 @@
 
 declare -A known_contributors=(
 	['gerdoexx@gmail.com']='gerdoe-jr'
+	['84133700+ByFox213@users.noreply.github.com']='ByFox213'
+	['byfox213@gmail.com']='ByFox213'
 )
 
 git_email_to_gh_username() {
