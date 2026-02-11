@@ -4,7 +4,7 @@ INCLUDES_CONFIG="src/insta/includes/engine/shared/config_variables.h"
 INCLUDES_RCON_COMMANDS="src/insta/includes/rcon_commands.h"
 INCLUDES_CHAT_COMMANDS="src/insta/includes/chat_commands.h"
 
-README_FILE="README.md"
+README_FILE="ddnet-insta/docs/settings_and_commands.md"
 TEMP_DIR="scripts"
 TEMP_FILE="$TEMP_DIR/tmp.swp"
 
