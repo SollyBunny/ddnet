@@ -52,7 +52,14 @@ More information about the cli tool can be found [here](https://github.com/ddnet
 
 # Docker
 
-There are official builds and docker files. For more information see [./ddnet-insta/docker/README.md](./ddnet-insta/docker/README.md).
+There are official builds and docker files. If you have docker installed you can start a ddnet-insta server with only one
+command like this:
+
+```
+docker run -p 8303:8303/udp ghcr.io/ddnet-insta/ddnet-insta:latest "sv_gametype dm;sv_map dm1;sv_rcon_password mypass"
+```
+
+For more information see [./ddnet-insta/docker/README.md](./ddnet-insta/docker/README.md).
 
 # Features
 
