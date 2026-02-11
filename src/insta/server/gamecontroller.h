@@ -645,6 +645,19 @@ public:
 	virtual bool OnRaceFinish(class CPlayer *pPlayer, int TimeTicks, const char *pTimestamp) { return false; }
 
 	/*
+		Function: OnRaceStart
+			Called when a player hit the start tile
+			after ddnets start validation.
+
+		Arguments:
+			ClientId - id that started the race
+
+		Returns:
+			return true to not run the ddnet code and abort the start
+	*/
+	virtual bool OnRaceStart(int ClientId) { return false; }
+
+	/*
 		Function: OnChangeInfoNetMessage
 			hooks into CGameContext::OnChangeInfoNetMessage()
 			after spam protection check

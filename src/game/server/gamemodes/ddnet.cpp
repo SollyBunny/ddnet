@@ -77,6 +77,9 @@ void CGameControllerDDNet::HandleCharacterTiles(CCharacter *pChr, int MapIndex)
 			str_format(aBuf, sizeof(aBuf), "Your team has fewer than %d players, so your team rank won't count", g_Config.m_SvMinTeamSize);
 			GameServer()->SendStartWarning(ClientId, aBuf);
 		}
+		// ddnet-insta
+		if(OnRaceStart(ClientId))
+			return;
 		if(g_Config.m_SvResetPickups)
 		{
 			pChr->ResetPickups();
