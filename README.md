@@ -595,6 +595,8 @@ NOT IMPLEMENTED YET
 
 ## JSON - javascript object notation (format 4)
 
+There also is an [example for a simple python server consuming that data here](./ddnet-insta/round_stats/)
+
 ```json
 {
         "server": "unnamed server",
