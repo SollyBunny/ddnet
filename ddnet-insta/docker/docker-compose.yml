@@ -1,6 +1,6 @@
 services:
   ddnet-server:
-    image: ghcr.io/ddnet-insta/insta:latest
+    image: ghcr.io/ddnet-insta/ddnet-insta:latest
     container_name: ddnet-server
     restart: unless-stopped
     volumes:
