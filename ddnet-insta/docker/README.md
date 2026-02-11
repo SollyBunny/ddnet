@@ -6,7 +6,7 @@ docker buildx build -t insta:latest -f Dockerfile ../..
 
 # Run server
 docker run -d \
-  --name ddnet-server \
+  --name ddnet-insta-srv \
   --restart unless-stopped \
   -v "./autoexec.cfg:/tw/data/autoexec.cfg:ro" \
   -v "./reset.cfg:/tw/data/reset.cfg:ro" \
