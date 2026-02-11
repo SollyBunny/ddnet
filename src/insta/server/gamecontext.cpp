@@ -16,9 +16,12 @@
 #include <insta/server/enums.h>
 #include <insta/server/ip_storage.h>
 #include <insta/server/protocol.h>
+#include <insta/server/version.h>
 
 void CGameContext::OnInitInstagib()
 {
+	log_info("ddnet-insta", "running ddnet-insta version " DDNET_INSTA_VERSIONSTR);
+
 	UpdateVoteCheckboxes(); // ddnet-insta
 	AlertOnSpecialInstagibConfigs(); // ddnet-insta
 	ShowCurrentInstagibConfigsMotd(); // ddnet-insta
