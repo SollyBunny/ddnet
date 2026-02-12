@@ -109,6 +109,8 @@ public:
 	void OnFireHook(class CCharacter *pCharacter) override;
 	void OnMissedHook(class CCharacter *pCharacter) override;
 	void OnHookAttachPlayer(class CPlayer *pHookingPlayer, class CPlayer *pHookedPlayer) override;
+	void OnFreeze(CPlayer *pPlayer) override;
+	void OnUnfreeze(CPlayer *pPlayer) override;
 	void OnRoundEnd() override;
 	bool OnRaceFinish(class CPlayer *pPlayer, int TimeTicks, const char *pTimestamp) override;
 	bool OnRaceStart(int ClientId) override;

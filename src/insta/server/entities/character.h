@@ -82,6 +82,10 @@ public:
 	int m_BallLastTouchedBy = -1;
 	int m_BallLastTouchedTeam = -1;
 
+	// unlikely useful for you only used internally
+	// to call OnFreeze and OnUnfreeze
+	bool m_WasFrozenLastTick = false;
+
 private:
 	// players skin changes colors
 	bool m_Rainbow = false;

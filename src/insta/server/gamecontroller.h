@@ -485,6 +485,27 @@ public:
 	virtual void OnExplosionHits(int OwnerId, CExplosionTarget *pTargets, int NumTargets) {}
 
 	/*
+		Function: OnFreeze
+			Called when a player becomes frozen.
+			By for example ddrace like freeze tiles or a fng laser
+			or anticamper or anything really.
+
+		Arguments:
+			pPlayer - The player that got frozen
+	*/
+	virtual void OnFreeze(CPlayer *pPlayer) {}
+
+	/*
+		Function: OnUnfreeze
+			Called when a player becomes unfrozen.
+			See also OnFreeze
+
+		Arguments:
+			pPlayer - The player that got unfrozen
+	*/
+	virtual void OnUnfreeze(CPlayer *pPlayer) {}
+
+	/*
 		Function: ApplyFngHammerForce
 			Hammers in fng have different tuning.
 			If sv_fng_hammer is set the hammer is a bit stronger.

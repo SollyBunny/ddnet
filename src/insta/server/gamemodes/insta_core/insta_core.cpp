@@ -1194,6 +1194,14 @@ void CGameControllerInstaCore::OnHookAttachPlayer(CPlayer *pHookingPlayer, CPlay
 	}
 }
 
+void CGameControllerInstaCore::OnFreeze(CPlayer *pPlayer)
+{
+}
+
+void CGameControllerInstaCore::OnUnfreeze(CPlayer *pPlayer)
+{
+}
+
 void CGameControllerInstaCore::OnRoundEnd()
 {
 	dbg_msg("ddnet-insta", "match end");
@@ -1341,6 +1349,16 @@ void CGameControllerInstaCore::OnCharacterTick(CCharacter *pChr)
 {
 	if(pChr->GetPlayer()->m_PlayerFlags & PLAYERFLAG_CHATTING)
 		pChr->GetPlayer()->m_TicksSpentChatting++;
+
+	bool IsFrozen = pChr->m_FreezeTime != 0;
+	if(pChr->m_WasFrozenLastTick != IsFrozen)
+	{
+		if(pChr->m_FreezeTime)
+			OnFreeze(pChr->GetPlayer());
+		else
+			OnUnfreeze(pChr->GetPlayer());
+	}
+	pChr->m_WasFrozenLastTick = IsFrozen;
 
 	if(pChr->m_LastHookState != pChr->m_Core.m_HookState)
 	{
