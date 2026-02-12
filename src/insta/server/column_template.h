@@ -67,7 +67,7 @@ public:
 	void Dump(const CSqlStatsPlayer *pStats, const char *pSystem = "stats") const override
 	{
 #define MACRO_ADD_COLUMN(name, sql_name, sql_type, bind_type, default, merge_method) \
-	dbg_msg(pSystem, "  %s: %d", sql_name, pStats->m_##name);
+	Dump##bind_type(pSystem, sql_name, pStats->m_##name);
 #include SQL_COLUMN_FILE
 #undef MACRO_ADD_COLUMN
 	}

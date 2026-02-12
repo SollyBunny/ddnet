@@ -1,6 +1,8 @@
 #ifndef INSTA_SERVER_EXTRA_COLUMNS_H
 #define INSTA_SERVER_EXTRA_COLUMNS_H
 
+#include <base/log.h>
+
 #include <engine/server/databases/connection.h>
 
 class CExtraColumns
@@ -164,6 +166,11 @@ public:
 	virtual void ReadAndMergeStats(int *pOffset, IDbConnection *pSqlServer, class CSqlStatsPlayer *pOutputStats, const class CSqlStatsPlayer *pNewStats) = 0;
 
 	bool IsIntValueSet(int Value) const { return Value != 0; }
+
+	void DumpInt(const char *pSystem, const char *pColumnName, int Value) const
+	{
+		log_info(pSystem, "  %s: %d", pColumnName, Value);
+	}
 
 	int MergeIntAdd(int Current, int Other)
 	{
