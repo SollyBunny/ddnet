@@ -166,13 +166,24 @@ public:
 	virtual void ReadAndMergeStats(int *pOffset, IDbConnection *pSqlServer, class CSqlStatsPlayer *pOutputStats, const class CSqlStatsPlayer *pNewStats) = 0;
 
 	bool IsIntValueSet(int Value) const { return Value != 0; }
+	bool IsInt64ValueSet(int64_t Value) const { return Value != 0; }
 
 	void DumpInt(const char *pSystem, const char *pColumnName, int Value) const
 	{
 		log_info(pSystem, "  %s: %d", pColumnName, Value);
 	}
 
+	void DumpInt64(const char *pSystem, const char *pColumnName, int64_t Value) const
+	{
+		log_info(pSystem, "  %s: %" PRId64, pColumnName, Value);
+	}
+
 	int MergeIntAdd(int Current, int Other)
+	{
+		return Current + Other;
+	}
+
+	int MergeInt64Add(int Current, int Other)
 	{
 		return Current + Other;
 	}

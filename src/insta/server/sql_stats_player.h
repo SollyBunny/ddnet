@@ -60,8 +60,8 @@ public:
 	 * zCatch                            *
 	 *************************************/
 
-	int m_TicksDead;
-	int m_TicksAlive;
+	int64_t m_TicksDead;
+	int64_t m_TicksAlive;
 
 	/*************************************
 	 * foot                              *

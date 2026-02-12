@@ -5,5 +5,5 @@
 #define MACRO_ADD_COLUMN(name, sql_name, sql_type, bind_type, default, merge_method) ;
 #endif
 
-MACRO_ADD_COLUMN(TicksDead, "ticks_dead", "INTEGER", Int, "0", Add)
-MACRO_ADD_COLUMN(TicksAlive, "ticks_alive", "INTEGER", Int, "0", Add)
+MACRO_ADD_COLUMN(TicksDead, "ticks_dead", "INTEGER", Int64, "0", Add)
+MACRO_ADD_COLUMN(TicksAlive, "ticks_alive", "INTEGER", Int64, "0", Add)
