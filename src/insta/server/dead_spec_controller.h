@@ -32,8 +32,7 @@ class CDeadSpecController
 
 	CDeadSpecPlayer *m_apPlayers[MAX_CLIENTS] = {nullptr};
 
-	public:
-
+public:
 	CDeadSpecController(IGameController *pController, CGameContext *pGameServer);
 	~CDeadSpecController();
 

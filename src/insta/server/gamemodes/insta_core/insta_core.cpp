@@ -136,7 +136,8 @@ void CGameControllerInstaCore::OnInit()
 
 void CGameControllerInstaCore::OnPlayerConnect(CPlayer *pPlayer)
 {
-	m_pDeadSpecController->OnPlayerConnect(pPlayer);
+	if(m_pDeadSpecController)
+		m_pDeadSpecController->OnPlayerConnect(pPlayer);
 	IGameController::OnPlayerConnect(pPlayer);
 	m_InvalidateConnectedIpsCache = true;
 
@@ -204,7 +205,8 @@ void CGameControllerInstaCore::OnPlayerDisconnect(class CPlayer *pPlayer, const 
 // extra methods such as PrintDisconnect
 void CGameControllerInstaCore::InstaCoreDisconnect(CPlayer *pPlayer, const char *pReason)
 {
-	m_pDeadSpecController->OnPlayerDisconnect(pPlayer);
+	if(m_pDeadSpecController)
+		m_pDeadSpecController->OnPlayerDisconnect(pPlayer);
 	m_InvalidateConnectedIpsCache = true;
 
 	while(true)

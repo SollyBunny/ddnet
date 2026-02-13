@@ -1397,7 +1397,7 @@ public:
 			pMsg - buffer you can write a custom broadcast string to
 			MsgLen - maximum length in bytes of the pMsg buffer
 	*/
-	virtual void YouWillJoinSpecMessage(CPlayer *pPlayer, char *pMsg, size_t MsgLen) {};
+	virtual void YouWillJoinSpecMessage(CPlayer *pPlayer, char *pMsg, size_t MsgLen) {}
 
 	/*
 		Function: YouWillJoinGameMessage
@@ -1416,7 +1416,7 @@ public:
 			pMsg - buffer you can write a custom broadcast string to
 			MsgLen - maximum length in bytes of the pMsg buffer
 	*/
-	virtual void YouWillJoinGameMessage(CPlayer *pPlayer, char *pMsg, size_t MsgLen) {};
+	virtual void YouWillJoinGameMessage(CPlayer *pPlayer, char *pMsg, size_t MsgLen) {}
 
 	bool m_IsVanillaGameType = false;
 	// decides if own grenade explosions

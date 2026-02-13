@@ -1,7 +1,10 @@
 #include <engine/shared/config.h>
+#include <engine/shared/protocol.h>
+
 #include <game/server/gamecontext.h>
 #include <game/server/gamecontroller.h>
 #include <game/server/player.h>
+
 #include <insta/server/dead_spec_controller.h>
 
 CGameContext *CDeadSpecController::GameServer()
@@ -42,10 +45,10 @@ CDeadSpecController::CDeadSpecController(IGameController *pController, CGameCont
 
 CDeadSpecController::~CDeadSpecController()
 {
-	for(CDeadSpecPlayer *pPlayer : m_apPlayers)
+	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
-		delete pPlayer;
-		pPlayer = nullptr;
+		delete m_apPlayers[i];
+		m_apPlayers[i] = nullptr;
 	}
 }
 
