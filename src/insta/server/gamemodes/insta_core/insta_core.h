@@ -115,6 +115,7 @@ public:
 	bool OnRaceFinish(class CPlayer *pPlayer, int TimeTicks, const char *pTimestamp) override;
 	bool OnRaceStart(int ClientId) override;
 	bool IsPureDDNetGameType() const override { return false; }
+	bool IsPlaying(const CPlayer *pPlayer) override;
 
 	void OnPlayerTick(class CPlayer *pPlayer);
 	void OnCharacterTick(class CCharacter *pChr);

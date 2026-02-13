@@ -422,15 +422,6 @@ bool CGameControllerBomb::IsLoser(const CPlayer *pPlayer)
 	return pPlayer->m_IsDead;
 }
 
-bool CGameControllerBomb::IsPlaying(const CPlayer *pPlayer)
-{
-	// in bomb in game players and spectators that are waiting to join
-	// are considered active players
-	//
-	// only spectators that are in state SPECTATING are considered pure spectators
-	return CGameControllerBasePvp::IsPlaying(pPlayer) || pPlayer->m_IsDead;
-}
-
 int CGameControllerBomb::WinPointsForWin(const CPlayer *pPlayer)
 {
 	int Kills = pPlayer->m_RoundStats.m_Kills;

@@ -1274,6 +1274,17 @@ bool CGameControllerInstaCore::OnRaceStart(int ClientId)
 	return false;
 }
 
+bool CGameControllerInstaCore::IsPlaying(const CPlayer *pPlayer)
+{
+	// in zCatch and bomb in game players and spectators that are waiting to join
+	// are considered active players
+	//
+	// only spectators that are alive are considered pure spectators
+	//
+	// all other modes never set m_IsDead to true
+	return CGameControllerDDNet::IsPlaying(pPlayer) || pPlayer->m_IsDead;
+}
+
 void CGameControllerInstaCore::OnPlayerTick(class CPlayer *pPlayer)
 {
 	pPlayer->InstagibTick();
