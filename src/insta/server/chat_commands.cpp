@@ -506,7 +506,7 @@ void CGameContext::ConRankFastcaps(IConsole::IResult *pResult, void *pUserData)
 	pSelf->m_pController->m_pSqlStats->ShowFastcapRank(
 		pResult->m_ClientId,
 		pName,
-		pSelf->Server()->GetMapName(),
+		pSelf->Map()->BaseName(),
 		pSelf->m_pController->m_pGameType,
 		pSelf->m_pController->IsGrenadeGameType(),
 		false); // show all times stat track or not
@@ -538,7 +538,7 @@ void CGameContext::ConTopFastcaps(IConsole::IResult *pResult, void *pUserData)
 	pSelf->m_pController->m_pSqlStats->ShowFastcapTop(
 		pResult->m_ClientId,
 		pName,
-		pSelf->Server()->GetMapName(),
+		pSelf->Map()->BaseName(),
 		pSelf->m_pController->m_pGameType,
 		pSelf->m_pController->IsGrenadeGameType(),
 		false, // show all times stat track or not

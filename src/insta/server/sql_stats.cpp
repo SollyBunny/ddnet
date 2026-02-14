@@ -315,7 +315,7 @@ void CSqlStats::SaveFastcap(int ClientId, int TimeTicks, const char *pTimestamp,
 
 	pCurPlayer->m_FastcapQueryResult = std::make_shared<CInstaSqlResult>();
 	auto Tmp = std::make_unique<CSqlPlayerFastcapData>(pCurPlayer->m_FastcapQueryResult, g_Config.m_SvDebugStats);
-	str_copy(Tmp->m_aMap, Server()->GetMapName(), sizeof(Tmp->m_aMap));
+	str_copy(Tmp->m_aMap, GameServer()->Map()->BaseName(), sizeof(Tmp->m_aMap));
 	str_copy(Tmp->m_aGametype, GameServer()->m_pController->m_pGameType, sizeof(Tmp->m_aGametype));
 	FormatUuid(GameServer()->GameUuid(), Tmp->m_aGameUuid, sizeof(Tmp->m_aGameUuid));
 	Tmp->m_StatTrack = StatTrack;
