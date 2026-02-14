@@ -12,6 +12,7 @@
 #include <game/server/score.h>
 
 #include <insta/server/sql_stats.h>
+#include <insta/server/sql_stats_player.h>
 #include <insta/server/structs.h>
 
 #include <optional>
@@ -134,6 +135,9 @@ void CPlayer::InitIpStorage()
 
 void CPlayer::ProcessStatsResult(CInstaSqlResult &Result)
 {
+	CSqlStatsPlayer Stats;
+	CPlayer *pRequestedPlayer = nullptr;
+
 	if(Result.m_Success) // SQL request was successful
 	{
 		switch(Result.m_MessageKind)
@@ -167,7 +171,21 @@ void CPlayer::ProcessStatsResult(CInstaSqlResult &Result)
 				GameServer()->SendBroadcast(Result.m_aBroadcast, -1);
 			break;
 		case EInstaSqlRequestType::CHAT_CMD_STATSALL:
-			GameServer()->m_pController->OnShowStatsAll(&Result.m_Stats, this, Result.m_Info.m_aRequestedPlayer);
+			// TODO: refactor once https://github.com/ddnet/ddnet/pull/11763 is merged
+			for(CPlayer *pPlayer : GameServer()->m_apPlayers)
+			{
+				if(!pPlayer)
+					continue;
+				if(str_comp(Server()->ClientName(pPlayer->GetCid()), Result.m_Info.m_aRequestedPlayer))
+					continue;
+
+				pRequestedPlayer = pPlayer;
+				break;
+			}
+			Stats = Result.m_Stats;
+			if(pRequestedPlayer)
+				Stats.Merge(&pRequestedPlayer->m_Stats);
+			GameServer()->m_pController->OnShowStatsAll(&Stats, this, Result.m_Info.m_aRequestedPlayer);
 			break;
 		case EInstaSqlRequestType::CHAT_CMD_RANK:
 			GameServer()->m_pController->OnShowRank(Result.m_Rank, Result.m_RankedScore, Result.m_aRankColumnDisplay, this, Result.m_Info.m_aRequestedPlayer);
