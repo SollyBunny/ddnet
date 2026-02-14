@@ -49,7 +49,7 @@ public:
 		Returns:
 			return true to not run the rest of CGameContext::OnSetTeamNetMessage()
 	*/
-	bool OnSetTeamNetMessage(const class CNetMsg_Cl_SetTeam *pMsg, int ClientId);
+	bool OnSetTeamNetMessage(const struct CNetMsg_Cl_SetTeam *pMsg, int ClientId);
 
 	// Kills the player and moves them to the spectators
 	// they can not join the game until `RespawnPlayer()`
