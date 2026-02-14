@@ -44,8 +44,6 @@ void CGameControllerZcatch::OnShowStatsAll(const CSqlStatsPlayer *pStats, class 
 {
 	CGameControllerInstagib::OnShowStatsAll(pStats, pRequestingPlayer, pRequestedName);
 
-	pStats->Dump(m_pExtraColumns);
-
 	char aBuf[512];
 	str_format(aBuf, sizeof(aBuf), "~ Win points: %d", pStats->m_WinPoints);
 	GameServer()->SendChatTarget(pRequestingPlayer->GetCid(), aBuf);
