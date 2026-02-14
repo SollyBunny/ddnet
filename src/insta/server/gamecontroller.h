@@ -1385,8 +1385,8 @@ public:
 			Override this in your dead spec mode
 			to have a custom message instead of
 
-			FIXME: put message here
-			"xxx"
+			"You will join the spectators automatically once it is possible"
+			provided by insta core
 
 			this is called when a dead player clicks the
 			join game button and will be moved to regular spectators
@@ -1404,8 +1404,8 @@ public:
 			Override this in your dead spec mode
 			to have a custom message instead of
 
-			FIXME: put message here
-			"xxx"
+			"You will join the game automatically once it is possible"
+			provided by insta core
 
 			this is called when a dead player clicks the
 			join game button and will be moved to the game
