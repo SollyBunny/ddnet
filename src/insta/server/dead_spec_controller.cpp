@@ -72,8 +72,10 @@ bool CDeadSpecController::OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMsg, in
 	CPlayer *pPlayer = GameServer()->m_apPlayers[ClientId];
 	if(!pPlayer)
 		return false;
-
 	CDeadSpecPlayer *pDeadSpec = m_apPlayers[ClientId];
+	if(!pDeadSpec)
+		return false;
+
 	int Team = pMsg->m_Team;
 	if(Server()->IsSixup(ClientId) && g_Config.m_SvSpectatorVotes && g_Config.m_SvSpectatorVotesSixup && pPlayer->m_IsFakeDeadSpec)
 	{
@@ -124,6 +126,8 @@ void CDeadSpecController::RespawnPlayer(CPlayer *pPlayer)
 	pPlayer->m_IsDead = false;
 	pPlayer->m_KillerId = -1;
 	CDeadSpecPlayer *pDeadSpec = m_apPlayers[pPlayer->GetCid()];
+	if(!pDeadSpec)
+		return;
 
 	if(pDeadSpec->m_WantsToJoinSpectators)
 	{
@@ -162,6 +166,8 @@ void CDeadSpecController::RespawnAllPlayers()
 		pPlayer->m_IsDead = false;
 
 		CDeadSpecPlayer *pDeadSpec = m_apPlayers[pPlayer->GetCid()];
+		if(!pDeadSpec)
+			continue;
 
 		if(pDeadSpec->m_WantsToJoinSpectators)
 		{
