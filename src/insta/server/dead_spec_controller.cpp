@@ -45,10 +45,10 @@ CDeadSpecController::CDeadSpecController(IGameController *pController, CGameCont
 
 CDeadSpecController::~CDeadSpecController()
 {
-	for(int i = 0; i < MAX_CLIENTS; i++)
+	for(CDeadSpecPlayer *pPlayer : m_apPlayers)
 	{
-		delete m_apPlayers[i];
-		m_apPlayers[i] = nullptr;
+		delete pPlayer;
+		pPlayer = nullptr;
 	}
 }
 
