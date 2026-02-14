@@ -1420,6 +1420,31 @@ void CGameControllerInstaCore::YouWillJoinGameMessage(CPlayer *pPlayer, char *pM
 	str_copy(pMsg, "You will join the game automatically once it is possible", MsgLen);
 }
 
+int CGameControllerInstaCore::FreeInGameSlots()
+{
+	if(IsDeadSpecGameType())
+	{
+		int Players = 0;
+		for(CPlayer *pPlayer : GameServer()->m_apPlayers)
+		{
+			if(!pPlayer)
+				continue;
+			// alive spectators are considered permanent spectators
+			// they do not count as in game players
+			// and do not occupy in game slots
+			if(!pPlayer->m_IsDead && pPlayer->GetTeam() == TEAM_SPECTATORS)
+				continue;
+
+			Players++;
+		}
+
+		int Slots = Server()->MaxClients() - g_Config.m_SvSpectatorSlots;
+		return maximum(0, Slots - Players);
+	}
+
+	return IGameController::FreeInGameSlots();
+}
+
 void CGameControllerInstaCore::SendSkinChangeToAllSixup(protocol7::CNetMsg_Sv_SkinChange *pMsg, CPlayer *pPlayer, bool ApplyNetworkClipping)
 {
 	if(!pPlayer->GetCharacter())

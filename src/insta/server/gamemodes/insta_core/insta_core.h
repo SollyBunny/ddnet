@@ -124,6 +124,7 @@ public:
 	CDeadSpecController *m_pDeadSpecController = nullptr;
 	void YouWillJoinSpecMessage(CPlayer *pPlayer, char *pMsg, size_t MsgLen) override;
 	void YouWillJoinGameMessage(CPlayer *pPlayer, char *pMsg, size_t MsgLen) override;
+	int FreeInGameSlots() override;
 
 private:
 	bool m_InvalidateConnectedIpsCache = true;

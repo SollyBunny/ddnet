@@ -498,27 +498,6 @@ int CGameControllerZcatch::GetAutoTeam(int NotThisId)
 	return CGameControllerInstagib::GetAutoTeam(NotThisId);
 }
 
-// TODO: this should be moved to the dead spec controller
-int CGameControllerZcatch::FreeInGameSlots()
-{
-	int Players = 0;
-	for(CPlayer *pPlayer : GameServer()->m_apPlayers)
-	{
-		if(!pPlayer)
-			continue;
-		// alive spectators are considered permanent spectators
-		// they do not count as in game players
-		// and do not occupy in game slots
-		if(!pPlayer->m_IsDead && pPlayer->GetTeam() == TEAM_SPECTATORS)
-			continue;
-
-		Players++;
-	}
-
-	int Slots = Server()->MaxClients() - g_Config.m_SvSpectatorSlots;
-	return maximum(0, Slots - Players);
-}
-
 void CGameControllerZcatch::DoTeamChange(CPlayer *pPlayer, int Team, bool DoChatMsg)
 {
 	CGameControllerInstagib::DoTeamChange(pPlayer, Team, DoChatMsg);
