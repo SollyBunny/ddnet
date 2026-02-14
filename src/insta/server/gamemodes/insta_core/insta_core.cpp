@@ -844,7 +844,7 @@ bool CGameControllerInstaCore::CanJoinTeam(int Team, int NotThisId, char *pError
 	}
 
 	// zCatch or bomb
-	if(IsDeadSpecGameType())
+	if(IsDeadSpecGameType() && pPlayer)
 	{
 		if(Team != TEAM_SPECTATORS)
 		{
