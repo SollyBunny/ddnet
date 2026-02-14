@@ -1418,6 +1418,30 @@ public:
 	*/
 	virtual void YouWillJoinGameMessage(CPlayer *pPlayer, char *pMsg, size_t MsgLen) {}
 
+	/*
+		Function: CanStillJoinDeadSpecGame
+			Not to be confused with `CanJoinTeam()`
+			this is a specialized method to check if spectators
+			are still allowed to join the game.
+			This should be only used to block joining a game too late
+			where it would be a unfair advantage.
+			This applies to dead spec modes such as zCatch and bomb.
+			See also `IsDeadSpecGameType()`.
+			This will only return false if the current round is already
+			progressed so far that joining now would be unfair.
+			It does not handle slot limits, dead state and other things.
+
+		Arguments:
+			pPlayer - player that attempted to join the game
+			pMsg - buffer the error message will be written to if returned false
+			MsgLen - maximum length in bytes of the pMsg buffer
+
+		Returns:
+			true - if the current round still allows joining make sure to also call `CanJoinTeam()` to be sure
+			false - if the current round is progressed so far that players have to wait for the next round
+	*/
+	virtual bool CanStillJoinDeadSpecGame(const CPlayer *pPlayer, char *pMsg, size_t MsgLen) { return true; }
+
 	bool m_IsVanillaGameType = false;
 	// decides if own grenade explosions
 	// or laser wallshots should harm the own tee

@@ -105,25 +105,6 @@ public:
 
 	bool IsSpawnProtected(const CPlayer *pVictim, const CPlayer *pKiller) const;
 
-	// returns the amount of tee's that are not spectators
-	int NumActivePlayers();
-
-	// returns the amount of players that currently have a tee in the world
-	int NumAlivePlayers();
-
-	// different than NumAlivePlayers()
-	// it does check m_IsDead which is set in OnCharacterDeath
-	// instead of checking the character which only gets destroyed
-	// after OnCharacterDeath
-	//
-	// needed for the wincheck in zcatch to get triggered on kill
-	int NumNonDeadActivePlayers();
-
-	// returns the client id of the player with the highest
-	// killing spree (active spree not high score)
-	// returns -1 if nobody made a kill since spawning
-	int GetHighestSpreeClientId();
-
 	/*
 		m_pExtraColumns
 

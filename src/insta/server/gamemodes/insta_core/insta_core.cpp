@@ -839,17 +839,23 @@ bool CGameControllerInstaCore::CanJoinTeam(int Team, int NotThisId, char *pError
 	// zCatch or bomb
 	if(IsDeadSpecGameType())
 	{
-		if(pPlayer->m_IsDead && Team != TEAM_SPECTATORS)
+		if(Team != TEAM_SPECTATORS)
 		{
-			// This error message is unlikely to be shown
-			// it should instead queue a team change and show this:
-			//
-			//  "You will join the spectators once the round ends"
-			//
-			// Still cute to have a message here to know why we cant switch teams now
-			if(pErrorReason)
-				str_copy(pErrorReason, "Dead players can not join the game", ErrorReasonSize);
-			return false;
+			if(pPlayer->m_IsDead)
+			{
+				// This error message is unlikely to be shown
+				// it should instead queue a team change and show this:
+				//
+				//  "You will join the spectators once the round ends"
+				//
+				// Still cute to have a message here to know why we cant switch teams now
+				if(pErrorReason)
+					str_copy(pErrorReason, "Dead players can not join the game", ErrorReasonSize);
+				return false;
+			}
+
+			if(!CanStillJoinDeadSpecGame(pPlayer, pErrorReason, ErrorReasonSize))
+				return false;
 		}
 	}
 
@@ -1438,6 +1444,39 @@ void CGameControllerInstaCore::YouWillJoinGameMessage(CPlayer *pPlayer, char *pM
 	str_copy(pMsg, "You will join the game automatically once it is possible", MsgLen);
 }
 
+bool CGameControllerInstaCore::CanStillJoinDeadSpecGame(const CPlayer *pPlayer, char *pMsg, size_t MsgLen)
+{
+	if(!IsDeadSpecGameType())
+		return true;
+	if(m_Warmup)
+		return true;
+	if(NumActivePlayers() < 2)
+		return true;
+	if(!IsGameRunning())
+		return true;
+
+	// WARNING: being able to join games late just because there is a break is probably
+	//          not wanted
+
+	// if(GameState() == IGS_GAME_PAUSED)
+	// 	return false;
+
+	int NumDead = NumDeadSpecPlayers();
+	int RoundAgeSeconds = (Server()->Tick() - m_RoundStartTick) / Server()->TickSpeed();
+
+	// some sensible default for any kind of dead spec mode to avoid late joining
+	// https://github.com/ddnet-insta/ddnet-insta/issues/566
+	if(RoundAgeSeconds > 10 && NumDead > 3)
+	{
+		if(pMsg)
+		{
+			str_format(pMsg, MsgLen, "%d players already died, please wait for next round", NumDead);
+			return false;
+		}
+	}
+	return true;
+}
+
 int CGameControllerInstaCore::FreeInGameSlots()
 {
 	if(IsDeadSpecGameType())
@@ -1869,6 +1908,59 @@ int CGameControllerInstaCore::NumConnectedIps()
 	m_InvalidateConnectedIpsCache = false;
 	m_NumConnectedIpsCached = Server()->DistinctClientCount();
 	return m_NumConnectedIpsCached;
+}
+
+int CGameControllerInstaCore::NumActivePlayers()
+{
+	int Active = 0;
+	for(const CPlayer *pPlayer : GameServer()->m_apPlayers)
+		if(pPlayer && (pPlayer->GetTeam() != TEAM_SPECTATORS || pPlayer->m_IsDead))
+			Active++;
+	return Active;
+}
+
+int CGameControllerInstaCore::NumAlivePlayers()
+{
+	int Alive = 0;
+	for(const CPlayer *pPlayer : GameServer()->m_apPlayers)
+		if(pPlayer && pPlayer->GetCharacter())
+			Alive++;
+	return Alive;
+}
+
+int CGameControllerInstaCore::NumDeadSpecPlayers()
+{
+	int Dead = 0;
+	for(const CPlayer *pPlayer : GameServer()->m_apPlayers)
+		if(pPlayer && pPlayer->m_IsDead && pPlayer->GetTeam() == TEAM_SPECTATORS)
+			Dead++;
+	return Dead;
+}
+
+int CGameControllerInstaCore::NumNonDeadActivePlayers()
+{
+	int Alive = 0;
+	for(const CPlayer *pPlayer : GameServer()->m_apPlayers)
+		if(pPlayer && !pPlayer->m_IsDead && pPlayer->GetTeam() != TEAM_SPECTATORS)
+			Alive++;
+	return Alive;
+}
+
+int CGameControllerInstaCore::GetHighestSpreeClientId()
+{
+	int ClientId = -1;
+	int Spree = 0;
+	for(const CPlayer *pPlayer : GameServer()->m_apPlayers)
+	{
+		if(!pPlayer)
+			continue;
+		if(pPlayer->Spree() <= Spree)
+			continue;
+
+		ClientId = pPlayer->GetCid();
+		Spree = pPlayer->Spree();
+	}
+	return ClientId;
 }
 
 int CGameControllerInstaCore::GetFirstAlivePlayerId()

@@ -474,6 +474,30 @@ void CGameControllerZcatch::YouWillJoinGameMessage(CPlayer *pPlayer, char *pMsg,
 	str_format(pMsg, MsgLen, "You will join the game once '%s' dies", Server()->ClientName(pPlayer->m_KillerId));
 }
 
+bool CGameControllerZcatch::CanStillJoinDeadSpecGame(const CPlayer *pPlayer, char *pMsg, size_t MsgLen)
+{
+	if(!CGameControllerInstagib::CanStillJoinDeadSpecGame(pPlayer, pMsg, MsgLen))
+		return false;
+
+	CPlayer *pBestPlayer = PlayerWithMostKillsThatCount();
+	if(!pBestPlayer)
+		return true;
+	if(pBestPlayer->m_KillsThatCount < 4)
+		return true;
+
+	if(pMsg)
+	{
+		str_format(
+			pMsg,
+			MsgLen,
+			"'%s' already made %d kills, please wait.",
+			Server()->ClientName(pBestPlayer->GetCid()),
+			pBestPlayer->m_KillsThatCount);
+		return false;
+	}
+	return true;
+}
+
 int CGameControllerZcatch::GetAutoTeam(int NotThisId)
 {
 	// if(IsCatchGameRunning() && IsGameRunning() && PlayerWithMostKillsThatCount())

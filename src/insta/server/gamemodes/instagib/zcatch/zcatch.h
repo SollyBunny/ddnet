@@ -41,6 +41,7 @@ public:
 	int GetPlayerTeam(class CPlayer *pPlayer, bool Sixup) override;
 	void YouWillJoinSpecMessage(CPlayer *pPlayer, char *pMsg, size_t MsgLen) override;
 	void YouWillJoinGameMessage(CPlayer *pPlayer, char *pMsg, size_t MsgLen) override;
+	bool CanStillJoinDeadSpecGame(const CPlayer *pPlayer, char *pMsg, size_t MsgLen) override;
 	bool IsWinner(const CPlayer *pPlayer, char *pMessage, int SizeOfMessage) override;
 	bool IsLoser(const CPlayer *pPlayer) override;
 	int WinPointsForWin(const CPlayer *pPlayer) override;
