@@ -544,7 +544,7 @@ void CGameContext::UndeepJail(CIpStorage *pEntry)
 		else if(pPlayer->GetCharacter())
 		{
 			pPlayer->GetCharacter()->SetDeepFrozen(false);
-			pPlayer->GetCharacter()->UnFreeze();
+			pPlayer->GetCharacter()->Unfreeze();
 		}
 		OnlinePlayers = true;
 	}

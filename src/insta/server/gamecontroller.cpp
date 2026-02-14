@@ -340,7 +340,7 @@ void IGameController::DoTeamBalance()
 bool IGameController::OnLaserHit(int Bounces, int From, int Weapon, CCharacter *pVictim)
 {
 	if(UnfreezeOnLaserHit())
-		pVictim->UnFreeze();
+		pVictim->Unfreeze();
 
 	return true;
 }
