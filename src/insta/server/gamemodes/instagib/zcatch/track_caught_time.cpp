@@ -85,7 +85,7 @@ void CGameControllerZcatch::UpdateCatchTicks(class CPlayer *pPlayer, ECatchUpdat
 
 		break;
 	case ECatchUpdate::CAUGHT:
-		dbg_assert(pPlayer->m_IsDead == false, "dead player has been caught? again?");
+		dbg_assert(pPlayer->m_IsDead == false, "dead player with cid %d has been caught by %d? again?", pPlayer->GetCid(), pPlayer->m_KillerId);
 		dbg_assert(!pPlayer->m_DeadSinceTick.has_value(), "player has been caught but already has dead ticks set");
 		dbg_assert(pPlayer->m_AliveSinceTick.has_value(), "player has been caught but has no alive ticks set");
 		Ticks = Server()->Tick() - pPlayer->m_AliveSinceTick.value();
