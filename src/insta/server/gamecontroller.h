@@ -723,14 +723,18 @@ public:
 	virtual bool OnKillNetMessage(int ClientId) { return false; }
 
 	/*
-		Function: OnSelfkill
-			Called when the user requested a selfkill using the local console command `kill`.
-			This is only called on success. The user request can be blocked if
-			the method `CanSelfkill()` returned false.
-			If you need to catch the raw user sent event that will never be dropped
-			have a look at `OnKillNetMessage()`
+		Function: DoSomethingElseInsteadOfSelfkill
+			Called for every kill message the client sends
+			Called before any checks such as kill protection
+			Also called when `CanSelfkill()` returns false.
+			This is just about abusing the kill bind for other actions.
+			You can place your custom behavior here and return true
+			to not actually self kill in that case.
+
+		Arguments:
+			pPlayer - the player that send the kill message
 	*/
-	virtual void OnSelfkill(class CPlayer *pPlayer) {}
+	virtual bool DoSomethingElseInsteadOfSelfkill(CPlayer *pPlayer) { return false; }
 
 	/*
 		Function: OnCallVoteNetMessage

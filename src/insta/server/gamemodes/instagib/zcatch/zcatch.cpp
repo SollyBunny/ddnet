@@ -285,7 +285,7 @@ int CGameControllerZcatch::GetPlayerTeam(class CPlayer *pPlayer, bool Sixup)
 	if(Sixup && pPlayer->m_IsDead)
 		return TEAM_RED;
 
-	return CGameControllerBasePvp::GetPlayerTeam(pPlayer, Sixup);
+	return CGameControllerInstaCore::GetPlayerTeam(pPlayer, Sixup);
 }
 
 void CGameControllerZcatch::ReleasePlayer(class CPlayer *pPlayer, const char *pMsg)
@@ -296,17 +296,20 @@ void CGameControllerZcatch::ReleasePlayer(class CPlayer *pPlayer, const char *pM
 	m_pDeadSpecController->RespawnPlayer(pPlayer);
 }
 
-void CGameControllerZcatch::OnSelfkill(CPlayer *pPlayer)
+bool CGameControllerZcatch::DoSomethingElseInsteadOfSelfkill(CPlayer *pPlayer)
 {
+	if(CGameControllerInstagib::DoSomethingElseInsteadOfSelfkill(pPlayer))
+		return true;
+
 	int ClientId = pPlayer->GetCid();
 	if(pPlayer->m_vVictimIds.empty())
-		return;
+		return false;
 
 	CPlayer *pVictim = nullptr;
 	while(!pVictim)
 	{
 		if(pPlayer->m_vVictimIds.empty())
-			return;
+			return false;
 
 		int ReleaseId = pPlayer->m_vVictimIds.back();
 		pPlayer->m_vVictimIds.pop_back();
@@ -314,7 +317,12 @@ void CGameControllerZcatch::OnSelfkill(CPlayer *pPlayer)
 		pVictim = GameServer()->m_apPlayers[ReleaseId];
 	}
 	if(!pVictim)
-		return;
+	{
+		// TODO: should this be an assert?? we should never have a victim id
+		//       stored of a player that already left
+		log_error("zcatch", "cid=%d tried to release player that does not exist", ClientId);
+		return false;
+	}
 
 	char aBuf[512];
 	str_format(aBuf, sizeof(aBuf), "You were released by '%s'", Server()->ClientName(pPlayer->GetCid()));
@@ -349,6 +357,7 @@ void CGameControllerZcatch::OnSelfkill(CPlayer *pPlayer)
 		SendChatTarget(ClientId, aBuf);
 		pPlayer->m_vVictimIds.clear();
 	}
+	return true;
 }
 
 void CGameControllerZcatch::KillPlayer(class CPlayer *pVictim, class CPlayer *pKiller, bool KillCounts)

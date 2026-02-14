@@ -37,7 +37,7 @@ public:
 	bool DoWincheckRound() override;
 	void OnRoundStart() override;
 	void OnRoundEnd() override;
-	void OnSelfkill(CPlayer *pPlayer) override;
+	bool DoSomethingElseInsteadOfSelfkill(CPlayer *pPlayer) override;
 	int GetPlayerTeam(class CPlayer *pPlayer, bool Sixup) override;
 	void YouWillJoinSpecMessage(CPlayer *pPlayer, char *pMsg, size_t MsgLen) override;
 	void YouWillJoinGameMessage(CPlayer *pPlayer, char *pMsg, size_t MsgLen) override;

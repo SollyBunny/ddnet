@@ -720,12 +720,8 @@ bool CGameControllerInstaCore::OnKillNetMessage(int ClientId)
 	if(!pPlayer)
 		return false;
 
-	if(g_Config.m_SvDropFlagOnSelfkill)
-	{
-		CCharacter *pChr = pPlayer->GetCharacter();
-		if(pChr && DropFlag(pChr))
-			return true;
-	}
+	if(DoSomethingElseInsteadOfSelfkill(pPlayer))
+		return true;
 
 	char aReason[512] = "";
 	if(!CanSelfkill(pPlayer, aReason, sizeof(aReason)))
@@ -756,6 +752,17 @@ bool CGameControllerInstaCore::CanSelfkill(CPlayer *pPlayer, char *pErrorReason,
 	}
 
 	return true;
+}
+
+bool CGameControllerInstaCore::DoSomethingElseInsteadOfSelfkill(CPlayer *pPlayer)
+{
+	if(g_Config.m_SvDropFlagOnSelfkill)
+	{
+		CCharacter *pChr = pPlayer->GetCharacter();
+		if(pChr && DropFlag(pChr))
+			return true;
+	}
+	return false;
 }
 
 EAllowed CGameControllerInstaCore::CanUserJoinTeam(class CPlayer *pPlayer, int Team, char *pErrorReason, int ErrorReasonSize)

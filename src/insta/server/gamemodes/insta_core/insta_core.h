@@ -80,6 +80,7 @@ public:
 	bool OnKillNetMessage(int ClientId) override;
 	bool CanSelfkillWhileFrozen(class CPlayer *pPlayer) override;
 	bool CanSelfkill(class CPlayer *pPlayer, char *pErrorReason, int ErrorReasonSize) override;
+	bool DoSomethingElseInsteadOfSelfkill(CPlayer *pPlayer) override;
 	EAllowed CanUserJoinTeam(class CPlayer *pPlayer, int Team, char *pErrorReason, int ErrorReasonSize) override;
 	int GetPlayerTeam(class CPlayer *pPlayer, bool Sixup) override;
 	int GetAutoTeam(int NotThisId) override;
