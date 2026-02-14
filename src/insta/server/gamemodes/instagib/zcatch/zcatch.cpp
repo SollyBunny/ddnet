@@ -474,18 +474,6 @@ void CGameControllerZcatch::YouWillJoinGameMessage(CPlayer *pPlayer, char *pMsg,
 	str_format(pMsg, MsgLen, "You will join the game once '%s' dies", Server()->ClientName(pPlayer->m_KillerId));
 }
 
-// called after spam protection on client team join request
-bool CGameControllerZcatch::CanJoinTeam(int Team, int NotThisId, char *pErrorReason, int ErrorReasonSize)
-{
-	CPlayer *pPlayer = GameServer()->m_apPlayers[NotThisId];
-	if(pPlayer && pPlayer->m_IsDead && Team != TEAM_SPECTATORS)
-	{
-		str_format(pErrorReason, ErrorReasonSize, "Wait until '%s' dies", Server()->ClientName(pPlayer->m_KillerId));
-		return false;
-	}
-	return CGameControllerInstagib::CanJoinTeam(Team, NotThisId, pErrorReason, ErrorReasonSize);
-}
-
 int CGameControllerZcatch::GetAutoTeam(int NotThisId)
 {
 	// if(IsCatchGameRunning() && IsGameRunning() && PlayerWithMostKillsThatCount())

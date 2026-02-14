@@ -835,6 +835,24 @@ bool CGameControllerInstaCore::CanJoinTeam(int Team, int NotThisId, char *pError
 			str_copy(pErrorReason, "Use /pause first then you can kill", ErrorReasonSize);
 		return false;
 	}
+
+	// zCatch or bomb
+	if(IsDeadSpecGameType())
+	{
+		if(pPlayer->m_IsDead && Team != TEAM_SPECTATORS)
+		{
+			// This error message is unlikely to be shown
+			// it should instead queue a team change and show this:
+			//
+			//  "You will join the spectators once the round ends"
+			//
+			// Still cute to have a message here to know why we cant switch teams now
+			if(pErrorReason)
+				str_copy(pErrorReason, "Dead players can not join the game", ErrorReasonSize);
+			return false;
+		}
+	}
+
 	if(Team == TEAM_SPECTATORS || (pPlayer && pPlayer->GetTeam() != TEAM_SPECTATORS))
 		return true;
 

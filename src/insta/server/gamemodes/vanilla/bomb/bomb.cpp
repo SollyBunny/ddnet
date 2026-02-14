@@ -306,26 +306,6 @@ bool CGameControllerBomb::OnEntity(int Index, int x, int y, int Layer, int Flags
 	return CGameControllerBasePvp::OnEntity(Index, x, y, Layer, Flags, Initial, Number);
 }
 
-bool CGameControllerBomb::CanJoinTeam(int Team, int NotThisId, char *pErrorReason, int ErrorReasonSize)
-{
-	if(!CGameControllerBasePvp::CanJoinTeam(Team, NotThisId, pErrorReason, ErrorReasonSize))
-		return false;
-
-	CPlayer *pPlayer = GameServer()->m_apPlayers[NotThisId];
-	if(!pPlayer)
-		return false;
-
-	if(pPlayer->m_IsDead && Team != TEAM_SPECTATORS)
-	{
-		// TODO: this error message is overwritten by the
-		//       "You will join the spectators once the round ends" message
-		if(pErrorReason)
-			str_copy(pErrorReason, "Wait until round end", ErrorReasonSize);
-		return false;
-	}
-	return true;
-}
-
 void CGameControllerBomb::OnRoundEnd()
 {
 	bool WinnerAnnounced = false;

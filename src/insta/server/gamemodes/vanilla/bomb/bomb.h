@@ -28,7 +28,6 @@ public:
 	void OnAppliedDamage(int &Dmg, int &From, int &Weapon, CCharacter *pCharacter) override;
 	bool DecreaseHealthAndKill(int Dmg, int From, int Weapon, CCharacter *pCharacter) override { return false; }
 	bool OnEntity(int Index, int x, int y, int Layer, int Flags, bool Initial, int Number) override;
-	bool CanJoinTeam(int Team, int NotThisId, char *pErrorReason, int ErrorReasonSize) override;
 	void OnRoundEnd() override;
 	void YouWillJoinSpecMessage(CPlayer *pPlayer, char *pMsg, size_t MsgLen) override;
 	void YouWillJoinGameMessage(CPlayer *pPlayer, char *pMsg, size_t MsgLen) override;
