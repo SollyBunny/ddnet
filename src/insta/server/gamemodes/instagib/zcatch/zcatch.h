@@ -27,7 +27,6 @@ public:
 	bool IsZcatchGameType() const override { return true; }
 	bool IsDeadSpecGameType() override { return true; }
 	void Tick() override;
-	void Snap(int SnappingClient) override;
 	void OnPlayerConnect(CPlayer *pPlayer) override;
 	void OnPlayerDisconnect(class CPlayer *pDisconnectingPlayer, const char *pReason) override;
 	int OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon) override;
