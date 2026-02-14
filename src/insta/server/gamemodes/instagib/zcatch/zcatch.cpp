@@ -607,7 +607,7 @@ void CGameControllerZcatch::OnPlayerConnect(CPlayer *pPlayer)
 			// auto join running games if nobody made a kill yet
 			// DoTeamChange will kill us and delay the spawning
 			// so you are stuck in the scoreboard for a second when joining a active round
-			// but lets call that a feature for now so you have to to get ready
+			// but lets call that a feature for now so you have to time to get ready
 			DoTeamChange(pPlayer, TEAM_RED, false);
 		}
 
