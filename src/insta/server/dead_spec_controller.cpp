@@ -116,7 +116,7 @@ void CDeadSpecController::KillPlayer(CPlayer *pPlayer, int KillerId)
 	// of clicking directly after death
 	// https://github.com/ddnet-insta/ddnet-insta/issues/447
 	pPlayer->m_ForceTeam = {
-		.m_Tick = pPlayer->m_RespawnTick,
+		.m_Tick = std::max(pPlayer->m_RespawnTick - 1, Server()->Tick()),
 		.m_Team = TEAM_SPECTATORS,
 		.m_SpectatorId = KillerId};
 }
