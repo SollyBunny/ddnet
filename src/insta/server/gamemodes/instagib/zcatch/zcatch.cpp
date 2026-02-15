@@ -483,9 +483,9 @@ void CGameControllerZcatch::YouWillJoinGameMessage(CPlayer *pPlayer, char *pMsg,
 	str_format(pMsg, MsgLen, "You will join the game once '%s' dies", Server()->ClientName(pPlayer->m_KillerId));
 }
 
-bool CGameControllerZcatch::CanStillJoinDeadSpecGame(const CPlayer *pPlayer, char *pMsg, size_t MsgLen)
+bool CGameControllerZcatch::CanStillJoinDeadSpecGame(const CPlayer *pPlayerOrNullptr, char *pMsg, size_t MsgLen)
 {
-	if(!CGameControllerInstagib::CanStillJoinDeadSpecGame(pPlayer, pMsg, MsgLen))
+	if(!CGameControllerInstagib::CanStillJoinDeadSpecGame(pPlayerOrNullptr, pMsg, MsgLen))
 		return false;
 
 	CPlayer *pBestPlayer = PlayerWithMostKillsThatCount();

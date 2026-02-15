@@ -823,6 +823,13 @@ int CGameControllerInstaCore::GetAutoTeam(int NotThisId)
 			Team = m_aTeamSize[TEAM_RED] > m_aTeamSize[TEAM_BLUE] ? TEAM_BLUE : TEAM_RED;
 	}
 
+	char aUnusedError[512] = "";
+	if(!CanJoinTeam(Team, NotThisId, aUnusedError, sizeof(aUnusedError)))
+		return TEAM_SPECTATORS;
+
+
+	// TODO: this slot limit check belongs to CanJoinTeam not to GetAutoTeam
+	//
 	// check if there're enough player slots left
 	if(FreeInGameSlots())
 	{
@@ -835,8 +842,11 @@ int CGameControllerInstaCore::GetAutoTeam(int NotThisId)
 
 bool CGameControllerInstaCore::CanJoinTeam(int Team, int NotThisId, char *pErrorReason, int ErrorReasonSize)
 {
-	const CPlayer *pPlayer = GetPlayerOrNullptr(NotThisId);
-	if(pPlayer && pPlayer->IsPaused())
+	// WARNING: this value is expected to be null when we pick a team to auto join
+	//          when the player connects to the server
+	//          do not skip the logic in that case we still need to apply correct team selection
+	const CPlayer *pPlayerOrNullptr = GetPlayerOrNullptr(NotThisId);
+	if(pPlayerOrNullptr && pPlayerOrNullptr->IsPaused())
 	{
 		if(pErrorReason)
 			str_copy(pErrorReason, "Use /pause first then you can kill", ErrorReasonSize);
@@ -844,11 +854,11 @@ bool CGameControllerInstaCore::CanJoinTeam(int Team, int NotThisId, char *pError
 	}
 
 	// zCatch or bomb
-	if(IsDeadSpecGameType() && pPlayer)
+	if(IsDeadSpecGameType())
 	{
 		if(Team != TEAM_SPECTATORS)
 		{
-			if(pPlayer->m_IsDead)
+			if(pPlayerOrNullptr && pPlayerOrNullptr->m_IsDead)
 			{
 				// This error message is unlikely to be shown
 				// it should instead queue a team change and show this:
@@ -861,14 +871,16 @@ bool CGameControllerInstaCore::CanJoinTeam(int Team, int NotThisId, char *pError
 				return false;
 			}
 
-			if(!CanStillJoinDeadSpecGame(pPlayer, pErrorReason, ErrorReasonSize))
+			if(!CanStillJoinDeadSpecGame(pPlayerOrNullptr, pErrorReason, ErrorReasonSize))
 				return false;
 		}
 	}
 
-	if(Team == TEAM_SPECTATORS || (pPlayer && pPlayer->GetTeam() != TEAM_SPECTATORS))
+	if(Team == TEAM_SPECTATORS || (pPlayerOrNullptr && pPlayerOrNullptr->GetTeam() != TEAM_SPECTATORS))
 		return true;
 
+	// TODO: bundle the error message with the check
+	//       this never nest went too far
 	if(FreeInGameSlots())
 		return true;
 
@@ -1454,7 +1466,7 @@ void CGameControllerInstaCore::YouWillJoinGameMessage(CPlayer *pPlayer, char *pM
 	str_copy(pMsg, "You will join the game automatically once it is possible", MsgLen);
 }
 
-bool CGameControllerInstaCore::CanStillJoinDeadSpecGame(const CPlayer *pPlayer, char *pMsg, size_t MsgLen)
+bool CGameControllerInstaCore::CanStillJoinDeadSpecGame(const CPlayer *pPlayerOrNullptr, char *pMsg, size_t MsgLen)
 {
 	if(!IsDeadSpecGameType())
 		return true;

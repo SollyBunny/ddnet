@@ -1436,7 +1436,11 @@ public:
 			It does not handle slot limits, dead state and other things.
 
 		Arguments:
-			pPlayer - player that attempted to join the game
+			pPlayerOrNullptr - player that attempted to join the game
+			                   WARNING: as the name suggests this is expected to be null
+			                            that happens when we pick a team for the player on join
+			                            before the player instance is created
+
 			pMsg - buffer the error message will be written to if returned false
 			MsgLen - maximum length in bytes of the pMsg buffer
 
@@ -1444,7 +1448,7 @@ public:
 			true - if the current round still allows joining make sure to also call `CanJoinTeam()` to be sure
 			false - if the current round is progressed so far that players have to wait for the next round
 	*/
-	virtual bool CanStillJoinDeadSpecGame(const CPlayer *pPlayer, char *pMsg, size_t MsgLen) { return true; }
+	virtual bool CanStillJoinDeadSpecGame(const CPlayer *pPlayerOrNullptr, char *pMsg, size_t MsgLen) { return true; }
 
 	bool m_IsVanillaGameType = false;
 	// decides if own grenade explosions
