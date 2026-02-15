@@ -28,7 +28,9 @@ void CGameControllerZcatch::UpdateCatchTicks(class CPlayer *pPlayer, ECatchUpdat
 		pPlayer->m_DeadSinceTick = std::nullopt;
 		pPlayer->m_AliveSinceTick = std::nullopt;
 
-		if(IsCatchGameRunning())
+		// TODO: it is bad that this logic is duplicated in OnPlayerConnect
+		//       not sure which one should be responsible but not both
+		if(IsCatchGameRunning() && IsGameRunning())
 		{
 			pPlayer->m_AliveSinceTick = Server()->Tick();
 			str_format(aBuf, sizeof(aBuf), "'%s' started playing (counting alive ticks)", Server()->ClientName(pPlayer->GetCid()));

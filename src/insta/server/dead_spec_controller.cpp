@@ -1,6 +1,8 @@
 #include <engine/shared/config.h>
 #include <engine/shared/protocol.h>
 
+#include <generated/protocol.h>
+
 #include <game/server/gamecontext.h>
 #include <game/server/gamecontroller.h>
 #include <game/server/player.h>
@@ -110,15 +112,21 @@ void CDeadSpecController::KillPlayer(CPlayer *pPlayer, int KillerId)
 	pPlayer->m_IsDead = true;
 	pPlayer->m_KillerId = KillerId;
 
-	// force death screen open as long as sv_enemy_kill_respawn_delay_ms specifies
-	// then move to spectators after that. Instead of moving to spectators instantly.
-	// helps with ddnet client losing spectator focus because
-	// of clicking directly after death
-	// https://github.com/ddnet-insta/ddnet-insta/issues/447
-	pPlayer->m_ForceTeam = {
-		.m_Tick = std::max(pPlayer->m_RespawnTick - 1, Server()->Tick()),
-		.m_Team = TEAM_SPECTATORS,
-		.m_SpectatorId = KillerId};
+	// we also support marking spectators as dead
+	// this is useful for zCatch where players get caught
+	// by the leading player on join
+	if(pPlayer->GetTeam() != TEAM_SPECTATORS)
+	{
+		// force death screen open as long as sv_enemy_kill_respawn_delay_ms specifies
+		// then move to spectators after that. Instead of moving to spectators instantly.
+		// helps with ddnet client losing spectator focus because
+		// of clicking directly after death
+		// https://github.com/ddnet-insta/ddnet-insta/issues/447
+		pPlayer->m_ForceTeam = {
+			.m_Tick = std::max(pPlayer->m_RespawnTick - 1, Server()->Tick()),
+			.m_Team = TEAM_SPECTATORS,
+			.m_SpectatorId = KillerId};
+	}
 }
 
 void CDeadSpecController::RespawnPlayer(CPlayer *pPlayer)
