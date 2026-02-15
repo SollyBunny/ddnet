@@ -827,7 +827,6 @@ int CGameControllerInstaCore::GetAutoTeam(int NotThisId)
 	if(!CanJoinTeam(Team, NotThisId, aUnusedError, sizeof(aUnusedError)))
 		return TEAM_SPECTATORS;
 
-
 	// TODO: this slot limit check belongs to CanJoinTeam not to GetAutoTeam
 	//
 	// check if there're enough player slots left

@@ -489,8 +489,41 @@ bool CGameControllerZcatch::CanStillJoinDeadSpecGame(const CPlayer *pPlayerOrNul
 		return false;
 
 	CPlayer *pBestPlayer = PlayerWithMostKillsThatCount();
+
 	if(!pBestPlayer)
 		return true;
+
+	// this method is called to pick a team on join
+	// in that case the player we pick a team for is NULL
+	//
+	// but it is also called when alive spectator decides to start
+	// playing again
+	//
+	// We handle these cases differently. If someone joins the game
+	// they stay spec as soon as the best player made at least 1 kill.
+	// To avoid bypassing being caught by reconnecting.
+	//
+	// But if a player was waiting alive in spectators they can still
+	// enter later in the round.
+	bool WasAliveSpectator = pPlayerOrNullptr != nullptr;
+	if(!WasAliveSpectator)
+	{
+		// WARNING: this message is never shown because we do not show CanJoinTeam
+		//          errors on connect and this branch is only hit on connect
+		//          but it is still nice to write a proper reason here for debugging
+		if(pMsg)
+		{
+			str_format(
+				pMsg,
+				MsgLen,
+				"'%s' already made %d kills, please wait.",
+				Server()->ClientName(pBestPlayer->GetCid()),
+				pBestPlayer->m_KillsThatCount);
+		}
+		return false;
+	}
+
+	// allow specs to join the game before the best player is too far
 	if(pBestPlayer->m_KillsThatCount < 4)
 		return true;
 
@@ -502,9 +535,8 @@ bool CGameControllerZcatch::CanStillJoinDeadSpecGame(const CPlayer *pPlayerOrNul
 			"'%s' already made %d kills, please wait.",
 			Server()->ClientName(pBestPlayer->GetCid()),
 			pBestPlayer->m_KillsThatCount);
-		return false;
 	}
-	return true;
+	return false;
 }
 
 int CGameControllerZcatch::GetAutoTeam(int NotThisId)

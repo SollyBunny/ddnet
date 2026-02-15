@@ -1437,9 +1437,9 @@ public:
 
 		Arguments:
 			pPlayerOrNullptr - player that attempted to join the game
-			                   WARNING: as the name suggests this is expected to be null
-			                            that happens when we pick a team for the player on join
-			                            before the player instance is created
+					   WARNING: as the name suggests this is expected to be null
+						    that happens when we pick a team for the player on join
+						    before the player instance is created
 
 			pMsg - buffer the error message will be written to if returned false
 			MsgLen - maximum length in bytes of the pMsg buffer
