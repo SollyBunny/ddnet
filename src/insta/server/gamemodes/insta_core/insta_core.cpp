@@ -833,7 +833,7 @@ int CGameControllerInstaCore::GetAutoTeam(int NotThisId)
 	if(GameServer()->GetDDRaceTeam(NotThisId) == 0)
 		++m_aTeamSize[Team];
 
-	return TEAM_SPECTATORS;
+	return Team;
 }
 
 bool CGameControllerInstaCore::CanJoinTeam(int Team, int NotThisId, char *pErrorReason, int ErrorReasonSize)
