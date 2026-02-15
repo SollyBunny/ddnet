@@ -2,6 +2,8 @@
 
 #include <base/str.h>
 
+#include <generated/protocol7.h>
+
 #include <game/client/skin.h>
 #include <game/server/teeinfo.h>
 
@@ -151,14 +153,106 @@ bool CSkinInfoManager::UseCustomColor()
 	return m_TeeInfoUserChoice.m_UseCustomColor;
 }
 
+ESkinPrio CSkinInfoManager::SkinNamePriority()
+{
+	for(int i = (int)ESkinPrio::NUM_SKINPRIOS - 1; i > 0; i--)
+	{
+		if(!m_aOverrideRequests[i].m_SkinName.has_value())
+			continue;
+		return (ESkinPrio)i;
+	}
+	return ESkinPrio::USER;
+}
+
+ESkinPrio CSkinInfoManager::ColorBodyPriority()
+{
+	for(int i = (int)ESkinPrio::NUM_SKINPRIOS - 1; i > 0; i--)
+	{
+		if(!m_aOverrideRequests[i].m_ColorBody.has_value())
+			continue;
+		return (ESkinPrio)i;
+	}
+	return ESkinPrio::USER;
+}
+
+ESkinPrio CSkinInfoManager::ColorFeetPriority()
+{
+	for(int i = (int)ESkinPrio::NUM_SKINPRIOS - 1; i > 0; i--)
+	{
+		if(!m_aOverrideRequests[i].m_ColorFeet.has_value())
+			continue;
+		return (ESkinPrio)i;
+	}
+	return ESkinPrio::USER;
+}
+
+ESkinPrio CSkinInfoManager::UseCustomColorPriority()
+{
+	for(int i = (int)ESkinPrio::NUM_SKINPRIOS - 1; i > 0; i--)
+	{
+		if(!m_aOverrideRequests[i].m_UseCustomColor.has_value())
+			continue;
+		return (ESkinPrio)i;
+	}
+	return ESkinPrio::USER;
+}
+
 CTeeInfo CSkinInfoManager::TeeInfo()
 {
 	// TODO: cache this
 	CTeeInfo Info = m_TeeInfoUserChoice;
+
+	// 0.6
 	SkinName(Info.m_aSkinName, sizeof(Info.m_aSkinName));
 	Info.m_ColorBody = ColorBody();
 	Info.m_ColorFeet = ColorFeet();
 	Info.m_UseCustomColor = UseCustomColor();
+
+	// 0.7
+
+	// The server requests skin overrides in the 0.6 format
+	// so in that case we are translating the request to 0.7 manually and partially here.
+	//
+	// Could also use the ddnet skin translation helper ToSixup() here
+	// but I decided against that to be able to mix user choice with server overrides
+	// and only translate what the server forcefully changed.
+	//
+	// related issues:
+	// https://github.com/ddnet-insta/ddnet-insta/issues/595
+	// https://github.com/ddnet-insta/ddnet-insta/issues/547
+	//
+	// ^
+	// you should read, understand and retest these issues before and after
+	// changing this code
+
+	if(SkinNamePriority() > ESkinPrio::USER)
+	{
+		SkinName(Info.m_aaSkinPartNames[protocol7::SKINPART_BODY], sizeof(Info.m_aaSkinPartNames[protocol7::SKINPART_BODY]));
+	}
+
+	if(ColorBodyPriority() > ESkinPrio::USER)
+	{
+		const int ColorBodySeven = ColorHSLA(ColorBody()).UnclampLighting(ColorHSLA::DARKEST_LGT).Pack(ColorHSLA::DARKEST_LGT7);
+		Info.m_aSkinPartColors[protocol7::SKINPART_BODY] = ColorBodySeven;
+		Info.m_aSkinPartColors[protocol7::SKINPART_MARKING] = 0x22FFFFFF; // magic value from ddnet teeinfo.cpp
+		Info.m_aSkinPartColors[protocol7::SKINPART_DECORATION] = ColorBodySeven;
+		Info.m_aSkinPartColors[protocol7::SKINPART_HANDS] = ColorBodySeven;
+	}
+
+	if(ColorFeetPriority() > ESkinPrio::USER)
+	{
+		const int ColorFeetSeven = ColorHSLA(ColorFeet()).UnclampLighting(ColorHSLA::DARKEST_LGT).Pack(ColorHSLA::DARKEST_LGT7);
+		Info.m_aSkinPartColors[protocol7::SKINPART_FEET] = ColorFeetSeven;
+	}
+
+	if(UseCustomColorPriority() > ESkinPrio::USER)
+	{
+		// could also only apply it to all parts except feet
+		// or only feet depending on which color was set by the server
+
+		for(bool &PartUseCustomColor : Info.m_aUseCustomColors)
+			PartUseCustomColor = UseCustomColor();
+	}
 
 	return Info;
 }

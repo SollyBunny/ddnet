@@ -134,6 +134,11 @@ public:
 	int ColorFeet();
 	bool UseCustomColor();
 
+	ESkinPrio SkinNamePriority();
+	ESkinPrio ColorBodyPriority();
+	ESkinPrio ColorFeetPriority();
+	ESkinPrio UseCustomColorPriority();
+
 	// has to be fetched by the server before
 	// sending out info
 	CTeeInfo TeeInfo();
