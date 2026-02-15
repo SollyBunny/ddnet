@@ -179,6 +179,7 @@ Below is a list of all the settings that were added in ddnet-insta.
 + `random_map_from_pool` Changes to random map from pool (see add_map_to_pool)
 + `post_stats` Publish round stats before round end without clearing them (see *round_stats* configs for more info
 + `delete_round_stats` Delete all players current round stats WITHOUT saving them to the database!
++ `delete_session_stats` Delete all players current session stats
 + `gctf_antibot` runs the antibot command gctf (depends on closed source module)
 + `known_antibot` runs the antibot command known (depends on antibob antibot module)
 + `kick_events_antibot` runs the antibot command kick_events (depends on antibob antibot module)
