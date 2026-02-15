@@ -978,10 +978,13 @@ bool CGameControllerInstaCore::OnSkinChange7(protocol7::CNetMsg_Cl_SkinChange *p
 
 void CGameControllerInstaCore::OnClientDataPersist(CPlayer *pPlayer, CGameContext::CPersistentClientData *pData)
 {
+	pData->m_Insta.m_SessionStats = pPlayer->m_SessionStats;
+	pData->m_Insta.m_SessionStats.Merge(&pPlayer->m_Stats);
 }
 
 void CGameControllerInstaCore::OnClientDataRestore(CPlayer *pPlayer, const CGameContext::CPersistentClientData *pData)
 {
+	pPlayer->m_SessionStats = pData->m_Insta.m_SessionStats;
 }
 
 void CGameControllerInstaCore::OnDataPersist(CGameContext::CPersistentData *pData)

@@ -236,6 +236,19 @@ public:
 	// see CPlayer::m_RoundStats for stats that are always counted
 	CSqlStatsPlayer m_Stats;
 
+	// The `m_Stats` of all previous rounds without the current round.
+	// A session is the entire time one player is connected.
+	// Before reading its value you probably want to merge it with `m_Stats`
+	// first to get the live data.
+	//
+	// The stats are protected by anti farm.
+	//
+	// See also:
+	// - `m_RoundStats`
+	// - `m_Stats`
+	// - `m_SavedStats`
+	CSqlStatsPlayer m_SessionStats;
+
 	// these are the all time stats of that player
 	// loaded from the database
 	// they should not be written to

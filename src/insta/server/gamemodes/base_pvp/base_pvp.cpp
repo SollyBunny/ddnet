@@ -272,6 +272,10 @@ int CGameControllerBasePvp::SnapPlayerScore(int SnappingClient, CPlayer *pPlayer
 		return pPlayer->Kills() + pPlayer->m_SavedStats.m_Kills;
 	case EDisplayScore::ROUND_KILLS:
 		return pPlayer->Kills();
+	case EDisplayScore::SESSION_POINTS:
+		return pPlayer->m_SessionStats.m_Points + pPlayer->m_Stats.m_Points;
+	case EDisplayScore::SESSION_WINS:
+		return pPlayer->m_SessionStats.m_Wins + pPlayer->m_Stats.m_Wins;
 	};
 
 	return Score;

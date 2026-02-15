@@ -19,6 +19,9 @@
 
 void CPlayer::ResetStats()
 {
+	// https://github.com/ddnet-insta/ddnet-insta/issues/592
+	m_SessionStats.Merge(&m_Stats);
+
 	m_RoundStats.Reset();
 	m_Stats.Reset();
 }

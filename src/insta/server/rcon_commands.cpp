@@ -186,6 +186,25 @@ void CGameContext::ConDeleteRoundStats(IConsole::IResult *pResult, void *pUserDa
 	log_info("chatresp", "deleted stats of %d players without saving them!", Count);
 }
 
+void CGameContext::ConDeleteSessionStats(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	if(!pSelf->m_pController)
+		return;
+
+	int Count = 0;
+	for(CPlayer *pPlayer : pSelf->m_apPlayers)
+	{
+		if(!pPlayer)
+			continue;
+
+		Count++;
+		pPlayer->m_SessionStats.Reset();
+	}
+
+	log_info("chatresp", "deleted session stats of %d players", Count);
+}
+
 void CGameContext::ConGctfAntibot(IConsole::IResult *pResult, void *pUserData)
 {
 	CGameContext *pSelf = (CGameContext *)pUserData;

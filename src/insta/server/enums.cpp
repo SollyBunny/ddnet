@@ -23,6 +23,10 @@ bool str_to_display_score(const char *pInputText, EDisplayScore *pDisplayScore)
 		*pDisplayScore = EDisplayScore::KILLS;
 	else if(!str_comp_nocase(pInputText, "round_kills"))
 		*pDisplayScore = EDisplayScore::ROUND_KILLS;
+	else if(!str_comp_nocase(pInputText, "session_points"))
+		*pDisplayScore = EDisplayScore::SESSION_POINTS;
+	else if(!str_comp_nocase(pInputText, "session_wins"))
+		*pDisplayScore = EDisplayScore::SESSION_WINS;
 	else
 		return false;
 	return true;
@@ -50,6 +54,10 @@ const char *display_score_to_str(EDisplayScore Score)
 		return "kills";
 	case EDisplayScore::ROUND_KILLS:
 		return "round_kills";
+	case EDisplayScore::SESSION_POINTS:
+		return "session_points";
+	case EDisplayScore::SESSION_WINS:
+		return "session_wins";
 	case EDisplayScore::NUM_SCORES:
 		return "(invalid)";
 	}

@@ -67,6 +67,8 @@ enum class EDisplayScore
 	WINS,
 	KILLS,
 	ROUND_KILLS,
+	SESSION_POINTS,
+	SESSION_WINS,
 
 	NUM_SCORES,
 };
@@ -79,7 +81,7 @@ enum class EScoreKind
 	POINTS,
 };
 
-#define DISPLAY_SCORE_VALUES "points, round_points, spree, current_spree, win_points, wins, kills, round_kills"
+#define DISPLAY_SCORE_VALUES "points, round_points, spree, current_spree, win_points, wins, kills, round_kills, session_points, session_wins"
 
 // writes based on the input pInputText the output pDisplayScore
 // returns true on match
