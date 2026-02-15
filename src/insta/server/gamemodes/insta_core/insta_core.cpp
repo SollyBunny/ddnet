@@ -827,15 +827,12 @@ int CGameControllerInstaCore::GetAutoTeam(int NotThisId)
 	if(!CanJoinTeam(Team, NotThisId, aUnusedError, sizeof(aUnusedError)))
 		return TEAM_SPECTATORS;
 
-	// TODO: this slot limit check belongs to CanJoinTeam not to GetAutoTeam
-	//
-	// check if there're enough player slots left
-	if(FreeInGameSlots())
-	{
-		if(GameServer()->GetDDRaceTeam(NotThisId) == 0)
-			++m_aTeamSize[Team];
-		return Team;
-	}
+	// TODO: wtf is this? is this correct? add a comment explaining this
+	//       looks like a bad design. GetAutoTeam ideally would be pure
+	//       and should not alter state.
+	if(GameServer()->GetDDRaceTeam(NotThisId) == 0)
+		++m_aTeamSize[Team];
+
 	return TEAM_SPECTATORS;
 }
 
@@ -878,14 +875,14 @@ bool CGameControllerInstaCore::CanJoinTeam(int Team, int NotThisId, char *pError
 	if(Team == TEAM_SPECTATORS || (pPlayerOrNullptr && pPlayerOrNullptr->GetTeam() != TEAM_SPECTATORS))
 		return true;
 
-	// TODO: bundle the error message with the check
-	//       this never nest went too far
-	if(FreeInGameSlots())
-		return true;
+	if(!FreeInGameSlots())
+	{
+		if(pErrorReason)
+			str_format(pErrorReason, ErrorReasonSize, "Only %d active players are allowed", Server()->MaxClients() - g_Config.m_SvSpectatorSlots);
+		return false;
+	}
 
-	if(pErrorReason)
-		str_format(pErrorReason, ErrorReasonSize, "Only %d active players are allowed", Server()->MaxClients() - g_Config.m_SvSpectatorSlots);
-	return false;
+	return true;
 }
 
 bool CGameControllerInstaCore::IsValidTeam(int Team)
