@@ -331,9 +331,10 @@ void CGameControllerBomb::OnRoundEnd()
 	if(!WinnerAnnounced)
 		GameServer()->SendChat(-1, TEAM_ALL, "Noone won the round!");
 
-	m_RoundActive = false;
-	DoWarmup(3);
 	CGameControllerBasePvp::OnRoundEnd();
+
+	DoWarmup(3);
+	m_RoundActive = false;
 }
 
 void CGameControllerBomb::YouWillJoinSpecMessage(CPlayer *pPlayer, char *pMsg, size_t MsgLen)
