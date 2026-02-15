@@ -543,16 +543,6 @@ bool CGameControllerZcatch::CanStillJoinDeadSpecGame(const CPlayer *pPlayerOrNul
 	return false;
 }
 
-int CGameControllerZcatch::GetAutoTeam(int NotThisId)
-{
-	// if(IsCatchGameRunning() && IsGameRunning() && PlayerWithMostKillsThatCount())
-	// {
-	// 	return TEAM_SPECTATORS;
-	// }
-
-	return CGameControllerInstagib::GetAutoTeam(NotThisId);
-}
-
 void CGameControllerZcatch::DoTeamChange(CPlayer *pPlayer, int Team, bool DoChatMsg)
 {
 	CGameControllerInstagib::DoTeamChange(pPlayer, Team, DoChatMsg);
