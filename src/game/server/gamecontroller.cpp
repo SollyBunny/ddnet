@@ -888,7 +888,7 @@ int IGameController::GetAutoTeam(int NotThisId)
 
 	if(CanJoinTeam(Team, NotThisId, nullptr, 0))
 		return Team;
-	return -1;
+	return TEAM_SPECTATORS;
 }
 
 bool IGameController::CanJoinTeam(int Team, int NotThisId, char *pErrorReason, int ErrorReasonSize)
