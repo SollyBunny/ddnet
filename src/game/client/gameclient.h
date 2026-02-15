@@ -516,6 +516,9 @@ public:
 		CCharacterCore m_PrevPredicted;
 
 		// TClient
+		CCharacterCore m_RegularPredicted;
+
+		// TClient
 		vec2 m_ImprovedPredPos = vec2(0, 0);
 		vec2 m_PrevImprovedPredPos = vec2(0, 0);
 		bool m_ValidAntipingSmooth = false;

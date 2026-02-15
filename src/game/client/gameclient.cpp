@@ -2715,6 +2715,12 @@ void CGameClient::OnPredict()
 				if(CCharacter *pChar = m_PredictedWorld.GetCharacterById(i))
 					m_aClients[i].m_Predicted = pChar->GetCore();
 		}
+		if (Tick == FinalTickRegular)
+		{
+			for (int i = 0; i < MAX_CLIENTS; i++)
+				if (CCharacter* pChar = m_PredictedWorld.GetCharacterById(i))
+					m_aClients[i].m_RegularPredicted = pChar->GetCore();
+		}
 
 		if(Tick == Client()->PredGameTick(g_Config.m_ClDummy))
 		{
@@ -3303,6 +3309,9 @@ void CGameClient::CClientData::Reset()
 
 	m_Predicted.Reset();
 	m_PrevPredicted.Reset();
+
+	// TClient
+	m_RegularPredicted.Reset();
 
 	if(m_pSkinInfo != nullptr)
 	{
