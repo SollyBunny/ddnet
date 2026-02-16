@@ -848,8 +848,14 @@ int CGameControllerInstaCore::GetPlayerTeam(class CPlayer *pPlayer, bool Sixup)
 	// hack to let 0.7 players vote as spectators
 	if(g_Config.m_SvSpectatorVotes && g_Config.m_SvSpectatorVotesSixup && Sixup && pPlayer->GetTeam() == TEAM_SPECTATORS)
 	{
-		return TEAM_RED;
+		return TEAM_GAME;
 	}
+
+	// spoof fake in game team
+	// to get dead spec tees for 0.7 connections
+	// https://github.com/ddnet-insta/ddnet-insta/issues/596
+	if(Sixup && pPlayer->m_IsDead && IsDeadSpecGameType())
+		return TEAM_GAME;
 
 	return IGameController::GetPlayerTeam(pPlayer, Sixup);
 }

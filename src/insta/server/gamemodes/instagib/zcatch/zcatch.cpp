@@ -276,18 +276,6 @@ void CGameControllerZcatch::OnCharacterSpawn(class CCharacter *pChr)
 	ResetKillsThatCount(pChr->GetPlayer()); // just to be sure
 }
 
-int CGameControllerZcatch::GetPlayerTeam(class CPlayer *pPlayer, bool Sixup)
-{
-	// TODO: this should be covered by the dead spec controller
-
-	// spoof fake in game team
-	// to get dead spec tees for 0.7 connections
-	if(Sixup && pPlayer->m_IsDead)
-		return TEAM_RED;
-
-	return CGameControllerInstaCore::GetPlayerTeam(pPlayer, Sixup);
-}
-
 void CGameControllerZcatch::ReleasePlayer(class CPlayer *pPlayer, const char *pMsg)
 {
 	GameServer()->SendChatTarget(pPlayer->GetCid(), pMsg);
