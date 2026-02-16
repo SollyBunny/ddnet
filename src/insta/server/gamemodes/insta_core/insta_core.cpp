@@ -1752,6 +1752,204 @@ void CGameControllerInstaCore::RestoreFreezeStateOnRejoin(CPlayer *pPlayer)
 	}
 }
 
+bool CGameControllerInstaCore::IsStatTrack(char *pReason, int SizeOfReason)
+{
+	if(pReason)
+		pReason[0] = '\0';
+
+	if(g_Config.m_SvAlwaysTrackStats)
+	{
+		if(g_Config.m_SvDebugStats)
+			log_debug("stats", "tracking stats no matter what because sv_always_track_stats is set");
+		return true;
+	}
+
+	if(IsWarmup())
+	{
+		if(pReason)
+			str_copy(pReason, "warmup", SizeOfReason);
+		return false;
+	}
+
+	int MinPlayers = IsTeamPlay() ? 3 : 2;
+	int Count = NumConnectedIps();
+	bool Track = Count >= MinPlayers;
+	if(g_Config.m_SvDebugStats)
+		log_debug("stats", "connected unique ips=%d (%d+ needed to track) tracking=%d", Count, MinPlayers, Track);
+
+	if(!Track)
+	{
+		if(pReason)
+			str_copy(pReason, "not enough players", SizeOfReason);
+	}
+
+	return Track;
+}
+
+void CGameControllerInstaCore::SaveStatsOnRoundEnd(CPlayer *pPlayer)
+{
+	char aMsg[512] = {0};
+	bool Won = IsWinner(pPlayer, aMsg, sizeof(aMsg));
+	bool Lost = IsLoser(pPlayer);
+	// dbg_msg("stats", "winner=%d loser=%d msg=%s name: %s", Won, Lost, aMsg, Server()->ClientName(pPlayer->GetCid()));
+	if(aMsg[0])
+		GameServer()->SendChatTarget(pPlayer->GetCid(), aMsg);
+
+	dbg_msg("stats", "saving round stats of player '%s' win=%d loss=%d msg='%s'", Server()->ClientName(pPlayer->GetCid()), Won, Lost, aMsg);
+
+	// the spree can not be incremented if stat track is off
+	// but the best spree will be counted even if it is off
+	// this ensures that the spree of a player counts that
+	// dominated the entire server into rq and never died
+	if(pPlayer->Spree() > pPlayer->m_Stats.m_BestSpree)
+	{
+		log_info("stats", "player '%s' has a spree of %d kills that was not tracked (force tracking it now)", Server()->ClientName(pPlayer->GetCid()), pPlayer->Spree());
+		log_info("stats", "player '%s' currently has %d tracked kills", Server()->ClientName(pPlayer->GetCid()), pPlayer->m_Stats.m_Kills);
+		pPlayer->m_Stats.m_BestSpree = pPlayer->Spree();
+	}
+	if(IsStatTrack())
+	{
+		if(Won)
+		{
+			pPlayer->m_Stats.m_Wins++;
+			pPlayer->m_Stats.m_Points++;
+			pPlayer->m_Stats.m_WinPoints += WinPointsForWin(pPlayer);
+		}
+		if(Lost)
+			pPlayer->m_Stats.m_Losses++;
+	}
+
+	m_pSqlStats->SaveRoundStats(Server()->ClientName(pPlayer->GetCid()), StatsTable(), &pPlayer->m_Stats);
+
+	// instead of doing a db write and read for ALL players
+	// on round end we manually sum up the stats for save servers
+	// this means that if someone else is using the same name on
+	// another server the stats will be outdated
+	// but that is fine
+	//
+	// saved stats are a gimmic not a source of truth
+	pPlayer->m_SavedStats.Merge(&pPlayer->m_Stats);
+	if(m_pExtraColumns)
+		m_pExtraColumns->MergeStats(&pPlayer->m_SavedStats, &pPlayer->m_Stats);
+
+	pPlayer->ResetStats();
+}
+
+void CGameControllerInstaCore::SaveStatsOnDisconnect(CPlayer *pPlayer)
+{
+	if(!pPlayer)
+		return;
+	if(!pPlayer->m_Stats.HasValues(m_pExtraColumns))
+		return;
+
+	// the spree can not be incremented if stat track is off
+	// but the best spree will be counted even if it is off
+	// this ensures that the spree of a player counts that
+	// dominated the entire server into rq and never died
+	if(pPlayer->Spree() > pPlayer->m_Stats.m_BestSpree)
+		pPlayer->m_Stats.m_BestSpree = pPlayer->Spree();
+
+	// rage quit during a round counts as loss
+	bool CountAsLoss = true;
+	const char *pLossReason = "rage quit";
+
+	// unless there are not enough players to track stats
+	// fast capping alone on a server should never increment losses
+	if(!IsStatTrack())
+	{
+		CountAsLoss = false;
+		pLossReason = "stat track is off";
+	}
+
+	// unless you are just a spectator
+	if(pPlayer->GetTeam() == TEAM_SPECTATORS)
+	{
+		int SpectatorTicks = Server()->Tick() - pPlayer->m_LastSetTeam;
+		int SpectatorSeconds = SpectatorTicks / Server()->TickSpeed();
+		if(SpectatorSeconds > 60)
+		{
+			CountAsLoss = false;
+			pLossReason = "player is spectator";
+		}
+		// dbg_msg("stats", "spectator since %d seconds", SpectatorSeconds);
+	}
+
+	// if the quitting player was about to win
+	// it does not count as a loss either
+	if(HasWinningScore(pPlayer))
+	{
+		CountAsLoss = false;
+		pLossReason = "player has winning score";
+	}
+
+	// require at least one death to count aborting a game as loss
+	if(!pPlayer->m_Stats.m_Deaths)
+	{
+		CountAsLoss = false;
+		pLossReason = "player never died";
+	}
+
+	int RoundTicks = Server()->Tick() - m_GameStartTick;
+	int ConnectedTicks = Server()->Tick() - pPlayer->m_JoinTick;
+	int RoundSeconds = RoundTicks / Server()->TickSpeed();
+	int ConnectedSeconds = ConnectedTicks / Server()->TickSpeed();
+
+	// dbg_msg(
+	// 	"disconnect",
+	// 	"round_ticks=%d (%ds)   connected_ticks=%d (%ds)",
+	// 	RoundTicks,
+	// 	RoundSeconds,
+	// 	ConnectedTicks,
+	// 	ConnectedSeconds);
+
+	// the player has to be playing in that round for at least one minute
+	// for it to count as a loss
+	//
+	// this protects from reconnecting stat griefers
+	// and also makes sure that casual short connects don't count as loss
+	if(RoundSeconds < 60 || ConnectedSeconds < 60)
+	{
+		CountAsLoss = false;
+		pLossReason = "player did not play long enough";
+	}
+
+	if(CountAsLoss)
+		pPlayer->m_Stats.m_Losses++;
+
+	dbg_msg("sql", "saving stats of disconnecting player '%s' CountAsLoss=%d (%s)", Server()->ClientName(pPlayer->GetCid()), CountAsLoss, pLossReason);
+	m_pSqlStats->SaveRoundStats(Server()->ClientName(pPlayer->GetCid()), StatsTable(), &pPlayer->m_Stats);
+}
+
+bool CGameControllerInstaCore::LoadNewPlayerNameData(int ClientId)
+{
+	if(ClientId < 0 || ClientId >= MAX_CLIENTS)
+		return true;
+
+	CPlayer *pPlayer = GameServer()->m_apPlayers[ClientId];
+	if(!pPlayer)
+		return true;
+
+	pPlayer->m_SavedStats.Reset();
+	m_pSqlStats->LoadInstaPlayerData(ClientId, m_pStatsTable);
+
+	// consume the event and do not load ddrace times
+	return true;
+}
+
+void CGameControllerInstaCore::OnLoadedNameStats(const CSqlStatsPlayer *pStats, class CPlayer *pPlayer)
+{
+	if(!pPlayer)
+		return;
+
+	pPlayer->m_SavedStats = *pStats;
+
+	if(g_Config.m_SvDebugStats > 1)
+	{
+		dbg_msg("ddnet-insta", "copied stats:");
+		pPlayer->m_SavedStats.Dump(m_pExtraColumns);
+	}
+}
+
 void CGameControllerInstaCore::Anticamper()
 {
 	for(CPlayer *pPlayer : GameServer()->m_apPlayers)
@@ -2122,202 +2320,4 @@ const char *CGameControllerInstaCore::GetMysteryRoundLine()
 
 	m_LastMysteryLine = SelectedIndex;
 	return m_vMysteryRounds[m_LastMysteryLine].c_str();
-}
-
-bool CGameControllerInstaCore::IsStatTrack(char *pReason, int SizeOfReason)
-{
-	if(pReason)
-		pReason[0] = '\0';
-
-	if(g_Config.m_SvAlwaysTrackStats)
-	{
-		if(g_Config.m_SvDebugStats)
-			log_debug("stats", "tracking stats no matter what because sv_always_track_stats is set");
-		return true;
-	}
-
-	if(IsWarmup())
-	{
-		if(pReason)
-			str_copy(pReason, "warmup", SizeOfReason);
-		return false;
-	}
-
-	int MinPlayers = IsTeamPlay() ? 3 : 2;
-	int Count = NumConnectedIps();
-	bool Track = Count >= MinPlayers;
-	if(g_Config.m_SvDebugStats)
-		log_debug("stats", "connected unique ips=%d (%d+ needed to track) tracking=%d", Count, MinPlayers, Track);
-
-	if(!Track)
-	{
-		if(pReason)
-			str_copy(pReason, "not enough players", SizeOfReason);
-	}
-
-	return Track;
-}
-
-void CGameControllerInstaCore::SaveStatsOnRoundEnd(CPlayer *pPlayer)
-{
-	char aMsg[512] = {0};
-	bool Won = IsWinner(pPlayer, aMsg, sizeof(aMsg));
-	bool Lost = IsLoser(pPlayer);
-	// dbg_msg("stats", "winner=%d loser=%d msg=%s name: %s", Won, Lost, aMsg, Server()->ClientName(pPlayer->GetCid()));
-	if(aMsg[0])
-		GameServer()->SendChatTarget(pPlayer->GetCid(), aMsg);
-
-	dbg_msg("stats", "saving round stats of player '%s' win=%d loss=%d msg='%s'", Server()->ClientName(pPlayer->GetCid()), Won, Lost, aMsg);
-
-	// the spree can not be incremented if stat track is off
-	// but the best spree will be counted even if it is off
-	// this ensures that the spree of a player counts that
-	// dominated the entire server into rq and never died
-	if(pPlayer->Spree() > pPlayer->m_Stats.m_BestSpree)
-	{
-		log_info("stats", "player '%s' has a spree of %d kills that was not tracked (force tracking it now)", Server()->ClientName(pPlayer->GetCid()), pPlayer->Spree());
-		log_info("stats", "player '%s' currently has %d tracked kills", Server()->ClientName(pPlayer->GetCid()), pPlayer->m_Stats.m_Kills);
-		pPlayer->m_Stats.m_BestSpree = pPlayer->Spree();
-	}
-	if(IsStatTrack())
-	{
-		if(Won)
-		{
-			pPlayer->m_Stats.m_Wins++;
-			pPlayer->m_Stats.m_Points++;
-			pPlayer->m_Stats.m_WinPoints += WinPointsForWin(pPlayer);
-		}
-		if(Lost)
-			pPlayer->m_Stats.m_Losses++;
-	}
-
-	m_pSqlStats->SaveRoundStats(Server()->ClientName(pPlayer->GetCid()), StatsTable(), &pPlayer->m_Stats);
-
-	// instead of doing a db write and read for ALL players
-	// on round end we manually sum up the stats for save servers
-	// this means that if someone else is using the same name on
-	// another server the stats will be outdated
-	// but that is fine
-	//
-	// saved stats are a gimmic not a source of truth
-	pPlayer->m_SavedStats.Merge(&pPlayer->m_Stats);
-	if(m_pExtraColumns)
-		m_pExtraColumns->MergeStats(&pPlayer->m_SavedStats, &pPlayer->m_Stats);
-
-	pPlayer->ResetStats();
-}
-
-void CGameControllerInstaCore::SaveStatsOnDisconnect(CPlayer *pPlayer)
-{
-	if(!pPlayer)
-		return;
-	if(!pPlayer->m_Stats.HasValues(m_pExtraColumns))
-		return;
-
-	// the spree can not be incremented if stat track is off
-	// but the best spree will be counted even if it is off
-	// this ensures that the spree of a player counts that
-	// dominated the entire server into rq and never died
-	if(pPlayer->Spree() > pPlayer->m_Stats.m_BestSpree)
-		pPlayer->m_Stats.m_BestSpree = pPlayer->Spree();
-
-	// rage quit during a round counts as loss
-	bool CountAsLoss = true;
-	const char *pLossReason = "rage quit";
-
-	// unless there are not enough players to track stats
-	// fast capping alone on a server should never increment losses
-	if(!IsStatTrack())
-	{
-		CountAsLoss = false;
-		pLossReason = "stat track is off";
-	}
-
-	// unless you are just a spectator
-	if(pPlayer->GetTeam() == TEAM_SPECTATORS)
-	{
-		int SpectatorTicks = Server()->Tick() - pPlayer->m_LastSetTeam;
-		int SpectatorSeconds = SpectatorTicks / Server()->TickSpeed();
-		if(SpectatorSeconds > 60)
-		{
-			CountAsLoss = false;
-			pLossReason = "player is spectator";
-		}
-		// dbg_msg("stats", "spectator since %d seconds", SpectatorSeconds);
-	}
-
-	// if the quitting player was about to win
-	// it does not count as a loss either
-	if(HasWinningScore(pPlayer))
-	{
-		CountAsLoss = false;
-		pLossReason = "player has winning score";
-	}
-
-	// require at least one death to count aborting a game as loss
-	if(!pPlayer->m_Stats.m_Deaths)
-	{
-		CountAsLoss = false;
-		pLossReason = "player never died";
-	}
-
-	int RoundTicks = Server()->Tick() - m_GameStartTick;
-	int ConnectedTicks = Server()->Tick() - pPlayer->m_JoinTick;
-	int RoundSeconds = RoundTicks / Server()->TickSpeed();
-	int ConnectedSeconds = ConnectedTicks / Server()->TickSpeed();
-
-	// dbg_msg(
-	// 	"disconnect",
-	// 	"round_ticks=%d (%ds)   connected_ticks=%d (%ds)",
-	// 	RoundTicks,
-	// 	RoundSeconds,
-	// 	ConnectedTicks,
-	// 	ConnectedSeconds);
-
-	// the player has to be playing in that round for at least one minute
-	// for it to count as a loss
-	//
-	// this protects from reconnecting stat griefers
-	// and also makes sure that casual short connects don't count as loss
-	if(RoundSeconds < 60 || ConnectedSeconds < 60)
-	{
-		CountAsLoss = false;
-		pLossReason = "player did not play long enough";
-	}
-
-	if(CountAsLoss)
-		pPlayer->m_Stats.m_Losses++;
-
-	dbg_msg("sql", "saving stats of disconnecting player '%s' CountAsLoss=%d (%s)", Server()->ClientName(pPlayer->GetCid()), CountAsLoss, pLossReason);
-	m_pSqlStats->SaveRoundStats(Server()->ClientName(pPlayer->GetCid()), StatsTable(), &pPlayer->m_Stats);
-}
-
-bool CGameControllerInstaCore::LoadNewPlayerNameData(int ClientId)
-{
-	if(ClientId < 0 || ClientId >= MAX_CLIENTS)
-		return true;
-
-	CPlayer *pPlayer = GameServer()->m_apPlayers[ClientId];
-	if(!pPlayer)
-		return true;
-
-	pPlayer->m_SavedStats.Reset();
-	m_pSqlStats->LoadInstaPlayerData(ClientId, m_pStatsTable);
-
-	// consume the event and do not load ddrace times
-	return true;
-}
-
-void CGameControllerInstaCore::OnLoadedNameStats(const CSqlStatsPlayer *pStats, class CPlayer *pPlayer)
-{
-	if(!pPlayer)
-		return;
-
-	pPlayer->m_SavedStats = *pStats;
-
-	if(g_Config.m_SvDebugStats > 1)
-	{
-		dbg_msg("ddnet-insta", "copied stats:");
-		pPlayer->m_SavedStats.Dump(m_pExtraColumns);
-	}
 }
