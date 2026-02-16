@@ -1066,7 +1066,7 @@ public:
 		Arguments:
 			pPlayer - player to load the stats for
 	*/
-	virtual void LoadNewPlayerNameData(class CPlayer *pPlayer) {};
+	virtual void LoadNewPlayerNameData(class CPlayer *pPlayer) {}
 	virtual void OnPlayerReadyChange(class CPlayer *pPlayer); // 0.7 ready change
 	virtual int SnapGameInfoExFlags(int SnappingClient, int DDRaceFlags) { return DDRaceFlags; }
 	virtual int SnapGameInfoExFlags2(int SnappingClient, int DDRaceFlags) { return DDRaceFlags; }
