@@ -238,5 +238,20 @@ public:
 
 	size_t m_LastMysteryLine = -1;
 	const char *GetMysteryRoundLine();
+
+	bool IsStatTrack(char *pReason = nullptr, int SizeOfReason = 0) override;
+	void SaveStatsOnRoundEnd(CPlayer *pPlayer) override;
+	void SaveStatsOnDisconnect(CPlayer *pPlayer) override;
+
+	/*
+		m_pExtraColumns
+
+		Should be allocated in the gamemmodes constructor and will be freed by the base constructor.
+		It holds a few methods that describe the extension of the base database layout.
+		If a gamemode needs more columns it can implement one. Otherwise it will be a nullptr which is fine.
+
+		Checkout gctf/gctf.h gctf/gctf.cpp and gctf/sql_columns.h for an example
+	*/
+	CExtraColumns *m_pExtraColumns = nullptr;
 };
 #endif

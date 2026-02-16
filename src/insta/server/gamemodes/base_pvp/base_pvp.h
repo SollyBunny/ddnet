@@ -97,23 +97,9 @@ public:
 
 	bool IsWinner(const CPlayer *pPlayer, char *pMessage, int SizeOfMessage) override;
 	bool IsLoser(const CPlayer *pPlayer) override;
-	bool IsStatTrack(char *pReason = nullptr, int SizeOfReason = 0) override;
-	void SaveStatsOnRoundEnd(CPlayer *pPlayer) override;
-	void SaveStatsOnDisconnect(CPlayer *pPlayer) override;
 
 	// generic helpers
 
 	bool IsSpawnProtected(const CPlayer *pVictim, const CPlayer *pKiller) const;
-
-	/*
-		m_pExtraColumns
-
-		Should be allocated in the gamemmodes constructor and will be freed by the base constructor.
-		It holds a few methods that describe the extension of the base database layout.
-		If a gamemode needs more columns it can implement one. Otherwise it will be a nullptr which is fine.
-
-		Checkout gctf/gctf.h gctf/gctf.cpp and gctf/sql_columns.h for an example
-	*/
-	CExtraColumns *m_pExtraColumns = nullptr;
 };
 #endif
