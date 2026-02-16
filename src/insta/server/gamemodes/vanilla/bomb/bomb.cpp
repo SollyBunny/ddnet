@@ -12,6 +12,7 @@
 #include <game/mapitems.h>
 #include <game/server/entities/character.h>
 #include <game/server/gamecontext.h>
+#include <game/server/gamecontroller.h>
 #include <game/server/player.h>
 
 #include <insta/server/gamemodes/base_pvp/base_pvp.h>
@@ -54,28 +55,7 @@ void CGameControllerBomb::Tick()
 {
 	CGameControllerBasePvp::Tick();
 
-	for(auto *pPlayer : GameServer()->m_apPlayers)
-	{
-		if(!pPlayer)
-			continue;
-
-		pPlayer->ResetLastToucherAfterSeconds(3);
-
-		if(GameServer()->m_World.m_Paused)
-		{
-			++pPlayer->m_ToBombTick;
-		}
-	}
-
-	if(m_RoundActive)
-	{
-		for(const auto &pPlayer : GameServer()->m_apPlayers)
-		{
-			if(pPlayer)
-				SetSkin(pPlayer);
-		}
-	}
-	else
+	if(!m_RoundActive)
 	{
 		if(NumActivePlayers() > 1 && !m_Warmup)
 		{
@@ -96,6 +76,46 @@ void CGameControllerBomb::Tick()
 				GameServer()->SendBroadcast("Waiting for players...", -1);
 				break;
 			}
+		}
+		return;
+	}
+
+	for(auto *pPlayer : GameServer()->m_apPlayers)
+	{
+		if(!pPlayer)
+			continue;
+
+		pPlayer->ResetLastToucherAfterSeconds(3);
+		SetSkin(pPlayer);
+
+		if(!GameServer()->m_World.m_Paused)
+		{
+			if(pPlayer->m_IsBomb)
+			{
+				if(pPlayer->m_ToBombTick % Server()->TickSpeed() == 0)
+					UpdateTimer();
+				if(pPlayer->m_ToBombTick <= 0)
+					ExplodeBomb(pPlayer);
+				pPlayer->m_ToBombTick--;
+			}
+		}
+	}
+
+	int AlivePlayers = NumNonDeadActivePlayers();
+	if(AmountOfBombs() == 0 || AlivePlayers <= 1)
+	{
+		if(AlivePlayers >= 2)
+		{
+			int Alive = 0;
+			for(auto *pPlayer : GameServer()->m_apPlayers)
+			{
+				if(!pPlayer)
+					continue;
+
+				if(!pPlayer->m_IsDead && !pPlayer->m_IsBomb)
+					Alive++;
+			}
+			MakeRandomBomb(std::ceil((Alive / (float)Config()->m_SvBombtagBombsPerPlayer) - (Config()->m_SvBombtagBombsPerPlayer == 1 ? 1 : 0)));
 		}
 	}
 }
@@ -168,54 +188,33 @@ bool CGameControllerBomb::DoWincheckRound()
 	if(IGameController::DoWincheckRound())
 		return true;
 
-	if(Server()->ClientCount() <= 1)
+	if(NumNonDeadActivePlayers() <= 1)
 	{
+		bool WinnerAnnounced = false;
+		for(auto *pPlayer : GameServer()->m_apPlayers)
+		{
+			if(!pPlayer)
+				continue;
+			if(!IsWinner(pPlayer, nullptr, 0))
+				continue;
+
+			char aBuf[128];
+			str_format(
+				aBuf,
+				sizeof(aBuf),
+				"'%s' won the round!%s",
+				Server()->ClientName(pPlayer->GetCid()),
+				pPlayer->m_IsBomb ? " (as bomb! +1 extra win point)" : "");
+			GameServer()->SendChat(-1, TEAM_ALL, aBuf);
+			WinnerAnnounced = true;
+			break;
+		}
+
+		if(!WinnerAnnounced)
+			GameServer()->SendChat(-1, TEAM_ALL, "Noone won the round!");
+
 		EndRound();
-		JoinAllPlayers();
 		return true;
-	}
-
-	int AlivePlayers = NumNonDeadActivePlayers();
-
-	if(AmountOfBombs() == 0 || AlivePlayers <= 1)
-	{
-		if(AlivePlayers >= 2)
-		{
-			int Alive = 0;
-			for(auto *pPlayer : GameServer()->m_apPlayers)
-			{
-				if(!pPlayer)
-					continue;
-
-				if(!pPlayer->m_IsDead && !pPlayer->m_IsBomb)
-					Alive++;
-			}
-			// TODO: why is the wincheck creating bombs?
-			MakeRandomBomb(std::ceil((Alive / (float)Config()->m_SvBombtagBombsPerPlayer) - (Config()->m_SvBombtagBombsPerPlayer == 1 ? 1 : 0)));
-		}
-		else
-		{
-			// A hack to avoid the end-of-round window.
-			OnRoundEnd();
-			JoinAllPlayers();
-			return false;
-		}
-	}
-
-	// TODO: why is this logic in the wincheck?
-	for(auto *pPlayer : GameServer()->m_apPlayers)
-	{
-		if(!pPlayer)
-			continue;
-
-		if(pPlayer->m_IsBomb)
-		{
-			if(pPlayer->m_ToBombTick % Server()->TickSpeed() == 0)
-				UpdateTimer();
-			if(pPlayer->m_ToBombTick <= 0)
-				ExplodeBomb(pPlayer);
-			pPlayer->m_ToBombTick--;
-		}
 	}
 
 	return false;
@@ -313,30 +312,7 @@ bool CGameControllerBomb::OnEntity(int Index, int x, int y, int Layer, int Flags
 
 void CGameControllerBomb::OnRoundEnd()
 {
-	bool WinnerAnnounced = false;
-	for(auto *pPlayer : GameServer()->m_apPlayers)
-	{
-		if(!pPlayer)
-			continue;
-		if(!IsWinner(pPlayer, nullptr, 0))
-			continue;
-
-		char aBuf[128];
-		str_format(
-			aBuf,
-			sizeof(aBuf),
-			"'%s' won the round!%s",
-			Server()->ClientName(pPlayer->GetCid()),
-			pPlayer->m_IsBomb ? " (as bomb! +1 extra win point)" : "");
-		GameServer()->SendChat(-1, TEAM_ALL, aBuf);
-		WinnerAnnounced = true;
-		break;
-	}
-
-	if(!WinnerAnnounced)
-		GameServer()->SendChat(-1, TEAM_ALL, "Noone won the round!");
-
-	EndRound();
+	CGameControllerBasePvp::OnRoundEnd();
 	m_RoundActive = false;
 }
 
@@ -376,7 +352,7 @@ bool CGameControllerBomb::IsLoser(const CPlayer *pPlayer)
 {
 	// you can only win running games
 	// so you can also only lose running games
-	if(m_RoundActive)
+	if(!m_RoundActive)
 		return false;
 
 	// rage quit as dead player is counted as a loss
