@@ -336,9 +336,7 @@ void CGameControllerBomb::OnRoundEnd()
 	if(!WinnerAnnounced)
 		GameServer()->SendChat(-1, TEAM_ALL, "Noone won the round!");
 
-	CGameControllerBasePvp::OnRoundEnd();
-
-	DoWarmup(3);
+	EndRound();
 	m_RoundActive = false;
 }
 
@@ -478,6 +476,8 @@ void CGameControllerBomb::EliminatePlayer(CPlayer *pPlayer, int Weapon)
 {
 	// https://github.com/ddnet-insta/ddnet-insta/issues/570
 	if(!m_RoundActive)
+		return;
+	if(!IsGameRunning())
 		return;
 	if(pPlayer->m_IsDead)
 		return;
