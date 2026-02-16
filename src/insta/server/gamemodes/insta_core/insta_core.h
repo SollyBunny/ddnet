@@ -231,6 +231,9 @@ public:
 	//          are in a character tick. In those you should never call this method!
 	void KillAllPlayers();
 
+	void AddSpree(CPlayer *pPlayer);
+	void EndSpree(CPlayer *pPlayer, CPlayer *pKiller);
+
 	// returns player pointer or nullptr if none is found
 	// UniqueId unlike regular ClientIds are not reused
 	// they start at one and get incremented for every new player that gets created

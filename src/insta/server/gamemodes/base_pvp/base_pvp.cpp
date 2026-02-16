@@ -929,59 +929,6 @@ bool CGameControllerBasePvp::OnCharacterTakeDamage(vec2 &Force, int &Dmg, int &F
 	return false;
 }
 
-void CGameControllerBasePvp::AddSpree(class CPlayer *pPlayer)
-{
-	if(!IsStatTrack())
-	{
-		pPlayer->m_UntrackedSpree++;
-		return;
-	}
-
-	pPlayer->m_Spree++;
-	const int NumMsg = 5;
-	char aBuf[128];
-
-	if(g_Config.m_SvKillingspreeKills > 0 && pPlayer->Spree() % g_Config.m_SvKillingspreeKills == 0)
-	{
-		static const char aaSpreeMsg[NumMsg][32] = {"is on a killing spree", "is on a rampage", "is dominating", "is unstoppable", "is godlike"};
-		int No = pPlayer->Spree() / g_Config.m_SvKillingspreeKills;
-
-		str_format(aBuf, sizeof(aBuf), "'%s' %s with %d kills!", Server()->ClientName(pPlayer->GetCid()), aaSpreeMsg[(No > NumMsg - 1) ? NumMsg - 1 : No], pPlayer->Spree());
-		GameServer()->SendChat(-1, TEAM_ALL, aBuf);
-	}
-}
-
-void CGameControllerBasePvp::EndSpree(class CPlayer *pPlayer, class CPlayer *pKiller)
-{
-	if(g_Config.m_SvKillingspreeKills > 0 && pPlayer->Spree() >= g_Config.m_SvKillingspreeKills)
-	{
-		CCharacter *pChr = pPlayer->GetCharacter();
-
-		if(pChr)
-		{
-			GameServer()->CreateSound(pChr->m_Pos, SOUND_GRENADE_EXPLODE);
-			// GameServer()->CreateExplosion(pChr->m_Pos,  pPlayer->GetCid(), WEAPON_GRENADE, true, -1, -1);
-			CNetEvent_Explosion *pEvent = GameServer()->m_Events.Create<CNetEvent_Explosion>(CClientMask());
-			if(pEvent)
-			{
-				pEvent->m_X = (int)pChr->m_Pos.x;
-				pEvent->m_Y = (int)pChr->m_Pos.y;
-			}
-
-			char aBuf[128];
-			str_format(aBuf, sizeof(aBuf), "'%s' %d-kills killing spree was ended by '%s'",
-				Server()->ClientName(pPlayer->GetCid()), pPlayer->Spree(), Server()->ClientName(pKiller->GetCid()));
-			GameServer()->SendChat(-1, TEAM_ALL, aBuf);
-		}
-	}
-	// pPlayer->m_GotAward = false;
-
-	if(pPlayer->m_Stats.m_BestSpree < pPlayer->Spree())
-		pPlayer->m_Stats.m_BestSpree = pPlayer->Spree();
-	pPlayer->m_Spree = 0;
-	pPlayer->m_UntrackedSpree = 0;
-}
-
 void CGameControllerBasePvp::OnLoadedNameStats(const CSqlStatsPlayer *pStats, class CPlayer *pPlayer)
 {
 	if(!pPlayer)

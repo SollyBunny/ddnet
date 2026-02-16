@@ -57,8 +57,6 @@ public:
 	bool DetectedCasualRound();
 	void DoWarmup(int Seconds) override;
 
-	void AddSpree(CPlayer *pPlayer);
-	void EndSpree(CPlayer *pPlayer, CPlayer *pKiller);
 	void CheckForceUnpauseGame();
 
 	// ddnet-insta only
