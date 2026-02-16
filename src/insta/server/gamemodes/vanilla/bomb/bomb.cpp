@@ -60,6 +60,11 @@ void CGameControllerBomb::Tick()
 			continue;
 
 		pPlayer->ResetLastToucherAfterSeconds(3);
+
+		if(GameServer()->m_World.m_Paused)
+		{
+			++pPlayer->m_ToBombTick;
+		}
 	}
 
 	if(m_RoundActive)
