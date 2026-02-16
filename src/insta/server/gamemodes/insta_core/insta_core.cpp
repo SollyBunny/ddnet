@@ -1392,7 +1392,7 @@ void CGameControllerInstaCore::OnPlayerTick(class CPlayer *pPlayer)
 	{
 		int WantedTeam = pPlayer->m_ForceTeam.m_Team;
 		if(pPlayer->GetTeam() != WantedTeam)
-			pPlayer->SetTeam(WantedTeam);
+			pPlayer->SetTeamSpoofed(WantedTeam);
 		if(WantedTeam == TEAM_SPECTATORS)
 			pPlayer->SetSpectatorId(pPlayer->m_ForceTeam.m_SpectatorId);
 		pPlayer->m_ForceTeam.m_Tick = 0;
