@@ -448,6 +448,23 @@ bool CGameContext::OnClientPacket(int ClientId, bool Sys, int MsgId, CNetChunk *
 	return m_pController->OnClientPacket(ClientId, Sys, MsgId, pPacket, pUnpacker);
 }
 
+static int CapMinutes(int Minutes)
+{
+	// we need to represent the minutes as ticks
+	// which is *60*50
+	// int max is 2147483647
+	// that divided by 50 and 60 is 715827
+	// so in theory we could set the max to 700k
+	// but lets cap it at a lower more sane value
+	const int MaxMinutes = 50000;
+	if(Minutes > MaxMinutes)
+	{
+		log_info("deep_jail", "minute amount has been capped to %d", MaxMinutes);
+		return MaxMinutes;
+	}
+	return Minutes;
+}
+
 void CGameContext::DeepJailId(int AdminId, int ClientId, int Minutes)
 {
 	if(ClientId < 0 || ClientId >= MAX_CLIENTS)
@@ -466,6 +483,8 @@ void CGameContext::DeepJailId(int AdminId, int ClientId, int Minutes)
 		log_info("deep_jail", "minute amount has to be at least 1");
 		return;
 	}
+
+	Minutes = CapMinutes(Minutes);
 
 	int MinutesInTicks = Minutes * Server()->TickSpeed() * 60;
 	pPlayer->InitIpStorage();
@@ -492,6 +511,8 @@ void CGameContext::DeepJailIp(int AdminId, const char *pAddrStr, int Minutes)
 		log_info("deep_jail", "invalid ip address '%s'", pAddrStr);
 		return;
 	}
+
+	Minutes = CapMinutes(Minutes);
 
 	int MinutesInTicks = Minutes * Server()->TickSpeed() * 60;
 	int UndeepTick = Server()->Tick() + MinutesInTicks;
