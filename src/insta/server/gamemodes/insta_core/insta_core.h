@@ -77,6 +77,7 @@ public:
 	void Tick() override;
 	bool OnVoteNetMessage(const CNetMsg_Cl_Vote *pMsg, int ClientId) override;
 	bool OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMsg, int ClientId) override;
+	void DoTeamChange(CPlayer *pPlayer, int Team, bool DoChatMsg) override;
 	bool OnKillNetMessage(int ClientId) override;
 	bool CanSelfkillWhileFrozen(class CPlayer *pPlayer) override;
 	bool CanSelfkill(class CPlayer *pPlayer, char *pErrorReason, int ErrorReasonSize) override;

@@ -760,6 +760,71 @@ bool CGameControllerInstaCore::OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMs
 	return false;
 }
 
+void CGameControllerInstaCore::DoTeamChange(CPlayer *pPlayer, int Team, bool DoChatMsg)
+{
+	if(!IsValidTeam(Team))
+		return;
+
+	// has to be saved for later
+	// because the set team operation kills the character
+	// and then we lose the team information
+	int DDRaceTeam = GameServer()->GetDDRaceTeam(pPlayer->GetCid());
+
+	if(Team == pPlayer->GetTeam())
+		return;
+
+	int OldTeam = pPlayer->GetTeam(); // ddnet-insta
+	pPlayer->SetTeamSpoofed(Team);
+	int ClientId = pPlayer->GetCid();
+
+	char aBuf[128];
+	if(DoChatMsg)
+	{
+		str_format(aBuf, sizeof(aBuf), "'%s' joined the %s", Server()->ClientName(ClientId), GameServer()->m_pController->GetTeamName(Team));
+		GameServer()->SendChat(-1, TEAM_ALL, aBuf, CGameContext::FLAG_SIX);
+	}
+
+	str_format(aBuf, sizeof(aBuf), "team_join player='%d:%s' m_Team=%d", ClientId, Server()->ClientName(ClientId), Team);
+	GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", aBuf);
+
+	// OnPlayerInfoChange(pPlayer);
+
+	// ddnet-insta
+
+	// https://github.com/ddnet-insta/ddnet-insta/issues/388
+	// makes sure changing team during a fng sacrifice does not give the
+	// player a wrong shire punishment
+	//
+	// also invalidates block or fly kills when the killer joined spectators between starting the kill (hooking, shooting)
+	// and the actual death of the victim
+	pPlayer->ResetOwnLastTouchOnAllOtherPlayers();
+
+	if(OldTeam == TEAM_SPECTATORS)
+	{
+		GameServer()->AlertOnSpecialInstagibConfigs(pPlayer->GetCid());
+		GameServer()->ShowCurrentInstagibConfigsMotd(pPlayer->GetCid());
+	}
+
+	// update effected game settings
+	if(OldTeam != TEAM_SPECTATORS)
+	{
+		if(DDRaceTeam == 0)
+			--m_aTeamSize[OldTeam];
+		m_UnbalancedTick = TBALANCE_CHECK;
+	}
+	if(Team != TEAM_SPECTATORS)
+	{
+		if(DDRaceTeam == 0)
+			++m_aTeamSize[Team];
+		m_UnbalancedTick = TBALANCE_CHECK;
+		// if(m_GameState == IGS_WARMUP_GAME && HasEnoughPlayers())
+		// 	SetGameState(IGS_WARMUP_GAME, 0);
+		// pPlayer->m_IsReadyToPlay = !IsPlayerReadyMode();
+		// if(m_GameFlags&GAMEFLAG_SURVIVAL)
+		// 	pPlayer->m_RespawnDisabled = GetStartRespawnState();
+	}
+}
+
 bool CGameControllerInstaCore::OnKillNetMessage(int ClientId)
 {
 	CPlayer *pPlayer = GetPlayerOrNullptr(ClientId);
