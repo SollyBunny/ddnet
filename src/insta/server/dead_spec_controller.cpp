@@ -199,9 +199,12 @@ void CDeadSpecController::RespawnAllPlayers()
 		}
 		// log_info("deadspec", "  cid=%d moved to game ", pPlayer->GetCid());
 
-		// TODO: support multiple teams
-		pPlayer->SetTeam(TEAM_GAME, false);
-		pPlayer->m_RespawnTick = 0;
-		pPlayer->TryRespawn();
+		// do not kill the winner in the round end screen
+		// https://github.com/ddnet-insta/ddnet-insta/issues/604
+		if(pPlayer->GetTeam() == TEAM_SPECTATORS)
+		{
+			// TODO: support multiple teams
+			pPlayer->SetTeam(TEAM_GAME, false);
+		}
 	}
 }
