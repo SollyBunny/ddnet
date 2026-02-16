@@ -200,10 +200,11 @@ void CGameControllerInstaCore::OnPlayerConnect(CPlayer *pPlayer)
 	// init the player
 	Score()->PlayerData(ClientId)->Reset();
 
-	if(!LoadNewPlayerNameData(ClientId))
-	{
-		Score()->LoadPlayerData(ClientId);
-	}
+	// start db worker thread to lookup ddnet race time
+	Score()->LoadPlayerData(ClientId);
+
+	// start db worker thread to lookup ddnet-insta stats
+	LoadNewPlayerNameData(pPlayer);
 
 	if(!Server()->ClientPrevIngame(ClientId))
 	{
@@ -1920,20 +1921,10 @@ void CGameControllerInstaCore::SaveStatsOnDisconnect(CPlayer *pPlayer)
 	m_pSqlStats->SaveRoundStats(Server()->ClientName(pPlayer->GetCid()), StatsTable(), &pPlayer->m_Stats);
 }
 
-bool CGameControllerInstaCore::LoadNewPlayerNameData(int ClientId)
+void CGameControllerInstaCore::LoadNewPlayerNameData(CPlayer *pPlayer)
 {
-	if(ClientId < 0 || ClientId >= MAX_CLIENTS)
-		return true;
-
-	CPlayer *pPlayer = GameServer()->m_apPlayers[ClientId];
-	if(!pPlayer)
-		return true;
-
 	pPlayer->m_SavedStats.Reset();
-	m_pSqlStats->LoadInstaPlayerData(ClientId, m_pStatsTable);
-
-	// consume the event and do not load ddrace times
-	return true;
+	m_pSqlStats->LoadInstaPlayerData(pPlayer->GetCid(), m_pStatsTable);
 }
 
 void CGameControllerInstaCore::OnLoadedNameStats(const CSqlStatsPlayer *pStats, class CPlayer *pPlayer)
