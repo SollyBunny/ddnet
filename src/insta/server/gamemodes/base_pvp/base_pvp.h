@@ -43,8 +43,6 @@ public:
 	EScoreKind ServerInfoScoreKind() override { return EScoreKind::POINTS; }
 	EScoreKind PlayerScoreKind(class CPlayer *pPlayer) override { return EScoreKind::POINTS; }
 	int GetDefaultWeapon(class CPlayer *pPlayer) override { return m_DefaultWeapon; }
-	bool LoadNewPlayerNameData(int ClientId) override;
-	void OnLoadedNameStats(const CSqlStatsPlayer *pStats, class CPlayer *pPlayer) override;
 	bool OnTeamChatCmd(IConsole::IResult *pResult) override;
 	bool OnSetDDRaceTeam(int ClientId, int Team) override;
 

@@ -2098,7 +2098,6 @@ void CGameControllerInstaCore::EndSpree(class CPlayer *pPlayer, class CPlayer *p
 	pPlayer->m_UntrackedSpree = 0;
 }
 
-
 CPlayer *CGameControllerInstaCore::GetPlayerByUniqueId(uint32_t UniqueId)
 {
 	for(CPlayer *pPlayer : GameServer()->m_apPlayers)
@@ -2291,4 +2290,34 @@ void CGameControllerInstaCore::SaveStatsOnDisconnect(CPlayer *pPlayer)
 
 	dbg_msg("sql", "saving stats of disconnecting player '%s' CountAsLoss=%d (%s)", Server()->ClientName(pPlayer->GetCid()), CountAsLoss, pLossReason);
 	m_pSqlStats->SaveRoundStats(Server()->ClientName(pPlayer->GetCid()), StatsTable(), &pPlayer->m_Stats);
+}
+
+bool CGameControllerInstaCore::LoadNewPlayerNameData(int ClientId)
+{
+	if(ClientId < 0 || ClientId >= MAX_CLIENTS)
+		return true;
+
+	CPlayer *pPlayer = GameServer()->m_apPlayers[ClientId];
+	if(!pPlayer)
+		return true;
+
+	pPlayer->m_SavedStats.Reset();
+	m_pSqlStats->LoadInstaPlayerData(ClientId, m_pStatsTable);
+
+	// consume the event and do not load ddrace times
+	return true;
+}
+
+void CGameControllerInstaCore::OnLoadedNameStats(const CSqlStatsPlayer *pStats, class CPlayer *pPlayer)
+{
+	if(!pPlayer)
+		return;
+
+	pPlayer->m_SavedStats = *pStats;
+
+	if(g_Config.m_SvDebugStats > 1)
+	{
+		dbg_msg("ddnet-insta", "copied stats:");
+		pPlayer->m_SavedStats.Dump(m_pExtraColumns);
+	}
 }

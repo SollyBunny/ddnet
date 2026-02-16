@@ -929,36 +929,6 @@ bool CGameControllerBasePvp::OnCharacterTakeDamage(vec2 &Force, int &Dmg, int &F
 	return false;
 }
 
-void CGameControllerBasePvp::OnLoadedNameStats(const CSqlStatsPlayer *pStats, class CPlayer *pPlayer)
-{
-	if(!pPlayer)
-		return;
-
-	pPlayer->m_SavedStats = *pStats;
-
-	if(g_Config.m_SvDebugStats > 1)
-	{
-		dbg_msg("ddnet-insta", "copied stats:");
-		pPlayer->m_SavedStats.Dump(m_pExtraColumns);
-	}
-}
-
-bool CGameControllerBasePvp::LoadNewPlayerNameData(int ClientId)
-{
-	if(ClientId < 0 || ClientId >= MAX_CLIENTS)
-		return true;
-
-	CPlayer *pPlayer = GameServer()->m_apPlayers[ClientId];
-	if(!pPlayer)
-		return true;
-
-	pPlayer->m_SavedStats.Reset();
-	m_pSqlStats->LoadInstaPlayerData(ClientId, m_pStatsTable);
-
-	// consume the event and do not load ddrace times
-	return true;
-}
-
 bool CGameControllerBasePvp::OnTeamChatCmd(IConsole::IResult *pResult)
 {
 	if(!g_Config.m_SvTeam)

@@ -245,6 +245,8 @@ public:
 	bool IsStatTrack(char *pReason = nullptr, int SizeOfReason = 0) override;
 	void SaveStatsOnRoundEnd(CPlayer *pPlayer) override;
 	void SaveStatsOnDisconnect(CPlayer *pPlayer) override;
+	bool LoadNewPlayerNameData(int ClientId) override;
+	void OnLoadedNameStats(const CSqlStatsPlayer *pStats, class CPlayer *pPlayer) override;
 
 	/*
 		m_pExtraColumns
