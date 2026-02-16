@@ -104,6 +104,11 @@ bool CDeadSpecController::OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMsg, in
 		return true;
 	}
 
+	if(Team == TEAM_SPECTATORS)
+	{
+		pDeadSpec->m_WantsToStaySpectator = true;
+	}
+
 	return false;
 }
 
