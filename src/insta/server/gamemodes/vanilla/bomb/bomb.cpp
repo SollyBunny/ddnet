@@ -270,8 +270,6 @@ void CGameControllerBomb::OnAppliedDamage(int &Dmg, int &From, int &Weapon, CCha
 		GameServer()->SendBroadcast("", From);
 		pKiller->m_IsBomb = false;
 
-		// Remove all remaining projectiles from this player on the map
-		GameServer()->m_World.RemoveEntitiesFromPlayer(From);
 		MakeBomb(pPlayer->GetCid(), pKiller->m_ToBombTick);
 
 		pChr->GiveWeapon(Config()->m_SvBombtagBombWeapon, true);
