@@ -525,6 +525,8 @@ void CGameControllerBomb::StartBombRound()
 	int Players = 0;
 	m_RoundActive = true;
 
+	JoinAllPlayers();
+
 	for(auto &pPlayer : GameServer()->m_apPlayers)
 	{
 		if(!pPlayer)
