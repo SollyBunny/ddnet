@@ -1106,21 +1106,6 @@ void CGameControllerBasePvp::OnPlayerConnect(CPlayer *pPlayer)
 {
 	CGameControllerInstaCore::OnPlayerConnect(pPlayer);
 	int ClientId = pPlayer->GetCid();
-	pPlayer->ResetStats();
-
-	// init the player
-	Score()->PlayerData(ClientId)->Reset();
-
-	if(!LoadNewPlayerNameData(ClientId))
-	{
-		Score()->LoadPlayerData(ClientId);
-	}
-
-	if(!Server()->ClientPrevIngame(ClientId))
-	{
-		GameServer()->AlertOnSpecialInstagibConfigs(ClientId);
-		GameServer()->ShowCurrentInstagibConfigsMotd(ClientId);
-	}
 
 	CheckReadyStates();
 	SendGameInfo(ClientId); // update game info
@@ -1129,9 +1114,6 @@ void CGameControllerBasePvp::OnPlayerConnect(CPlayer *pPlayer)
 void CGameControllerBasePvp::OnPlayerDisconnect(class CPlayer *pPlayer, const char *pReason)
 {
 	CGameControllerInstaCore::OnPlayerDisconnect(pPlayer, pReason);
-
-	if(GameState() != IGS_END_ROUND)
-		SaveStatsOnDisconnect(pPlayer);
 
 	if(pPlayer->GetTeam() != TEAM_SPECTATORS)
 	{

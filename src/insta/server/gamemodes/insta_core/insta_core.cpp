@@ -19,6 +19,7 @@
 #include <game/server/gamecontroller.h>
 #include <game/server/gamemodes/ddnet.h>
 #include <game/server/player.h>
+#include <game/server/score.h>
 #include <game/server/teams.h>
 #include <game/version.h>
 
@@ -193,6 +194,22 @@ void CGameControllerInstaCore::OnPlayerConnect(CPlayer *pPlayer)
 	{
 		PrintModWelcome(pPlayer);
 	}
+
+	pPlayer->ResetStats();
+
+	// init the player
+	Score()->PlayerData(ClientId)->Reset();
+
+	if(!LoadNewPlayerNameData(ClientId))
+	{
+		Score()->LoadPlayerData(ClientId);
+	}
+
+	if(!Server()->ClientPrevIngame(ClientId))
+	{
+		GameServer()->AlertOnSpecialInstagibConfigs(ClientId);
+		GameServer()->ShowCurrentInstagibConfigsMotd(ClientId);
+	}
 }
 
 // this method should be kept as slim as possible in insta core
@@ -260,6 +277,9 @@ void CGameControllerInstaCore::InstaCoreDisconnect(CPlayer *pPlayer, const char 
 		CIpStorage *pStorage = GameServer()->m_IpStorageController.FindOrCreateEntry(pAddr, Server()->ClientName(pPlayer->GetCid()));
 		pStorage->OnPlayerDisconnect(&pPlayer->m_IpStorage.value(), Server()->Tick());
 	}
+
+	if(GameState() != IGS_END_ROUND)
+		SaveStatsOnDisconnect(pPlayer);
 }
 
 void CGameControllerInstaCore::PrintDisconnect(CPlayer *pPlayer, const char *pReason)
