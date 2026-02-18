@@ -1921,6 +1921,9 @@ void CGameClient::OnNewSnapshot()
 
 					pClient->m_Predicted.ReadDDNet(pCharacterData);
 
+					// TClient
+					pClient->m_RegularPredicted.ReadDDNet(pCharacterData);
+
 					m_Teams.SetSolo(Item.m_Id, pClient->m_Solo);
 				}
 			}
