@@ -193,6 +193,9 @@ void CDeadSpecController::RespawnPlayer(CPlayer *pPlayer)
 
 		// TODO: support multiple teams
 		pPlayer->SetTeam(TEAM_GAME, false);
+
+		// TODO: use DoTeamChange instead of SetTeam
+		pDeadSpec->m_WantsToStaySpectator = false;
 	}
 }
 
