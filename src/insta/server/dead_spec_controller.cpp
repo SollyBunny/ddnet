@@ -76,7 +76,10 @@ bool CDeadSpecController::OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMsg, in
 		return false;
 	CDeadSpecPlayer *pDeadSpec = m_apPlayers[ClientId];
 	if(!pDeadSpec)
+	{
+		log_error("deadspec", "cid=%d tried to switch teams but has no dead spec info", pPlayer->GetCid());
 		return false;
+	}
 
 	int Team = pMsg->m_Team;
 	if(Server()->IsSixup(ClientId) && g_Config.m_SvSpectatorVotes && g_Config.m_SvSpectatorVotesSixup && pPlayer->m_IsFakeDeadSpec)
@@ -100,13 +103,23 @@ bool CDeadSpecController::OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMsg, in
 		else
 			Controller()->YouWillJoinGameMessage(pPlayer, aBuf, sizeof(aBuf));
 
+		log_info(
+			"deadspec",
+			"cid=%d attempted to switch teams and will join the %s as soon as possible",
+			pPlayer->GetCid(),
+			pDeadSpec->m_WantsToJoinSpectators ? "spectators" : "game");
+
 		GameServer()->SendBroadcast(aBuf, ClientId);
 		return true;
 	}
 
-	if(Team == TEAM_SPECTATORS)
+	if(Team == TEAM_SPECTATORS && pPlayer->GetTeam() == TEAM_GAME)
 	{
 		pDeadSpec->m_WantsToStaySpectator = true;
+		log_info(
+			"deadspec",
+			"cid=%d intentionally joined the spectators and will stay there",
+			pPlayer->GetCid());
 	}
 
 	return false;
