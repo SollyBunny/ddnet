@@ -787,6 +787,9 @@ void CGameControllerInstaCore::DoTeamChange(CPlayer *pPlayer, int Team, bool DoC
 	str_format(aBuf, sizeof(aBuf), "team_join player='%d:%s' m_Team=%d", ClientId, Server()->ClientName(ClientId), Team);
 	GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", aBuf);
 
+	if(IsDeadSpecGameType() && m_pDeadSpecController)
+		m_pDeadSpecController->DoTeamChange(pPlayer, Team, DoChatMsg);
+
 	// OnPlayerInfoChange(pPlayer);
 
 	// ddnet-insta

@@ -51,6 +51,12 @@ public:
 	*/
 	bool OnSetTeamNetMessage(const struct CNetMsg_Cl_SetTeam *pMsg, int ClientId);
 
+	// actually does not "DO" a team change
+	// just gets called when a team change happens
+	//
+	// hooks into the controller method with the same signature
+	void DoTeamChange(const CPlayer *pPlayer, int Team, bool DoChatMsg);
+
 	// Kills the player and moves them to the spectators
 	// they can not join the game until `RespawnPlayer()`
 	// is called

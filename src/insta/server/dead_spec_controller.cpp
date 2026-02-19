@@ -1,3 +1,5 @@
+#include <base/dbg.h>
+
 #include <engine/shared/config.h>
 #include <engine/shared/protocol.h>
 
@@ -116,6 +118,16 @@ bool CDeadSpecController::OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMsg, in
 	return false;
 }
 
+void CDeadSpecController::DoTeamChange(const CPlayer *pPlayer, int Team, bool DoChatMsg)
+{
+	CDeadSpecPlayer *pDeadSpec = m_apPlayers[pPlayer->GetCid()];
+	if(!pDeadSpec)
+		return;
+
+	if(Team != TEAM_SPECTATORS)
+		pDeadSpec->m_WantsToStaySpectator = false;
+}
+
 void CDeadSpecController::KillPlayer(CPlayer *pPlayer, int KillerId)
 {
 	pPlayer->m_IsDead = true;
@@ -160,6 +172,7 @@ void CDeadSpecController::RespawnPlayer(CPlayer *pPlayer)
 		pDeadSpec->m_WantsToJoinSpectators = false;
 		pDeadSpec->m_WantsToStaySpectator = true;
 		log_info("deadspec", "  cid=%d wants to join spec", pPlayer->GetCid());
+		dbg_assert(pPlayer->GetTeam() == TEAM_SPECTATORS, "  cid=%d failed to join spectators", pPlayer->GetCid());
 		return;
 	}
 	// do not auto join players that are
