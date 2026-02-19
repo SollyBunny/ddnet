@@ -113,15 +113,6 @@ bool CDeadSpecController::OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMsg, in
 		return true;
 	}
 
-	if(Team == TEAM_SPECTATORS && pPlayer->GetTeam() == TEAM_GAME)
-	{
-		pDeadSpec->m_WantsToStaySpectator = true;
-		log_info(
-			"deadspec",
-			"cid=%d intentionally joined the spectators and will stay there",
-			pPlayer->GetCid());
-	}
-
 	return false;
 }
 
