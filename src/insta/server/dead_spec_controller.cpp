@@ -145,29 +145,35 @@ void CDeadSpecController::RespawnPlayer(CPlayer *pPlayer)
 
 	CDeadSpecPlayer *pDeadSpec = m_apPlayers[pPlayer->GetCid()];
 	if(!pDeadSpec)
+	{
+		log_warn("deadspec", " cid=%d is missing a dead spec instance", pPlayer->GetCid());
 		return;
+	}
 
 	if(pDeadSpec->m_WantsToJoinSpectators)
 	{
 		Controller()->DoTeamChange(pPlayer, TEAM_SPECTATORS, true);
 		pDeadSpec->m_WantsToJoinSpectators = false;
 		pDeadSpec->m_WantsToStaySpectator = true;
-		// log_info("deadspec", "  cid=%d wants to join spec", pPlayer->GetCid());
+		log_info("deadspec", "  cid=%d wants to join spec", pPlayer->GetCid());
 		return;
 	}
 	// do not auto join players that are
 	// intentionally spectator on round start
 	if(pDeadSpec->m_WantsToStaySpectator)
 	{
-		// log_info("deadspec", "  cid=%d wants to stay spec", pPlayer->GetCid());
+		log_info("deadspec", "  cid=%d wants to stay spec", pPlayer->GetCid());
 		return;
 	}
-	// log_info("deadspec", "  cid=%d moved to game ", pPlayer->GetCid());
+
+	log_info("deadspec", "  cid=%d moved to game (current team: %d)", pPlayer->GetCid(), pPlayer->GetTeam());
 
 	// do not kill the winner in the round end screen
 	// https://github.com/ddnet-insta/ddnet-insta/issues/604
 	if(pPlayer->GetTeam() == TEAM_SPECTATORS)
 	{
+		log_info("deadspec", "  cid=%d moved to game actually", pPlayer->GetCid());
+
 		// TODO: support multiple teams
 		pPlayer->SetTeam(TEAM_GAME, false);
 	}
