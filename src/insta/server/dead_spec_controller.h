@@ -51,6 +51,13 @@ public:
 	*/
 	bool OnSetTeamNetMessage(const struct CNetMsg_Cl_SetTeam *pMsg, int ClientId);
 
+private:
+	// returns true if the regular ddnet code would block a user team change
+	// request even before calling CanJoinTeam()
+	// this is caused by ratelimits and kill protection
+	bool DDNetWillBlockOnSetTeamNetmessage(const CPlayer *pPlayer, int Team) const;
+
+public:
 	// actually does not "DO" a team change
 	// just gets called when a team change happens
 	//

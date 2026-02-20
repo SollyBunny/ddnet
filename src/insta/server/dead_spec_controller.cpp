@@ -5,6 +5,7 @@
 
 #include <generated/protocol.h>
 
+#include <game/server/entities/character.h>
 #include <game/server/gamecontext.h>
 #include <game/server/gamecontroller.h>
 #include <game/server/player.h>
@@ -115,6 +116,51 @@ bool CDeadSpecController::OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMsg, in
 		return true;
 	}
 
+	if(Team == TEAM_SPECTATORS && !pPlayer->m_IsDead)
+	{
+		// it is a bit fragile to copy paste ddnets ratelimits
+		// but it is not too bad if we dsync
+		//
+		// this is just a small user experience improvement
+		// if someone joins for example spectators too fast after joining the game
+		// ddnet will drop it because of ratelimit and nothing happens
+		//
+		// in that case we do not want in for example zCatch that that user then gets
+		// moved to spectators after playing a bit and getting caught and getting released again
+		//
+		// another option is to use a timer here and expire join spectator requests but i feel like
+		// that would be even worse to maintain
+		if(!DDNetWillBlockOnSetTeamNetmessage(pPlayer, Team))
+		{
+			pDeadSpec->m_WantsToJoinSpectators = true;
+			log_info(
+				"deadspec",
+				"alive player cid=%d name='%s' intentionally tried to join spectators and will stay there as soon as it happened",
+				pPlayer->GetCid(), Server()->ClientName(pPlayer->GetCid()));
+		}
+	}
+
+	return false;
+}
+
+bool CDeadSpecController::DDNetWillBlockOnSetTeamNetmessage(const CPlayer *pPlayer, int Team) const
+{
+	// has to be kept in sync with the checks in here
+	// void CGameContext::OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMsg, int ClientId)
+
+	if(g_Config.m_SvSpamprotection && pPlayer->m_LastSetTeam && pPlayer->m_LastSetTeam + Server()->TickSpeed() * g_Config.m_SvTeamChangeDelay > Server()->Tick())
+		return true;
+
+	// Kill Protection
+	const CCharacter *pChr = pPlayer->GetCharacter();
+	if(pChr)
+	{
+		int CurrTime = (Server()->Tick() - pChr->m_StartTime) / Server()->TickSpeed();
+		if(g_Config.m_SvKillProtection != 0 && CurrTime >= (60 * g_Config.m_SvKillProtection) && pChr->m_DDRaceState == ERaceState::STARTED)
+			return true;
+	}
+	if(pPlayer->m_TeamChangeTick > Server()->Tick())
+		return true;
 	return false;
 }
 
@@ -124,8 +170,31 @@ void CDeadSpecController::DoTeamChange(const CPlayer *pPlayer, int Team, bool Do
 	if(!pDeadSpec)
 		return;
 
+	if(Team == TEAM_SPECTATORS)
+	{
+		if(pDeadSpec->m_WantsToJoinSpectators)
+		{
+			pDeadSpec->m_WantsToJoinSpectators = false;
+			pDeadSpec->m_WantsToStaySpectator = true;
+
+			log_info(
+				"deadspec",
+				"cid=%d name='%s' successfully joined spectators and will stay there",
+				pPlayer->GetCid(), Server()->ClientName(pPlayer->GetCid()));
+		}
+	}
+
 	if(Team != TEAM_SPECTATORS)
-		pDeadSpec->m_WantsToStaySpectator = false;
+	{
+		if(pDeadSpec->m_WantsToStaySpectator)
+		{
+			log_info(
+				"deadspec",
+				"cid=%d name='%s' no longer wants to stay spectator because they joined the game",
+				pPlayer->GetCid(), Server()->ClientName(pPlayer->GetCid()));
+			pDeadSpec->m_WantsToStaySpectator = false;
+		}
+	}
 }
 
 void CDeadSpecController::KillPlayer(CPlayer *pPlayer, int KillerId)
@@ -189,7 +258,7 @@ void CDeadSpecController::RespawnPlayer(CPlayer *pPlayer)
 	// https://github.com/ddnet-insta/ddnet-insta/issues/604
 	if(pPlayer->GetTeam() == TEAM_SPECTATORS)
 	{
-		log_info("deadspec", "  cid=%d moved to game actually", pPlayer->GetCid());
+		log_info("deadspec", "  cid=%d name='%s' moved to game actually", pPlayer->GetCid(), Server()->ClientName(pPlayer->GetCid()));
 
 		// TODO: support multiple teams
 		pPlayer->SetTeam(TEAM_GAME, false);
