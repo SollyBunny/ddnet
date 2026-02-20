@@ -951,7 +951,7 @@ bool CGameControllerBasePvp::OnTeamChatCmd(IConsole::IResult *pResult)
 		return true;
 	}
 
-	pPlayer->SetTeam(TEAM_RED, false);
+	DoTeamChange(pPlayer, TEAM_GAME, false);
 	pPlayer->m_RespawnTick = 0;
 	pPlayer->TryRespawn();
 
@@ -982,6 +982,9 @@ bool CGameControllerBasePvp::OnSetDDRaceTeam(int ClientId, int Team)
 
 	if(OldDDRaceTeam == TEAM_SUPER)
 		return false;
+
+	// FIXME: do not call SetTeamRawAndUnsafe and delete the method
+	//        https://github.com/ddnet-insta/ddnet-insta/issues/612
 
 	// set m_Team directly to avoid recursive loop
 	// we do not update the team size because this is not t0
@@ -1060,6 +1063,9 @@ bool CGameControllerBasePvp::OnSetDDRaceTeam(int ClientId, int Team)
 	}
 	else
 	{
+		// FIXME: do not call SetTeamNoKill and delete the method
+		//        https://github.com/ddnet-insta/ddnet-insta/issues/612
+
 		// this is the expected branch
 		// the players death triggered the team change
 		// so we have to use the NoKill version of set team

@@ -1466,7 +1466,9 @@ void CGameControllerInstaCore::OnPlayerTick(class CPlayer *pPlayer)
 	{
 		int WantedTeam = pPlayer->m_ForceTeam.m_Team;
 		if(pPlayer->GetTeam() != WantedTeam)
-			pPlayer->SetTeamSpoofed(WantedTeam);
+		{
+			DoTeamChange(pPlayer, WantedTeam, false);
+		}
 		if(WantedTeam == TEAM_SPECTATORS)
 			pPlayer->SetSpectatorId(pPlayer->m_ForceTeam.m_SpectatorId);
 		pPlayer->m_ForceTeam.m_Tick = 0;
@@ -1478,7 +1480,7 @@ void CGameControllerInstaCore::OnPlayerTick(class CPlayer *pPlayer)
 		int WantedTeam = pPlayer->m_RequestedTeam.value().m_Team;
 		if(CanUserJoinTeam(pPlayer, WantedTeam, nullptr, 0) == EAllowed::YES)
 		{
-			pPlayer->SetTeam(WantedTeam);
+			DoTeamChange(pPlayer, WantedTeam, true);
 			pPlayer->m_RequestedTeam = std::nullopt;
 		}
 	}

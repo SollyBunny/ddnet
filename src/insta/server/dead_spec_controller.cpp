@@ -285,10 +285,7 @@ void CDeadSpecController::RespawnPlayer(CPlayer *pPlayer)
 		log_info("deadspec", "  cid=%d name='%s' moved to game actually", pPlayer->GetCid(), Server()->ClientName(pPlayer->GetCid()));
 
 		// TODO: support multiple teams
-		pPlayer->SetTeam(TEAM_GAME, false);
-
-		// TODO: use DoTeamChange instead of SetTeam
-		pDeadSpec->m_WantsToStaySpectator = false;
+		GameServer()->m_pController->DoTeamChange(pPlayer, TEAM_GAME, false);
 	}
 }
 
