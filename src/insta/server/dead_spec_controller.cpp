@@ -238,6 +238,30 @@ void CDeadSpecController::RespawnPlayer(CPlayer *pPlayer)
 	if(pDeadSpec->m_WantsToJoinSpectators)
 	{
 		log_info("deadspec", "  cid=%d wants to join spec (current team %d)", pPlayer->GetCid(), pPlayer->GetTeam());
+		if(pPlayer->GetTeam() == TEAM_SPECTATORS)
+		{
+			// if dead players want to join specs and get released
+			// they move from dead fake spec to real alive spec
+			// in that case DoTeamChange() returns early and prints no chat message
+			// so we have to print it here
+			// https://github.com/ddnet-insta/ddnet-insta/issues/613
+			char aBuf[512];
+			str_format(
+				aBuf,
+				sizeof(aBuf),
+				"'%s' joined the %s",
+				Server()->ClientName(pPlayer->GetCid()),
+				GameServer()->m_pController->GetTeamName(TEAM_SPECTATORS));
+			GameServer()->SendChat(-1, TEAM_ALL, aBuf, -1, CGameContext::FLAG_SIX);
+
+			protocol7::CNetMsg_Sv_Team Msg;
+			Msg.m_ClientId = pPlayer->GetCid();
+			Msg.m_Team = TEAM_SPECTATORS;
+			Msg.m_Silent = false;
+			Msg.m_CooldownTick = pPlayer->m_LastSetTeam + Server()->TickSpeed() * g_Config.m_SvTeamChangeDelay;
+			Server()->SendPackMsg(&Msg, MSGFLAG_VITAL | MSGFLAG_NORECORD, -1);
+		}
+
 		Controller()->DoTeamChange(pPlayer, TEAM_SPECTATORS, true);
 		pDeadSpec->m_WantsToJoinSpectators = false;
 		pDeadSpec->m_WantsToStaySpectator = true;
