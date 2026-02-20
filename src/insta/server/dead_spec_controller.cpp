@@ -237,10 +237,10 @@ void CDeadSpecController::RespawnPlayer(CPlayer *pPlayer)
 
 	if(pDeadSpec->m_WantsToJoinSpectators)
 	{
+		log_info("deadspec", "  cid=%d wants to join spec (current team %d)", pPlayer->GetCid(), pPlayer->GetTeam());
 		Controller()->DoTeamChange(pPlayer, TEAM_SPECTATORS, true);
 		pDeadSpec->m_WantsToJoinSpectators = false;
 		pDeadSpec->m_WantsToStaySpectator = true;
-		log_info("deadspec", "  cid=%d wants to join spec", pPlayer->GetCid());
 		dbg_assert(pPlayer->GetTeam() == TEAM_SPECTATORS, "  cid=%d failed to join spectators", pPlayer->GetCid());
 		return;
 	}
