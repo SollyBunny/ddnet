@@ -774,7 +774,7 @@ void CGameControllerInstaCore::DoTeamChange(CPlayer *pPlayer, int Team, bool DoC
 		return;
 
 	int OldTeam = pPlayer->GetTeam(); // ddnet-insta
-	pPlayer->SetTeamSpoofed(Team);
+	pPlayer->SetTeamSpoofed(Team, DoChatMsg);
 	int ClientId = pPlayer->GetCid();
 
 	char aBuf[128];
