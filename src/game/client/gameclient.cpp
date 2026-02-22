@@ -588,7 +588,10 @@ int CGameClient::OnSnapInput(int *pData, bool Dummy, bool Force)
 			m_DummyInput.m_WantedWeapon = WEAPON_HAMMER + 1;
 		}
 
-		const vec2 Dir = m_LocalCharacterPos - m_aClients[m_aLocalIds[!g_Config.m_ClDummy]].m_Predicted.m_Pos;
+		// const vec2 Dir = m_LocalCharacterPos - m_aClients[m_aLocalIds[!g_Config.m_ClDummy]].m_Predicted.m_Pos;
+		// TClient
+		const vec2 Dir = m_LocalCharacterPos - m_aClients[m_aLocalIds[!g_Config.m_ClDummy]].m_RegularPredicted.m_Pos;
+
 		m_HammerInput.m_TargetX = (int)Dir.x;
 		m_HammerInput.m_TargetY = (int)Dir.y;
 
