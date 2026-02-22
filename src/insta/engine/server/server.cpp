@@ -109,30 +109,28 @@ bool CServer::SixupUsernameAuth(int ClientId, const char *pCredentials)
 		SendRconCmdGroupEnd(ClientId);
 	}
 
-	char aBuf[256];
 	const char *pIdent = m_AuthManager.KeyIdent(KeySlot);
 	switch(AuthLevel)
 	{
 	case AUTHED_ADMIN:
 	{
 		SendRconLine(ClientId, "Admin authentication successful. Full remote console access granted.");
-		str_format(aBuf, sizeof(aBuf), "ClientId=%d authed with key=%s (admin)", ClientId, pIdent);
+		log_info("server", "ClientId=%d authed with key='%s' (admin)", ClientId, pIdent);
 		break;
 	}
 	case AUTHED_MOD:
 	{
 		SendRconLine(ClientId, "Moderator authentication successful. Limited remote console access granted.");
-		str_format(aBuf, sizeof(aBuf), "ClientId=%d authed with key=%s (moderator)", ClientId, pIdent);
+		log_info("server", "ClientId=%d authed with key='%s' (moderator)", ClientId, pIdent);
 		break;
 	}
 	case AUTHED_HELPER:
 	{
 		SendRconLine(ClientId, "Helper authentication successful. Limited remote console access granted.");
-		str_format(aBuf, sizeof(aBuf), "ClientId=%d authed with key=%s (helper)", ClientId, pIdent);
+		log_info("server", "ClientId=%d authed with key='%s' (helper)", ClientId, pIdent);
 		break;
 	}
 	}
-	Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", aBuf);
 
 	// DDRace
 	GameServer()->OnSetAuthed(ClientId, AuthLevel);
