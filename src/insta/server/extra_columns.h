@@ -2,6 +2,7 @@
 #define INSTA_SERVER_EXTRA_COLUMNS_H
 
 #include <base/log.h>
+#include <base/str.h> // PRId64
 
 #include <engine/server/databases/connection.h>
 
