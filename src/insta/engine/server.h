@@ -1,4 +1,6 @@
 #ifndef INSTA_ENGINE_SERVER_H
+#define INSTA_ENGINE_SERVER_H
+#undef INSTA_ENGINE_SERVER_H
 // hack for headerguard linter
 #endif
 

@@ -1,4 +1,6 @@
 #ifndef INSTA_SERVER_ENTITIES_CHARACTER_H
+#define INSTA_SERVER_ENTITIES_CHARACTER_H
+#undef INSTA_SERVER_ENTITIES_CHARACTER_H
 // hack for headerguard linter
 #endif
 

@@ -1,4 +1,6 @@
 #ifndef INSTA_SERVER_PLAYER_H
+#define INSTA_SERVER_PLAYER_H
+#undef INSTA_SERVER_PLAYER_H
 // hack for headerguard linter
 #endif
 
