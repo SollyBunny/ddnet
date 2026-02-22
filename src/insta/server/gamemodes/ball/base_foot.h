@@ -5,7 +5,6 @@
 
 #include <insta/server/entities/foot/foot_projectile.h>
 
-#endif
 class CGameControllerBaseFoot : public CGameControllerBasePvp
 {
 public:
@@ -43,3 +42,4 @@ public:
 
 	bool IsFootGameType() const override { return true; }
 };
+#endif
