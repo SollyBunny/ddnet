@@ -7,6 +7,8 @@
 #include "gameworld.h"
 #include "teehistorian.h"
 
+#include <base/types.h>
+
 #include <engine/console.h>
 #include <engine/http.h> // ddnet-insta m_pHttp
 #include <engine/server.h>

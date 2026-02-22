@@ -2003,6 +2003,8 @@ add_custom_target(generate_protocol
 
 # Sources
 set_src(BASE GLOB_RECURSE src/base
+  aio.cpp
+  aio.h
   bezier.cpp
   bezier.h
   color.cpp
@@ -2020,6 +2022,8 @@ set_src(BASE GLOB_RECURSE src/base
   hash_ctxt.h
   hash_libtomcrypt.cpp
   hash_openssl.cpp
+  io.cpp
+  io.h
   lock.h
   log.cpp
   log.h
@@ -2027,9 +2031,13 @@ set_src(BASE GLOB_RECURSE src/base
   math.h
   mem.cpp
   mem.h
+  process.cpp
+  process.h
   rust.h
   secure.cpp
   secure.h
+  sphore.cpp
+  sphore.h
   str.cpp
   str.h
   system.cpp
@@ -2038,7 +2046,6 @@ set_src(BASE GLOB_RECURSE src/base
   thread.h
   time.cpp
   time.h
-  tl/threading.h
   types.h
   unicode/confusables.cpp
   unicode/confusables.h
@@ -2586,8 +2593,8 @@ if(CLIENT)
     prompt.h
     proof_mode.cpp
     proof_mode.h
-    quadart.cpp
-    quadart.h
+    quad_art.cpp
+    quad_art.h
     quick_action.h
     quick_actions.cpp
     quick_actions.h
@@ -2595,7 +2602,7 @@ if(CLIENT)
     references.h
     smooth_value.cpp
     smooth_value.h
-    tileart.cpp
+    tile_art.cpp
   )
   set_src(GAME_MAP GLOB_RECURSE src/game/map
     envelope_extrema.cpp
@@ -3106,7 +3113,6 @@ if((GTEST_FOUND OR DOWNLOAD_GTEST) AND SERVER)
     server_test.cpp
     serverbrowser_test.cpp
     serverinfo_test.cpp
-    shell_execute_test.cpp
     snapshot_test.cpp
     str_test.cpp
     strip_path_and_extension_test.cpp
@@ -3120,6 +3126,7 @@ if((GTEST_FOUND OR DOWNLOAD_GTEST) AND SERVER)
     unix_test.cpp
     uuid_test.cpp
     vmath_test.cpp
+    windows_test.cpp
   )
   set(TESTS_EXTRA
     src/engine/client/blocklist_driver.cpp
