@@ -86,53 +86,17 @@ bool CServer::SixupUsernameAuth(int ClientId, const char *pCredentials)
 	if(aName[0] == '\0')
 		return false;
 
+	// only hijack the call and alter the credentials if they work
+	// if they don't fallback to regular ddnet code
+	// which could match a default key instead of a user key
 	int AuthLevel = -1;
 	int KeySlot = -1;
-
 	KeySlot = m_AuthManager.FindKey(aName);
 	if(m_AuthManager.CheckKey(KeySlot, pPw))
 		AuthLevel = m_AuthManager.KeyLevel(KeySlot);
-
 	if(AuthLevel == -1)
 		return false;
-	if(GetAuthedState(ClientId) == AuthLevel)
-		return false;
 
-	CMsgPacker Msgp(protocol7::NETMSG_RCON_AUTH_ON, true, true);
-	SendMsg(&Msgp, MSGFLAG_VITAL, ClientId);
-
-	m_aClients[ClientId].m_AuthKey = KeySlot;
-	m_aClients[ClientId].m_pRconCmdToSend = Console()->FirstCommandInfo(ClientId, CFGFLAG_SERVER);
-	SendRconCmdGroupStart(ClientId);
-	if(m_aClients[ClientId].m_pRconCmdToSend == nullptr)
-	{
-		SendRconCmdGroupEnd(ClientId);
-	}
-
-	const char *pIdent = m_AuthManager.KeyIdent(KeySlot);
-	switch(AuthLevel)
-	{
-	case AUTHED_ADMIN:
-	{
-		SendRconLine(ClientId, "Admin authentication successful. Full remote console access granted.");
-		log_info("server", "ClientId=%d authed with key='%s' (admin)", ClientId, pIdent);
-		break;
-	}
-	case AUTHED_MOD:
-	{
-		SendRconLine(ClientId, "Moderator authentication successful. Limited remote console access granted.");
-		log_info("server", "ClientId=%d authed with key='%s' (moderator)", ClientId, pIdent);
-		break;
-	}
-	case AUTHED_HELPER:
-	{
-		SendRconLine(ClientId, "Helper authentication successful. Limited remote console access granted.");
-		log_info("server", "ClientId=%d authed with key='%s' (helper)", ClientId, pIdent);
-		break;
-	}
-	}
-
-	// DDRace
-	GameServer()->OnSetAuthed(ClientId, AuthLevel);
+	OnNetMsgRconAuth(ClientId, aName, pPw, true);
 	return true;
 }
