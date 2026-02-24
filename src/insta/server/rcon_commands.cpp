@@ -4,6 +4,7 @@
 #include <base/vmath.h>
 
 #include <engine/antibot.h>
+#include <engine/shared/config.h>
 
 #include <generated/protocol.h>
 
@@ -152,7 +153,26 @@ void CGameContext::ConRandomMapFromPool(IConsole::IResult *pResult, void *pUserD
 
 	const char *pMap = pSelf->Server()->GetRandomMapFromPool();
 	if(pMap && pMap[0])
-		pSelf->m_pController->ChangeMap(pMap);
+	{
+		if(pSelf->m_pController)
+		{
+			// call change map when in game
+			pSelf->m_pController->ChangeMap(pMap);
+		}
+		else
+		{
+			// when the controller is not available
+			// that means we are currently in a reload
+			// or initial server start
+			// in that case we just change the sv_map config
+			// without triggering a full map change
+			// because the controller is nullptr and we would crash
+			// the full map change will happen once the controller is initialized
+			// https://github.com/ddnet-insta/ddnet-insta/issues/619
+			// https://github.com/ddnet/ddnet/issues/11296
+			str_copy(g_Config.m_SvMap, pMap);
+		}
+	}
 }
 
 void CGameContext::ConPostStats(IConsole::IResult *pResult, void *pUserData)
