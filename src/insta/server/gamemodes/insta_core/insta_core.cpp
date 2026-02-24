@@ -329,7 +329,7 @@ void CGameControllerInstaCore::PrintModWelcome(CPlayer *pPlayer)
 
 void CGameControllerInstaCore::FlagTick()
 {
-	if(GameServer()->m_World.m_ResetRequested || GameServer()->m_World.m_Paused)
+	if(GameServer()->m_World.m_ResetRequested || IsGamePaused())
 		return;
 
 	for(int FlagColor = 0; FlagColor < 2; FlagColor++)
@@ -637,7 +637,7 @@ void CGameControllerInstaCore::Tick()
 		}
 	}
 
-	if(g_Config.m_SvAnticamper && !GameServer()->m_World.m_Paused)
+	if(g_Config.m_SvAnticamper && !IsGamePaused())
 		Anticamper();
 
 	if(m_ReleaseAllFrozenQuittersTick < Server()->Tick() && !m_vFrozenQuitters.empty())
@@ -898,7 +898,7 @@ EAllowed CGameControllerInstaCore::CanUserJoinTeam(class CPlayer *pPlayer, int T
 		return EAllowed::NO;
 	}
 
-	if(GameServer()->m_World.m_Paused && !g_Config.m_SvAllowTeamChangeDuringPause)
+	if(IsGamePaused() && !g_Config.m_SvAllowTeamChangeDuringPause)
 	{
 		if(pErrorReason)
 			str_copy(pErrorReason, "Changing teams while the game is paused is currently disabled.", ErrorReasonSize);
@@ -1260,7 +1260,7 @@ int CGameControllerInstaCore::SnapPlayerFlags7(int SnappingClient, CPlayer *pPla
 void CGameControllerInstaCore::SnapPlayer6(int SnappingClient, CPlayer *pPlayer, CNetObj_ClientInfo *pClientInfo, CNetObj_PlayerInfo *pPlayerInfo)
 {
 	if(!IsGameRunning() &&
-		GameServer()->m_World.m_Paused &&
+		IsGamePaused() &&
 		GameState() != IGameController::IGS_END_ROUND &&
 		pPlayer->GetTeam() != TEAM_SPECTATORS &&
 		(!IsPlayerReadyMode() || pPlayer->m_IsReadyToPlay))
@@ -1485,7 +1485,7 @@ void CGameControllerInstaCore::OnPlayerTick(class CPlayer *pPlayer)
 		}
 	}
 
-	if(GameServer()->m_World.m_Paused)
+	if(IsGamePaused())
 	{
 		// this is needed for the smart tournament chat
 		// otherwise players get marked as afk during pause

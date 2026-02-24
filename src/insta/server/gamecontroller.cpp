@@ -157,7 +157,7 @@ bool IGameController::OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMsg, int Cl
 	// in the insta core controller
 	// so in pure ddnet we need to reimplement it here
 	// which will then be overridden by insta core for any other gametype
-	if(GameServer()->m_World.m_Paused)
+	if(IsGamePaused())
 		return true;
 	return false;
 }
@@ -191,7 +191,7 @@ bool IGameController::IsPlaying(const CPlayer *pPlayer)
 void IGameController::ToggleGamePause()
 {
 	SetPlayersReadyState(false);
-	if(GameServer()->m_World.m_Paused)
+	if(IsGamePaused())
 		SetGameState(IGS_GAME_RUNNING);
 	else
 		SetGameState(IGS_GAME_PAUSED, TIMER_INFINITE);
@@ -636,7 +636,7 @@ void IGameController::SetGameState(EGameState GameState, int Timer)
 				// 		if(GameServer()->m_apPlayers[i])
 				// 			GameServer()->m_apPlayers[i]->m_RespawnDisabled = false;
 				// }
-				GameServer()->m_World.m_Paused = false;
+				SetGamePaused(false);
 			}
 			else
 			{
@@ -670,13 +670,13 @@ void IGameController::SetGameState(EGameState GameState, int Timer)
 			{
 				m_GameState = GameState;
 				m_GameStateTimer = 3 * Server()->TickSpeed();
-				GameServer()->m_World.m_Paused = true;
+				SetGamePaused(true);
 			}
 			else if(CountDownSeconds > 0)
 			{
 				m_GameState = GameState;
 				m_GameStateTimer = CountDownSeconds * Server()->TickSpeed();
-				GameServer()->m_World.m_Paused = true;
+				SetGamePaused(true);
 			}
 			else
 			{
@@ -713,7 +713,7 @@ void IGameController::SetGameState(EGameState GameState, int Timer)
 			m_GameState = GameState;
 			m_GameStateTimer = TIMER_INFINITE;
 			SetPlayersReadyState(true);
-			GameServer()->m_World.m_Paused = false;
+			SetGamePaused(false);
 			m_GamePauseStartTime = -1;
 		}
 		break;
@@ -747,7 +747,7 @@ void IGameController::SetGameState(EGameState GameState, int Timer)
 				}
 
 				m_GameState = GameState;
-				GameServer()->m_World.m_Paused = true;
+				SetGamePaused(true);
 			}
 			else
 			{
@@ -771,7 +771,7 @@ void IGameController::SetGameState(EGameState GameState, int Timer)
 			m_GameStateTimer = Timer * Server()->TickSpeed();
 			// m_GameOverTick = Timer * Server()->Tick();
 			m_SuddenDeath = 0;
-			GameServer()->m_World.m_Paused = true;
+			SetGamePaused(true);
 
 			OnRoundEnd(); // ddnet-insta specific
 		}

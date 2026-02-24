@@ -534,7 +534,7 @@ void CGameControllerBasePvp::Tick()
 {
 	CGameControllerInstaCore::Tick();
 
-	if(Config()->m_SvPlayerReadyMode && GameServer()->m_World.m_Paused)
+	if(Config()->m_SvPlayerReadyMode && IsGamePaused())
 	{
 		if(Server()->Tick() % (Server()->TickSpeed() * 9) == 0)
 		{

@@ -72,7 +72,7 @@ void CDeadSpecController::OnPlayerDisconnect(CPlayer *pPlayer)
 
 bool CDeadSpecController::OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMsg, int ClientId)
 {
-	if(GameServer()->m_World.m_Paused)
+	if(Controller()->IsGamePaused())
 		return false;
 	CPlayer *pPlayer = GameServer()->m_apPlayers[ClientId];
 	if(!pPlayer)

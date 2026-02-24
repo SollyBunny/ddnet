@@ -86,7 +86,7 @@ bool CGameControllerBasePvp::AllowPublicChat(const CPlayer *pPlayer)
 {
 	if(!g_Config.m_SvTournamentChat)
 		return true;
-	if(GameServer()->m_World.m_Paused && g_Config.m_SvTournamentChatSmart)
+	if(IsGamePaused() && g_Config.m_SvTournamentChatSmart)
 		return true;
 
 	if(g_Config.m_SvTournamentChat == 1 && pPlayer->GetTeam() == TEAM_SPECTATORS)

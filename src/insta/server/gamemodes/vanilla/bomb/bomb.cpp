@@ -88,7 +88,7 @@ void CGameControllerBomb::Tick()
 		pPlayer->ResetLastToucherAfterSeconds(3);
 		SetSkin(pPlayer);
 
-		if(!GameServer()->m_World.m_Paused)
+		if(!IsGamePaused())
 		{
 			if(pPlayer->m_IsBomb)
 			{
