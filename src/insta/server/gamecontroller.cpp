@@ -151,6 +151,17 @@ int IGameController::FreeInGameSlots()
 	return maximum(0, Slots - Players);
 }
 
+bool IGameController::OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMsg, int ClientId)
+{
+	// this check was removed from the ddnet code to make it optional
+	// in the insta core controller
+	// so in pure ddnet we need to reimplement it here
+	// which will then be overridden by insta core for any other gametype
+	if(GameServer()->m_World.m_Paused)
+		return true;
+	return false;
+}
+
 bool IGameController::SendClientInfo7(
 	const protocol7::CNetMsg_Sv_ClientInfo *pClientInfo,
 	int ClientId)

@@ -710,7 +710,7 @@ public:
 		Returns:
 			return true to not run the rest of CGameContext::OnSetTeamNetMessage()
 	*/
-	virtual bool OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMsg, int ClientId) { return false; }
+	virtual bool OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMsg, int ClientId);
 
 	/*
 		Function: OnKillNetMessage
