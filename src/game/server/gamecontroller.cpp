@@ -529,6 +529,21 @@ const char *IGameController::GetTeamName(int Team)
 	}
 }
 
+void IGameController::SetGamePaused(bool Paused)
+{
+	// Cannot unpause the game while gameover is active
+	if(m_GameOverTick != -1 && !Paused)
+	{
+		return;
+	}
+	GameServer()->m_World.m_Paused = Paused;
+}
+
+bool IGameController::IsGamePaused() const
+{
+	return GameServer()->m_World.m_Paused;
+}
+
 void IGameController::StartRound()
 {
 	ResetGame();
@@ -536,7 +551,7 @@ void IGameController::StartRound()
 	m_RoundStartTick = Server()->Tick();
 	m_SuddenDeath = 0;
 	m_GameOverTick = -1;
-	GameServer()->m_World.m_Paused = false;
+	SetGamePaused(false);
 	Server()->DemoRecorder_HandleAutoStart();
 	char aBuf[256];
 	str_format(aBuf, sizeof(aBuf), "start round type='%s' teamplay='%d'", m_pGameType, m_GameFlags & GAMEFLAG_TEAMS);
@@ -744,7 +759,7 @@ void IGameController::Snap(int SnappingClient)
 		pGameInfoObj->m_GameStateFlags |= GAMESTATEFLAG_GAMEOVER;
 	if(m_SuddenDeath)
 		pGameInfoObj->m_GameStateFlags |= GAMESTATEFLAG_SUDDENDEATH;
-	if(GameServer()->m_World.m_Paused)
+	if(IsGamePaused())
 		pGameInfoObj->m_GameStateFlags |= GAMESTATEFLAG_PAUSED;
 	pGameInfoObj->m_RoundStartTick = SnapRoundStartTick(SnappingClient); // ddnet-insta
 	pGameInfoObj->m_WarmupTimer = m_Warmup;
@@ -818,7 +833,7 @@ void IGameController::Snap(int SnappingClient)
 			pGameData->m_GameStateFlags |= protocol7::GAMESTATEFLAG_GAMEOVER;
 		if(m_SuddenDeath)
 			pGameData->m_GameStateFlags |= protocol7::GAMESTATEFLAG_SUDDENDEATH;
-		if(GameServer()->m_World.m_Paused)
+		if(IsGamePaused())
 			pGameData->m_GameStateFlags |= protocol7::GAMESTATEFLAG_PAUSED;
 
 		pGameData->m_GameStateEndTick = 0;
