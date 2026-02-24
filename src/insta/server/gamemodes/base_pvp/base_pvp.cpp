@@ -1222,6 +1222,9 @@ bool CGameControllerBasePvp::OnFireWeapon(CCharacter &Character, int &Weapon, ve
 
 	if(Weapon == WEAPON_GUN)
 	{
+		if(IsDDRaceGameType())
+			return false;
+
 		if(!Character.m_Core.m_Jetpack || !Character.m_pPlayer->m_NinjaJetpack || Character.m_Core.m_HasTelegunGun)
 		{
 			int Lifetime = (int)(Server()->TickSpeed() * Character.GetTuning(Character.m_TuneZone)->m_GunLifetime);
