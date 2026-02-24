@@ -32,12 +32,6 @@ CGameControllerBasePvp::CGameControllerBasePvp(class CGameContext *pGameServer) 
 {
 	m_GameFlags = GAMEFLAG_TEAMS | GAMEFLAG_FLAGS;
 
-	GameServer()->GlobalTuning()->Set("gun_curvature", 1.25f);
-	GameServer()->GlobalTuning()->Set("gun_speed", 2200);
-	GameServer()->GlobalTuning()->Set("shotgun_curvature", 1.25f);
-	GameServer()->GlobalTuning()->Set("shotgun_speed", 2750);
-	GameServer()->GlobalTuning()->Set("shotgun_speeddiff", 0.8f);
-
 	// https://github.com/ddnet-insta/ddnet-insta/issues/253
 	// always umute spectators on map change or "reload" command
 	//
@@ -57,6 +51,23 @@ void CGameControllerBasePvp::OnInit()
 	if(GameFlags() & GAMEFLAG_FLAGS)
 	{
 		m_pSqlStats->CreateFastcapTable();
+	}
+
+	// TODO: do not use IsDDRaceGameType() or IsVanillaGameType() for weapon configs
+	//       HasVanillaShotgun() goes in the right direction but it taking a player instance
+	//       as argument is annoying in this case. In general I doubt the ddnet client supports
+	//       different types of shotguns for different tees in the world
+	//       it can only predict one at a time
+	//
+	//       Ideally there would be a IsVanillaShotgun() and IsVanillaGun() or IsDDRaceShotgun() and IsDDRaceGun()
+	//       that we call here. And also set the correct gameflags.
+	if(!IsDDRaceGameType())
+	{
+		GameServer()->GlobalTuning()->Set("gun_curvature", 1.25f);
+		GameServer()->GlobalTuning()->Set("gun_speed", 2200);
+		GameServer()->GlobalTuning()->Set("shotgun_curvature", 1.25f);
+		GameServer()->GlobalTuning()->Set("shotgun_speed", 2750);
+		GameServer()->GlobalTuning()->Set("shotgun_speeddiff", 0.8f);
 	}
 }
 
@@ -1233,6 +1244,9 @@ bool CGameControllerBasePvp::OnFireWeapon(CCharacter &Character, int &Weapon, ve
 	}
 	else if(Weapon == WEAPON_SHOTGUN)
 	{
+		if(!HasVanillaShotgun(Character.GetPlayer()))
+			return false;
+
 		int ShotSpread = 2;
 
 		for(int i = -ShotSpread; i <= ShotSpread; ++i) // NOLINT(clang-analyzer-unix.Malloc)

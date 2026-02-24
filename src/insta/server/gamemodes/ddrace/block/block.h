@@ -9,6 +9,8 @@ public:
 	CGameControllerBlock(class CGameContext *pGameServer);
 	~CGameControllerBlock() override;
 
+	int SnapGameInfoExFlags(int SnappingClient, int DDRaceFlags) override;
+	int SnapGameInfoExFlags2(int SnappingClient, int DDRaceFlags) override;
 	void OnCharacterSpawn(class CCharacter *pChr) override;
 	void Tick() override;
 	bool SkipDamage(int Dmg, int From, int Weapon, const CCharacter *pCharacter, bool &ApplyForce) override;

@@ -22,6 +22,7 @@ CGameControllerBlock::CGameControllerBlock(class CGameContext *pGameServer) :
 	m_pGameType = "block";
 	m_GameFlags = 0;
 	m_DefaultWeapon = WEAPON_GUN;
+	m_IsVanillaGameType = false;
 
 	m_pStatsTable = "block";
 	m_pExtraColumns = nullptr;
@@ -30,6 +31,23 @@ CGameControllerBlock::CGameControllerBlock(class CGameContext *pGameServer) :
 }
 
 CGameControllerBlock::~CGameControllerBlock() = default;
+
+int CGameControllerBlock::SnapGameInfoExFlags(int SnappingClient, int DDRaceFlags)
+{
+	int Flags = CGameControllerBasePvp::SnapGameInfoExFlags(SnappingClient, DDRaceFlags);
+	Flags |= GAMEINFOFLAG_PREDICT_DDRACE;
+	Flags |= GAMEINFOFLAG_ALLOW_HOOK_COLL;
+	Flags &= ~(GAMEINFOFLAG_ENTITIES_VANILLA);
+	Flags &= ~(GAMEINFOFLAG_PREDICT_VANILLA);
+	Flags &= ~(GAMEINFOFLAG_BUG_VANILLA_BOUNCE);
+	Flags &= ~(GAMEINFOFLAG_GAMETYPE_VANILLA);
+	return Flags;
+}
+
+int CGameControllerBlock::SnapGameInfoExFlags2(int SnappingClient, int DDRaceFlags)
+{
+	return DDRaceFlags;
+}
 
 void CGameControllerBlock::OnCharacterSpawn(class CCharacter *pChr)
 {

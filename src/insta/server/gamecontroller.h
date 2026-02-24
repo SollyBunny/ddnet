@@ -1449,6 +1449,7 @@ public:
 	*/
 	virtual bool CanStillJoinDeadSpecGame(const CPlayer *pPlayerOrNullptr, char *pMsg, size_t MsgLen) { return true; }
 
+	// TODO: remove this or properly document what vanilla means
 	bool m_IsVanillaGameType = false;
 	// decides if own grenade explosions
 	// or laser wallshots should harm the own tee
