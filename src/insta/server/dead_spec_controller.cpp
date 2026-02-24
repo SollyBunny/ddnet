@@ -80,7 +80,7 @@ bool CDeadSpecController::OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMsg, in
 	CDeadSpecPlayer *pDeadSpec = m_apPlayers[ClientId];
 	if(!pDeadSpec)
 	{
-		log_error("deadspec", "cid=%d tried to switch teams but has no dead spec info", pPlayer->GetCid());
+		// log_error("deadspec", "cid=%d tried to switch teams but has no dead spec info", pPlayer->GetCid());
 		return false;
 	}
 
@@ -106,11 +106,11 @@ bool CDeadSpecController::OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMsg, in
 		else
 			Controller()->YouWillJoinGameMessage(pPlayer, aBuf, sizeof(aBuf));
 
-		log_info(
-			"deadspec",
-			"cid=%d attempted to switch teams and will join the %s as soon as possible",
-			pPlayer->GetCid(),
-			pDeadSpec->m_WantsToJoinSpectators ? "spectators" : "game");
+		// log_info(
+		// 	"deadspec",
+		// 	"cid=%d attempted to switch teams and will join the %s as soon as possible",
+		// 	pPlayer->GetCid(),
+		// 	pDeadSpec->m_WantsToJoinSpectators ? "spectators" : "game");
 
 		GameServer()->SendBroadcast(aBuf, ClientId);
 		return true;
@@ -133,10 +133,10 @@ bool CDeadSpecController::OnSetTeamNetMessage(const CNetMsg_Cl_SetTeam *pMsg, in
 		if(!DDNetWillBlockOnSetTeamNetmessage(pPlayer, Team))
 		{
 			pDeadSpec->m_WantsToJoinSpectators = true;
-			log_info(
-				"deadspec",
-				"alive player cid=%d name='%s' intentionally tried to join spectators and will stay there as soon as it happened",
-				pPlayer->GetCid(), Server()->ClientName(pPlayer->GetCid()));
+			// log_info(
+			// 	"deadspec",
+			// 	"alive player cid=%d name='%s' intentionally tried to join spectators and will stay there as soon as it happened",
+			// 	pPlayer->GetCid(), Server()->ClientName(pPlayer->GetCid()));
 		}
 	}
 
@@ -177,10 +177,10 @@ void CDeadSpecController::DoTeamChange(const CPlayer *pPlayer, int Team, bool Do
 			pDeadSpec->m_WantsToJoinSpectators = false;
 			pDeadSpec->m_WantsToStaySpectator = true;
 
-			log_info(
-				"deadspec",
-				"cid=%d name='%s' successfully joined spectators and will stay there",
-				pPlayer->GetCid(), Server()->ClientName(pPlayer->GetCid()));
+			// log_info(
+			// 	"deadspec",
+			// 	"cid=%d name='%s' successfully joined spectators and will stay there",
+			// 	pPlayer->GetCid(), Server()->ClientName(pPlayer->GetCid()));
 		}
 	}
 
@@ -188,10 +188,10 @@ void CDeadSpecController::DoTeamChange(const CPlayer *pPlayer, int Team, bool Do
 	{
 		if(pDeadSpec->m_WantsToStaySpectator)
 		{
-			log_info(
-				"deadspec",
-				"cid=%d name='%s' no longer wants to stay spectator because they joined the game",
-				pPlayer->GetCid(), Server()->ClientName(pPlayer->GetCid()));
+			// log_info(
+			// 	"deadspec",
+			// 	"cid=%d name='%s' no longer wants to stay spectator because they joined the game",
+			// 	pPlayer->GetCid(), Server()->ClientName(pPlayer->GetCid()));
 			pDeadSpec->m_WantsToStaySpectator = false;
 		}
 	}
@@ -231,13 +231,13 @@ void CDeadSpecController::RespawnPlayer(CPlayer *pPlayer)
 	CDeadSpecPlayer *pDeadSpec = m_apPlayers[pPlayer->GetCid()];
 	if(!pDeadSpec)
 	{
-		log_warn("deadspec", " cid=%d is missing a dead spec instance", pPlayer->GetCid());
+		// log_warn("deadspec", " cid=%d is missing a dead spec instance", pPlayer->GetCid());
 		return;
 	}
 
 	if(pDeadSpec->m_WantsToJoinSpectators)
 	{
-		log_info("deadspec", "  cid=%d wants to join spec (current team %d)", pPlayer->GetCid(), pPlayer->GetTeam());
+		// log_info("deadspec", "  cid=%d wants to join spec (current team %d)", pPlayer->GetCid(), pPlayer->GetTeam());
 		if(pPlayer->GetTeam() == TEAM_SPECTATORS)
 		{
 			// if dead players want to join specs and get released
@@ -272,17 +272,17 @@ void CDeadSpecController::RespawnPlayer(CPlayer *pPlayer)
 	// intentionally spectator on round start
 	if(pDeadSpec->m_WantsToStaySpectator)
 	{
-		log_info("deadspec", "  cid=%d wants to stay spec", pPlayer->GetCid());
+		// log_info("deadspec", "  cid=%d wants to stay spec", pPlayer->GetCid());
 		return;
 	}
 
-	log_info("deadspec", "  cid=%d moved to game (current team: %d)", pPlayer->GetCid(), pPlayer->GetTeam());
+	// log_info("deadspec", "  cid=%d moved to game (current team: %d)", pPlayer->GetCid(), pPlayer->GetTeam());
 
 	// do not kill the winner in the round end screen
 	// https://github.com/ddnet-insta/ddnet-insta/issues/604
 	if(pPlayer->GetTeam() == TEAM_SPECTATORS)
 	{
-		log_info("deadspec", "  cid=%d name='%s' moved to game actually", pPlayer->GetCid(), Server()->ClientName(pPlayer->GetCid()));
+		// log_info("deadspec", "  cid=%d name='%s' moved to game actually", pPlayer->GetCid(), Server()->ClientName(pPlayer->GetCid()));
 
 		// TODO: support multiple teams
 		GameServer()->m_pController->DoTeamChange(pPlayer, TEAM_GAME, false);
