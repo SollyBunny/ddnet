@@ -302,6 +302,12 @@ void CGameContext::ConInstaPause(IConsole::IResult *pResult, void *pUserData)
 		return;
 	}
 
+	if(pSelf->m_pController->GameState() == IGameController::IGS_END_ROUND)
+	{
+		log_warn("server", "the game can not be paused during round end!");
+		return;
+	}
+
 	pSelf->m_pController->ToggleGamePause();
 }
 

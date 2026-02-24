@@ -190,6 +190,11 @@ bool IGameController::IsPlaying(const CPlayer *pPlayer)
 
 void IGameController::ToggleGamePause()
 {
+	// https://github.com/ddnet/ddnet/pull/11833
+	// Cannot unpause or pause the game while gameover is active
+	if(m_GameOverTick != -1 || GameState() == IGS_END_ROUND)
+		return;
+
 	SetPlayersReadyState(false);
 	if(IsGamePaused())
 		SetGameState(IGS_GAME_RUNNING);
