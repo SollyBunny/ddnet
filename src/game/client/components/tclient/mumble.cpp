@@ -73,7 +73,7 @@ void CMumble::OnRender()
 	{
 		char aIdentity[16];
 		str_format(aIdentity, sizeof(aIdentity), "%d", ClientId);
-		if(!mumble_set_context(m_pContext, aIdentity))
+		if(!mumble_set_identity(m_pContext, aIdentity))
 			log_error("mumble", "Failed to set identity");
 		m_LastClientId = ClientId;
 	}
