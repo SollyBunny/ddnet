@@ -9,6 +9,8 @@
 
 #include <game/client/gameclient.h>
 
+#define MUMBLE_2D_SCALE 128
+
 void CMumble::MakeContext()
 {
 	mumble_destroy_context(&m_pContext);
@@ -76,7 +78,7 @@ void CMumble::OnRender()
 		m_LastClientId = ClientId;
 	}
 	const auto &Pos = GameClient()->m_aClients[ClientId].m_RenderPos;
-	mumble_2d_update(m_pContext, Pos.x, Pos.y);
+	mumble_2d_update(m_pContext, Pos.x / MUMBLE_2D_SCALE, Pos.y / MUMBLE_2D_SCALE);
 }
 
 void CMumble::OnConsoleInit()
