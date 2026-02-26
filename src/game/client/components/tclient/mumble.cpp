@@ -9,7 +9,7 @@
 
 #include <game/client/gameclient.h>
 
-#define MUMBLE_2D_SCALE 128
+#define MUMBLE_2D_SCALE 128.0f
 
 void CMumble::MakeContext()
 {
