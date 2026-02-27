@@ -3,6 +3,7 @@
 #include <base/system.h>
 #include <base/types.h>
 
+#include <engine/font_icons.h>
 #include <engine/graphics.h>
 #include <engine/shared/config.h>
 #include <engine/shared/linereader.h>
@@ -11,7 +12,6 @@
 #include <engine/storage.h>
 #include <engine/textrender.h>
 #include <engine/updater.h>
-#include <engine/font_icons.h>
 
 #include <game/client/animstate.h>
 #include <game/client/components/binds.h>
@@ -55,7 +55,6 @@ typedef struct
 	int m_KeyId;
 	int m_ModifierCombination;
 } CKeyInfo;
-
 
 static float s_Time = 0.0f;
 static bool s_StartedTime = false;
@@ -500,6 +499,7 @@ void CMenus::RenderSettingsTClientSettings(CUIRect MainView)
 	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClFreezeStars, TCLocalize("Freeze stars"), &g_Config.m_ClFreezeStars, &Column, LineSize);
 	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_TcColorFreeze, TCLocalize("Colored frozen tee skins"), &g_Config.m_TcColorFreeze, &Column, LineSize);
 	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_TcFrozenKatana, TCLocalize("Show katan on frozen players"), &g_Config.m_TcFrozenKatana, &Column, LineSize);
+	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_TcRenderWeaponsAsGun, TCLocalize("Render weapons as the gun sprite"), &g_Config.m_TcRenderWeaponsAsGun, &Column, LineSize);
 
 	DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_TcWhiteFeet, TCLocalize("Render all custom colored feet as white feet skin"), &g_Config.m_TcWhiteFeet, &Column, LineSize);
 	CUIRect FeetBox;

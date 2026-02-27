@@ -441,7 +441,7 @@ void CPlayers::RenderHookCollLine(
 		{
 			vLineQuadSegments.clear();
 			ConvertLineSegments(HookTipLineSegment.value());
-			if (g_Config.m_TcRevertHookLine != 2) // TClient
+			if(g_Config.m_TcRevertHookLine != 2) // TClient
 				HookCollColor = color_cast<ColorRGBA>(ColorHSLA(g_Config.m_ClHookCollColorTeeColl));
 			Graphics()->SetColor(HookCollColor.WithAlpha(Alpha));
 			Graphics()->QuadsDrawFreeform(vLineQuadSegments.data(), vLineQuadSegments.size());
@@ -453,9 +453,9 @@ void CPlayers::RenderHookCollLine(
 		Graphics()->LinesBegin();
 		Graphics()->SetColor(HookCollColor.WithAlpha(Alpha));
 		Graphics()->LinesDraw(vLineSegments.data(), vLineSegments.size());
-		if (HookTipLineSegment.has_value() && g_Config.m_TcRevertHookLine != 1 /*TClient*/)
+		if(HookTipLineSegment.has_value() && g_Config.m_TcRevertHookLine != 1 /*TClient*/)
 		{
-			if (g_Config.m_TcRevertHookLine != 2) // TClient
+			if(g_Config.m_TcRevertHookLine != 2) // TClient
 				HookCollColor = color_cast<ColorRGBA>(ColorHSLA(g_Config.m_ClHookCollColorTeeColl));
 			Graphics()->SetColor(HookCollColor.WithAlpha(Alpha));
 			Graphics()->LinesDraw(&HookTipLineSegment.value(), 1);
@@ -736,15 +736,19 @@ void CPlayers::RenderPlayer(
 		{
 			Graphics()->SetColor(1.0f, 1.0f, 1.0f, Alpha);
 
-			// normal weapons
-			int CurrentWeapon = std::clamp(Player.m_Weapon, 0, NUM_WEAPONS - 1);
-			Graphics()->TextureSet(GameClient()->m_GameSkin.m_aSpriteWeapons[CurrentWeapon]);
-			int QuadOffset = CurrentWeapon * 2 + (Direction.x < 0.0f ? 1 : 0);
-
 			// TClient
 			const bool DontOthers = !g_Config.m_TcRainbowOthers && !Local;
 			if(g_Config.m_TcRainbowWeapon && !DontOthers)
 				Graphics()->SetColor(GameClient()->m_Rainbow.m_RainbowColor.WithAlpha(Alpha));
+
+			if(g_Config.m_TcRenderWeaponsAsGun &&
+				(Player.m_Weapon == WEAPON_SHOTGUN || Player.m_Weapon == WEAPON_GRENADE || Player.m_Weapon == WEAPON_LASER))
+				Player.m_Weapon = WEAPON_GUN;
+
+			// normal weapons
+			int CurrentWeapon = std::clamp(Player.m_Weapon, 0, NUM_WEAPONS - 1);
+			Graphics()->TextureSet(GameClient()->m_GameSkin.m_aSpriteWeapons[CurrentWeapon]);
+			int QuadOffset = CurrentWeapon * 2 + (Direction.x < 0.0f ? 1 : 0);
 
 			float Recoil = 0.0f;
 			vec2 WeaponPosition;
