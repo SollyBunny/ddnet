@@ -1320,9 +1320,8 @@ bool CGameControllerInstaCore::OnClientPacket(int ClientId, bool Sys, int MsgId,
 	// without breaking the state for the server
 	// in case we pass the packet on
 	CUnpacker Unpacker = *pUnpacker;
-	bool Vital = pPacket->m_Flags & NET_CHUNKFLAG_VITAL;
 
-	if(Sys && MsgId == NETMSG_RCON_AUTH && Vital && Server()->IsSixup(ClientId))
+	if(Sys && MsgId == NETMSG_RCON_AUTH && Server()->IsSixup(ClientId))
 	{
 		const char *pCredentials = Unpacker.GetString(CUnpacker::SANITIZE_CC);
 		if(Unpacker.Error())
