@@ -2620,7 +2620,6 @@ void CGameClient::OnPredict()
 
 	bool RealPredTick = false;
 	// predict
-	// prediction actually happens here
 
 	int FastInputTicks = ((g_Config.m_TcFastInputAmount - 1) / 20 + 1) * g_Config.m_TcFastInput;
 
@@ -2690,6 +2689,12 @@ void CGameClient::OnPredict()
 			}
 		}
 
+		// TClient
+		// This has to be before direct input because physics happens in there
+		bool TempPredEventState = m_PredictedWorld.m_WorldConfig.m_PredictEvents;
+		if (Tick > FinalTickRegular)
+			m_PredictedWorld.m_WorldConfig.m_PredictEvents = false;
+
 		if(DummyFirst)
 			pDummyChar->OnDirectInput(pDummyInputData);
 		if(pInputData)
@@ -2708,6 +2713,9 @@ void CGameClient::OnPredict()
 		ApplyPreInputs(Tick, false, m_PredictedWorld);
 
 		m_PredictedWorld.Tick();
+
+		// TClient
+		m_PredictedWorld.m_WorldConfig.m_PredictEvents = TempPredEventState;
 
 		// fetch the current characters
 		if(Tick == FinalTickSelf)
