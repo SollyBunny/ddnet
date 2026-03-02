@@ -1076,7 +1076,7 @@ void CCharacter::DDRaceTick()
 			m_Input.m_Hook = 0;
 		}
 		if(m_FreezeTime == 1)
-			UnFreeze();
+			Unfreeze();
 
 		m_AliveAccumulation = std::min(m_AliveAccumulation - 1, 0);
 		m_AliveAccumulation = std::max(m_AliveAccumulation, -g_Config.m_TcUnfreezeLagDelayTicks);

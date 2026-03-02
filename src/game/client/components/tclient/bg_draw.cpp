@@ -348,10 +348,10 @@ static IOHANDLE BgDrawOpenFile(CGameClient &This, const char *pFilename, int Fla
 	}
 	else
 	{
-		SHA256_DIGEST Sha256 = This.Client()->GetCurrentMapSha256();
+		SHA256_DIGEST Sha256 = This.Map()->Sha256();
 		char aSha256[SHA256_MAXSTRSIZE];
 		sha256_str(Sha256, aSha256, sizeof(aSha256));
-		str_format(aFilename, sizeof(aFilename), "bgdraw/%s_%s.csv", This.Client()->GetCurrentMap(), aSha256);
+		str_format(aFilename, sizeof(aFilename), "bgdraw/%s_%s.csv", This.Map()->BaseName(), aSha256);
 	}
 	dbg_assert(Flags == IOFLAG_WRITE || Flags == IOFLAG_READ, "Flags must be either read or write");
 	if(Flags == IOFLAG_WRITE)

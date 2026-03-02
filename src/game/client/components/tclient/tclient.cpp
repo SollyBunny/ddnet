@@ -668,7 +668,7 @@ void CTClient::OnNewSnapshot()
 		if(g_Config.m_TcVolleyBallBetterBall > 1)
 			IsVolleyBall = true;
 		else
-			IsVolleyBall = str_startswith_nocase(Client()->GetCurrentMap(), "volleyball");
+			IsVolleyBall = str_startswith_nocase(GameClient()->Map()->BaseName(), "volleyball");
 	};
 	for(auto &Data : GameClient()->m_aClients)
 	{
