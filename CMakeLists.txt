@@ -2005,6 +2005,9 @@ set(COPY_FILES
   ${CRASHDUMP_COPY_FILES}
   ${SSP_COPY_FILES}
 )
+if(TARGET_OS STREQUAL "emscripten")
+  list(APPEND COPY_FILES other/emscripten/index.html)
+endif()
 file(COPY ${COPY_FILES} DESTINATION .)
 
 set(COPY_DIRS ${SDL2_COPY_DIRS})
@@ -2117,11 +2120,14 @@ add_custom_target(generate_protocol
 
 # Sources
 set_src(BASE GLOB_RECURSE src/base
+  aio.cpp
+  aio.h
   bezier.cpp
   bezier.h
   color.cpp
   color.h
   crashdump.cpp
+  crashdump.h
   dbg.cpp
   dbg.h
   detect.h
@@ -2134,6 +2140,8 @@ set_src(BASE GLOB_RECURSE src/base
   hash_ctxt.h
   hash_libtomcrypt.cpp
   hash_openssl.cpp
+  io.cpp
+  io.h
   lock.h
   log.cpp
   log.h
@@ -2141,9 +2149,13 @@ set_src(BASE GLOB_RECURSE src/base
   math.h
   mem.cpp
   mem.h
+  process.cpp
+  process.h
   rust.h
   secure.cpp
   secure.h
+  sphore.cpp
+  sphore.h
   str.cpp
   str.h
   system.cpp
@@ -2152,7 +2164,6 @@ set_src(BASE GLOB_RECURSE src/base
   thread.h
   time.cpp
   time.h
-  tl/threading.h
   types.h
   unicode/confusables.cpp
   unicode/confusables.h
@@ -2386,6 +2397,11 @@ set(LIBS
   # on it.
   ${CMAKE_THREAD_LIBS_INIT}
 )
+
+# ddnet-insta START
+include("${CMAKE_CURRENT_SOURCE_DIR}/src/insta/CMakeLists.txt")
+insta_patch_engine()
+# ddnet-insta END
 
 # Targets
 add_library(engine-gfx EXCLUDE_FROM_ALL OBJECT ${ENGINE_GFX})
@@ -2760,8 +2776,8 @@ if(CLIENT)
     prompt.h
     proof_mode.cpp
     proof_mode.h
-    quadart.cpp
-    quadart.h
+    quad_art.cpp
+    quad_art.h
     quick_action.h
     quick_actions.cpp
     quick_actions.h
@@ -2769,7 +2785,7 @@ if(CLIENT)
     references.h
     smooth_value.cpp
     smooth_value.h
-    tileart.cpp
+    tile_art.cpp
   )
   set_src(GAME_MAP GLOB_RECURSE src/game/map
     envelope_extrema.cpp
@@ -2968,8 +2984,6 @@ if(SERVER)
     databases/connection_pool.h
     databases/mysql.cpp
     databases/sqlite.cpp
-    instagib/server.cpp
-    instagib/server.h
     main.cpp
     name_ban.cpp
     name_ban.h
@@ -3020,154 +3034,14 @@ if(SERVER)
     gamecontext.h
     gamecontroller.cpp
     gamecontroller.h
-    gamemodes/ball/base_foot.cpp
-    gamemodes/ball/base_foot.h
-    gamemodes/ball/foot/foot.cpp
-    gamemodes/ball/foot/foot.h
-    gamemodes/ball/foot/sql_columns.h
-    gamemodes/base_pvp/base_pvp.cpp
-    gamemodes/base_pvp/base_pvp.h
-    gamemodes/base_pvp/chat.cpp
     gamemodes/ddnet.cpp
     gamemodes/ddnet.h
-    gamemodes/ddrace/block/block.cpp
-    gamemodes/ddrace/block/block.h
     gamemodes/ddrace/ddrace/ddrace.cpp
     gamemodes/ddrace/ddrace/ddrace.h
-    gamemodes/insta_core/insta_core.cpp
-    gamemodes/insta_core/insta_core.h
-    gamemodes/instagib/base_fng.cpp
-    gamemodes/instagib/base_fng.h
-    gamemodes/instagib/base_instagib.cpp
-    gamemodes/instagib/base_instagib.h
-    gamemodes/instagib/bolofng/bolofng.cpp
-    gamemodes/instagib/bolofng/bolofng.h
-    gamemodes/instagib/bolofng/sql_columns.h
-    gamemodes/instagib/boomfng/boomfng.cpp
-    gamemodes/instagib/boomfng/boomfng.h
-    gamemodes/instagib/boomfng/sql_columns.h
-    gamemodes/instagib/ctf.cpp
-    gamemodes/instagib/ctf.h
-    gamemodes/instagib/dm.cpp
-    gamemodes/instagib/dm.h
-    gamemodes/instagib/fng/fng.cpp
-    gamemodes/instagib/fng/fng.h
-    gamemodes/instagib/fng/sql_columns.h
-    gamemodes/instagib/gctf/gctf.cpp
-    gamemodes/instagib/gctf/gctf.h
-    gamemodes/instagib/gctf/sql_columns.h
-    gamemodes/instagib/gdm/gdm.cpp
-    gamemodes/instagib/gdm/gdm.h
-    gamemodes/instagib/gtdm/gtdm.cpp
-    gamemodes/instagib/gtdm/gtdm.h
-    gamemodes/instagib/ictf/ictf.cpp
-    gamemodes/instagib/ictf/ictf.h
-    gamemodes/instagib/ictf/sql_columns.h
-    gamemodes/instagib/idm/idm.cpp
-    gamemodes/instagib/idm/idm.h
-    gamemodes/instagib/idm/sql_columns.h
-    gamemodes/instagib/itdm/itdm.cpp
-    gamemodes/instagib/itdm/itdm.h
-    gamemodes/instagib/solofng/solofng.cpp
-    gamemodes/instagib/solofng/solofng.h
-    gamemodes/instagib/solofng/sql_columns.h
-    gamemodes/instagib/tdm.cpp
-    gamemodes/instagib/tdm.h
-    gamemodes/instagib/team_fng.cpp
-    gamemodes/instagib/team_fng.h
-    gamemodes/instagib/zcatch/colors.cpp
-    gamemodes/instagib/zcatch/sql_columns.h
-    gamemodes/instagib/zcatch/track_caught_time.cpp
-    gamemodes/instagib/zcatch/zcatch.cpp
-    gamemodes/instagib/zcatch/zcatch.h
     gamemodes/mod.cpp
     gamemodes/mod.h
-    gamemodes/vanilla/base_ctf.cpp
-    gamemodes/vanilla/base_ctf.h
-    gamemodes/vanilla/base_vanilla.cpp
-    gamemodes/vanilla/base_vanilla.h
-    gamemodes/vanilla/bomb/bomb.cpp
-    gamemodes/vanilla/bomb/bomb.h
-    gamemodes/vanilla/bomb/sql_columns.h
-    gamemodes/vanilla/ctf/ctf.cpp
-    gamemodes/vanilla/ctf/ctf.h
-    gamemodes/vanilla/ctf/sql_columns.h
-    gamemodes/vanilla/dm/dm.cpp
-    gamemodes/vanilla/dm/dm.h
-    gamemodes/vanilla/dm/sql_columns.h
-    gamemodes/vanilla/fly/fly.cpp
-    gamemodes/vanilla/fly/fly.h
-    gamemodes/vanilla/tsmash/tsmash.cpp
-    gamemodes/vanilla/tsmash/tsmash.h
     gameworld.cpp
     gameworld.h
-    instagib/antibob.cpp
-    instagib/antibob.h
-    instagib/chat_commands.cpp
-    instagib/chat_commands.h
-    instagib/column_template.h
-    instagib/ddnet_db_utils/ddnet_db_utils.cpp
-    instagib/ddnet_db_utils/ddnet_db_utils.h
-    instagib/entities/character.cpp
-    instagib/entities/character.h
-    instagib/entities/ddnet_pvp/vanilla_pickup.cpp
-    instagib/entities/ddnet_pvp/vanilla_pickup.h
-    instagib/entities/ddnet_pvp/vanilla_projectile.cpp
-    instagib/entities/ddnet_pvp/vanilla_projectile.h
-    instagib/entities/flag.cpp
-    instagib/entities/flag.h
-    instagib/entities/foot/foot_pickup.cpp
-    instagib/entities/foot/foot_pickup.h
-    instagib/entities/foot/foot_projectile.cpp
-    instagib/entities/foot/foot_projectile.h
-    instagib/entities/text/laser.cpp
-    instagib/entities/text/laser.h
-    instagib/entities/text/projectile.cpp
-    instagib/entities/text/projectile.h
-    instagib/entities/text/text.cpp
-    instagib/entities/text/text.h
-    instagib/enums.cpp
-    instagib/enums.h
-    instagib/extra_columns.h
-    instagib/gamecontext.cpp
-    instagib/gamecontext.h
-    instagib/gamecontext/bangcommands.cpp
-    instagib/gamecontroller.cpp
-    instagib/gamecontroller.h
-    instagib/includes/character.h
-    instagib/includes/chat_commands.h
-    instagib/includes/config_variables.h
-    instagib/includes/engine/gameserver.h
-    instagib/includes/engine/server.h
-    instagib/includes/engine/server/server.h
-    instagib/includes/gamecontext.h
-    instagib/includes/gamecontroller.h
-    instagib/includes/player.h
-    instagib/includes/rcon_commands.h
-    instagib/ip_storage.cpp
-    instagib/ip_storage.h
-    instagib/persistent_client_data.h
-    instagib/persistent_data.h
-    instagib/player.cpp
-    instagib/player.h
-    instagib/protocol.h
-    instagib/rcon_commands.cpp
-    instagib/rcon_commands.h
-    instagib/rcon_configs.cpp
-    instagib/round_stats.cpp
-    instagib/round_stats_ascii.cpp
-    instagib/round_stats_csv.cpp
-    instagib/round_stats_player.h
-    instagib/skin_info_manager.cpp
-    instagib/skin_info_manager.h
-    instagib/sql_columns_all.h
-    instagib/sql_stats.cpp
-    instagib/sql_stats.h
-    instagib/sql_stats_player.h
-    instagib/strhelpers.cpp
-    instagib/strhelpers.h
-    instagib/structs.h
-    instagib/version.h
     mutes.cpp
     player.cpp
     player.h
@@ -3184,11 +3058,9 @@ if(SERVER)
     teeinfo.cpp
     teeinfo.h
   )
-
-  # ddnet-insta ext modes START
-  file(GLOB_RECURSE EXTERNAL_GAMEMODES src/external_gamemodes/*/*.cpp src/external_gamemodes/*/*.h)
-  list(APPEND GAME_SERVER ${EXTERNAL_GAMEMODES})
-  # ddnet-insta ext modes END
+  # ddnet-insta START
+  insta_patch_server()
+  # ddnet-insta END
 
   set(GAME_GENERATED_SERVER
     "src/generated/server_data.cpp"
@@ -3433,7 +3305,6 @@ if((GTEST_FOUND OR DOWNLOAD_GTEST) AND SERVER)
     server_test.cpp
     serverbrowser_test.cpp
     serverinfo_test.cpp
-    shell_execute_test.cpp
     snapshot_test.cpp
     str_test.cpp
     strip_path_and_extension_test.cpp
@@ -3447,6 +3318,7 @@ if((GTEST_FOUND OR DOWNLOAD_GTEST) AND SERVER)
     unix_test.cpp
     uuid_test.cpp
     vmath_test.cpp
+    windows_test.cpp
   )
   set(TESTS_EXTRA
     src/engine/client/blocklist_driver.cpp
@@ -3589,6 +3461,8 @@ if(TARGET_OS STREQUAL "mac")
   set(CPACK_STRIP_FILES FALSE)
 elseif(TARGET_OS STREQUAL "windows" AND TARGET_CPU_ARCHITECTURE STREQUAL "arm64")
   set(CPACK_STRIP_FILES FALSE)
+elseif(TARGET_OS STREQUAL "emscripten")
+  set(CPACK_STRIP_FILES FALSE)
 else()
   set(CPACK_STRIP_FILES TRUE)
 endif()
@@ -3699,16 +3573,19 @@ list(APPEND CPACK_TARGETS ${TARGET_TOOLS})
 if(STEAMAPI_KIND STREQUAL SHARED)
   list(APPEND CPACK_TARGETS ${TARGET_STEAMAPI})
 endif()
-set(CPACK_DIRS
-  data
-  ${COPY_DIRS}
-)
+if(TARGET_OS STREQUAL "emscripten")
+  set(CPACK_DIRS)
+else()
+  set(CPACK_DIRS data)
+endif()
+list(APPEND CPACK_DIRS ${COPY_DIRS})
 set(CPACK_FILES
   license.txt
-  storage.cfg
-  steam_appid.txt
   ${COPY_FILES}
 )
+if(NOT TARGET_OS STREQUAL "emscripten")
+  list(APPEND CPACK_FILES storage.cfg)
+endif()
 
 set(CPACK_GEN_FILES
   ${VULKAN_SHADER_FILE_LIST}
@@ -3716,7 +3593,7 @@ set(CPACK_GEN_FILES
 
 if(TARGET_OS STREQUAL "windows")
   list(APPEND CPACK_FILES other/config_directory.bat)
-else()
+elseif(NOT TARGET_OS STREQUAL "emscripten")
   list(APPEND CPACK_FILES other/config_directory.sh)
 endif()
 
@@ -3901,8 +3778,15 @@ foreach(ext zip tar.gz tar.xz)
     list(APPEND COPY_DIR_COMMANDS COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/${dir} ${TMPDIR}/${dir})
   endforeach()
   foreach(target ${CPACK_TARGETS})
-    list(APPEND COPY_TARGET_COMMANDS COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${target}> ${TMPDIR}/)
-    if(NOT TARGET_OS STREQUAL "mac" AND NOT (TARGET_OS STREQUAL "windows" AND TARGET_CPU_ARCHITECTURE STREQUAL "arm64"))
+    if(TARGET_OS STREQUAL "emscripten")
+      # The main target with Emscripten is the .html file, but we instead want the .data, .js and .wasm files and use our own index.html
+      list(APPEND COPY_TARGET_COMMANDS COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/$<TARGET_FILE_BASE_NAME:game-client>.data ${TMPDIR}/)
+      list(APPEND COPY_TARGET_COMMANDS COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/$<TARGET_FILE_BASE_NAME:game-client>.js ${TMPDIR}/)
+      list(APPEND COPY_TARGET_COMMANDS COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/$<TARGET_FILE_BASE_NAME:game-client>.wasm ${TMPDIR}/)
+    else()
+      list(APPEND COPY_TARGET_COMMANDS COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${target}> ${TMPDIR}/)
+    endif()
+    if(CPACK_STRIP_FILES)
       list(APPEND STRIP_TARGET_COMMANDS COMMAND strip -s ${TMPDIR}/$<TARGET_FILE_NAME:${target}>)
     endif()
   endforeach()

@@ -3,6 +3,9 @@
 data/
 !/data/
 
+docs/
+!ddnet-insta/docs/
+
 bundle/
 !/other/bundle/
 

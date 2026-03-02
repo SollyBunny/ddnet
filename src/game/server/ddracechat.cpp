@@ -11,11 +11,12 @@
 #include <game/mapitems.h>
 #include <game/server/entities/character.h>
 #include <game/server/gamemodes/ddnet.h>
-#include <game/server/instagib/version.h> // ddnet-insta
 #include <game/server/teams.h>
 #include <game/team_state.h>
 #include <game/teamscore.h>
 #include <game/version.h>
+
+#include <insta/server/version.h> // ddnet-insta
 
 void CGameContext::ConCredits(IConsole::IResult *pResult, void *pUserData)
 {
@@ -49,19 +50,13 @@ void CGameContext::ConCredits(IConsole::IResult *pResult, void *pUserData)
 
 void CGameContext::ConInfo(IConsole::IResult *pResult, void *pUserData)
 {
-	CGameContext *pSelf = (CGameContext *)pUserData;
 	// ddnet-insta start
-	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp",
-		"DDNet-insta " DDNET_INSTA_VERSIONSTR " by ChillerDragon");
-	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp",
-		"https://github.com/ddnet-insta/ddnet-insta/");
-	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp",
-		"built on: " DDNET_INSTA_BUILD_DATE);
-	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp",
-		"based on:");
+	log_info("chatresp", "DDNet-insta " DDNET_INSTA_VERSIONSTR " by ChillerDragon");
+	log_info("chatresp", "https://github.com/ddnet-insta/ddnet-insta/");
+	log_info("chatresp", "built on: " DDNET_INSTA_BUILD_DATE);
+	log_info("chatresp", "based on:");
 	// ddnet-insta end
-	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "chatresp",
-		"DDraceNetwork Mod. Version: " GAME_VERSION);
+	log_info("chatresp", "DDraceNetwork Mod. Version: " GAME_VERSION);
 	if(GIT_SHORTREV_HASH)
 	{
 		char aBuf[64];
@@ -558,7 +553,7 @@ void CGameContext::ConMapInfo(IConsole::IResult *pResult, void *pUserData)
 		return;
 
 	// use cached map info for current map
-	const bool IsCurrentMap = pResult->NumArguments() == 0 || str_comp_nocase(pResult->GetString(0), pSelf->Server()->GetMapName()) == 0;
+	const bool IsCurrentMap = pResult->NumArguments() == 0 || str_comp_nocase(pResult->GetString(0), pSelf->Map()->BaseName()) == 0;
 	if(IsCurrentMap && pSelf->m_aMapInfoMessage[0] != '\0')
 	{
 		pSelf->SendChatTarget(pResult->m_ClientId, pSelf->m_aMapInfoMessage);
@@ -568,7 +563,7 @@ void CGameContext::ConMapInfo(IConsole::IResult *pResult, void *pUserData)
 	if(pResult->NumArguments() > 0)
 		pSelf->Score()->MapInfo(pResult->m_ClientId, pResult->GetString(0));
 	else
-		pSelf->Score()->MapInfo(pResult->m_ClientId, pSelf->Server()->GetMapName());
+		pSelf->Score()->MapInfo(pResult->m_ClientId, pSelf->Map()->BaseName());
 }
 
 void CGameContext::ConTimeout(IConsole::IResult *pResult, void *pUserData)
@@ -1725,7 +1720,7 @@ void CGameContext::ConRescue(IConsole::IResult *pResult, void *pUserData)
 	if(GoRescue)
 	{
 		pChr->Rescue();
-		pChr->UnFreeze();
+		pChr->Unfreeze();
 	}
 }
 
@@ -1799,7 +1794,7 @@ void CGameContext::ConBack(IConsole::IResult *pResult, void *pUserData)
 		}
 		pChr->GetLastRescueTeeRef(pPlayer->m_RescueMode) = pPlayer->m_LastDeath.value();
 		pChr->Rescue();
-		pChr->UnFreeze();
+		pChr->Unfreeze();
 	}
 }
 
@@ -1859,7 +1854,7 @@ void CGameContext::ConTeleTo(IConsole::IResult *pResult, void *pUserData)
 	// Teleport tee
 	pSelf->Teleport(pCallingCharacter, Pos);
 	pCallingCharacter->ResetJumps();
-	pCallingCharacter->UnFreeze();
+	pCallingCharacter->Unfreeze();
 	pCallingCharacter->ResetVelocity();
 	pCallingPlayer->m_LastTeleTee.Save(pCallingCharacter);
 }
@@ -1937,7 +1932,7 @@ void CGameContext::ConTeleXY(IConsole::IResult *pResult, void *pUserData)
 	// Teleport tee
 	pSelf->Teleport(pCallingCharacter, Pos);
 	pCallingCharacter->ResetJumps();
-	pCallingCharacter->UnFreeze();
+	pCallingCharacter->Unfreeze();
 	pCallingCharacter->ResetVelocity();
 	pCallingPlayer->m_LastTeleTee.Save(pCallingCharacter);
 }
@@ -1992,7 +1987,7 @@ void CGameContext::ConTeleCursor(IConsole::IResult *pResult, void *pUserData)
 	}
 	pSelf->Teleport(pChr, Pos);
 	pChr->ResetJumps();
-	pChr->UnFreeze();
+	pChr->Unfreeze();
 	pChr->ResetVelocity();
 	pPlayer->m_LastTeleTee.Save(pChr);
 }
@@ -2060,7 +2055,7 @@ void CGameContext::ConPracticeToTeleporter(IConsole::IResult *pResult, void *pUs
 
 		ConToTeleporter(pResult, pUserData);
 		pChr->ResetJumps();
-		pChr->UnFreeze();
+		pChr->Unfreeze();
 		pChr->ResetVelocity();
 		pChr->GetPlayer()->m_LastTeleTee.Save(pChr);
 	}
@@ -2080,7 +2075,7 @@ void CGameContext::ConPracticeToCheckTeleporter(IConsole::IResult *pResult, void
 
 		ConToCheckTeleporter(pResult, pUserData);
 		pChr->ResetJumps();
-		pChr->UnFreeze();
+		pChr->Unfreeze();
 		pChr->ResetVelocity();
 		pChr->GetPlayer()->m_LastTeleTee.Save(pChr);
 	}
@@ -2150,7 +2145,7 @@ void CGameContext::ConPracticeUnDeep(IConsole::IResult *pResult, void *pUserData
 		return;
 
 	pChr->SetDeepFrozen(false);
-	pChr->UnFreeze();
+	pChr->Unfreeze();
 }
 
 void CGameContext::ConPracticeDeep(IConsole::IResult *pResult, void *pUserData)

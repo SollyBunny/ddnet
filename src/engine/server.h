@@ -23,6 +23,7 @@
 
 class CAuthManager; // ddnet-insta
 struct CAntibotRoundData;
+class IMap;
 
 // When recording a demo on the server, the ClientId -1 is used
 enum
@@ -33,7 +34,7 @@ enum
 class IServer : public IInterface
 {
 #define IN_CLASS_ENGINE_SERVER
-#include <game/server/instagib/includes/engine/server.h>
+#include <insta/includes/engine/server.h>
 	MACRO_INTERFACE("server")
 protected:
 	int m_CurrentGameTick;
@@ -226,8 +227,6 @@ public:
 		return true;
 	}
 
-	virtual void GetMapInfo(char *pMapName, int MapNameSize, int *pMapSize, SHA256_DIGEST *pSha256, int *pMapCrc) = 0;
-
 	virtual bool WouldClientNameChange(int ClientId, const char *pNameRequest) = 0;
 	virtual bool WouldClientClanChange(int ClientId, const char *pClanRequest) = 0;
 	virtual void SetClientName(int ClientId, const char *pName) = 0;
@@ -295,15 +294,13 @@ public:
 
 	virtual void SendMsgRaw(int ClientId, const void *pData, int Size, int Flags) = 0;
 
-	virtual const char *GetMapName() const = 0;
-
 	virtual bool IsSixup(int ClientId) const = 0;
 };
 
 class IGameServer : public IInterface
 {
 #define IN_CLASS_ENGINE_GAMESERVER
-#include <game/server/instagib/includes/engine/gameserver.h>
+#include <insta/includes/engine/gameserver.h>
 	MACRO_INTERFACE("gameserver")
 protected:
 public:
@@ -371,6 +368,8 @@ public:
 	virtual const char *Version() const = 0;
 	virtual const char *NetVersion() const = 0;
 
+	virtual IMap *Map() = 0;
+	virtual const IMap *Map() const = 0;
 	virtual CNetObjHandler *GetNetObjHandler() = 0;
 	virtual protocol7::CNetObjHandler *GetNetObjHandler7() = 0;
 

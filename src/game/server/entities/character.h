@@ -27,7 +27,7 @@ class CCharacter : public CEntity
 {
 	MACRO_ALLOC_POOL_ID()
 #define IN_CLASS_CHARACTER
-#include <game/server/instagib/includes/character.h>
+#include <insta/includes/character.h>
 
 	// need to use core
 	friend class CSaveTee;
@@ -198,7 +198,7 @@ public:
 	void Pause(bool Pause);
 	bool Freeze(int Seconds);
 	bool Freeze();
-	bool UnFreeze();
+	bool Unfreeze();
 	void GiveAllWeapons();
 	void ResetPickups();
 	void ResetJumps();

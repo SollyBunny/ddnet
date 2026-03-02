@@ -1,10 +1,10 @@
 #!/bin/bash
 
-INCLUDES_CONFIG="src/game/server/instagib/includes/config_variables.h"
-INCLUDES_RCON_COMMANDS="src/game/server/instagib/includes/rcon_commands.h"
-INCLUDES_CHAT_COMMANDS="src/game/server/instagib/includes/chat_commands.h"
+INCLUDES_CONFIG="src/insta/includes/engine/shared/config_variables.h"
+INCLUDES_RCON_COMMANDS="src/insta/includes/rcon_commands.h"
+INCLUDES_CHAT_COMMANDS="src/insta/includes/chat_commands.h"
 
-README_FILE="README.md"
+README_FILE="ddnet-insta/docs/settings_and_commands.md"
 TEMP_DIR="scripts"
 TEMP_FILE="$TEMP_DIR/tmp.swp"
 
@@ -82,6 +82,7 @@ gen_configs() {
 gen_console_cmds() {
 	local prefix="$1"
 	local header_file="$2"
+	local macros_name="$3"
 	local cfg
 	local desc
 	local cmd
@@ -106,18 +107,18 @@ gen_console_cmds() {
 		if [[ -z "$ignore_pattern" ]] || ! [[ "$cmd" =~ $ignore_pattern ]]; then
 			echo "+ \`$prefix$cmd\` $desc"
 		fi
-	done < <(grep '^CONSOLE_COMMAND' "$header_file")
+	done < <(grep "^$macros_name" "$header_file")
 }
 
 gen_rcon_cmds() {
 	for file in $(process_includes "$INCLUDES_RCON_COMMANDS"); do
-		gen_console_cmds "" "$file"
+		gen_console_cmds "" "$file" 'CONSOLE_COMMAND'
 	done
 }
 
 gen_chat_cmds() {
 	for file in $(process_includes "$INCLUDES_CHAT_COMMANDS"); do
-		gen_console_cmds "/" "$file"
+		gen_console_cmds "/" "$file" 'CHAT_COMMAND'
 	done
 }
 
