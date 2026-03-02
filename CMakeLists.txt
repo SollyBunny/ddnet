@@ -2220,7 +2220,6 @@ set_src(ENGINE_SHARED GLOB_RECURSE src/engine/shared
   config_domains.h
   config_includes.h
   config_variables.h
-  config_variables_insta.h
   config_variables_sollys.h
   config_variables_tclient.h
   console.cpp

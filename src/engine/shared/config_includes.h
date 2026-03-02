@@ -15,4 +15,4 @@ SET_CONFIG_DOMAIN(ConfigDomain::SOLLYS)
 #include "config_variables_sollys.h"
 
 SET_CONFIG_DOMAIN(ConfigDomain::INSTA)
-#include "config_variables_insta.h"
+#include "../../insta/engine/shared/config_variables_insta.h"
