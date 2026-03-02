@@ -1437,6 +1437,7 @@ set(EXPECTED_DATA
   countryflags/X-CAMMO.png
   countryflags/X-CAMMOSTRIPES.png
   countryflags/X-COALA.png
+  countryflags/X-ENTITY.png
   countryflags/X-FINISH.png
   countryflags/X-GAY.png
   countryflags/X-LESBIAN.png
@@ -2141,10 +2142,14 @@ set_src(BASE GLOB_RECURSE src/base
   mem.cpp
   mem.h
   rust.h
+  secure.cpp
+  secure.h
   str.cpp
   str.h
   system.cpp
   system.h
+  thread.cpp
+  thread.h
   time.cpp
   time.h
   tl/threading.h
@@ -2169,6 +2174,7 @@ set_src(ENGINE_INTERFACE GLOB src/engine
   editor.h
   engine.h
   favorites.h
+  font_icons.h
   friends.h
   ghost.h
   graphics.cpp

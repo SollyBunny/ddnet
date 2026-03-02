@@ -92,6 +92,8 @@
 class CGameInfo
 {
 public:
+	char m_aGameType[16]; // TClient
+
 	bool m_FlagStartsRace;
 	bool m_TimeScore;
 	bool m_UnlimitedAmmo;
@@ -136,7 +138,7 @@ public:
 
 	bool m_DDRaceTeam;
 
-	char m_aGameType[16];
+	bool m_PredictEvents;
 };
 
 class CSnapEntities
@@ -518,8 +520,12 @@ public:
 		CCharacterCore m_PrevPredicted;
 
 		// TClient
+		CCharacterCore m_RegularPredicted;
+
+		// TClient
 		vec2 m_ImprovedPredPos = vec2(0, 0);
 		vec2 m_PrevImprovedPredPos = vec2(0, 0);
+		bool m_ValidAntipingSmooth = false;
 		//vec2 m_DebugVector = vec2(0, 0);
 		//vec2 m_DebugVector2 = vec2(0, 0);
 		//vec2 m_DebugVector3 = vec2(0, 0);
@@ -934,6 +940,8 @@ public:
 
 	vec2 GetSmoothPos(int ClientId);
 	vec2 GetFreezePos(int ClientId);
+	vec2 GetFastInputPos(int ClientId);
+
 	int m_MultiViewTeam;
 	float m_MultiViewPersonalZoom;
 	bool m_MultiViewShowHud;
@@ -945,6 +953,7 @@ public:
 	void CleanMultiViewId(int ClientId);
 	int m_MapBestTimeSeconds;
 	int m_MapBestTimeMillis;
+	char m_aMapDescription[512];
 
 private:
 	std::vector<CSnapEntities> m_vSnapEntities;
@@ -961,6 +970,7 @@ private:
 	void UpdatePrediction();
 	void UpdateSpectatorCursor();
 	void UpdateRenderedCharacters();
+	void HandlePredictedEvents(int Tick);
 
 	int m_aLastUpdateTick[MAX_CLIENTS] = {0};
 	void DetectStrongHook();
@@ -1011,8 +1021,8 @@ private:
 
 public:
 	// TClient
-	int m_SmoothTick[2] = {};
-	float m_SmoothIntraTick[2] = {};
+	int m_SmoothTick = 0;
+	float m_SmoothIntraTick = 0;
 	bool CheckNewInput() override;
 	std::optional<CServerInfo> m_ConnectServerInfo = std::nullopt;
 	void SetConnectInfo(const NETADDR *pAddress) override;

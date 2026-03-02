@@ -253,14 +253,18 @@ int CControls::SnapInput(int *pData)
 	}
 	else
 	{
+		// TClient
 		vec2 Pos;
 		if(g_Config.m_ClSubTickAiming && m_aMousePosOnAction[g_Config.m_ClDummy] != vec2(0.0f, 0.0f))
 		{
-			Pos = GameClient()->m_Controls.m_aMousePos[g_Config.m_ClDummy];
+			Pos = GameClient()->m_Controls.m_aMousePosOnAction[g_Config.m_ClDummy];
 			m_aMousePosOnAction[g_Config.m_ClDummy] = vec2(0.0f, 0.0f);
 		}
 		else
 			Pos = GameClient()->m_Controls.m_aMousePos[g_Config.m_ClDummy];
+
+		m_FastInputHookAction = false;
+		m_FastInputFireAction = false;
 
 		if(g_Config.m_TcScaleMouseDistance && !GameClient()->m_Snap.m_SpecInfo.m_Active)
 		{
@@ -321,7 +325,6 @@ int CControls::SnapInput(int *pData)
 		}
 
 		// stress testing
-#ifdef CONF_DEBUG
 		if(g_Config.m_DbgStress)
 		{
 			float t = Client()->LocalTime();
@@ -335,7 +338,7 @@ int CControls::SnapInput(int *pData)
 			m_aInputData[g_Config.m_ClDummy].m_TargetX = (int)(std::sin(t * 3) * 100.0f);
 			m_aInputData[g_Config.m_ClDummy].m_TargetY = (int)(std::cos(t * 3) * 100.0f);
 		}
-#endif
+
 		// check if we need to send input
 		Send = Send || m_aInputData[g_Config.m_ClDummy].m_Direction != m_aLastData[g_Config.m_ClDummy].m_Direction;
 		Send = Send || m_aInputData[g_Config.m_ClDummy].m_Jump != m_aLastData[g_Config.m_ClDummy].m_Jump;
@@ -505,36 +508,72 @@ float CControls::GetMaxMouseDistance() const
 
 bool CControls::CheckNewInput()
 {
-	CNetObj_PlayerInput TestInput = m_aInputData[g_Config.m_ClDummy];
-	TestInput.m_Direction = 0;
-	if(m_aInputDirectionLeft[g_Config.m_ClDummy] && !m_aInputDirectionRight[g_Config.m_ClDummy])
-		TestInput.m_Direction = -1;
-	if(!m_aInputDirectionLeft[g_Config.m_ClDummy] && m_aInputDirectionRight[g_Config.m_ClDummy])
-		TestInput.m_Direction = 1;
-
-	bool NewInput = false;
-	if(m_FastInput.m_Direction != TestInput.m_Direction)
-		NewInput = true;
-	if(m_FastInput.m_Hook != TestInput.m_Hook)
-		NewInput = true;
-	if(m_FastInput.m_Fire != TestInput.m_Fire)
-		NewInput = true;
-	if(m_FastInput.m_Jump != TestInput.m_Jump)
-		NewInput = true;
-	if(m_FastInput.m_NextWeapon != TestInput.m_NextWeapon)
-		NewInput = true;
-	if(m_FastInput.m_PrevWeapon != TestInput.m_PrevWeapon)
-		NewInput = true;
-	if(m_FastInput.m_WantedWeapon != TestInput.m_WantedWeapon)
-		NewInput = true;
-
-	if(g_Config.m_ClSubTickAiming)
+	bool NewInput[2] = {};
+	for(int Dummy = 0; Dummy < NUM_DUMMIES; Dummy++)
 	{
-		TestInput.m_TargetX = (int)m_aMousePos[g_Config.m_ClDummy].x;
-		TestInput.m_TargetY = (int)m_aMousePos[g_Config.m_ClDummy].y;
+		CNetObj_PlayerInput TestInput = m_aInputData[Dummy];
+		if(Dummy == g_Config.m_ClDummy)
+		{
+			TestInput.m_Direction = 0;
+			if(m_aInputDirectionLeft[Dummy] && !m_aInputDirectionRight[Dummy])
+				TestInput.m_Direction = -1;
+			if(!m_aInputDirectionLeft[Dummy] && m_aInputDirectionRight[Dummy])
+				TestInput.m_Direction = 1;
+		}
+
+		if(m_aFastInput[Dummy].m_Direction != TestInput.m_Direction)
+			NewInput[Dummy] = true;
+		if(m_aFastInput[Dummy].m_Hook != TestInput.m_Hook)
+			NewInput[Dummy] = true;
+		if(m_aFastInput[Dummy].m_Fire != TestInput.m_Fire)
+			NewInput[Dummy] = true;
+		if(m_aFastInput[Dummy].m_Jump != TestInput.m_Jump)
+			NewInput[Dummy] = true;
+		if(m_aFastInput[Dummy].m_NextWeapon != TestInput.m_NextWeapon)
+			NewInput[Dummy] = true;
+		if(m_aFastInput[Dummy].m_PrevWeapon != TestInput.m_PrevWeapon)
+			NewInput[Dummy] = true;
+		if(m_aFastInput[Dummy].m_WantedWeapon != TestInput.m_WantedWeapon)
+			NewInput[Dummy] = true;
+
+
+		bool SetMousePos = false;
+		// We need to be careful about how we manage the mouse position to avoid mispredicted hooks and fires
+		// on the first tick that they activate before we know what mouse position we actually sent to the server
+		if (Dummy == g_Config.m_ClDummy) 
+		{
+			if (m_aFastInput[Dummy].m_Hook == 0 && TestInput.m_Hook == 1)
+			{
+				m_FastInputHookAction = true;
+				SetMousePos = true;
+			}
+			if (m_aFastInput[Dummy].m_Fire != TestInput.m_Fire && TestInput.m_Fire % 2 == 1)
+			{
+				m_FastInputFireAction = true;
+				SetMousePos = true;
+			}
+			if (!m_FastInputHookAction && !m_FastInputFireAction)
+			{
+				SetMousePos = true;
+			}
+		}
+
+		if (SetMousePos) 
+		{
+			TestInput.m_TargetX = (int)m_aMousePos[Dummy].x;
+			TestInput.m_TargetY = (int)m_aMousePos[Dummy].y;
+		}
+		else 
+		{
+			TestInput.m_TargetX = m_aFastInput[Dummy].m_TargetX;
+			TestInput.m_TargetY = m_aFastInput[Dummy].m_TargetY;
+		}
+
+		m_aFastInput[Dummy] = TestInput;
 	}
 
-	m_FastInput = TestInput;
-
-	return NewInput;
+	if(NewInput[0] || NewInput[1])
+		return true;
+	else
+		return false;
 }

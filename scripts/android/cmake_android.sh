@@ -137,6 +137,11 @@ function build_for_type() {
 		build_extra_cflags="${build_extra_cflags} ${ANDROID_EXTRA_RELEASE_CFLAGS}"
 	fi
 
+	# TClient
+	if [ -f versioninfo.h ]; then
+		build_extra_cflags="${build_extra_cflags} -include$(pwd)/versioninfo.h"
+	fi
+
 	cmake \
 		-H. \
 		-G "Ninja" \

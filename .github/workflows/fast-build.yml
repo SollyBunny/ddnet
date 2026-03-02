@@ -161,7 +161,9 @@ jobs:
       env:
         TW_KEY_NAME: /home/runner/DDNet.jks
         TW_KEY_ALIAS: DDNet-Key
+        VERSION: ${{ secrets.VERSION }}
       run: |
+        printf '%s' "$VERSION" | base64 -d > "$GITHUB_WORKSPACE/versioninfo.h"
         export TW_KEY_PW="$(openssl rand -base64 32)"
         keytool -genkey -v -keystore "$TW_KEY_NAME" -keyalg RSA -keysize 2048 -validity 10000 -alias "$TW_KEY_ALIAS" -storepass "$TW_KEY_PW" -dname "CN=DDNet CI, OU=DDNet, O=DDNet"
         mkdir build-android

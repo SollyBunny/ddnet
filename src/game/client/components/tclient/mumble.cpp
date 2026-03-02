@@ -9,6 +9,8 @@
 
 #include <game/client/gameclient.h>
 
+#define MUMBLE_2D_SCALE 128.0f
+
 void CMumble::MakeContext()
 {
 	mumble_destroy_context(&m_pContext);
@@ -71,12 +73,12 @@ void CMumble::OnRender()
 	{
 		char aIdentity[16];
 		str_format(aIdentity, sizeof(aIdentity), "%d", ClientId);
-		if(!mumble_set_context(m_pContext, aIdentity))
+		if(!mumble_set_identity(m_pContext, aIdentity))
 			log_error("mumble", "Failed to set identity");
 		m_LastClientId = ClientId;
 	}
 	const auto &Pos = GameClient()->m_aClients[ClientId].m_RenderPos;
-	mumble_2d_update(m_pContext, Pos.x, Pos.y);
+	mumble_2d_update(m_pContext, Pos.x / MUMBLE_2D_SCALE, Pos.y / MUMBLE_2D_SCALE);
 }
 
 void CMumble::OnConsoleInit()
