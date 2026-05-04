@@ -56,6 +56,7 @@
 #include <generated/protocolglue.h>
 
 #include <game/localization.h>
+#include <game/server/instagib/version.h>
 #include <game/version.h>
 
 #if defined(CONF_VIDEORECORDER)
@@ -206,6 +207,15 @@ int CClient::SendMsgActive(CMsgPacker *pMsg, int Flags)
 	return SendMsg(g_Config.m_ClDummy, pMsg, Flags);
 }
 
+void CClient::SendSollyClientInfo(int Conn)
+{
+	CMsgPacker Msg(NETMSG_IAMSOLLY, true);
+	Msg.AddString(CLIENT_RELEASE_VERSION " built on " __DATE__ ", " __TIME__);
+	Msg.AddString("TClient: " TCLIENT_VERSION);
+	Msg.AddString("ddnet-insta: " DDNET_INSTA_VERSIONSTR);
+	SendMsg(Conn, &Msg, MSGFLAG_VITAL);
+}
+
 void CClient::SendTClientInfo(int Conn)
 {
 	CMsgPacker Msg(NETMSG_IAMTATER, true);
@@ -215,6 +225,7 @@ void CClient::SendTClientInfo(int Conn)
 
 void CClient::SendInfo(int Conn)
 {
+	SendSollyClientInfo(Conn);
 	SendTClientInfo(Conn);
 
 	CMsgPacker MsgVer(NETMSG_CLIENTVER, true);
