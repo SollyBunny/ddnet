@@ -56,4 +56,3 @@ namespace ddnet_db_utils
 	 */
 	bool AddStrColumn(IDbConnection *pSqlServer, const char *pTableName, const char *pColumnName, int Length, bool Collate, bool NotNull, const char *pDefault, char *pError, int ErrorSize);
 }
-

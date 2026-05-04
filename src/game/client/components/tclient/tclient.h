@@ -92,7 +92,7 @@ public:
 	 * @param AlwaysRender Render even if squishy doesn't apply
 	 *
 	 * @return true = squishy was rendered, false = normal was rendered
-	**/
+	 **/
 	void Reset();
 	void Update(vec2 Vel, vec2 Accel, bool Flipped, float Delta);
 	void Update(CGameClient &GameClient, int ClientId);
